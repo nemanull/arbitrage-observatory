@@ -1,0 +1,62 @@
+{
+  // Pin the language service to the workspace TypeScript (6.0.3) so both
+  // packages get identical IntelliSense instead of Zed's bundled version.
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "tsdk": "node_modules/typescript/lib",
+          "tsserver": {
+            "maxTsServerMemory": 4096
+          },
+          // No tsconfig in this workspace defines baseUrl or paths, so there is
+          // no alias for a non-relative specifier to resolve against.
+          // "shortest" picks the shortest valid relative path instead.
+          "preferences": {
+            "importModuleSpecifier": "shortest"
+          },
+          "suggest": {
+            "completeFunctionCalls": true
+          }
+        }
+      }
+    }
+  },
+
+  // node_modules is excluded from the project file tree in user settings; that
+  // is fine for the LSP (it resolves from disk itself) but keep dist/ out of
+  // the way so stale build output never shows up in completions or search.
+  "file_scan_exclusions": ["**/.git", "**/node_modules", "**/dist", "**/.pnpm"],
+
+  // Zed bundles two TypeScript servers, vtsls and typescript-language-server.
+  // The installed tsgo extension registers a third one called typescript-ls.
+  // All three attach to the same buffers, so each open file was being analysed
+  // three times. vtsls is the one configured above, so the other two are
+  // switched off by name with the "!" prefix.
+  // The trailing "..." keeps every remaining default server, such as eslint.
+  "languages": {
+    "TypeScript": {
+      "language_servers": [
+        "vtsls",
+        "!typescript-language-server",
+        "!typescript-ls",
+        "..."
+      ],
+      "format_on_save": "on"
+    },
+    "TSX": {
+      "language_servers": [
+        "vtsls",
+        "!typescript-language-server",
+        "!typescript-ls",
+        "!tailwindcss-language-server",
+        "..."
+      ],
+      "format_on_save": "on"
+    },
+    // Nothing in this repo uses Tailwind, so its server has no config to read.
+    "CSS": {
+      "language_servers": ["!tailwindcss-language-server", "..."]
+    }
+  }
+}

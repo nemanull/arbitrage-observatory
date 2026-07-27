@@ -1,0 +1,10 @@
+packages:
+  - app
+  - server
+
+# pnpm blocks dependency build (postinstall) scripts by default.
+# unrs-resolver (via jest-resolve) ships a postinstall that downloads its native
+# binary as a fallback. pnpm already installs the correct platform binding via
+# optionalDependencies, so the script is a no-op here and stays disabled.
+allowBuilds:
+  unrs-resolver: false
