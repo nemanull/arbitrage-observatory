@@ -1,0 +1,16 @@
+// Prisma schema for the arbitrage observatory.
+// The datasource URL lives in prisma.config.ts, which is the Prisma 7 layout.
+
+generator client {
+  provider = "prisma-client"
+
+  // Generated code must sit under the build rootDir, which is src.
+  output = "../src/generated/prisma"
+
+  // The server is CommonJS, and this generator emits ESM with import.meta by default.
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}

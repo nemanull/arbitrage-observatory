@@ -1,10 +1,16 @@
 packages:
   - app
   - server
+  - packages/*
 
 # pnpm blocks dependency build (postinstall) scripts by default.
 # unrs-resolver (via jest-resolve) ships a postinstall that downloads its native
 # binary as a fallback. pnpm already installs the correct platform binding via
 # optionalDependencies, so the script is a no-op here and stays disabled.
+# msgpackr-extract is an optional native accelerator, and the pure JavaScript fallback is fine for small job payloads.
+# The Prisma CLI downloads the schema engine binary it needs for migrate through its postinstall script.
 allowBuilds:
+  '@prisma/engines': true
+  msgpackr-extract: false
+  prisma: true
   unrs-resolver: false

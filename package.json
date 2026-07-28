@@ -9,7 +9,16 @@
     "dev:app": "pnpm --filter app run dev",
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
-    "lint": "pnpm -r run lint"
+    "lint": "pnpm -r run lint",
+    "prisma:generate": "pnpm --filter server run prisma:generate",
+    "prisma:push": "pnpm --filter server run prisma:push",
+    "prisma:migrateDev": "pnpm --filter server run prisma:migrateDev",
+    "prisma:migrateDeploy": "pnpm --filter server run prisma:migrateDeploy",
+    "prisma:studio": "pnpm --filter server run prisma:studio",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "infra:logs": "docker compose logs -f",
+    "infra:reset": "docker compose down -v"
   },
   "devDependencies": {
     "typescript": "~6.0.3"

@@ -7,5 +7,8 @@
     // compiler believe everything is up to date and emit nothing.
     "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo"
   },
+  // Without this, prisma.config.ts becomes a program root outside rootDir and the build fails.
+  // The failed build also emits a stray prisma.config.js that the Prisma CLI loads instead of the source.
+  "include": ["src"],
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
 }

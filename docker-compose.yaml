@@ -1,0 +1,57 @@
+# Local development infrastructure.
+# Start it with `pnpm infra:up` and stop it with `pnpm infra:down`.
+
+name: arbitrage-observatory
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: observatory-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-observatory}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-observatory}
+      POSTGRES_DB: ${POSTGRES_DB:-observatory}
+      # Deterministic collation keeps index ordering stable across host machines.
+      POSTGRES_INITDB_ARGS: --locale-provider=icu --icu-locale=en-US --encoding=UTF8
+    ports:
+      # The default 5432 is already taken by another project on this host.
+      # Loopback binding keeps the development database off the local network.
+      - "127.0.0.1:${POSTGRES_PORT:-5532}:5432"
+    volumes:
+      # Postgres 18 keeps PGDATA at /var/lib/postgresql/18/docker, so the volume mounts one level up.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-observatory} -d ${POSTGRES_DB:-observatory}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8-alpine
+    container_name: observatory-redis
+    restart: unless-stopped
+    ports:
+      # The default 6379 is already taken by another project on this host.
+      - "127.0.0.1:${REDIS_PORT:-6479}:6379"
+    # Any eviction policy lets Redis drop job keys under memory pressure and corrupt queue state.
+    # Append-only persistence keeps queued jobs across a restart.
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory-policy
+      - noeviction
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres-data:
+  redis-data:

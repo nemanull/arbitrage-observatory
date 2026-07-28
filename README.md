@@ -13,6 +13,37 @@ cp server/.env.example server/.env
 cp app/.env.example app/.env
 ```
 
+## Infrastructure
+
+Postgres and Redis run in Docker.
+Start them before the server.
+
+```bash
+pnpm infra:up         # start both, waits until healthy
+pnpm infra:down       # stop
+pnpm infra:logs       # follow logs
+pnpm infra:reset      # stop and delete all stored data
+```
+
+Postgres is on `localhost:5532` and Redis is on `localhost:6479`, both bound to loopback.
+The ports are non-default so they do not clash with other projects on the same machine.
+Set `POSTGRES_PORT` or `REDIS_PORT` in the environment to change them.
+
+## Database
+
+There is one database, so these work from the repo root and from `server/`.
+
+```bash
+pnpm prisma:generate      # regenerate the Prisma client
+pnpm prisma:push          # apply schema.prisma directly, no migration files
+pnpm prisma:migrateDev    # create and apply a migration
+pnpm prisma:migrateDeploy # apply existing migrations
+pnpm prisma:studio        # browse the data
+```
+
+The client is generated into `server/src/generated/` and is not committed.
+`pnpm install` regenerates it, so a fresh clone builds without extra steps.
+
 ## Run
 
 ```bash
