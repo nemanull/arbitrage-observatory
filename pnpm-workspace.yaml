@@ -9,8 +9,13 @@ packages:
 # optionalDependencies, so the script is a no-op here and stays disabled.
 # msgpackr-extract is an optional native accelerator, and the pure JavaScript fallback is fine for small job payloads.
 # The Prisma CLI downloads the schema engine binary it needs for migrate through its postinstall script.
+# ccxt ships a postinstall that only prints an ASCII-art donation banner, so it stays disabled.
+# bufferutil is an optional native accelerator for ws frame masking.
+# It needs a C toolchain to compile, which the Docker image does not carry, so the pure JavaScript fallback is used instead.
 allowBuilds:
   '@prisma/engines': true
+  bufferutil: false
+  ccxt: false
   msgpackr-extract: false
   prisma: true
   unrs-resolver: false

@@ -17,6 +17,8 @@ There are no active plans.
 
 - [`implemented/2026-07-26-exchange-profiles-design.md`](./implemented/2026-07-26-exchange-profiles-design.md) records the reconciled design for the fee and WebSocket research package.
 - [`implemented/2026-07-26-exchange-profiles-plan.md`](./implemented/2026-07-26-exchange-profiles-plan.md) records the completed research and verification tasks for the exchange profiles.
+- [`implemented/2026-07-28-exchange-seed-design.md`](./implemented/2026-07-28-exchange-seed-design.md) records why exchange reference data ships inside a migration and which fee tier it carries.
+- [`implemented/2026-07-28-exchange-seed-plan.md`](./implemented/2026-07-28-exchange-seed-plan.md) records every seeded connection setting and fee class with the profile line it came from.
 
 ## Reference
 

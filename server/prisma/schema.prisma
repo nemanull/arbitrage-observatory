@@ -1,16 +1,180 @@
-// Prisma schema for the arbitrage observatory.
-// The datasource URL lives in prisma.config.ts, which is the Prisma 7 layout.
+// Every rate is a signed integer in parts per million.
+// A rebate is a negative rate.
+// The datasource URL lives in prisma.config.ts.
 
 generator client {
   provider = "prisma-client"
 
-  // Generated code must sit under the build rootDir, which is src.
+  // Must sit under the build rootDir, which is src.
   output = "../src/generated/prisma"
 
-  // The server is CommonJS, and this generator emits ESM with import.meta by default.
+  // The server is CommonJS, and this generator emits ESM by default.
   moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model Exchange {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  id      Int     @id @default(autoincrement())
+  /// Must match the adapter key in code
+  slug    String  @unique
+  name    String
+  enabled Boolean @default(true)
+
+  config  ExchangeConfig?
+  fees    ExchangeFee[]
+  markets Market[]
+}
+
+/// Connection settings for the public spot feed
+model ExchangeConfig {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  id         Int @id @default(autoincrement())
+  exchangeId Int @unique
+
+  wsUrl                   String
+  maxStreamsPerConnection Int
+  /// Exceeding this limit drops subscriptions silently on some venues
+  maxArgsPerSubscribe     Int
+  subscribeIntervalMs     Int    @default(250)
+  /// Null when the venue pings us instead
+  keepaliveIntervalMs     Int?
+  idleTimeoutMs           Int
+  /// Null when the venue publishes no hard lifetime
+  maxConnectionAgeMs      Int?
+  reconnectMinDelayMs     Int    @default(1000)
+
+  exchange Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+}
+
+/// Rows are append only.
+/// A rate change closes the old row and inserts a new one
+model ExchangeFee {
+  createdAt DateTime @default(now())
+
+  id         Int    @id @default(autoincrement())
+  exchangeId Int
+  feeClass   String @default("default")
+
+  makerPpm Int
+  takerPpm Int
+
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  sourceUrl     String?
+
+  exchange Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@unique([exchangeId, feeClass, effectiveFrom])
+}
+
+/// Base and quote are normalized codes rather than venue spellings
+model Pair {
+  createdAt DateTime @default(now())
+
+  id     Int    @id @default(autoincrement())
+  base   String
+  quote  String
+  symbol String @unique
+
+  markets       Market[]
+  opportunities ArbitrageOpportunity[]
+
+  @@unique([base, quote])
+}
+
+enum MarketStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Market {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  id         Int @id @default(autoincrement())
+  exchangeId Int
+  pairId     Int
+
+  /// Spelled exactly as the venue reports it
+  venueSymbol String
+  status      MarketStatus @default(ACTIVE)
+  /// Points at an ExchangeFee row for the same exchange
+  feeClass    String       @default("default")
+
+  tickSize    Decimal? @db.Decimal(38, 18)
+  qtyStep     Decimal? @db.Decimal(38, 18)
+  minNotional Decimal? @db.Decimal(38, 18)
+
+  /// Refreshed by the market sync job while the venue still lists this market
+  lastSeenAt DateTime @default(now())
+
+  exchange     Exchange               @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  pair         Pair                   @relation(fields: [pairId], references: [id], onDelete: Cascade)
+  asBuyMarket  ArbitrageOpportunity[] @relation("buyMarket")
+  asSellMarket ArbitrageOpportunity[] @relation("sellMarket")
+
+  @@unique([exchangeId, venueSymbol])
+  @@unique([exchangeId, pairId])
+  @@index([pairId, status])
+  @@index([exchangeId, status])
+}
+
+enum ArbitrageKind {
+  CEX_CEX
+}
+
+/// One episode during which a spread stayed profitable, not a single moment
+/// A row opens when the fee-adjusted edge clears every threshold and closes when the edge falls back
+/// buyMarket quotes the lower ask and sellMarket quotes the higher bid
+model ArbitrageOpportunity {
+  createdAt DateTime @default(now())
+
+  id   BigInt        @id @default(autoincrement())
+  kind ArbitrageKind @default(CEX_CEX)
+
+  pairId       Int
+  buyMarketId  Int
+  sellMarketId Int
+
+  openedAt   DateTime
+  closedAt   DateTime
+  durationMs Int
+  /// Quote updates folded into this episode
+  samples    Int
+
+  openNetPpm Int
+  avgNetPpm  Int
+
+  peakAt      DateTime
+  peakNetPpm  Int
+  peakBuyAsk  Decimal  @db.Decimal(38, 18)
+  peakSellBid Decimal  @db.Decimal(38, 18)
+
+  /// The smaller of the two resting quantities at the top of both books
+  peakQty           Decimal  @db.Decimal(38, 18)
+  peakNotionalQuote Decimal  @db.Decimal(38, 18)
+  peakProfitQuote   Decimal  @db.Decimal(38, 18)
+  /// Null when the quote asset has no USD reference price
+  peakProfitUsd     Decimal? @db.Decimal(38, 18)
+
+  /// The rates actually used, recorded so the row survives a later fee change
+  buyTakerPpm  Int
+  sellTakerPpm Int
+
+  pair       Pair   @relation(fields: [pairId], references: [id])
+  buyMarket  Market @relation("buyMarket", fields: [buyMarketId], references: [id])
+  sellMarket Market @relation("sellMarket", fields: [sellMarketId], references: [id])
+
+  @@index([openedAt])
+  @@index([pairId, openedAt])
+  @@index([peakNetPpm])
+  @@index([buyMarketId, sellMarketId, openedAt])
 }
