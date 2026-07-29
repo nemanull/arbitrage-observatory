@@ -41,7 +41,7 @@ pnpm prisma:migrateDeploy # apply existing migrations
 pnpm prisma:studio        # browse the data
 ```
 
-The client is generated into `server/src/generated/` and is not committed.
+The client is generated into `server/src/db/generated/prisma/` and is committed with the server source.
 `pnpm install` regenerates it, so a fresh clone builds without extra steps.
 
 ## Run

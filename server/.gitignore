@@ -4,9 +4,6 @@
 /build
 *.tsbuildinfo
 
-# Prisma generates its client here, and postinstall regenerates it.
-/src/generated
-
 # Logs
 logs
 *.log
