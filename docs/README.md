@@ -6,12 +6,16 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 
 ## Plans (active)
 
-There are no active plans.
+- [`plans/2026-07-30-market-data-ingest-design.md`](./plans/2026-07-30-market-data-ingest-design.md) records why the live quote feed is built on `ws` rather than on CCXT Pro watch loops, with the instrument model held under review in its section 0.
+- [`plans/2026-07-30-market-data-ingest-plan.md`](./plans/2026-07-30-market-data-ingest-plan.md) breaks the quote feed into numbered tasks with the venue limits each one must respect, and is blocked at task 2 by that review.
+- [`plans/2026-07-31-instrument-index-design.md`](./plans/2026-07-31-instrument-index-design.md) answers that review with a group ordered dense id index, and shows the three step build that produces it.
 
 ## Research
 
 - [`research/2026-07-26-exchange-fees-comparison.md`](./research/2026-07-26-exchange-fees-comparison.md) compares the verified fee models and total arbitrage costs.
 - [`research/2026-07-26-exchange-websocket-comparison.md`](./research/2026-07-26-exchange-websocket-comparison.md) compares market data, subscriptions, recovery, and execution feeds.
+- [`research/2026-07-30-ccxt-ws-ingest-feasibility.md`](./research/2026-07-30-ccxt-ws-ingest-feasibility.md) audits CCXT 4.5.68 internals against the cost of streaming every perpetual swap.
+- [`research/2026-07-30-venue-ws-protocol-differences.md`](./research/2026-07-30-venue-ws-protocol-differences.md) enumerates the sixteen axes on which the five venue sockets differ, and which of them belong in a shared base class.
 
 ## Implemented
 
