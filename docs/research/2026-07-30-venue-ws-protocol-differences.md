@@ -301,23 +301,28 @@ Written once, identical on every venue.
 
 ## 13. Adapter surface
 
-The `Instrument` type used in the signatures below is on hold, per section 0 of [`../plans/2026-07-30-market-data-ingest-design.md`](../plans/2026-07-30-market-data-ingest-design.md).
+Note, 2026-08-01: the market data ingest design this section originally deferred to was never committed.
+The accepted storage design is the per-cluster index in `server/src/engine/types.ts`, recorded in [`../plans/2026-07-31-instrument-index-design.md`](../plans/2026-07-31-instrument-index-design.md) section 0.
 Nothing in this doc depends on its shape.
-Every adapter needs only a stable integer per tracked market and the venue's raw market id string.
-Read `Instrument[]` below as whatever type carries those two fields.
+Every adapter needs only the venue's raw market id string and where its quote lands.
+Read `Instrument[]` below as `Market[]` from `server/src/engine/types.ts`, resolved to a `Slot` at message time.
+
+Note, 2026-08-04: the members below shipped under different names, and frames are objects rather than strings so that `sign` can rewrite one before it is serialized.
+The accepted contract is `server/src/ws/ws.ts:18-24`, recorded in [`../plans/2026-08-03-websocket-feed-foundation-design.md`](../plans/2026-08-03-websocket-feed-foundation-design.md).
+The three axis split this section derives is unchanged.
 
 Three abstract members, because only three axes are behaviour.
 
 ```ts
-abstract endpoints(instruments: Instrument[]): Endpoint[];
-abstract subscribeFrames(instruments: Instrument[]): string[];
-abstract handleMessage(raw: Buffer, conn: Connection): void;
+abstract getAllEndpoints(markets: Market[]): EndpointPlan[];
+abstract getSubscribeFrames(markets: Market[]): object[];
+abstract handleMessages(raw: Buffer, connection: VenueConnection): void;
 ```
 
 Everything else is a record the shared engine reads.
 
 ```ts
-interface VenueSpec {
+type VenueSpec = {
   keepalive: {
     mode: 'server' | 'json' | 'text' | 'protocol';
     payload?: string;
@@ -375,11 +380,10 @@ These are the five ways a base class over these venues goes wrong.
 
 ## 15. Consequence for the design
 
-The adapter split recorded in section 3.3 of [`../plans/2026-07-30-market-data-ingest-design.md`](../plans/2026-07-30-market-data-ingest-design.md) holds against all sixteen axes.
-Three of them are behaviour and are already abstract there.
-Thirteen are data, and this doc supplies the values.
+The adapter split this document derives in sections 12 and 13, three behavioural members plus a data record, holds against all sixteen axes.
+The market data ingest design of 2026-07-30 that first recorded that split was never committed; sections 12 and 13 here are its surviving record until the WebSocket feed design doc replaces it.
 
-Two additions to that section are warranted and are not yet recorded in the design.
+Two additions to that split are warranted and are not yet recorded in a design.
 
 1. A control message hook, for OKX `notice` code `64008` and for Bybit `u` equal to 1.
    Both are in-band signals that change connection or instrument state rather than quote state.

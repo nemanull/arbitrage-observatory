@@ -1,8 +1,28 @@
 # Instrument index design
 
-Status: In progress.
-Date: 2026-07-31.
+Status: Accepted, with the 2026-08-01 amendment in section 0.
+Date: 2026-07-31. Amended 2026-08-01.
 
+## 0. Amendment, 2026-08-01
+
+The engine proceeds with the per-cluster representation in `server/src/engine/types.ts`, not the flat global columns this document specifies.
+Both layouts keep the properties that matter: quotes live in preallocated typed arrays mutated in place, resolution is one per-venue map lookup, and comparison is a bounded scan over contiguous floats.
+The per-cluster form was chosen because it is simpler to hold in the head: one `Cluster` object per pair owns its own parallel arrays, instead of one global id space with range fences.
+
+The translation between this document and the code:
+
+| this document | `server/src/engine/types.ts` |
+|---|---|
+| dense instrument id | a `Slot`, which is `{ cluster, i }` |
+| flat global columns indexed by id | per-cluster arrays (`bid`, `ask`, `recvTs`, `bidMul`, `askMul`) indexed by `i` |
+| `group[id]` and `groupStart` ranges | the `Cluster` object itself; its members are `0..markets.length` |
+| `symbolToId`, venue → raw symbol → id | `idBySymbol`, venue → raw symbol → `Slot` |
+| group scan over `groupStart[g]..groupStart[g+1]` | scan over one cluster's arrays |
+
+Decisions 3 to 10 carry over unchanged: the `base|settle` group key, the per-venue lookup map, fees baked into multipliers and applied before selection, linear contracts only, singleton groups dropped, staleness as a zero receive timestamp, and refresh as rebuild-and-swap.
+Decisions 1 and 2 are replaced by the table above: the private rebuildable identity is now a slot position inside its cluster, and member contiguity holds per cluster by construction rather than by id assignment order.
+Columns this document specifies that the code does not yet carry (`sizeMul`, `maxAgeMs`, and the quantity columns) are added to `Cluster` when their first consumer lands, not before.
+Sections 4, 5, and 7 should be read through the translation; the guards in section 8 and the acceptance criteria in section 11 apply as written, with `(cluster, i)` substituted for the dense id.
 
 ## 1. What this document is for
 
@@ -89,6 +109,12 @@ Everything below is the mechanics of it.
 10. **Refresh rebuilds the index into new arrays and swaps the reference.**
     Live quotes are carried across by matching the venue and the raw venue id.
     There is no in place mutation of the index, so a partially rebuilt index is never observable.
+
+    Replaced, 2026-08-04.
+    The index is now mutated in place and never reassigned, which is section 5 of [`./2026-08-03-websocket-feed-foundation-design.md`](./2026-08-03-websocket-feed-foundation-design.md).
+    The swap was rejected because it is invisible to anything already holding the index, so every holder needs either a hot path indirection or a rewiring step that exists only to serve the swap.
+    In place refresh is possible because the venue set is fixed for the life of the process, so every cluster is allocated at full venue width and no array ever has to grow.
+    Section 6 below is superseded by the same change.
 
 ## 4. The three step construction
 
@@ -279,17 +305,32 @@ Three lookups exist, and only the first one is a map.
 A Bybit message for `BTCUSDT` resolves like this.
 
 ```ts
-// Held on the feed instance, resolved once at construction.
-const ids = index.symbolToId.get('bybit')!;
+// Read through the index holder, never captured. See the correction below.
+const slot = this.index.idBySymbol.get(this.venueId)?.get(quote.rawMarketId);
+if (slot === undefined) { this.unknownSymbols++; return; }
 
-// Per message.
-const id = ids.get('BTCUSDT');
-if (id === undefined) { this.unknownSymbols++; return; }
-book.submit(id, bid, ask, bidQty, askQty, seq, now);
+const { cluster, i } = slot;
+cluster.bid[i] = quote.bid;
+cluster.ask[i] = quote.ask;
+cluster.recvTs[i] = quote.receivedAtMs;
 ```
 
-`submit` writes the quote columns and marks `group[id]` dirty.
-Its body is specified in section 3.4 of the design of record and is not restated here.
+Correction, 2026-08-04.
+This snippet previously resolved the per venue map once at feed construction and held it on the feed instance.
+That was safe only if the index is never replaced, and decision 10 as written replaced it on every refresh.
+A map captured at construction would then belong to the discarded index from the first refresh onward.
+The feed would write into arrays no comparator reads, and resolve every newly listed market as an unknown symbol, without throwing or logging.
+
+Decision 10 has since been replaced, and the index is now mutated in place and never reassigned.
+See section 5 of [`./2026-08-03-websocket-feed-foundation-design.md`](./2026-08-03-websocket-feed-foundation-design.md).
+The feed therefore holds the `ClusterIndex` itself, and the snippet above resolves through it on every message.
+
+The remaining difference from the original snippet is one extra map hit per message.
+Both hits allocate nothing, which is what decision 4 was protecting.
+That decision rejected a composite `venue|symbol` key because building it allocates a string per message, not because a second lookup is expensive.
+
+`submit` lives on `VenueFeed` at `server/src/ws/ws.ts:26-42`, and its contract is section 4 of [`./2026-08-03-websocket-feed-foundation-design.md`](./2026-08-03-websocket-feed-foundation-design.md).
+The quantity columns and the sequence guard in this snippet's original form are still deferred, per section 0.
 
 The comparator then reads the group as a range.
 
@@ -346,6 +387,11 @@ Five float64 values occupy 40 bytes, so a group fits inside one cache line on ev
 This is the body of task 11 of the plan, which the hold had left without a structure to iterate.
 
 ## 6. Refresh
+
+Superseded, 2026-08-04.
+Refresh mutates the index in place and never reassigns it, per the replacement recorded under decision 10.
+The quote carrying loop below exists only to move live quotes from a discarded index into a new one, and mutation disturbs no quote, so it is not needed.
+The section is kept as the record of the approach that was replaced.
 
 Because the dense id is private and rebuildable, refresh is a rebuild and a swap.
 

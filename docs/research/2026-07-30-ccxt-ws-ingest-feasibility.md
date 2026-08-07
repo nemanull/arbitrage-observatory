@@ -200,4 +200,5 @@ They are the cost of a general-purpose unified API.
 
 A dedicated ingest layer for one channel type is small, because the per-venue work is a subscribe frame builder and a single parse function.
 The venue schemas are already documented in [`profiles/`](../profiles/).
-The design that follows from this research is recorded in [`plans/2026-07-30-market-data-ingest-design.md`](../plans/2026-07-30-market-data-ingest-design.md).
+The design doc of 2026-07-30 that followed from this research was never committed.
+The storage half of the design is recorded in [`plans/2026-07-31-instrument-index-design.md`](../plans/2026-07-31-instrument-index-design.md), amended 2026-08-01 to the per-cluster form in `server/src/engine/types.ts`; the feed half lives in the forthcoming WebSocket feed design doc.

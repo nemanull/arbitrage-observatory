@@ -6,9 +6,14 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 
 ## Plans (active)
 
-- [`plans/2026-07-30-market-data-ingest-design.md`](./plans/2026-07-30-market-data-ingest-design.md) records why the live quote feed is built on `ws` rather than on CCXT Pro watch loops, with the instrument model held under review in its section 0.
-- [`plans/2026-07-30-market-data-ingest-plan.md`](./plans/2026-07-30-market-data-ingest-plan.md) breaks the quote feed into numbered tasks with the venue limits each one must respect, and is blocked at task 2 by that review.
-- [`plans/2026-07-31-instrument-index-design.md`](./plans/2026-07-31-instrument-index-design.md) answers that review with a group ordered dense id index, and shows the three step build that produces it.
+- [`plans/2026-07-31-instrument-index-design.md`](./plans/2026-07-31-instrument-index-design.md) records the accepted quote storage design.
+  Its 2026-08-01 amendment in section 0 fixes the runtime representation to the per-cluster form in `server/src/engine/types.ts`.
+  Its 2026-08-04 change replaces decision 10, so refresh mutates the index in place instead of rebuilding and swapping it, and section 6 is superseded.
+- [`plans/2026-08-03-websocket-feed-foundation-design.md`](./plans/2026-08-03-websocket-feed-foundation-design.md) defines the `VenueFeed` contract, its three venue-specific members, and how `submit` writes a normalized quote into the cluster index.
+  Section 7 lists the connection lifecycle work that is deferred, with the field or research section that already specifies each item.
+
+A market data ingest design and plan dated 2026-07-30 are referenced by the research docs below but were never committed.
+The full connection lifecycle plan remains forthcoming.
 
 ## Research
 
