@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { Cluster, ClusterIndex, VenueIndexMap } from './types';
+import type { ClusterIndex, VenueIndexMap } from './types';
 import { OpportunityManager } from './OpportunityManager';
 
 

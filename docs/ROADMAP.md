@@ -7,6 +7,9 @@
 - [x] Create this repo. Set up the server, docs, agents, and raw frontend.
 - [x] Do research on major exchanges.
 - [x] Add Prisma, BullMQ, and Redis. Set up all of the infrastructure.
-- [ ] Define a clean core. Build a job-handling system, types, a WebSocket connection, and shared packages.
-- [ ] Define what kind of data we will store and why. Write it down.
-- [ ] Make the server calculate potential arbitrage windows for Binance, Bybit, OKX, Coinbase, and Kraken.
+
+# Stage 2 
+
+- [x] Create core project types
+- [x] Create cluster builder
+- [x] Set up a simple engine and an opportunity manager

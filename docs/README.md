@@ -6,16 +6,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 
 ## Plans (active)
 
-- [`plans/2026-08-14-comment-free-typescript-plan.md`](./plans/2026-08-14-comment-free-typescript-plan.md) defines the policy, cleanup, and verification steps for comment-free handwritten TypeScript.
-- [`plans/2026-08-14-comment-free-typescript-design.md`](./plans/2026-08-14-comment-free-typescript-design.md) defines the policy and cleanup boundary for comment-free handwritten TypeScript.
-- [`plans/2026-07-31-instrument-index-design.md`](./plans/2026-07-31-instrument-index-design.md) records the accepted quote storage design.
-  Its 2026-08-01 amendment in section 0 fixes the runtime representation to the per-cluster form in `server/src/engine/types.ts`.
-  Its 2026-08-04 change replaces decision 10, so refresh mutates the index in place instead of rebuilding and swapping it, and section 6 is superseded.
-- [`plans/2026-08-03-websocket-feed-foundation-design.md`](./plans/2026-08-03-websocket-feed-foundation-design.md) defines the `VenueFeed` contract, its three venue-specific members, and how `submit` writes a normalized quote into the cluster index.
-  Section 7 lists the connection lifecycle work that is deferred, with the field or research section that already specifies each item.
-
-A market data ingest design and plan dated 2026-07-30 are referenced by the research docs below but were never committed.
-The full connection lifecycle plan remains forthcoming.
+- [`plans/2026-07-26-exchange-profiles-plan.md`](./plans/2026-07-26-exchange-profiles-plan.md) specifies the research tasks used to produce the exchange profiles and comparisons.
 
 ## Research
 
@@ -27,13 +18,11 @@ The full connection lifecycle plan remains forthcoming.
 ## Implemented
 
 - [`implemented/2026-07-26-exchange-profiles-design.md`](./implemented/2026-07-26-exchange-profiles-design.md) records the reconciled design for the fee and WebSocket research package.
-- [`implemented/2026-07-26-exchange-profiles-plan.md`](./implemented/2026-07-26-exchange-profiles-plan.md) records the completed research and verification tasks for the exchange profiles.
-- [`implemented/2026-07-28-exchange-seed-design.md`](./implemented/2026-07-28-exchange-seed-design.md) records why exchange reference data ships inside a migration and which fee tier it carries.
-- [`implemented/2026-07-28-exchange-seed-plan.md`](./implemented/2026-07-28-exchange-seed-plan.md) records every seeded connection setting and fee class with the profile line it came from.
 
 ## Reference
 
 - [`ROADMAP.md`](./ROADMAP.md) tracks the planned project stages.
+- [`WIKI.md`](./WIKI.md) defines the current market cluster and arbitrage opportunity terminology.
 - [`profiles/binance/fees.md`](./profiles/binance/fees.md) records Binance fees by entity, product, account tier, and service.
 - [`profiles/binance/websocket.md`](./profiles/binance/websocket.md) records Binance WebSocket endpoints, channels, schemas, and recovery rules.
 - [`profiles/bybit/fees.md`](./profiles/bybit/fees.md) records Bybit fees by entity, product, account tier, and service.

@@ -17,7 +17,7 @@ export type Market = {
 // Every array is one slot per venue, so a cluster never has to grow. readonly forbids replacing an array, not writing into one.
 export type Cluster = {
   readonly pair: string; // 'BTC|USDT'
-  readonly markets: (Market | null)[]; // who occupies each slot
+  readonly markets: (Market | null)[]; 
   readonly bidMul: Float64Array; // Bid multiplier: 1 - taker fee
   readonly askMul: Float64Array; // Ask multiplier: 1 + taker fee
   readonly bid: Float64Array; 
@@ -34,10 +34,10 @@ export type ClusterIndex = {
 export type ClusterByRawMarketId = Map<string, Map<string, Cluster>>; // <binance, <BTCUSDT, Cluster>> We use it to understand which cluster a market belongs to 
 export type VenueIndexMap = Map<string, number>; // <"binance", 0> index 
 
-
+// netPpm, highestBid, lowestAsk are all after fee adjustments. An output of a runtime validation
 export type Opportunity = {
   netPpm: number;
-  highestBid: number;
+  highestBid: number; 
   lowestAsk: number;
   highestBidMarket: Market; 
   lowestAskMarket: Market; 
