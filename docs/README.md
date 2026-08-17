@@ -6,6 +6,8 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 
 ## Plans (active)
 
+- [`plans/2026-08-14-comment-free-typescript-plan.md`](./plans/2026-08-14-comment-free-typescript-plan.md) defines the policy, cleanup, and verification steps for comment-free handwritten TypeScript.
+- [`plans/2026-08-14-comment-free-typescript-design.md`](./plans/2026-08-14-comment-free-typescript-design.md) defines the policy and cleanup boundary for comment-free handwritten TypeScript.
 - [`plans/2026-07-31-instrument-index-design.md`](./plans/2026-07-31-instrument-index-design.md) records the accepted quote storage design.
   Its 2026-08-01 amendment in section 0 fixes the runtime representation to the per-cluster form in `server/src/engine/types.ts`.
   Its 2026-08-04 change replaces decision 10, so refresh mutates the index in place instead of rebuilding and swapping it, and section 6 is superseded.
