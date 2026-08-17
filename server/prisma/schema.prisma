@@ -6,7 +6,7 @@ generator client {
   provider = "prisma-client"
 
   // Must sit under the build rootDir, which is src.
-  output = "../src/generated/prisma"
+  output = "../src/db/generated/prisma"
 
   // The server is CommonJS, and this generator emits ESM by default.
   moduleFormat = "cjs"

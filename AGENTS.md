@@ -8,16 +8,18 @@ Read that file before creating, editing, moving, or indexing anything under [`do
 
 ## 1. Comments and documentation
 
-Comments are important and should be written.
-Comments must never be insanely huge.
-Inline comments must not contain examples.
+Comments are optional.
+Write a comment only when it explains intent, an invariant, a tradeoff, or behavior that is not evident from the code.
+Do not add comments that restate a declaration, field, type, function name, or the next line of code.
+Do not put a separate JSDoc block above every member of an interface or type.
+Prefer a short trailing comment when a field needs a brief explanation.
+Trailing comments may use fragments and examples.
+Prefer clear names and simple code over explanatory narration.
+Keep comments short.
 
-Every function requires a JSDoc block (RustDoc for Rust) that helps AI agents understand intent and usage.
-For public functions, the JSDoc must include a usage example.
-When editing existing code, if you see a function without documentation, add it.
-
-Exception: small and self-explanatory functions do not need JSDoc.
-A short `//` comment is enough for them, or no comment at all if the name says everything.
+Use JSDoc or RustDoc when a public API has a non-obvious contract or usage constraint.
+Add a usage example only when it materially clarifies that contract.
+Do not add documentation to unrelated functions while making a focused change.
 
 ## 2. Prose style in comments and docs
 

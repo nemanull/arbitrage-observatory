@@ -42,6 +42,19 @@
         "!typescript-ls",
         "..."
       ],
+      "formatter": {
+        "external": {
+          "command": "pnpm",
+          "arguments": [
+            "--filter",
+            "server",
+            "exec",
+            "prettier",
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
+        }
+      },
       "format_on_save": "on"
     },
     "TSX": {
@@ -52,6 +65,19 @@
         "!tailwindcss-language-server",
         "..."
       ],
+      "formatter": {
+        "external": {
+          "command": "pnpm",
+          "arguments": [
+            "--filter",
+            "server",
+            "exec",
+            "prettier",
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
+        }
+      },
       "format_on_save": "on"
     },
     // Nothing in this repo uses Tailwind, so its server has no config to read.

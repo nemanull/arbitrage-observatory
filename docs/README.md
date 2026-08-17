@@ -6,12 +6,23 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 
 ## Plans (active)
 
-There are no active plans.
+- [`plans/2026-08-14-comment-free-typescript-plan.md`](./plans/2026-08-14-comment-free-typescript-plan.md) defines the policy, cleanup, and verification steps for comment-free handwritten TypeScript.
+- [`plans/2026-08-14-comment-free-typescript-design.md`](./plans/2026-08-14-comment-free-typescript-design.md) defines the policy and cleanup boundary for comment-free handwritten TypeScript.
+- [`plans/2026-07-31-instrument-index-design.md`](./plans/2026-07-31-instrument-index-design.md) records the accepted quote storage design.
+  Its 2026-08-01 amendment in section 0 fixes the runtime representation to the per-cluster form in `server/src/engine/types.ts`.
+  Its 2026-08-04 change replaces decision 10, so refresh mutates the index in place instead of rebuilding and swapping it, and section 6 is superseded.
+- [`plans/2026-08-03-websocket-feed-foundation-design.md`](./plans/2026-08-03-websocket-feed-foundation-design.md) defines the `VenueFeed` contract, its three venue-specific members, and how `submit` writes a normalized quote into the cluster index.
+  Section 7 lists the connection lifecycle work that is deferred, with the field or research section that already specifies each item.
+
+A market data ingest design and plan dated 2026-07-30 are referenced by the research docs below but were never committed.
+The full connection lifecycle plan remains forthcoming.
 
 ## Research
 
 - [`research/2026-07-26-exchange-fees-comparison.md`](./research/2026-07-26-exchange-fees-comparison.md) compares the verified fee models and total arbitrage costs.
 - [`research/2026-07-26-exchange-websocket-comparison.md`](./research/2026-07-26-exchange-websocket-comparison.md) compares market data, subscriptions, recovery, and execution feeds.
+- [`research/2026-07-30-ccxt-ws-ingest-feasibility.md`](./research/2026-07-30-ccxt-ws-ingest-feasibility.md) audits CCXT 4.5.68 internals against the cost of streaming every perpetual swap.
+- [`research/2026-07-30-venue-ws-protocol-differences.md`](./research/2026-07-30-venue-ws-protocol-differences.md) enumerates the sixteen axes on which the five venue sockets differ, and which of them belong in a shared base class.
 
 ## Implemented
 
