@@ -1,3 +1,7 @@
+
+export type PairKey = string;   // "BTC|USDT"
+type RouteKey = string;  // "bybit-binance": the venue we sell on, then the venue we buy on
+
 export type Venue = {
   id: string; // 'binance',
   name: string; // 'Binance'
@@ -16,7 +20,7 @@ export type Market = {
 // A Cluster is a set of markets that trade the same asset on different exchanges with the same base and settlement currency.
 // Every array is one slot per venue, so a cluster never has to grow. readonly forbids replacing an array, not writing into one.
 export type Cluster = {
-  readonly pair: string; // 'BTC|USDT'
+  readonly pair: PairKey; // 'BTC|USDT'
   readonly markets: (Market | null)[]; 
   readonly bidMul: Float64Array; // Bid multiplier: 1 - taker fee
   readonly askMul: Float64Array; // Ask multiplier: 1 + taker fee
@@ -36,9 +40,48 @@ export type VenueIndexMap = Map<string, number>; // <"binance", 0> index
 
 // netPpm, highestBid, lowestAsk are all after fee adjustments. An output of a runtime validation
 export type Opportunity = {
-  netPpm: number;
-  highestBid: number; 
-  lowestAsk: number;
-  highestBidMarket: Market; 
-  lowestAskMarket: Market; 
+  highestBidMarket: Market;
+  lowestAskMarket: Market;
+
+  // positions of the venues in the cluster
+  highestBidVenueIndex: number;
+  lowestAskVenueIndex: number;
+
+  // open snapshot
+  openedAt: number;
+  netPpmAtOpen: number;
+  highestBidAtOpen: number;
+  lowestAskAtOpen: number;
+
+  // O(1), every tick, never sampled away
+  ticksSinceStart: number;
+  netPpmSum: number;
+  peakNetPpm: number;
+  peakAt: number;
+  peakHighestBid: number;
+  peakLowestAsk: number;
+  lastSeenAt: number;
+
+  netPpmSeries: number[];
+  highestBidSeries: number[];
+  lowestAskSeries: number[];
+  sampleTs: number[]; // ms since openedAt, one per sample
+  
+  closedAt: number | null;
 };
+
+
+// One fee-adjusted reading of a single route.
+export type Observation = {
+  cluster: Cluster;
+  highestBidMarket: Market;
+  lowestAskMarket: Market;
+  highestBidVenueIndex: number;
+  lowestAskVenueIndex: number;
+  highestBid: number;
+  lowestAsk: number;
+  netPpm: number;
+  now: number;
+};
+
+export type ActiveOpportunityMap = Map<PairKey, Map<RouteKey, Opportunity>>; // <"BTC|USDT", <"bybit-binance", Opportunity>>

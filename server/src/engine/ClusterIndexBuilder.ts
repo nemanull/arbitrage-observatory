@@ -5,6 +5,7 @@ import {
   ClusterByRawMarketId,
   VenueIndexMap,
   Venue,
+  PairKey,
 } from './types';
 import { Logger } from '@nestjs/common';
 
@@ -40,7 +41,7 @@ export class ClusterIndexBuilder {
     );
   }
 
-  createCluster(pair: string, _markets: Market[]): Cluster | null {
+  createCluster(pair: PairKey, _markets: Market[]): Cluster | null {
     if (_markets.length == 0) {
       this.logger.warn(
         `An empty array of markets was provided to create a cluster`,
@@ -98,7 +99,7 @@ export class ClusterIndexBuilder {
     return c;
   }
 
-  createClusters(allPairs: Map<string, Market[]>): Cluster[] {
+  createClusters(allPairs: Map<PairKey, Market[]>): Cluster[] {
     const clusters: Cluster[] = [];
 
     for (const pair of allPairs.keys()) {
@@ -129,8 +130,8 @@ export class ClusterIndexBuilder {
     };
   }
 
-  private getPairMarkets(): Map<string, Market[]> {
-    const pairs = new Map<string, Market[]>();
+  private getPairMarkets(): Map<PairKey, Market[]> {
+    const pairs = new Map<PairKey, Market[]>();
 
     for (const v of this.venues) {
       for (const m of v.markets) {
@@ -179,11 +180,11 @@ export class ClusterIndexBuilder {
     return pairs;
   }
 
-  getPairFromRaw(base: string, quote: string): string {
+  getPairFromRaw(base: string, quote: string): PairKey {
     return `${base}|${quote}`;
   }
 
-  separatePairIntoRaw(pair: string): { base: string; quote: string } {
+  separatePairIntoRaw(pair: PairKey): { base: string; quote: string } {
     return { base: pair.split('|')[0], quote: pair.split('|')[1] };
   }
 

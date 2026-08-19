@@ -13,3 +13,8 @@
 - [x] Create core project types
 - [x] Create cluster builder
 - [x] Set up a simple engine and an opportunity manager
+
+# Stage 3
+
+- [X] Define and implement opportunity monitoring and saving
+- [ ] Implement ws and it's integration for Binance
