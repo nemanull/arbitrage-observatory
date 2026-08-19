@@ -1,6 +1,8 @@
 import { Logger } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 import type { ClusterIndex, PairKey, VenueIndexMap } from './types';
 import { OpportunityManager } from './OpportunityManager';
+import type { OpportunityClosedJob } from './OpportunityWorker';
 
 
 type SingleMarketClusterQuote = {
@@ -36,10 +38,14 @@ export class Engine {
   private readonly opportunityManager: OpportunityManager;
   private readonly invalidQuoteWarnStates = new Map<string, InvalidQuoteWarnState>();
 
-  constructor(clusterIndex: ClusterIndex, venueIndexMap: VenueIndexMap) {
+  constructor(
+    clusterIndex: ClusterIndex,
+    venueIndexMap: VenueIndexMap,
+    queue?: Queue<OpportunityClosedJob>,
+  ) {
     this.ClusterIndex = clusterIndex;
     this.venueIndexMap = venueIndexMap;
-    this.opportunityManager = new OpportunityManager();
+    this.opportunityManager = new OpportunityManager(queue);
   }
 
   

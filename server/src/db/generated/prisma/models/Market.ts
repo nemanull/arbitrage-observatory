@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Market
- * 
+ * One venue's listing of one pair, and the row Market in src/engine/types.ts is built from
  */
 export type MarketModel = runtime.Types.Result.DefaultSelection<Prisma.$MarketPayload>
 
@@ -28,130 +28,114 @@ export type AggregateMarket = {
 
 export type MarketAvgAggregateOutputType = {
   id: number | null
-  exchangeId: number | null
+  venueId: number | null
   pairId: number | null
-  tickSize: runtime.Decimal | null
-  qtyStep: runtime.Decimal | null
-  minNotional: runtime.Decimal | null
+  makerPpm: number | null
+  takerPpm: number | null
 }
 
 export type MarketSumAggregateOutputType = {
   id: number | null
-  exchangeId: number | null
+  venueId: number | null
   pairId: number | null
-  tickSize: runtime.Decimal | null
-  qtyStep: runtime.Decimal | null
-  minNotional: runtime.Decimal | null
+  makerPpm: number | null
+  takerPpm: number | null
 }
 
 export type MarketMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   id: number | null
-  exchangeId: number | null
+  venueId: number | null
   pairId: number | null
-  venueSymbol: string | null
-  status: $Enums.MarketStatus | null
-  feeClass: string | null
-  tickSize: runtime.Decimal | null
-  qtyStep: runtime.Decimal | null
-  minNotional: runtime.Decimal | null
-  lastSeenAt: Date | null
+  rawMarketId: string | null
+  linear: boolean | null
+  makerPpm: number | null
+  takerPpm: number | null
+  active: boolean | null
 }
 
 export type MarketMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   id: number | null
-  exchangeId: number | null
+  venueId: number | null
   pairId: number | null
-  venueSymbol: string | null
-  status: $Enums.MarketStatus | null
-  feeClass: string | null
-  tickSize: runtime.Decimal | null
-  qtyStep: runtime.Decimal | null
-  minNotional: runtime.Decimal | null
-  lastSeenAt: Date | null
+  rawMarketId: string | null
+  linear: boolean | null
+  makerPpm: number | null
+  takerPpm: number | null
+  active: boolean | null
 }
 
 export type MarketCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   id: number
-  exchangeId: number
+  venueId: number
   pairId: number
-  venueSymbol: number
-  status: number
-  feeClass: number
-  tickSize: number
-  qtyStep: number
-  minNotional: number
-  lastSeenAt: number
+  rawMarketId: number
+  linear: number
+  makerPpm: number
+  takerPpm: number
+  active: number
   _all: number
 }
 
 
 export type MarketAvgAggregateInputType = {
   id?: true
-  exchangeId?: true
+  venueId?: true
   pairId?: true
-  tickSize?: true
-  qtyStep?: true
-  minNotional?: true
+  makerPpm?: true
+  takerPpm?: true
 }
 
 export type MarketSumAggregateInputType = {
   id?: true
-  exchangeId?: true
+  venueId?: true
   pairId?: true
-  tickSize?: true
-  qtyStep?: true
-  minNotional?: true
+  makerPpm?: true
+  takerPpm?: true
 }
 
 export type MarketMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   id?: true
-  exchangeId?: true
+  venueId?: true
   pairId?: true
-  venueSymbol?: true
-  status?: true
-  feeClass?: true
-  tickSize?: true
-  qtyStep?: true
-  minNotional?: true
-  lastSeenAt?: true
+  rawMarketId?: true
+  linear?: true
+  makerPpm?: true
+  takerPpm?: true
+  active?: true
 }
 
 export type MarketMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   id?: true
-  exchangeId?: true
+  venueId?: true
   pairId?: true
-  venueSymbol?: true
-  status?: true
-  feeClass?: true
-  tickSize?: true
-  qtyStep?: true
-  minNotional?: true
-  lastSeenAt?: true
+  rawMarketId?: true
+  linear?: true
+  makerPpm?: true
+  takerPpm?: true
+  active?: true
 }
 
 export type MarketCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   id?: true
-  exchangeId?: true
+  venueId?: true
   pairId?: true
-  venueSymbol?: true
-  status?: true
-  feeClass?: true
-  tickSize?: true
-  qtyStep?: true
-  minNotional?: true
-  lastSeenAt?: true
+  rawMarketId?: true
+  linear?: true
+  makerPpm?: true
+  takerPpm?: true
+  active?: true
   _all?: true
 }
 
@@ -245,15 +229,13 @@ export type MarketGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   id: number
-  exchangeId: number
+  venueId: number
   pairId: number
-  venueSymbol: string
-  status: $Enums.MarketStatus
-  feeClass: string
-  tickSize: runtime.Decimal | null
-  qtyStep: runtime.Decimal | null
-  minNotional: runtime.Decimal | null
-  lastSeenAt: Date
+  rawMarketId: string
+  linear: boolean
+  makerPpm: number
+  takerPpm: number
+  active: boolean
   _count: MarketCountAggregateOutputType | null
   _avg: MarketAvgAggregateOutputType | null
   _sum: MarketSumAggregateOutputType | null
@@ -283,77 +265,63 @@ export type MarketWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Market"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Market"> | Date | string
   id?: Prisma.IntFilter<"Market"> | number
-  exchangeId?: Prisma.IntFilter<"Market"> | number
+  venueId?: Prisma.IntFilter<"Market"> | number
   pairId?: Prisma.IntFilter<"Market"> | number
-  venueSymbol?: Prisma.StringFilter<"Market"> | string
-  status?: Prisma.EnumMarketStatusFilter<"Market"> | $Enums.MarketStatus
-  feeClass?: Prisma.StringFilter<"Market"> | string
-  tickSize?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFilter<"Market"> | Date | string
-  exchange?: Prisma.XOR<Prisma.ExchangeScalarRelationFilter, Prisma.ExchangeWhereInput>
+  rawMarketId?: Prisma.StringFilter<"Market"> | string
+  linear?: Prisma.BoolFilter<"Market"> | boolean
+  makerPpm?: Prisma.IntFilter<"Market"> | number
+  takerPpm?: Prisma.IntFilter<"Market"> | number
+  active?: Prisma.BoolFilter<"Market"> | boolean
+  venue?: Prisma.XOR<Prisma.VenueScalarRelationFilter, Prisma.VenueWhereInput>
   pair?: Prisma.XOR<Prisma.PairScalarRelationFilter, Prisma.PairWhereInput>
-  asBuyMarket?: Prisma.ArbitrageOpportunityListRelationFilter
-  asSellMarket?: Prisma.ArbitrageOpportunityListRelationFilter
 }
 
 export type MarketOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  venueSymbol?: Prisma.SortOrder
-  status?: Prisma.SortOrder
-  feeClass?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrderInput | Prisma.SortOrder
-  qtyStep?: Prisma.SortOrderInput | Prisma.SortOrder
-  minNotional?: Prisma.SortOrderInput | Prisma.SortOrder
-  lastSeenAt?: Prisma.SortOrder
-  exchange?: Prisma.ExchangeOrderByWithRelationInput
+  rawMarketId?: Prisma.SortOrder
+  linear?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
+  active?: Prisma.SortOrder
+  venue?: Prisma.VenueOrderByWithRelationInput
   pair?: Prisma.PairOrderByWithRelationInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityOrderByRelationAggregateInput
-  asSellMarket?: Prisma.ArbitrageOpportunityOrderByRelationAggregateInput
 }
 
 export type MarketWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  exchangeId_venueSymbol?: Prisma.MarketExchangeIdVenueSymbolCompoundUniqueInput
-  exchangeId_pairId?: Prisma.MarketExchangeIdPairIdCompoundUniqueInput
+  venueId_rawMarketId?: Prisma.MarketVenueIdRawMarketIdCompoundUniqueInput
+  venueId_pairId?: Prisma.MarketVenueIdPairIdCompoundUniqueInput
   AND?: Prisma.MarketWhereInput | Prisma.MarketWhereInput[]
   OR?: Prisma.MarketWhereInput[]
   NOT?: Prisma.MarketWhereInput | Prisma.MarketWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"Market"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Market"> | Date | string
-  exchangeId?: Prisma.IntFilter<"Market"> | number
+  venueId?: Prisma.IntFilter<"Market"> | number
   pairId?: Prisma.IntFilter<"Market"> | number
-  venueSymbol?: Prisma.StringFilter<"Market"> | string
-  status?: Prisma.EnumMarketStatusFilter<"Market"> | $Enums.MarketStatus
-  feeClass?: Prisma.StringFilter<"Market"> | string
-  tickSize?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFilter<"Market"> | Date | string
-  exchange?: Prisma.XOR<Prisma.ExchangeScalarRelationFilter, Prisma.ExchangeWhereInput>
+  rawMarketId?: Prisma.StringFilter<"Market"> | string
+  linear?: Prisma.BoolFilter<"Market"> | boolean
+  makerPpm?: Prisma.IntFilter<"Market"> | number
+  takerPpm?: Prisma.IntFilter<"Market"> | number
+  active?: Prisma.BoolFilter<"Market"> | boolean
+  venue?: Prisma.XOR<Prisma.VenueScalarRelationFilter, Prisma.VenueWhereInput>
   pair?: Prisma.XOR<Prisma.PairScalarRelationFilter, Prisma.PairWhereInput>
-  asBuyMarket?: Prisma.ArbitrageOpportunityListRelationFilter
-  asSellMarket?: Prisma.ArbitrageOpportunityListRelationFilter
-}, "id" | "exchangeId_venueSymbol" | "exchangeId_pairId">
+}, "id" | "venueId_rawMarketId" | "venueId_pairId">
 
 export type MarketOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  venueSymbol?: Prisma.SortOrder
-  status?: Prisma.SortOrder
-  feeClass?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrderInput | Prisma.SortOrder
-  qtyStep?: Prisma.SortOrderInput | Prisma.SortOrder
-  minNotional?: Prisma.SortOrderInput | Prisma.SortOrder
-  lastSeenAt?: Prisma.SortOrder
+  rawMarketId?: Prisma.SortOrder
+  linear?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
+  active?: Prisma.SortOrder
   _count?: Prisma.MarketCountOrderByAggregateInput
   _avg?: Prisma.MarketAvgOrderByAggregateInput
   _max?: Prisma.MarketMaxOrderByAggregateInput
@@ -368,123 +336,99 @@ export type MarketScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Market"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Market"> | Date | string
   id?: Prisma.IntWithAggregatesFilter<"Market"> | number
-  exchangeId?: Prisma.IntWithAggregatesFilter<"Market"> | number
+  venueId?: Prisma.IntWithAggregatesFilter<"Market"> | number
   pairId?: Prisma.IntWithAggregatesFilter<"Market"> | number
-  venueSymbol?: Prisma.StringWithAggregatesFilter<"Market"> | string
-  status?: Prisma.EnumMarketStatusWithAggregatesFilter<"Market"> | $Enums.MarketStatus
-  feeClass?: Prisma.StringWithAggregatesFilter<"Market"> | string
-  tickSize?: Prisma.DecimalNullableWithAggregatesFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.DecimalNullableWithAggregatesFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.DecimalNullableWithAggregatesFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeWithAggregatesFilter<"Market"> | Date | string
+  rawMarketId?: Prisma.StringWithAggregatesFilter<"Market"> | string
+  linear?: Prisma.BoolWithAggregatesFilter<"Market"> | boolean
+  makerPpm?: Prisma.IntWithAggregatesFilter<"Market"> | number
+  takerPpm?: Prisma.IntWithAggregatesFilter<"Market"> | number
+  active?: Prisma.BoolWithAggregatesFilter<"Market"> | boolean
 }
 
 export type MarketCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  exchange: Prisma.ExchangeCreateNestedOneWithoutMarketsInput
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
+  venue: Prisma.VenueCreateNestedOneWithoutMarketsInput
   pair: Prisma.PairCreateNestedOneWithoutMarketsInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutBuyMarketInput
-  asSellMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutSellMarketInput
 }
 
 export type MarketUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   id?: number
-  exchangeId: number
+  venueId: number
   pairId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutBuyMarketInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutSellMarketInput
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
 }
 
 export type MarketUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  exchange?: Prisma.ExchangeUpdateOneRequiredWithoutMarketsNestedInput
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  venue?: Prisma.VenueUpdateOneRequiredWithoutMarketsNestedInput
   pair?: Prisma.PairUpdateOneRequiredWithoutMarketsNestedInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutBuyMarketNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutSellMarketNestedInput
 }
 
 export type MarketUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  exchangeId?: Prisma.IntFieldUpdateOperationsInput | number
+  venueId?: Prisma.IntFieldUpdateOperationsInput | number
   pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketNestedInput
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MarketCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   id?: number
-  exchangeId: number
+  venueId: number
   pairId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
 }
 
 export type MarketUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MarketUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  exchangeId?: Prisma.IntFieldUpdateOperationsInput | number
+  venueId?: Prisma.IntFieldUpdateOperationsInput | number
   pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MarketListRelationFilter = {
@@ -497,13 +441,13 @@ export type MarketOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type MarketExchangeIdVenueSymbolCompoundUniqueInput = {
-  exchangeId: number
-  venueSymbol: string
+export type MarketVenueIdRawMarketIdCompoundUniqueInput = {
+  venueId: number
+  rawMarketId: string
 }
 
-export type MarketExchangeIdPairIdCompoundUniqueInput = {
-  exchangeId: number
+export type MarketVenueIdPairIdCompoundUniqueInput = {
+  venueId: number
   pairId: number
 }
 
@@ -511,109 +455,96 @@ export type MarketCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  venueSymbol?: Prisma.SortOrder
-  status?: Prisma.SortOrder
-  feeClass?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrder
-  qtyStep?: Prisma.SortOrder
-  minNotional?: Prisma.SortOrder
-  lastSeenAt?: Prisma.SortOrder
+  rawMarketId?: Prisma.SortOrder
+  linear?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
+  active?: Prisma.SortOrder
 }
 
 export type MarketAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrder
-  qtyStep?: Prisma.SortOrder
-  minNotional?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
 }
 
 export type MarketMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  venueSymbol?: Prisma.SortOrder
-  status?: Prisma.SortOrder
-  feeClass?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrder
-  qtyStep?: Prisma.SortOrder
-  minNotional?: Prisma.SortOrder
-  lastSeenAt?: Prisma.SortOrder
+  rawMarketId?: Prisma.SortOrder
+  linear?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
+  active?: Prisma.SortOrder
 }
 
 export type MarketMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  venueSymbol?: Prisma.SortOrder
-  status?: Prisma.SortOrder
-  feeClass?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrder
-  qtyStep?: Prisma.SortOrder
-  minNotional?: Prisma.SortOrder
-  lastSeenAt?: Prisma.SortOrder
+  rawMarketId?: Prisma.SortOrder
+  linear?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
+  active?: Prisma.SortOrder
 }
 
 export type MarketSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  exchangeId?: Prisma.SortOrder
+  venueId?: Prisma.SortOrder
   pairId?: Prisma.SortOrder
-  tickSize?: Prisma.SortOrder
-  qtyStep?: Prisma.SortOrder
-  minNotional?: Prisma.SortOrder
+  makerPpm?: Prisma.SortOrder
+  takerPpm?: Prisma.SortOrder
 }
 
-export type MarketScalarRelationFilter = {
-  is?: Prisma.MarketWhereInput
-  isNot?: Prisma.MarketWhereInput
-}
-
-export type MarketCreateNestedManyWithoutExchangeInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutExchangeInput, Prisma.MarketUncheckedCreateWithoutExchangeInput> | Prisma.MarketCreateWithoutExchangeInput[] | Prisma.MarketUncheckedCreateWithoutExchangeInput[]
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutExchangeInput | Prisma.MarketCreateOrConnectWithoutExchangeInput[]
-  createMany?: Prisma.MarketCreateManyExchangeInputEnvelope
+export type MarketCreateNestedManyWithoutVenueInput = {
+  create?: Prisma.XOR<Prisma.MarketCreateWithoutVenueInput, Prisma.MarketUncheckedCreateWithoutVenueInput> | Prisma.MarketCreateWithoutVenueInput[] | Prisma.MarketUncheckedCreateWithoutVenueInput[]
+  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutVenueInput | Prisma.MarketCreateOrConnectWithoutVenueInput[]
+  createMany?: Prisma.MarketCreateManyVenueInputEnvelope
   connect?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
 }
 
-export type MarketUncheckedCreateNestedManyWithoutExchangeInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutExchangeInput, Prisma.MarketUncheckedCreateWithoutExchangeInput> | Prisma.MarketCreateWithoutExchangeInput[] | Prisma.MarketUncheckedCreateWithoutExchangeInput[]
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutExchangeInput | Prisma.MarketCreateOrConnectWithoutExchangeInput[]
-  createMany?: Prisma.MarketCreateManyExchangeInputEnvelope
+export type MarketUncheckedCreateNestedManyWithoutVenueInput = {
+  create?: Prisma.XOR<Prisma.MarketCreateWithoutVenueInput, Prisma.MarketUncheckedCreateWithoutVenueInput> | Prisma.MarketCreateWithoutVenueInput[] | Prisma.MarketUncheckedCreateWithoutVenueInput[]
+  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutVenueInput | Prisma.MarketCreateOrConnectWithoutVenueInput[]
+  createMany?: Prisma.MarketCreateManyVenueInputEnvelope
   connect?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
 }
 
-export type MarketUpdateManyWithoutExchangeNestedInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutExchangeInput, Prisma.MarketUncheckedCreateWithoutExchangeInput> | Prisma.MarketCreateWithoutExchangeInput[] | Prisma.MarketUncheckedCreateWithoutExchangeInput[]
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutExchangeInput | Prisma.MarketCreateOrConnectWithoutExchangeInput[]
-  upsert?: Prisma.MarketUpsertWithWhereUniqueWithoutExchangeInput | Prisma.MarketUpsertWithWhereUniqueWithoutExchangeInput[]
-  createMany?: Prisma.MarketCreateManyExchangeInputEnvelope
+export type MarketUpdateManyWithoutVenueNestedInput = {
+  create?: Prisma.XOR<Prisma.MarketCreateWithoutVenueInput, Prisma.MarketUncheckedCreateWithoutVenueInput> | Prisma.MarketCreateWithoutVenueInput[] | Prisma.MarketUncheckedCreateWithoutVenueInput[]
+  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutVenueInput | Prisma.MarketCreateOrConnectWithoutVenueInput[]
+  upsert?: Prisma.MarketUpsertWithWhereUniqueWithoutVenueInput | Prisma.MarketUpsertWithWhereUniqueWithoutVenueInput[]
+  createMany?: Prisma.MarketCreateManyVenueInputEnvelope
   set?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
   disconnect?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
   delete?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
   connect?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
-  update?: Prisma.MarketUpdateWithWhereUniqueWithoutExchangeInput | Prisma.MarketUpdateWithWhereUniqueWithoutExchangeInput[]
-  updateMany?: Prisma.MarketUpdateManyWithWhereWithoutExchangeInput | Prisma.MarketUpdateManyWithWhereWithoutExchangeInput[]
+  update?: Prisma.MarketUpdateWithWhereUniqueWithoutVenueInput | Prisma.MarketUpdateWithWhereUniqueWithoutVenueInput[]
+  updateMany?: Prisma.MarketUpdateManyWithWhereWithoutVenueInput | Prisma.MarketUpdateManyWithWhereWithoutVenueInput[]
   deleteMany?: Prisma.MarketScalarWhereInput | Prisma.MarketScalarWhereInput[]
 }
 
-export type MarketUncheckedUpdateManyWithoutExchangeNestedInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutExchangeInput, Prisma.MarketUncheckedCreateWithoutExchangeInput> | Prisma.MarketCreateWithoutExchangeInput[] | Prisma.MarketUncheckedCreateWithoutExchangeInput[]
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutExchangeInput | Prisma.MarketCreateOrConnectWithoutExchangeInput[]
-  upsert?: Prisma.MarketUpsertWithWhereUniqueWithoutExchangeInput | Prisma.MarketUpsertWithWhereUniqueWithoutExchangeInput[]
-  createMany?: Prisma.MarketCreateManyExchangeInputEnvelope
+export type MarketUncheckedUpdateManyWithoutVenueNestedInput = {
+  create?: Prisma.XOR<Prisma.MarketCreateWithoutVenueInput, Prisma.MarketUncheckedCreateWithoutVenueInput> | Prisma.MarketCreateWithoutVenueInput[] | Prisma.MarketUncheckedCreateWithoutVenueInput[]
+  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutVenueInput | Prisma.MarketCreateOrConnectWithoutVenueInput[]
+  upsert?: Prisma.MarketUpsertWithWhereUniqueWithoutVenueInput | Prisma.MarketUpsertWithWhereUniqueWithoutVenueInput[]
+  createMany?: Prisma.MarketCreateManyVenueInputEnvelope
   set?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
   disconnect?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
   delete?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
   connect?: Prisma.MarketWhereUniqueInput | Prisma.MarketWhereUniqueInput[]
-  update?: Prisma.MarketUpdateWithWhereUniqueWithoutExchangeInput | Prisma.MarketUpdateWithWhereUniqueWithoutExchangeInput[]
-  updateMany?: Prisma.MarketUpdateManyWithWhereWithoutExchangeInput | Prisma.MarketUpdateManyWithWhereWithoutExchangeInput[]
+  update?: Prisma.MarketUpdateWithWhereUniqueWithoutVenueInput | Prisma.MarketUpdateWithWhereUniqueWithoutVenueInput[]
+  updateMany?: Prisma.MarketUpdateManyWithWhereWithoutVenueInput | Prisma.MarketUpdateManyWithWhereWithoutVenueInput[]
   deleteMany?: Prisma.MarketScalarWhereInput | Prisma.MarketScalarWhereInput[]
 }
 
@@ -659,101 +590,53 @@ export type MarketUncheckedUpdateManyWithoutPairNestedInput = {
   deleteMany?: Prisma.MarketScalarWhereInput | Prisma.MarketScalarWhereInput[]
 }
 
-export type EnumMarketStatusFieldUpdateOperationsInput = {
-  set?: $Enums.MarketStatus
-}
-
-export type NullableDecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
-}
-
-export type MarketCreateNestedOneWithoutAsBuyMarketInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutAsBuyMarketInput, Prisma.MarketUncheckedCreateWithoutAsBuyMarketInput>
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutAsBuyMarketInput
-  connect?: Prisma.MarketWhereUniqueInput
-}
-
-export type MarketCreateNestedOneWithoutAsSellMarketInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutAsSellMarketInput, Prisma.MarketUncheckedCreateWithoutAsSellMarketInput>
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutAsSellMarketInput
-  connect?: Prisma.MarketWhereUniqueInput
-}
-
-export type MarketUpdateOneRequiredWithoutAsBuyMarketNestedInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutAsBuyMarketInput, Prisma.MarketUncheckedCreateWithoutAsBuyMarketInput>
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutAsBuyMarketInput
-  upsert?: Prisma.MarketUpsertWithoutAsBuyMarketInput
-  connect?: Prisma.MarketWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MarketUpdateToOneWithWhereWithoutAsBuyMarketInput, Prisma.MarketUpdateWithoutAsBuyMarketInput>, Prisma.MarketUncheckedUpdateWithoutAsBuyMarketInput>
-}
-
-export type MarketUpdateOneRequiredWithoutAsSellMarketNestedInput = {
-  create?: Prisma.XOR<Prisma.MarketCreateWithoutAsSellMarketInput, Prisma.MarketUncheckedCreateWithoutAsSellMarketInput>
-  connectOrCreate?: Prisma.MarketCreateOrConnectWithoutAsSellMarketInput
-  upsert?: Prisma.MarketUpsertWithoutAsSellMarketInput
-  connect?: Prisma.MarketWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MarketUpdateToOneWithWhereWithoutAsSellMarketInput, Prisma.MarketUpdateWithoutAsSellMarketInput>, Prisma.MarketUncheckedUpdateWithoutAsSellMarketInput>
-}
-
-export type MarketCreateWithoutExchangeInput = {
+export type MarketCreateWithoutVenueInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
   pair: Prisma.PairCreateNestedOneWithoutMarketsInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutBuyMarketInput
-  asSellMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutSellMarketInput
 }
 
-export type MarketUncheckedCreateWithoutExchangeInput = {
+export type MarketUncheckedCreateWithoutVenueInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   id?: number
   pairId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutBuyMarketInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutSellMarketInput
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
 }
 
-export type MarketCreateOrConnectWithoutExchangeInput = {
+export type MarketCreateOrConnectWithoutVenueInput = {
   where: Prisma.MarketWhereUniqueInput
-  create: Prisma.XOR<Prisma.MarketCreateWithoutExchangeInput, Prisma.MarketUncheckedCreateWithoutExchangeInput>
+  create: Prisma.XOR<Prisma.MarketCreateWithoutVenueInput, Prisma.MarketUncheckedCreateWithoutVenueInput>
 }
 
-export type MarketCreateManyExchangeInputEnvelope = {
-  data: Prisma.MarketCreateManyExchangeInput | Prisma.MarketCreateManyExchangeInput[]
+export type MarketCreateManyVenueInputEnvelope = {
+  data: Prisma.MarketCreateManyVenueInput | Prisma.MarketCreateManyVenueInput[]
   skipDuplicates?: boolean
 }
 
-export type MarketUpsertWithWhereUniqueWithoutExchangeInput = {
+export type MarketUpsertWithWhereUniqueWithoutVenueInput = {
   where: Prisma.MarketWhereUniqueInput
-  update: Prisma.XOR<Prisma.MarketUpdateWithoutExchangeInput, Prisma.MarketUncheckedUpdateWithoutExchangeInput>
-  create: Prisma.XOR<Prisma.MarketCreateWithoutExchangeInput, Prisma.MarketUncheckedCreateWithoutExchangeInput>
+  update: Prisma.XOR<Prisma.MarketUpdateWithoutVenueInput, Prisma.MarketUncheckedUpdateWithoutVenueInput>
+  create: Prisma.XOR<Prisma.MarketCreateWithoutVenueInput, Prisma.MarketUncheckedCreateWithoutVenueInput>
 }
 
-export type MarketUpdateWithWhereUniqueWithoutExchangeInput = {
+export type MarketUpdateWithWhereUniqueWithoutVenueInput = {
   where: Prisma.MarketWhereUniqueInput
-  data: Prisma.XOR<Prisma.MarketUpdateWithoutExchangeInput, Prisma.MarketUncheckedUpdateWithoutExchangeInput>
+  data: Prisma.XOR<Prisma.MarketUpdateWithoutVenueInput, Prisma.MarketUncheckedUpdateWithoutVenueInput>
 }
 
-export type MarketUpdateManyWithWhereWithoutExchangeInput = {
+export type MarketUpdateManyWithWhereWithoutVenueInput = {
   where: Prisma.MarketScalarWhereInput
-  data: Prisma.XOR<Prisma.MarketUpdateManyMutationInput, Prisma.MarketUncheckedUpdateManyWithoutExchangeInput>
+  data: Prisma.XOR<Prisma.MarketUpdateManyMutationInput, Prisma.MarketUncheckedUpdateManyWithoutVenueInput>
 }
 
 export type MarketScalarWhereInput = {
@@ -763,46 +646,36 @@ export type MarketScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Market"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Market"> | Date | string
   id?: Prisma.IntFilter<"Market"> | number
-  exchangeId?: Prisma.IntFilter<"Market"> | number
+  venueId?: Prisma.IntFilter<"Market"> | number
   pairId?: Prisma.IntFilter<"Market"> | number
-  venueSymbol?: Prisma.StringFilter<"Market"> | string
-  status?: Prisma.EnumMarketStatusFilter<"Market"> | $Enums.MarketStatus
-  feeClass?: Prisma.StringFilter<"Market"> | string
-  tickSize?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.DecimalNullableFilter<"Market"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFilter<"Market"> | Date | string
+  rawMarketId?: Prisma.StringFilter<"Market"> | string
+  linear?: Prisma.BoolFilter<"Market"> | boolean
+  makerPpm?: Prisma.IntFilter<"Market"> | number
+  takerPpm?: Prisma.IntFilter<"Market"> | number
+  active?: Prisma.BoolFilter<"Market"> | boolean
 }
 
 export type MarketCreateWithoutPairInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  exchange: Prisma.ExchangeCreateNestedOneWithoutMarketsInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutBuyMarketInput
-  asSellMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutSellMarketInput
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
+  venue: Prisma.VenueCreateNestedOneWithoutMarketsInput
 }
 
 export type MarketUncheckedCreateWithoutPairInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   id?: number
-  exchangeId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutBuyMarketInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutSellMarketInput
+  venueId: number
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
 }
 
 export type MarketCreateOrConnectWithoutPairInput = {
@@ -831,354 +704,129 @@ export type MarketUpdateManyWithWhereWithoutPairInput = {
   data: Prisma.XOR<Prisma.MarketUpdateManyMutationInput, Prisma.MarketUncheckedUpdateManyWithoutPairInput>
 }
 
-export type MarketCreateWithoutAsBuyMarketInput = {
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  exchange: Prisma.ExchangeCreateNestedOneWithoutMarketsInput
-  pair: Prisma.PairCreateNestedOneWithoutMarketsInput
-  asSellMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutSellMarketInput
-}
-
-export type MarketUncheckedCreateWithoutAsBuyMarketInput = {
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  id?: number
-  exchangeId: number
-  pairId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutSellMarketInput
-}
-
-export type MarketCreateOrConnectWithoutAsBuyMarketInput = {
-  where: Prisma.MarketWhereUniqueInput
-  create: Prisma.XOR<Prisma.MarketCreateWithoutAsBuyMarketInput, Prisma.MarketUncheckedCreateWithoutAsBuyMarketInput>
-}
-
-export type MarketCreateWithoutAsSellMarketInput = {
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  exchange: Prisma.ExchangeCreateNestedOneWithoutMarketsInput
-  pair: Prisma.PairCreateNestedOneWithoutMarketsInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutBuyMarketInput
-}
-
-export type MarketUncheckedCreateWithoutAsSellMarketInput = {
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  id?: number
-  exchangeId: number
-  pairId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutBuyMarketInput
-}
-
-export type MarketCreateOrConnectWithoutAsSellMarketInput = {
-  where: Prisma.MarketWhereUniqueInput
-  create: Prisma.XOR<Prisma.MarketCreateWithoutAsSellMarketInput, Prisma.MarketUncheckedCreateWithoutAsSellMarketInput>
-}
-
-export type MarketUpsertWithoutAsBuyMarketInput = {
-  update: Prisma.XOR<Prisma.MarketUpdateWithoutAsBuyMarketInput, Prisma.MarketUncheckedUpdateWithoutAsBuyMarketInput>
-  create: Prisma.XOR<Prisma.MarketCreateWithoutAsBuyMarketInput, Prisma.MarketUncheckedCreateWithoutAsBuyMarketInput>
-  where?: Prisma.MarketWhereInput
-}
-
-export type MarketUpdateToOneWithWhereWithoutAsBuyMarketInput = {
-  where?: Prisma.MarketWhereInput
-  data: Prisma.XOR<Prisma.MarketUpdateWithoutAsBuyMarketInput, Prisma.MarketUncheckedUpdateWithoutAsBuyMarketInput>
-}
-
-export type MarketUpdateWithoutAsBuyMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  exchange?: Prisma.ExchangeUpdateOneRequiredWithoutMarketsNestedInput
-  pair?: Prisma.PairUpdateOneRequiredWithoutMarketsNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutSellMarketNestedInput
-}
-
-export type MarketUncheckedUpdateWithoutAsBuyMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  exchangeId?: Prisma.IntFieldUpdateOperationsInput | number
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketNestedInput
-}
-
-export type MarketUpsertWithoutAsSellMarketInput = {
-  update: Prisma.XOR<Prisma.MarketUpdateWithoutAsSellMarketInput, Prisma.MarketUncheckedUpdateWithoutAsSellMarketInput>
-  create: Prisma.XOR<Prisma.MarketCreateWithoutAsSellMarketInput, Prisma.MarketUncheckedCreateWithoutAsSellMarketInput>
-  where?: Prisma.MarketWhereInput
-}
-
-export type MarketUpdateToOneWithWhereWithoutAsSellMarketInput = {
-  where?: Prisma.MarketWhereInput
-  data: Prisma.XOR<Prisma.MarketUpdateWithoutAsSellMarketInput, Prisma.MarketUncheckedUpdateWithoutAsSellMarketInput>
-}
-
-export type MarketUpdateWithoutAsSellMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  exchange?: Prisma.ExchangeUpdateOneRequiredWithoutMarketsNestedInput
-  pair?: Prisma.PairUpdateOneRequiredWithoutMarketsNestedInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutBuyMarketNestedInput
-}
-
-export type MarketUncheckedUpdateWithoutAsSellMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  exchangeId?: Prisma.IntFieldUpdateOperationsInput | number
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketNestedInput
-}
-
-export type MarketCreateManyExchangeInput = {
+export type MarketCreateManyVenueInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   id?: number
   pairId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
 }
 
-export type MarketUpdateWithoutExchangeInput = {
+export type MarketUpdateWithoutVenueInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pair?: Prisma.PairUpdateOneRequiredWithoutMarketsNestedInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutBuyMarketNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutSellMarketNestedInput
 }
 
-export type MarketUncheckedUpdateWithoutExchangeInput = {
+export type MarketUncheckedUpdateWithoutVenueInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.IntFieldUpdateOperationsInput | number
   pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketNestedInput
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
-export type MarketUncheckedUpdateManyWithoutExchangeInput = {
+export type MarketUncheckedUpdateManyWithoutVenueInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.IntFieldUpdateOperationsInput | number
   pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MarketCreateManyPairInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   id?: number
-  exchangeId: number
-  venueSymbol: string
-  status?: $Enums.MarketStatus
-  feeClass?: string
-  tickSize?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Date | string
+  venueId: number
+  rawMarketId: string
+  linear?: boolean
+  makerPpm: number
+  takerPpm: number
+  active?: boolean
 }
 
 export type MarketUpdateWithoutPairInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  exchange?: Prisma.ExchangeUpdateOneRequiredWithoutMarketsNestedInput
-  asBuyMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutBuyMarketNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUpdateManyWithoutSellMarketNestedInput
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  venue?: Prisma.VenueUpdateOneRequiredWithoutMarketsNestedInput
 }
 
 export type MarketUncheckedUpdateWithoutPairInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  exchangeId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  asBuyMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketNestedInput
-  asSellMarket?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketNestedInput
+  venueId?: Prisma.IntFieldUpdateOperationsInput | number
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type MarketUncheckedUpdateManyWithoutPairInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  exchangeId?: Prisma.IntFieldUpdateOperationsInput | number
-  venueSymbol?: Prisma.StringFieldUpdateOperationsInput | string
-  status?: Prisma.EnumMarketStatusFieldUpdateOperationsInput | $Enums.MarketStatus
-  feeClass?: Prisma.StringFieldUpdateOperationsInput | string
-  tickSize?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  qtyStep?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  minNotional?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venueId?: Prisma.IntFieldUpdateOperationsInput | number
+  rawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  linear?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  makerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  takerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
-
-/**
- * Count Type MarketCountOutputType
- */
-
-export type MarketCountOutputType = {
-  asBuyMarket: number
-  asSellMarket: number
-}
-
-export type MarketCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  asBuyMarket?: boolean | MarketCountOutputTypeCountAsBuyMarketArgs
-  asSellMarket?: boolean | MarketCountOutputTypeCountAsSellMarketArgs
-}
-
-/**
- * MarketCountOutputType without action
- */
-export type MarketCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the MarketCountOutputType
-   */
-  select?: Prisma.MarketCountOutputTypeSelect<ExtArgs> | null
-}
-
-/**
- * MarketCountOutputType without action
- */
-export type MarketCountOutputTypeCountAsBuyMarketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ArbitrageOpportunityWhereInput
-}
-
-/**
- * MarketCountOutputType without action
- */
-export type MarketCountOutputTypeCountAsSellMarketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ArbitrageOpportunityWhereInput
-}
 
 
 export type MarketSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   createdAt?: boolean
   updatedAt?: boolean
   id?: boolean
-  exchangeId?: boolean
+  venueId?: boolean
   pairId?: boolean
-  venueSymbol?: boolean
-  status?: boolean
-  feeClass?: boolean
-  tickSize?: boolean
-  qtyStep?: boolean
-  minNotional?: boolean
-  lastSeenAt?: boolean
-  exchange?: boolean | Prisma.ExchangeDefaultArgs<ExtArgs>
+  rawMarketId?: boolean
+  linear?: boolean
+  makerPpm?: boolean
+  takerPpm?: boolean
+  active?: boolean
+  venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
   pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  asBuyMarket?: boolean | Prisma.Market$asBuyMarketArgs<ExtArgs>
-  asSellMarket?: boolean | Prisma.Market$asSellMarketArgs<ExtArgs>
-  _count?: boolean | Prisma.MarketCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["market"]>
 
 export type MarketSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   createdAt?: boolean
   updatedAt?: boolean
   id?: boolean
-  exchangeId?: boolean
+  venueId?: boolean
   pairId?: boolean
-  venueSymbol?: boolean
-  status?: boolean
-  feeClass?: boolean
-  tickSize?: boolean
-  qtyStep?: boolean
-  minNotional?: boolean
-  lastSeenAt?: boolean
-  exchange?: boolean | Prisma.ExchangeDefaultArgs<ExtArgs>
+  rawMarketId?: boolean
+  linear?: boolean
+  makerPpm?: boolean
+  takerPpm?: boolean
+  active?: boolean
+  venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
   pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["market"]>
 
@@ -1186,16 +834,14 @@ export type MarketSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   createdAt?: boolean
   updatedAt?: boolean
   id?: boolean
-  exchangeId?: boolean
+  venueId?: boolean
   pairId?: boolean
-  venueSymbol?: boolean
-  status?: boolean
-  feeClass?: boolean
-  tickSize?: boolean
-  qtyStep?: boolean
-  minNotional?: boolean
-  lastSeenAt?: boolean
-  exchange?: boolean | Prisma.ExchangeDefaultArgs<ExtArgs>
+  rawMarketId?: boolean
+  linear?: boolean
+  makerPpm?: boolean
+  takerPpm?: boolean
+  active?: boolean
+  venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
   pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["market"]>
 
@@ -1203,64 +849,55 @@ export type MarketSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   id?: boolean
-  exchangeId?: boolean
+  venueId?: boolean
   pairId?: boolean
-  venueSymbol?: boolean
-  status?: boolean
-  feeClass?: boolean
-  tickSize?: boolean
-  qtyStep?: boolean
-  minNotional?: boolean
-  lastSeenAt?: boolean
+  rawMarketId?: boolean
+  linear?: boolean
+  makerPpm?: boolean
+  takerPpm?: boolean
+  active?: boolean
 }
 
-export type MarketOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "updatedAt" | "id" | "exchangeId" | "pairId" | "venueSymbol" | "status" | "feeClass" | "tickSize" | "qtyStep" | "minNotional" | "lastSeenAt", ExtArgs["result"]["market"]>
+export type MarketOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "updatedAt" | "id" | "venueId" | "pairId" | "rawMarketId" | "linear" | "makerPpm" | "takerPpm" | "active", ExtArgs["result"]["market"]>
 export type MarketInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  exchange?: boolean | Prisma.ExchangeDefaultArgs<ExtArgs>
+  venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
   pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  asBuyMarket?: boolean | Prisma.Market$asBuyMarketArgs<ExtArgs>
-  asSellMarket?: boolean | Prisma.Market$asSellMarketArgs<ExtArgs>
-  _count?: boolean | Prisma.MarketCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MarketIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  exchange?: boolean | Prisma.ExchangeDefaultArgs<ExtArgs>
+  venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
   pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
 }
 export type MarketIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  exchange?: boolean | Prisma.ExchangeDefaultArgs<ExtArgs>
+  venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
   pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
 }
 
 export type $MarketPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Market"
   objects: {
-    exchange: Prisma.$ExchangePayload<ExtArgs>
+    venue: Prisma.$VenuePayload<ExtArgs>
     pair: Prisma.$PairPayload<ExtArgs>
-    asBuyMarket: Prisma.$ArbitrageOpportunityPayload<ExtArgs>[]
-    asSellMarket: Prisma.$ArbitrageOpportunityPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     createdAt: Date
     updatedAt: Date
     id: number
-    exchangeId: number
+    venueId: number
     pairId: number
     /**
-     * Spelled exactly as the venue reports it
+     * Spelled exactly as the venue's socket spells it, for example "BTCUSDT"
      */
-    venueSymbol: string
-    status: $Enums.MarketStatus
+    rawMarketId: string
     /**
-     * Points at an ExchangeFee row for the same exchange
+     * A linear contract settles in the quote asset, an inverse one settles in the base asset
      */
-    feeClass: string
-    tickSize: runtime.Decimal | null
-    qtyStep: runtime.Decimal | null
-    minNotional: runtime.Decimal | null
+    linear: boolean
+    makerPpm: number
+    takerPpm: number
     /**
-     * Refreshed by the market sync job while the venue still lists this market
+     * Cleared by the market sync job once the venue stops listing this market
      */
-    lastSeenAt: Date
+    active: boolean
   }, ExtArgs["result"]["market"]>
   composites: {}
 }
@@ -1655,10 +1292,8 @@ readonly fields: MarketFieldRefs;
  */
 export interface Prisma__MarketClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  exchange<T extends Prisma.ExchangeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ExchangeDefaultArgs<ExtArgs>>): Prisma.Prisma__ExchangeClient<runtime.Types.Result.GetResult<Prisma.$ExchangePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  venue<T extends Prisma.VenueDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VenueDefaultArgs<ExtArgs>>): Prisma.Prisma__VenueClient<runtime.Types.Result.GetResult<Prisma.$VenuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   pair<T extends Prisma.PairDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PairDefaultArgs<ExtArgs>>): Prisma.Prisma__PairClient<runtime.Types.Result.GetResult<Prisma.$PairPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  asBuyMarket<T extends Prisma.Market$asBuyMarketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Market$asBuyMarketArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArbitrageOpportunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  asSellMarket<T extends Prisma.Market$asSellMarketArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Market$asSellMarketArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArbitrageOpportunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1691,15 +1326,13 @@ export interface MarketFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Market", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Market", 'DateTime'>
   readonly id: Prisma.FieldRef<"Market", 'Int'>
-  readonly exchangeId: Prisma.FieldRef<"Market", 'Int'>
+  readonly venueId: Prisma.FieldRef<"Market", 'Int'>
   readonly pairId: Prisma.FieldRef<"Market", 'Int'>
-  readonly venueSymbol: Prisma.FieldRef<"Market", 'String'>
-  readonly status: Prisma.FieldRef<"Market", 'MarketStatus'>
-  readonly feeClass: Prisma.FieldRef<"Market", 'String'>
-  readonly tickSize: Prisma.FieldRef<"Market", 'Decimal'>
-  readonly qtyStep: Prisma.FieldRef<"Market", 'Decimal'>
-  readonly minNotional: Prisma.FieldRef<"Market", 'Decimal'>
-  readonly lastSeenAt: Prisma.FieldRef<"Market", 'DateTime'>
+  readonly rawMarketId: Prisma.FieldRef<"Market", 'String'>
+  readonly linear: Prisma.FieldRef<"Market", 'Boolean'>
+  readonly makerPpm: Prisma.FieldRef<"Market", 'Int'>
+  readonly takerPpm: Prisma.FieldRef<"Market", 'Int'>
+  readonly active: Prisma.FieldRef<"Market", 'Boolean'>
 }
     
 
@@ -2098,54 +1731,6 @@ export type MarketDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Markets to delete.
    */
   limit?: number
-}
-
-/**
- * Market.asBuyMarket
- */
-export type Market$asBuyMarketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ArbitrageOpportunity
-   */
-  select?: Prisma.ArbitrageOpportunitySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ArbitrageOpportunity
-   */
-  omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
-  where?: Prisma.ArbitrageOpportunityWhereInput
-  orderBy?: Prisma.ArbitrageOpportunityOrderByWithRelationInput | Prisma.ArbitrageOpportunityOrderByWithRelationInput[]
-  cursor?: Prisma.ArbitrageOpportunityWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ArbitrageOpportunityScalarFieldEnum | Prisma.ArbitrageOpportunityScalarFieldEnum[]
-}
-
-/**
- * Market.asSellMarket
- */
-export type Market$asSellMarketArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ArbitrageOpportunity
-   */
-  select?: Prisma.ArbitrageOpportunitySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ArbitrageOpportunity
-   */
-  omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
-  where?: Prisma.ArbitrageOpportunityWhereInput
-  orderBy?: Prisma.ArbitrageOpportunityOrderByWithRelationInput | Prisma.ArbitrageOpportunityOrderByWithRelationInput[]
-  cursor?: Prisma.ArbitrageOpportunityWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ArbitrageOpportunityScalarFieldEnum | Prisma.ArbitrageOpportunityScalarFieldEnum[]
 }
 
 /**

@@ -18,6 +18,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 ## Implemented
 
 - [`implemented/2026-07-26-exchange-profiles-design.md`](./implemented/2026-07-26-exchange-profiles-design.md) records the reconciled design for the fee and WebSocket research package.
+- [`implemented/2026-08-19-schema-rework-design.md`](./implemented/2026-08-19-schema-rework-design.md) records the reconciled design for the Venue schema rework and the column sources of a stored arbitrage opportunity.
 
 ## Reference
 

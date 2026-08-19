@@ -1,5 +1,6 @@
 // Every rate is a signed integer in parts per million.
 // A rebate is a negative rate.
+// Prices and ppm readings taken from the engine are Float, because the engine holds them in Float64Array and a double round trips through JSON without loss.
 // The datasource URL lives in prisma.config.ts.
 
 generator client {
@@ -16,165 +17,111 @@ datasource db {
   provider = "postgresql"
 }
 
-model Exchange {
+
+model Venue {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   id      Int     @id @default(autoincrement())
-  /// Must match the adapter key in code
   slug    String  @unique
   name    String
   enabled Boolean @default(true)
 
-  config  ExchangeConfig?
-  fees    ExchangeFee[]
   markets Market[]
 }
 
-/// Connection settings for the public spot feed
-model ExchangeConfig {
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-
-  id         Int @id @default(autoincrement())
-  exchangeId Int @unique
-
-  wsUrl                   String
-  maxStreamsPerConnection Int
-  /// Exceeding this limit drops subscriptions silently on some venues
-  maxArgsPerSubscribe     Int
-  subscribeIntervalMs     Int    @default(250)
-  /// Null when the venue pings us instead
-  keepaliveIntervalMs     Int?
-  idleTimeoutMs           Int
-  /// Null when the venue publishes no hard lifetime
-  maxConnectionAgeMs      Int?
-  reconnectMinDelayMs     Int    @default(1000)
-
-  exchange Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-}
-
-/// Rows are append only.
-/// A rate change closes the old row and inserts a new one
-model ExchangeFee {
-  createdAt DateTime @default(now())
-
-  id         Int    @id @default(autoincrement())
-  exchangeId Int
-  feeClass   String @default("default")
-
-  makerPpm Int
-  takerPpm Int
-
-  effectiveFrom DateTime  @default(now())
-  effectiveTo   DateTime?
-  sourceUrl     String?
-
-  exchange Exchange @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-
-  @@unique([exchangeId, feeClass, effectiveFrom])
-}
-
-/// Base and quote are normalized codes rather than venue spellings
 model Pair {
   createdAt DateTime @default(now())
 
   id     Int    @id @default(autoincrement())
   base   String
   quote  String
+  /// The PairKey the engine uses, spelled "BTC|USDT"
   symbol String @unique
 
-  markets       Market[]
-  opportunities ArbitrageOpportunity[]
+  markets Market[]
 
   @@unique([base, quote])
 }
 
-enum MarketStatus {
-  ACTIVE
-  INACTIVE
-}
-
+/// One venue's listing of one pair, and the row Market in src/engine/types.ts is built from
 model Market {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  id         Int @id @default(autoincrement())
-  exchangeId Int
-  pairId     Int
+  id      Int @id @default(autoincrement())
+  venueId Int
+  pairId  Int
 
-  /// Spelled exactly as the venue reports it
-  venueSymbol String
-  status      MarketStatus @default(ACTIVE)
-  /// Points at an ExchangeFee row for the same exchange
-  feeClass    String       @default("default")
+  /// Spelled exactly as the venue's socket spells it, for example "BTCUSDT"
+  rawMarketId String
+  /// A linear contract settles in the quote asset, an inverse one settles in the base asset
+  linear      Boolean @default(true)
+  makerPpm    Int
+  takerPpm    Int
+  /// Cleared by the market sync job once the venue stops listing this market
+  active      Boolean @default(true)
 
-  tickSize    Decimal? @db.Decimal(38, 18)
-  qtyStep     Decimal? @db.Decimal(38, 18)
-  minNotional Decimal? @db.Decimal(38, 18)
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  pair  Pair  @relation(fields: [pairId], references: [id], onDelete: Cascade)
 
-  /// Refreshed by the market sync job while the venue still lists this market
-  lastSeenAt DateTime @default(now())
-
-  exchange     Exchange               @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
-  pair         Pair                   @relation(fields: [pairId], references: [id], onDelete: Cascade)
-  asBuyMarket  ArbitrageOpportunity[] @relation("buyMarket")
-  asSellMarket ArbitrageOpportunity[] @relation("sellMarket")
-
-  @@unique([exchangeId, venueSymbol])
-  @@unique([exchangeId, pairId])
-  @@index([pairId, status])
-  @@index([exchangeId, status])
+  @@unique([venueId, rawMarketId])
+  @@unique([venueId, pairId])
+  @@index([pairId, active])
 }
 
-enum ArbitrageKind {
-  CEX_CEX
-}
-
-/// One episode during which a spread stayed profitable, not a single moment
-/// A row opens when the fee-adjusted edge clears every threshold and closes when the edge falls back
-/// buyMarket quotes the lower ask and sellMarket quotes the higher bid
+/// One closed Opportunity from src/engine/types.ts, so one episode during which a route stayed profitable rather than a single moment.
+/// We sell into the highest bid and buy from the lowest ask.
+/// Every price and every ppm reading here is already fee adjusted.
+/// The legs are recorded by slug rather than by foreign key, so a row keeps its meaning after a delisting or a catalog rebuild, and the writer needs no id lookup.
 model ArbitrageOpportunity {
   createdAt DateTime @default(now())
 
-  id   BigInt        @id @default(autoincrement())
-  kind ArbitrageKind @default(CEX_CEX)
+  id BigInt @id @default(autoincrement())
 
-  pairId       Int
-  buyMarketId  Int
-  sellMarketId Int
+  /// PairKey, spelled "BTC|USDT"
+  pair  String
+  /// RouteKey, so the bid venue and then the ask venue, spelled "bybit-binance"
+  route String
 
-  openedAt   DateTime
-  closedAt   DateTime
-  durationMs Int
-  /// Quote updates folded into this episode
-  samples    Int
-
-  openNetPpm Int
-  avgNetPpm  Int
-
-  peakAt      DateTime
-  peakNetPpm  Int
-  peakBuyAsk  Decimal  @db.Decimal(38, 18)
-  peakSellBid Decimal  @db.Decimal(38, 18)
-
-  /// The smaller of the two resting quantities at the top of both books
-  peakQty           Decimal  @db.Decimal(38, 18)
-  peakNotionalQuote Decimal  @db.Decimal(38, 18)
-  peakProfitQuote   Decimal  @db.Decimal(38, 18)
-  /// Null when the quote asset has no USD reference price
-  peakProfitUsd     Decimal? @db.Decimal(38, 18)
+  highestBidVenue       String
+  highestBidRawMarketId String
+  lowestAskVenue        String
+  lowestAskRawMarketId  String
 
   /// The rates actually used, recorded so the row survives a later fee change
-  buyTakerPpm  Int
-  sellTakerPpm Int
+  highestBidTakerPpm Int
+  lowestAskTakerPpm  Int
 
-  pair       Pair   @relation(fields: [pairId], references: [id])
-  buyMarket  Market @relation("buyMarket", fields: [buyMarketId], references: [id])
-  sellMarket Market @relation("sellMarket", fields: [sellMarketId], references: [id])
+  openedAt         DateTime
+  netPpmAtOpen     Float
+  highestBidAtOpen Float
+  lowestAskAtOpen  Float
+
+  closedAt   DateTime
+  /// The last tick that fed this route, so a wide gap to closedAt means it closed on a stale quote rather than on a collapsing spread
+  lastSeenAt DateTime
+  durationMs Int
+
+  /// Ticks folded into this episode, which is also the length of every series below
+  ticks          Int
+  avgNetPpm      Float
+  peakNetPpm     Float
+  peakAt         DateTime
+  /// The two prices read at the tick where netPpm peaked, not the extremes of their own series
+  peakHighestBid Float
+  peakLowestAsk  Float
+  /// The worst reading of the episode, taken from netPpmSeries when the row is built
+  minNetPpm      Float
+
+  // One entry per tick, index aligned across all four.
+  sampleTsMs       Int[]
+  netPpmSeries     Float[]
+  highestBidSeries Float[]
+  lowestAskSeries  Float[]
 
   @@index([openedAt])
-  @@index([pairId, openedAt])
+  @@index([pair, openedAt])
+  @@index([route, openedAt])
   @@index([peakNetPpm])
-  @@index([buyMarketId, sellMarketId, openedAt])
 }

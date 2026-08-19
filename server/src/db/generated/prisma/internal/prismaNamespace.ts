@@ -397,9 +397,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  Exchange: 'Exchange',
-  ExchangeConfig: 'ExchangeConfig',
-  ExchangeFee: 'ExchangeFee',
+  Venue: 'Venue',
   Pair: 'Pair',
   Market: 'Market',
   ArbitrageOpportunity: 'ArbitrageOpportunity'
@@ -418,229 +416,81 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "exchange" | "exchangeConfig" | "exchangeFee" | "pair" | "market" | "arbitrageOpportunity"
+    modelProps: "venue" | "pair" | "market" | "arbitrageOpportunity"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
-    Exchange: {
-      payload: Prisma.$ExchangePayload<ExtArgs>
-      fields: Prisma.ExchangeFieldRefs
+    Venue: {
+      payload: Prisma.$VenuePayload<ExtArgs>
+      fields: Prisma.VenueFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.ExchangeFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload> | null
+          args: Prisma.VenueFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.ExchangeFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>
+          args: Prisma.VenueFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>
         }
         findFirst: {
-          args: Prisma.ExchangeFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload> | null
+          args: Prisma.VenueFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.ExchangeFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>
+          args: Prisma.VenueFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>
         }
         findMany: {
-          args: Prisma.ExchangeFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>[]
+          args: Prisma.VenueFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>[]
         }
         create: {
-          args: Prisma.ExchangeCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>
+          args: Prisma.VenueCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>
         }
         createMany: {
-          args: Prisma.ExchangeCreateManyArgs<ExtArgs>
+          args: Prisma.VenueCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.ExchangeCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>[]
+          args: Prisma.VenueCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>[]
         }
         delete: {
-          args: Prisma.ExchangeDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>
+          args: Prisma.VenueDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>
         }
         update: {
-          args: Prisma.ExchangeUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>
+          args: Prisma.VenueUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>
         }
         deleteMany: {
-          args: Prisma.ExchangeDeleteManyArgs<ExtArgs>
+          args: Prisma.VenueDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.ExchangeUpdateManyArgs<ExtArgs>
+          args: Prisma.VenueUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.ExchangeUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>[]
+          args: Prisma.VenueUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>[]
         }
         upsert: {
-          args: Prisma.ExchangeUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangePayload>
+          args: Prisma.VenueUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VenuePayload>
         }
         aggregate: {
-          args: Prisma.ExchangeAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateExchange>
+          args: Prisma.VenueAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVenue>
         }
         groupBy: {
-          args: Prisma.ExchangeGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ExchangeGroupByOutputType>[]
+          args: Prisma.VenueGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VenueGroupByOutputType>[]
         }
         count: {
-          args: Prisma.ExchangeCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ExchangeCountAggregateOutputType> | number
-        }
-      }
-    }
-    ExchangeConfig: {
-      payload: Prisma.$ExchangeConfigPayload<ExtArgs>
-      fields: Prisma.ExchangeConfigFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.ExchangeConfigFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.ExchangeConfigFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>
-        }
-        findFirst: {
-          args: Prisma.ExchangeConfigFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.ExchangeConfigFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>
-        }
-        findMany: {
-          args: Prisma.ExchangeConfigFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>[]
-        }
-        create: {
-          args: Prisma.ExchangeConfigCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>
-        }
-        createMany: {
-          args: Prisma.ExchangeConfigCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.ExchangeConfigCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>[]
-        }
-        delete: {
-          args: Prisma.ExchangeConfigDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>
-        }
-        update: {
-          args: Prisma.ExchangeConfigUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>
-        }
-        deleteMany: {
-          args: Prisma.ExchangeConfigDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.ExchangeConfigUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.ExchangeConfigUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>[]
-        }
-        upsert: {
-          args: Prisma.ExchangeConfigUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeConfigPayload>
-        }
-        aggregate: {
-          args: Prisma.ExchangeConfigAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateExchangeConfig>
-        }
-        groupBy: {
-          args: Prisma.ExchangeConfigGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ExchangeConfigGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.ExchangeConfigCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ExchangeConfigCountAggregateOutputType> | number
-        }
-      }
-    }
-    ExchangeFee: {
-      payload: Prisma.$ExchangeFeePayload<ExtArgs>
-      fields: Prisma.ExchangeFeeFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.ExchangeFeeFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.ExchangeFeeFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>
-        }
-        findFirst: {
-          args: Prisma.ExchangeFeeFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.ExchangeFeeFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>
-        }
-        findMany: {
-          args: Prisma.ExchangeFeeFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>[]
-        }
-        create: {
-          args: Prisma.ExchangeFeeCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>
-        }
-        createMany: {
-          args: Prisma.ExchangeFeeCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.ExchangeFeeCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>[]
-        }
-        delete: {
-          args: Prisma.ExchangeFeeDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>
-        }
-        update: {
-          args: Prisma.ExchangeFeeUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>
-        }
-        deleteMany: {
-          args: Prisma.ExchangeFeeDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.ExchangeFeeUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.ExchangeFeeUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>[]
-        }
-        upsert: {
-          args: Prisma.ExchangeFeeUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExchangeFeePayload>
-        }
-        aggregate: {
-          args: Prisma.ExchangeFeeAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateExchangeFee>
-        }
-        groupBy: {
-          args: Prisma.ExchangeFeeGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ExchangeFeeGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.ExchangeFeeCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ExchangeFeeCountAggregateOutputType> | number
+          args: Prisma.VenueCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VenueCountAggregateOutputType> | number
         }
       }
     }
@@ -905,7 +755,7 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const ExchangeScalarFieldEnum = {
+export const VenueScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   id: 'id',
@@ -914,40 +764,7 @@ export const ExchangeScalarFieldEnum = {
   enabled: 'enabled'
 } as const
 
-export type ExchangeScalarFieldEnum = (typeof ExchangeScalarFieldEnum)[keyof typeof ExchangeScalarFieldEnum]
-
-
-export const ExchangeConfigScalarFieldEnum = {
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  id: 'id',
-  exchangeId: 'exchangeId',
-  wsUrl: 'wsUrl',
-  maxStreamsPerConnection: 'maxStreamsPerConnection',
-  maxArgsPerSubscribe: 'maxArgsPerSubscribe',
-  subscribeIntervalMs: 'subscribeIntervalMs',
-  keepaliveIntervalMs: 'keepaliveIntervalMs',
-  idleTimeoutMs: 'idleTimeoutMs',
-  maxConnectionAgeMs: 'maxConnectionAgeMs',
-  reconnectMinDelayMs: 'reconnectMinDelayMs'
-} as const
-
-export type ExchangeConfigScalarFieldEnum = (typeof ExchangeConfigScalarFieldEnum)[keyof typeof ExchangeConfigScalarFieldEnum]
-
-
-export const ExchangeFeeScalarFieldEnum = {
-  createdAt: 'createdAt',
-  id: 'id',
-  exchangeId: 'exchangeId',
-  feeClass: 'feeClass',
-  makerPpm: 'makerPpm',
-  takerPpm: 'takerPpm',
-  effectiveFrom: 'effectiveFrom',
-  effectiveTo: 'effectiveTo',
-  sourceUrl: 'sourceUrl'
-} as const
-
-export type ExchangeFeeScalarFieldEnum = (typeof ExchangeFeeScalarFieldEnum)[keyof typeof ExchangeFeeScalarFieldEnum]
+export type VenueScalarFieldEnum = (typeof VenueScalarFieldEnum)[keyof typeof VenueScalarFieldEnum]
 
 
 export const PairScalarFieldEnum = {
@@ -965,15 +782,13 @@ export const MarketScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   id: 'id',
-  exchangeId: 'exchangeId',
+  venueId: 'venueId',
   pairId: 'pairId',
-  venueSymbol: 'venueSymbol',
-  status: 'status',
-  feeClass: 'feeClass',
-  tickSize: 'tickSize',
-  qtyStep: 'qtyStep',
-  minNotional: 'minNotional',
-  lastSeenAt: 'lastSeenAt'
+  rawMarketId: 'rawMarketId',
+  linear: 'linear',
+  makerPpm: 'makerPpm',
+  takerPpm: 'takerPpm',
+  active: 'active'
 } as const
 
 export type MarketScalarFieldEnum = (typeof MarketScalarFieldEnum)[keyof typeof MarketScalarFieldEnum]
@@ -982,26 +797,32 @@ export type MarketScalarFieldEnum = (typeof MarketScalarFieldEnum)[keyof typeof 
 export const ArbitrageOpportunityScalarFieldEnum = {
   createdAt: 'createdAt',
   id: 'id',
-  kind: 'kind',
-  pairId: 'pairId',
-  buyMarketId: 'buyMarketId',
-  sellMarketId: 'sellMarketId',
+  pair: 'pair',
+  route: 'route',
+  highestBidVenue: 'highestBidVenue',
+  highestBidRawMarketId: 'highestBidRawMarketId',
+  lowestAskVenue: 'lowestAskVenue',
+  lowestAskRawMarketId: 'lowestAskRawMarketId',
+  highestBidTakerPpm: 'highestBidTakerPpm',
+  lowestAskTakerPpm: 'lowestAskTakerPpm',
   openedAt: 'openedAt',
+  netPpmAtOpen: 'netPpmAtOpen',
+  highestBidAtOpen: 'highestBidAtOpen',
+  lowestAskAtOpen: 'lowestAskAtOpen',
   closedAt: 'closedAt',
+  lastSeenAt: 'lastSeenAt',
   durationMs: 'durationMs',
-  samples: 'samples',
-  openNetPpm: 'openNetPpm',
+  ticks: 'ticks',
   avgNetPpm: 'avgNetPpm',
-  peakAt: 'peakAt',
   peakNetPpm: 'peakNetPpm',
-  peakBuyAsk: 'peakBuyAsk',
-  peakSellBid: 'peakSellBid',
-  peakQty: 'peakQty',
-  peakNotionalQuote: 'peakNotionalQuote',
-  peakProfitQuote: 'peakProfitQuote',
-  peakProfitUsd: 'peakProfitUsd',
-  buyTakerPpm: 'buyTakerPpm',
-  sellTakerPpm: 'sellTakerPpm'
+  peakAt: 'peakAt',
+  peakHighestBid: 'peakHighestBid',
+  peakLowestAsk: 'peakLowestAsk',
+  minNetPpm: 'minNetPpm',
+  sampleTsMs: 'sampleTsMs',
+  netPpmSeries: 'netPpmSeries',
+  highestBidSeries: 'highestBidSeries',
+  lowestAskSeries: 'lowestAskSeries'
 } as const
 
 export type ArbitrageOpportunityScalarFieldEnum = (typeof ArbitrageOpportunityScalarFieldEnum)[keyof typeof ArbitrageOpportunityScalarFieldEnum]
@@ -1021,14 +842,6 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
-
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last'
-} as const
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
 
@@ -1087,34 +900,6 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
- * Reference to a field of type 'MarketStatus'
- */
-export type EnumMarketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketStatus'>
-    
-
-
-/**
- * Reference to a field of type 'MarketStatus[]'
- */
-export type ListEnumMarketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MarketStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal'
- */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal[]'
- */
-export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
  * Reference to a field of type 'BigInt'
  */
 export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
@@ -1125,20 +910,6 @@ export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'BigInt[]'
  */
 export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
-    
-
-
-/**
- * Reference to a field of type 'ArbitrageKind'
- */
-export type EnumArbitrageKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ArbitrageKind'>
-    
-
-
-/**
- * Reference to a field of type 'ArbitrageKind[]'
- */
-export type ListEnumArbitrageKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ArbitrageKind[]'>
     
 
 
@@ -1306,9 +1077,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
-  exchange?: Prisma.ExchangeOmit
-  exchangeConfig?: Prisma.ExchangeConfigOmit
-  exchangeFee?: Prisma.ExchangeFeeOmit
+  venue?: Prisma.VenueOmit
   pair?: Prisma.PairOmit
   market?: Prisma.MarketOmit
   arbitrageOpportunity?: Prisma.ArbitrageOpportunityOmit

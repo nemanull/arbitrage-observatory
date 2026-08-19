@@ -14,9 +14,10 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model ArbitrageOpportunity
- * One episode during which a spread stayed profitable, not a single moment
- * A row opens when the fee-adjusted edge clears every threshold and closes when the edge falls back
- * buyMarket quotes the lower ask and sellMarket quotes the higher bid
+ * One closed Opportunity from src/engine/types.ts, so one episode during which a route stayed profitable rather than a single moment.
+ * We sell into the highest bid and buy from the lowest ask.
+ * Every price and every ppm reading here is already fee adjusted.
+ * The legs are recorded by slug rather than by foreign key, so a row keeps its meaning after a delisting or a catalog rebuild, and the writer needs no id lookup.
  */
 export type ArbitrageOpportunityModel = runtime.Types.Result.DefaultSelection<Prisma.$ArbitrageOpportunityPayload>
 
@@ -30,234 +31,254 @@ export type AggregateArbitrageOpportunity = {
 
 export type ArbitrageOpportunityAvgAggregateOutputType = {
   id: number | null
-  pairId: number | null
-  buyMarketId: number | null
-  sellMarketId: number | null
+  highestBidTakerPpm: number | null
+  lowestAskTakerPpm: number | null
+  netPpmAtOpen: number | null
+  highestBidAtOpen: number | null
+  lowestAskAtOpen: number | null
   durationMs: number | null
-  samples: number | null
-  openNetPpm: number | null
+  ticks: number | null
   avgNetPpm: number | null
   peakNetPpm: number | null
-  peakBuyAsk: runtime.Decimal | null
-  peakSellBid: runtime.Decimal | null
-  peakQty: runtime.Decimal | null
-  peakNotionalQuote: runtime.Decimal | null
-  peakProfitQuote: runtime.Decimal | null
-  peakProfitUsd: runtime.Decimal | null
-  buyTakerPpm: number | null
-  sellTakerPpm: number | null
+  peakHighestBid: number | null
+  peakLowestAsk: number | null
+  minNetPpm: number | null
+  sampleTsMs: number | null
+  netPpmSeries: number | null
+  highestBidSeries: number | null
+  lowestAskSeries: number | null
 }
 
 export type ArbitrageOpportunitySumAggregateOutputType = {
   id: bigint | null
-  pairId: number | null
-  buyMarketId: number | null
-  sellMarketId: number | null
+  highestBidTakerPpm: number | null
+  lowestAskTakerPpm: number | null
+  netPpmAtOpen: number | null
+  highestBidAtOpen: number | null
+  lowestAskAtOpen: number | null
   durationMs: number | null
-  samples: number | null
-  openNetPpm: number | null
+  ticks: number | null
   avgNetPpm: number | null
   peakNetPpm: number | null
-  peakBuyAsk: runtime.Decimal | null
-  peakSellBid: runtime.Decimal | null
-  peakQty: runtime.Decimal | null
-  peakNotionalQuote: runtime.Decimal | null
-  peakProfitQuote: runtime.Decimal | null
-  peakProfitUsd: runtime.Decimal | null
-  buyTakerPpm: number | null
-  sellTakerPpm: number | null
+  peakHighestBid: number | null
+  peakLowestAsk: number | null
+  minNetPpm: number | null
+  sampleTsMs: number[]
+  netPpmSeries: number[]
+  highestBidSeries: number[]
+  lowestAskSeries: number[]
 }
 
 export type ArbitrageOpportunityMinAggregateOutputType = {
   createdAt: Date | null
   id: bigint | null
-  kind: $Enums.ArbitrageKind | null
-  pairId: number | null
-  buyMarketId: number | null
-  sellMarketId: number | null
+  pair: string | null
+  route: string | null
+  highestBidVenue: string | null
+  highestBidRawMarketId: string | null
+  lowestAskVenue: string | null
+  lowestAskRawMarketId: string | null
+  highestBidTakerPpm: number | null
+  lowestAskTakerPpm: number | null
   openedAt: Date | null
+  netPpmAtOpen: number | null
+  highestBidAtOpen: number | null
+  lowestAskAtOpen: number | null
   closedAt: Date | null
+  lastSeenAt: Date | null
   durationMs: number | null
-  samples: number | null
-  openNetPpm: number | null
+  ticks: number | null
   avgNetPpm: number | null
-  peakAt: Date | null
   peakNetPpm: number | null
-  peakBuyAsk: runtime.Decimal | null
-  peakSellBid: runtime.Decimal | null
-  peakQty: runtime.Decimal | null
-  peakNotionalQuote: runtime.Decimal | null
-  peakProfitQuote: runtime.Decimal | null
-  peakProfitUsd: runtime.Decimal | null
-  buyTakerPpm: number | null
-  sellTakerPpm: number | null
+  peakAt: Date | null
+  peakHighestBid: number | null
+  peakLowestAsk: number | null
+  minNetPpm: number | null
 }
 
 export type ArbitrageOpportunityMaxAggregateOutputType = {
   createdAt: Date | null
   id: bigint | null
-  kind: $Enums.ArbitrageKind | null
-  pairId: number | null
-  buyMarketId: number | null
-  sellMarketId: number | null
+  pair: string | null
+  route: string | null
+  highestBidVenue: string | null
+  highestBidRawMarketId: string | null
+  lowestAskVenue: string | null
+  lowestAskRawMarketId: string | null
+  highestBidTakerPpm: number | null
+  lowestAskTakerPpm: number | null
   openedAt: Date | null
+  netPpmAtOpen: number | null
+  highestBidAtOpen: number | null
+  lowestAskAtOpen: number | null
   closedAt: Date | null
+  lastSeenAt: Date | null
   durationMs: number | null
-  samples: number | null
-  openNetPpm: number | null
+  ticks: number | null
   avgNetPpm: number | null
-  peakAt: Date | null
   peakNetPpm: number | null
-  peakBuyAsk: runtime.Decimal | null
-  peakSellBid: runtime.Decimal | null
-  peakQty: runtime.Decimal | null
-  peakNotionalQuote: runtime.Decimal | null
-  peakProfitQuote: runtime.Decimal | null
-  peakProfitUsd: runtime.Decimal | null
-  buyTakerPpm: number | null
-  sellTakerPpm: number | null
+  peakAt: Date | null
+  peakHighestBid: number | null
+  peakLowestAsk: number | null
+  minNetPpm: number | null
 }
 
 export type ArbitrageOpportunityCountAggregateOutputType = {
   createdAt: number
   id: number
-  kind: number
-  pairId: number
-  buyMarketId: number
-  sellMarketId: number
+  pair: number
+  route: number
+  highestBidVenue: number
+  highestBidRawMarketId: number
+  lowestAskVenue: number
+  lowestAskRawMarketId: number
+  highestBidTakerPpm: number
+  lowestAskTakerPpm: number
   openedAt: number
+  netPpmAtOpen: number
+  highestBidAtOpen: number
+  lowestAskAtOpen: number
   closedAt: number
+  lastSeenAt: number
   durationMs: number
-  samples: number
-  openNetPpm: number
+  ticks: number
   avgNetPpm: number
-  peakAt: number
   peakNetPpm: number
-  peakBuyAsk: number
-  peakSellBid: number
-  peakQty: number
-  peakNotionalQuote: number
-  peakProfitQuote: number
-  peakProfitUsd: number
-  buyTakerPpm: number
-  sellTakerPpm: number
+  peakAt: number
+  peakHighestBid: number
+  peakLowestAsk: number
+  minNetPpm: number
+  sampleTsMs: number
+  netPpmSeries: number
+  highestBidSeries: number
+  lowestAskSeries: number
   _all: number
 }
 
 
 export type ArbitrageOpportunityAvgAggregateInputType = {
   id?: true
-  pairId?: true
-  buyMarketId?: true
-  sellMarketId?: true
+  highestBidTakerPpm?: true
+  lowestAskTakerPpm?: true
+  netPpmAtOpen?: true
+  highestBidAtOpen?: true
+  lowestAskAtOpen?: true
   durationMs?: true
-  samples?: true
-  openNetPpm?: true
+  ticks?: true
   avgNetPpm?: true
   peakNetPpm?: true
-  peakBuyAsk?: true
-  peakSellBid?: true
-  peakQty?: true
-  peakNotionalQuote?: true
-  peakProfitQuote?: true
-  peakProfitUsd?: true
-  buyTakerPpm?: true
-  sellTakerPpm?: true
+  peakHighestBid?: true
+  peakLowestAsk?: true
+  minNetPpm?: true
+  sampleTsMs?: true
+  netPpmSeries?: true
+  highestBidSeries?: true
+  lowestAskSeries?: true
 }
 
 export type ArbitrageOpportunitySumAggregateInputType = {
   id?: true
-  pairId?: true
-  buyMarketId?: true
-  sellMarketId?: true
+  highestBidTakerPpm?: true
+  lowestAskTakerPpm?: true
+  netPpmAtOpen?: true
+  highestBidAtOpen?: true
+  lowestAskAtOpen?: true
   durationMs?: true
-  samples?: true
-  openNetPpm?: true
+  ticks?: true
   avgNetPpm?: true
   peakNetPpm?: true
-  peakBuyAsk?: true
-  peakSellBid?: true
-  peakQty?: true
-  peakNotionalQuote?: true
-  peakProfitQuote?: true
-  peakProfitUsd?: true
-  buyTakerPpm?: true
-  sellTakerPpm?: true
+  peakHighestBid?: true
+  peakLowestAsk?: true
+  minNetPpm?: true
+  sampleTsMs?: true
+  netPpmSeries?: true
+  highestBidSeries?: true
+  lowestAskSeries?: true
 }
 
 export type ArbitrageOpportunityMinAggregateInputType = {
   createdAt?: true
   id?: true
-  kind?: true
-  pairId?: true
-  buyMarketId?: true
-  sellMarketId?: true
+  pair?: true
+  route?: true
+  highestBidVenue?: true
+  highestBidRawMarketId?: true
+  lowestAskVenue?: true
+  lowestAskRawMarketId?: true
+  highestBidTakerPpm?: true
+  lowestAskTakerPpm?: true
   openedAt?: true
+  netPpmAtOpen?: true
+  highestBidAtOpen?: true
+  lowestAskAtOpen?: true
   closedAt?: true
+  lastSeenAt?: true
   durationMs?: true
-  samples?: true
-  openNetPpm?: true
+  ticks?: true
   avgNetPpm?: true
-  peakAt?: true
   peakNetPpm?: true
-  peakBuyAsk?: true
-  peakSellBid?: true
-  peakQty?: true
-  peakNotionalQuote?: true
-  peakProfitQuote?: true
-  peakProfitUsd?: true
-  buyTakerPpm?: true
-  sellTakerPpm?: true
+  peakAt?: true
+  peakHighestBid?: true
+  peakLowestAsk?: true
+  minNetPpm?: true
 }
 
 export type ArbitrageOpportunityMaxAggregateInputType = {
   createdAt?: true
   id?: true
-  kind?: true
-  pairId?: true
-  buyMarketId?: true
-  sellMarketId?: true
+  pair?: true
+  route?: true
+  highestBidVenue?: true
+  highestBidRawMarketId?: true
+  lowestAskVenue?: true
+  lowestAskRawMarketId?: true
+  highestBidTakerPpm?: true
+  lowestAskTakerPpm?: true
   openedAt?: true
+  netPpmAtOpen?: true
+  highestBidAtOpen?: true
+  lowestAskAtOpen?: true
   closedAt?: true
+  lastSeenAt?: true
   durationMs?: true
-  samples?: true
-  openNetPpm?: true
+  ticks?: true
   avgNetPpm?: true
-  peakAt?: true
   peakNetPpm?: true
-  peakBuyAsk?: true
-  peakSellBid?: true
-  peakQty?: true
-  peakNotionalQuote?: true
-  peakProfitQuote?: true
-  peakProfitUsd?: true
-  buyTakerPpm?: true
-  sellTakerPpm?: true
+  peakAt?: true
+  peakHighestBid?: true
+  peakLowestAsk?: true
+  minNetPpm?: true
 }
 
 export type ArbitrageOpportunityCountAggregateInputType = {
   createdAt?: true
   id?: true
-  kind?: true
-  pairId?: true
-  buyMarketId?: true
-  sellMarketId?: true
+  pair?: true
+  route?: true
+  highestBidVenue?: true
+  highestBidRawMarketId?: true
+  lowestAskVenue?: true
+  lowestAskRawMarketId?: true
+  highestBidTakerPpm?: true
+  lowestAskTakerPpm?: true
   openedAt?: true
+  netPpmAtOpen?: true
+  highestBidAtOpen?: true
+  lowestAskAtOpen?: true
   closedAt?: true
+  lastSeenAt?: true
   durationMs?: true
-  samples?: true
-  openNetPpm?: true
+  ticks?: true
   avgNetPpm?: true
-  peakAt?: true
   peakNetPpm?: true
-  peakBuyAsk?: true
-  peakSellBid?: true
-  peakQty?: true
-  peakNotionalQuote?: true
-  peakProfitQuote?: true
-  peakProfitUsd?: true
-  buyTakerPpm?: true
-  sellTakerPpm?: true
+  peakAt?: true
+  peakHighestBid?: true
+  peakLowestAsk?: true
+  minNetPpm?: true
+  sampleTsMs?: true
+  netPpmSeries?: true
+  highestBidSeries?: true
+  lowestAskSeries?: true
   _all?: true
 }
 
@@ -350,26 +371,32 @@ export type ArbitrageOpportunityGroupByArgs<ExtArgs extends runtime.Types.Extens
 export type ArbitrageOpportunityGroupByOutputType = {
   createdAt: Date
   id: bigint
-  kind: $Enums.ArbitrageKind
-  pairId: number
-  buyMarketId: number
-  sellMarketId: number
+  pair: string
+  route: string
+  highestBidVenue: string
+  highestBidRawMarketId: string
+  lowestAskVenue: string
+  lowestAskRawMarketId: string
+  highestBidTakerPpm: number
+  lowestAskTakerPpm: number
   openedAt: Date
+  netPpmAtOpen: number
+  highestBidAtOpen: number
+  lowestAskAtOpen: number
   closedAt: Date
+  lastSeenAt: Date
   durationMs: number
-  samples: number
-  openNetPpm: number
+  ticks: number
   avgNetPpm: number
-  peakAt: Date
   peakNetPpm: number
-  peakBuyAsk: runtime.Decimal
-  peakSellBid: runtime.Decimal
-  peakQty: runtime.Decimal
-  peakNotionalQuote: runtime.Decimal
-  peakProfitQuote: runtime.Decimal
-  peakProfitUsd: runtime.Decimal | null
-  buyTakerPpm: number
-  sellTakerPpm: number
+  peakAt: Date
+  peakHighestBid: number
+  peakLowestAsk: number
+  minNetPpm: number
+  sampleTsMs: number[]
+  netPpmSeries: number[]
+  highestBidSeries: number[]
+  lowestAskSeries: number[]
   _count: ArbitrageOpportunityCountAggregateOutputType | null
   _avg: ArbitrageOpportunityAvgAggregateOutputType | null
   _sum: ArbitrageOpportunitySumAggregateOutputType | null
@@ -398,57 +425,63 @@ export type ArbitrageOpportunityWhereInput = {
   NOT?: Prisma.ArbitrageOpportunityWhereInput | Prisma.ArbitrageOpportunityWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   id?: Prisma.BigIntFilter<"ArbitrageOpportunity"> | bigint | number
-  kind?: Prisma.EnumArbitrageKindFilter<"ArbitrageOpportunity"> | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  buyMarketId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  sellMarketId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  pair?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  route?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  highestBidVenue?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  highestBidRawMarketId?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  lowestAskVenue?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  lowestAskRawMarketId?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  highestBidTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  lowestAskTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   openedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
+  netPpmAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  highestBidAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  lowestAskAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
+  lastSeenAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  samples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  openNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  avgNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  ticks?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  avgNetPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  peakNetPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   peakAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  peakNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  peakBuyAsk?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.DecimalNullableFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  sellTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  pair?: Prisma.XOR<Prisma.PairScalarRelationFilter, Prisma.PairWhereInput>
-  buyMarket?: Prisma.XOR<Prisma.MarketScalarRelationFilter, Prisma.MarketWhereInput>
-  sellMarket?: Prisma.XOR<Prisma.MarketScalarRelationFilter, Prisma.MarketWhereInput>
+  peakHighestBid?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  peakLowestAsk?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  minNetPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  sampleTsMs?: Prisma.IntNullableListFilter<"ArbitrageOpportunity">
+  netPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  highestBidSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  lowestAskSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
 }
 
 export type ArbitrageOpportunityOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  kind?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  pair?: Prisma.SortOrder
+  route?: Prisma.SortOrder
+  highestBidVenue?: Prisma.SortOrder
+  highestBidRawMarketId?: Prisma.SortOrder
+  lowestAskVenue?: Prisma.SortOrder
+  lowestAskRawMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
-  peakAt?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrderInput | Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
-  pair?: Prisma.PairOrderByWithRelationInput
-  buyMarket?: Prisma.MarketOrderByWithRelationInput
-  sellMarket?: Prisma.MarketOrderByWithRelationInput
+  peakAt?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
+  sampleTsMs?: Prisma.SortOrder
+  netPpmSeries?: Prisma.SortOrder
+  highestBidSeries?: Prisma.SortOrder
+  lowestAskSeries?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
@@ -457,54 +490,63 @@ export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ArbitrageOpportunityWhereInput[]
   NOT?: Prisma.ArbitrageOpportunityWhereInput | Prisma.ArbitrageOpportunityWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  kind?: Prisma.EnumArbitrageKindFilter<"ArbitrageOpportunity"> | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  buyMarketId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  sellMarketId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  pair?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  route?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  highestBidVenue?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  highestBidRawMarketId?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  lowestAskVenue?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  lowestAskRawMarketId?: Prisma.StringFilter<"ArbitrageOpportunity"> | string
+  highestBidTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  lowestAskTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   openedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
+  netPpmAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  highestBidAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  lowestAskAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
+  lastSeenAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  samples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  openNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  avgNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  ticks?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
+  avgNetPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  peakNetPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   peakAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  peakNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  peakBuyAsk?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.DecimalNullableFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  sellTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  pair?: Prisma.XOR<Prisma.PairScalarRelationFilter, Prisma.PairWhereInput>
-  buyMarket?: Prisma.XOR<Prisma.MarketScalarRelationFilter, Prisma.MarketWhereInput>
-  sellMarket?: Prisma.XOR<Prisma.MarketScalarRelationFilter, Prisma.MarketWhereInput>
+  peakHighestBid?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  peakLowestAsk?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  minNetPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  sampleTsMs?: Prisma.IntNullableListFilter<"ArbitrageOpportunity">
+  netPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  highestBidSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  lowestAskSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
 }, "id">
 
 export type ArbitrageOpportunityOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  kind?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  pair?: Prisma.SortOrder
+  route?: Prisma.SortOrder
+  highestBidVenue?: Prisma.SortOrder
+  highestBidRawMarketId?: Prisma.SortOrder
+  lowestAskVenue?: Prisma.SortOrder
+  lowestAskRawMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
-  peakAt?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrderInput | Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
+  peakAt?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
+  sampleTsMs?: Prisma.SortOrder
+  netPpmSeries?: Prisma.SortOrder
+  highestBidSeries?: Prisma.SortOrder
+  lowestAskSeries?: Prisma.SortOrder
   _count?: Prisma.ArbitrageOpportunityCountOrderByAggregateInput
   _avg?: Prisma.ArbitrageOpportunityAvgOrderByAggregateInput
   _max?: Prisma.ArbitrageOpportunityMaxOrderByAggregateInput
@@ -518,449 +560,406 @@ export type ArbitrageOpportunityScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ArbitrageOpportunityScalarWhereWithAggregatesInput | Prisma.ArbitrageOpportunityScalarWhereWithAggregatesInput[]
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
   id?: Prisma.BigIntWithAggregatesFilter<"ArbitrageOpportunity"> | bigint | number
-  kind?: Prisma.EnumArbitrageKindWithAggregatesFilter<"ArbitrageOpportunity"> | $Enums.ArbitrageKind
-  pairId?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  buyMarketId?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  sellMarketId?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  pair?: Prisma.StringWithAggregatesFilter<"ArbitrageOpportunity"> | string
+  route?: Prisma.StringWithAggregatesFilter<"ArbitrageOpportunity"> | string
+  highestBidVenue?: Prisma.StringWithAggregatesFilter<"ArbitrageOpportunity"> | string
+  highestBidRawMarketId?: Prisma.StringWithAggregatesFilter<"ArbitrageOpportunity"> | string
+  lowestAskVenue?: Prisma.StringWithAggregatesFilter<"ArbitrageOpportunity"> | string
+  lowestAskRawMarketId?: Prisma.StringWithAggregatesFilter<"ArbitrageOpportunity"> | string
+  highestBidTakerPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  lowestAskTakerPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
   openedAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
+  netPpmAtOpen?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  highestBidAtOpen?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  lowestAskAtOpen?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
   closedAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
+  lastSeenAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  samples?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  openNetPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  avgNetPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  ticks?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  avgNetPpm?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  peakNetPpm?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
   peakAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
-  peakNetPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  peakBuyAsk?: Prisma.DecimalWithAggregatesFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalWithAggregatesFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalWithAggregatesFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalWithAggregatesFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalWithAggregatesFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.DecimalNullableWithAggregatesFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
-  sellTakerPpm?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  peakHighestBid?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  peakLowestAsk?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  minNetPpm?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  sampleTsMs?: Prisma.IntNullableListFilter<"ArbitrageOpportunity">
+  netPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  highestBidSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  lowestAskSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
 }
 
 export type ArbitrageOpportunityCreateInput = {
   createdAt?: Date | string
   id?: bigint | number
-  kind?: $Enums.ArbitrageKind
+  pair: string
+  route: string
+  highestBidVenue: string
+  highestBidRawMarketId: string
+  lowestAskVenue: string
+  lowestAskRawMarketId: string
+  highestBidTakerPpm: number
+  lowestAskTakerPpm: number
   openedAt: Date | string
+  netPpmAtOpen: number
+  highestBidAtOpen: number
+  lowestAskAtOpen: number
   closedAt: Date | string
+  lastSeenAt: Date | string
   durationMs: number
-  samples: number
-  openNetPpm: number
+  ticks: number
   avgNetPpm: number
-  peakAt: Date | string
   peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-  pair: Prisma.PairCreateNestedOneWithoutOpportunitiesInput
-  buyMarket: Prisma.MarketCreateNestedOneWithoutAsBuyMarketInput
-  sellMarket: Prisma.MarketCreateNestedOneWithoutAsSellMarketInput
+  peakAt: Date | string
+  peakHighestBid: number
+  peakLowestAsk: number
+  minNetPpm: number
+  sampleTsMs?: Prisma.ArbitrageOpportunityCreatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityCreatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityCreatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityCreatelowestAskSeriesInput | number[]
 }
 
 export type ArbitrageOpportunityUncheckedCreateInput = {
   createdAt?: Date | string
   id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  pairId: number
-  buyMarketId: number
-  sellMarketId: number
+  pair: string
+  route: string
+  highestBidVenue: string
+  highestBidRawMarketId: string
+  lowestAskVenue: string
+  lowestAskRawMarketId: string
+  highestBidTakerPpm: number
+  lowestAskTakerPpm: number
   openedAt: Date | string
+  netPpmAtOpen: number
+  highestBidAtOpen: number
+  lowestAskAtOpen: number
   closedAt: Date | string
+  lastSeenAt: Date | string
   durationMs: number
-  samples: number
-  openNetPpm: number
+  ticks: number
   avgNetPpm: number
-  peakAt: Date | string
   peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
+  peakAt: Date | string
+  peakHighestBid: number
+  peakLowestAsk: number
+  minNetPpm: number
+  sampleTsMs?: Prisma.ArbitrageOpportunityCreatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityCreatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityCreatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityCreatelowestAskSeriesInput | number[]
 }
 
 export type ArbitrageOpportunityUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
+  pair?: Prisma.StringFieldUpdateOperationsInput | string
+  route?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  lowestAskTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  netPpmAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  ticks?: Prisma.IntFieldUpdateOperationsInput | number
+  avgNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  pair?: Prisma.PairUpdateOneRequiredWithoutOpportunitiesNestedInput
-  buyMarket?: Prisma.MarketUpdateOneRequiredWithoutAsBuyMarketNestedInput
-  sellMarket?: Prisma.MarketUpdateOneRequiredWithoutAsSellMarketNestedInput
+  peakHighestBid?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakLowestAsk?: Prisma.FloatFieldUpdateOperationsInput | number
+  minNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  sampleTsMs?: Prisma.ArbitrageOpportunityUpdatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
 }
 
 export type ArbitrageOpportunityUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  buyMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  sellMarketId?: Prisma.IntFieldUpdateOperationsInput | number
+  pair?: Prisma.StringFieldUpdateOperationsInput | string
+  route?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  lowestAskTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  netPpmAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  ticks?: Prisma.IntFieldUpdateOperationsInput | number
+  avgNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  peakHighestBid?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakLowestAsk?: Prisma.FloatFieldUpdateOperationsInput | number
+  minNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  sampleTsMs?: Prisma.ArbitrageOpportunityUpdatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
 }
 
 export type ArbitrageOpportunityCreateManyInput = {
   createdAt?: Date | string
   id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  pairId: number
-  buyMarketId: number
-  sellMarketId: number
+  pair: string
+  route: string
+  highestBidVenue: string
+  highestBidRawMarketId: string
+  lowestAskVenue: string
+  lowestAskRawMarketId: string
+  highestBidTakerPpm: number
+  lowestAskTakerPpm: number
   openedAt: Date | string
+  netPpmAtOpen: number
+  highestBidAtOpen: number
+  lowestAskAtOpen: number
   closedAt: Date | string
+  lastSeenAt: Date | string
   durationMs: number
-  samples: number
-  openNetPpm: number
+  ticks: number
   avgNetPpm: number
-  peakAt: Date | string
   peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
+  peakAt: Date | string
+  peakHighestBid: number
+  peakLowestAsk: number
+  minNetPpm: number
+  sampleTsMs?: Prisma.ArbitrageOpportunityCreatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityCreatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityCreatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityCreatelowestAskSeriesInput | number[]
 }
 
 export type ArbitrageOpportunityUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
+  pair?: Prisma.StringFieldUpdateOperationsInput | string
+  route?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  lowestAskTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  netPpmAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  ticks?: Prisma.IntFieldUpdateOperationsInput | number
+  avgNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  peakHighestBid?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakLowestAsk?: Prisma.FloatFieldUpdateOperationsInput | number
+  minNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  sampleTsMs?: Prisma.ArbitrageOpportunityUpdatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
 }
 
 export type ArbitrageOpportunityUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  buyMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  sellMarketId?: Prisma.IntFieldUpdateOperationsInput | number
+  pair?: Prisma.StringFieldUpdateOperationsInput | string
+  route?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskVenue?: Prisma.StringFieldUpdateOperationsInput | string
+  lowestAskRawMarketId?: Prisma.StringFieldUpdateOperationsInput | string
+  highestBidTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  lowestAskTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  netPpmAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
+  lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  ticks?: Prisma.IntFieldUpdateOperationsInput | number
+  avgNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+  peakHighestBid?: Prisma.FloatFieldUpdateOperationsInput | number
+  peakLowestAsk?: Prisma.FloatFieldUpdateOperationsInput | number
+  minNetPpm?: Prisma.FloatFieldUpdateOperationsInput | number
+  sampleTsMs?: Prisma.ArbitrageOpportunityUpdatesampleTsMsInput | number[]
+  netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
+  highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
+  lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
 }
 
-export type ArbitrageOpportunityListRelationFilter = {
-  every?: Prisma.ArbitrageOpportunityWhereInput
-  some?: Prisma.ArbitrageOpportunityWhereInput
-  none?: Prisma.ArbitrageOpportunityWhereInput
+export type IntNullableListFilter<$PrismaModel = never> = {
+  equals?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
+  has?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
+  hasEvery?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
+  hasSome?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
-export type ArbitrageOpportunityOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
+export type FloatNullableListFilter<$PrismaModel = never> = {
+  equals?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  has?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
+  hasEvery?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  hasSome?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type ArbitrageOpportunityCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  kind?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  pair?: Prisma.SortOrder
+  route?: Prisma.SortOrder
+  highestBidVenue?: Prisma.SortOrder
+  highestBidRawMarketId?: Prisma.SortOrder
+  lowestAskVenue?: Prisma.SortOrder
+  lowestAskRawMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
-  peakAt?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
+  peakAt?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
+  sampleTsMs?: Prisma.SortOrder
+  netPpmSeries?: Prisma.SortOrder
+  highestBidSeries?: Prisma.SortOrder
+  lowestAskSeries?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
+  sampleTsMs?: Prisma.SortOrder
+  netPpmSeries?: Prisma.SortOrder
+  highestBidSeries?: Prisma.SortOrder
+  lowestAskSeries?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  kind?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  pair?: Prisma.SortOrder
+  route?: Prisma.SortOrder
+  highestBidVenue?: Prisma.SortOrder
+  highestBidRawMarketId?: Prisma.SortOrder
+  lowestAskVenue?: Prisma.SortOrder
+  lowestAskRawMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
-  peakAt?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
+  peakAt?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   id?: Prisma.SortOrder
-  kind?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  pair?: Prisma.SortOrder
+  route?: Prisma.SortOrder
+  highestBidVenue?: Prisma.SortOrder
+  highestBidRawMarketId?: Prisma.SortOrder
+  lowestAskVenue?: Prisma.SortOrder
+  lowestAskRawMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
-  peakAt?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
+  peakAt?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunitySumOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  pairId?: Prisma.SortOrder
-  buyMarketId?: Prisma.SortOrder
-  sellMarketId?: Prisma.SortOrder
+  highestBidTakerPpm?: Prisma.SortOrder
+  lowestAskTakerPpm?: Prisma.SortOrder
+  netPpmAtOpen?: Prisma.SortOrder
+  highestBidAtOpen?: Prisma.SortOrder
+  lowestAskAtOpen?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
-  samples?: Prisma.SortOrder
-  openNetPpm?: Prisma.SortOrder
+  ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
   peakNetPpm?: Prisma.SortOrder
-  peakBuyAsk?: Prisma.SortOrder
-  peakSellBid?: Prisma.SortOrder
-  peakQty?: Prisma.SortOrder
-  peakNotionalQuote?: Prisma.SortOrder
-  peakProfitQuote?: Prisma.SortOrder
-  peakProfitUsd?: Prisma.SortOrder
-  buyTakerPpm?: Prisma.SortOrder
-  sellTakerPpm?: Prisma.SortOrder
+  peakHighestBid?: Prisma.SortOrder
+  peakLowestAsk?: Prisma.SortOrder
+  minNetPpm?: Prisma.SortOrder
+  sampleTsMs?: Prisma.SortOrder
+  netPpmSeries?: Prisma.SortOrder
+  highestBidSeries?: Prisma.SortOrder
+  lowestAskSeries?: Prisma.SortOrder
 }
 
-export type ArbitrageOpportunityCreateNestedManyWithoutPairInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput> | Prisma.ArbitrageOpportunityCreateWithoutPairInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyPairInputEnvelope
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
+export type ArbitrageOpportunityCreatesampleTsMsInput = {
+  set: number[]
 }
 
-export type ArbitrageOpportunityUncheckedCreateNestedManyWithoutPairInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput> | Prisma.ArbitrageOpportunityCreateWithoutPairInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyPairInputEnvelope
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
+export type ArbitrageOpportunityCreatenetPpmSeriesInput = {
+  set: number[]
 }
 
-export type ArbitrageOpportunityUpdateManyWithoutPairNestedInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput> | Prisma.ArbitrageOpportunityCreateWithoutPairInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput[]
-  upsert?: Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutPairInput | Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutPairInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyPairInputEnvelope
-  set?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  disconnect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  delete?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  update?: Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutPairInput | Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutPairInput[]
-  updateMany?: Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutPairInput | Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutPairInput[]
-  deleteMany?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
+export type ArbitrageOpportunityCreatehighestBidSeriesInput = {
+  set: number[]
 }
 
-export type ArbitrageOpportunityUncheckedUpdateManyWithoutPairNestedInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput> | Prisma.ArbitrageOpportunityCreateWithoutPairInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutPairInput[]
-  upsert?: Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutPairInput | Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutPairInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyPairInputEnvelope
-  set?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  disconnect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  delete?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  update?: Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutPairInput | Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutPairInput[]
-  updateMany?: Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutPairInput | Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutPairInput[]
-  deleteMany?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
-}
-
-export type ArbitrageOpportunityCreateNestedManyWithoutBuyMarketInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyBuyMarketInputEnvelope
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-}
-
-export type ArbitrageOpportunityCreateNestedManyWithoutSellMarketInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManySellMarketInputEnvelope
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-}
-
-export type ArbitrageOpportunityUncheckedCreateNestedManyWithoutBuyMarketInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyBuyMarketInputEnvelope
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-}
-
-export type ArbitrageOpportunityUncheckedCreateNestedManyWithoutSellMarketInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManySellMarketInputEnvelope
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-}
-
-export type ArbitrageOpportunityUpdateManyWithoutBuyMarketNestedInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput[]
-  upsert?: Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutBuyMarketInput | Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutBuyMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyBuyMarketInputEnvelope
-  set?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  disconnect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  delete?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  update?: Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutBuyMarketInput | Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutBuyMarketInput[]
-  updateMany?: Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutBuyMarketInput | Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutBuyMarketInput[]
-  deleteMany?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
-}
-
-export type ArbitrageOpportunityUpdateManyWithoutSellMarketNestedInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput[]
-  upsert?: Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutSellMarketInput | Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutSellMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManySellMarketInputEnvelope
-  set?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  disconnect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  delete?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  update?: Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutSellMarketInput | Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutSellMarketInput[]
-  updateMany?: Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutSellMarketInput | Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutSellMarketInput[]
-  deleteMany?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
-}
-
-export type ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketNestedInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput[]
-  upsert?: Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutBuyMarketInput | Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutBuyMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManyBuyMarketInputEnvelope
-  set?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  disconnect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  delete?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  update?: Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutBuyMarketInput | Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutBuyMarketInput[]
-  updateMany?: Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutBuyMarketInput | Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutBuyMarketInput[]
-  deleteMany?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
-}
-
-export type ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketNestedInput = {
-  create?: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput> | Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput[] | Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput[]
-  connectOrCreate?: Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput | Prisma.ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput[]
-  upsert?: Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutSellMarketInput | Prisma.ArbitrageOpportunityUpsertWithWhereUniqueWithoutSellMarketInput[]
-  createMany?: Prisma.ArbitrageOpportunityCreateManySellMarketInputEnvelope
-  set?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  disconnect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  delete?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  connect?: Prisma.ArbitrageOpportunityWhereUniqueInput | Prisma.ArbitrageOpportunityWhereUniqueInput[]
-  update?: Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutSellMarketInput | Prisma.ArbitrageOpportunityUpdateWithWhereUniqueWithoutSellMarketInput[]
-  updateMany?: Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutSellMarketInput | Prisma.ArbitrageOpportunityUpdateManyWithWhereWithoutSellMarketInput[]
-  deleteMany?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
+export type ArbitrageOpportunityCreatelowestAskSeriesInput = {
+  set: number[]
 }
 
 export type BigIntFieldUpdateOperationsInput = {
@@ -971,554 +970,32 @@ export type BigIntFieldUpdateOperationsInput = {
   divide?: bigint | number
 }
 
-export type EnumArbitrageKindFieldUpdateOperationsInput = {
-  set?: $Enums.ArbitrageKind
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
-export type DecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+export type ArbitrageOpportunityUpdatesampleTsMsInput = {
+  set?: number[]
+  push?: number | number[]
 }
 
-export type ArbitrageOpportunityCreateWithoutPairInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-  buyMarket: Prisma.MarketCreateNestedOneWithoutAsBuyMarketInput
-  sellMarket: Prisma.MarketCreateNestedOneWithoutAsSellMarketInput
+export type ArbitrageOpportunityUpdatenetPpmSeriesInput = {
+  set?: number[]
+  push?: number | number[]
 }
 
-export type ArbitrageOpportunityUncheckedCreateWithoutPairInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  buyMarketId: number
-  sellMarketId: number
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
+export type ArbitrageOpportunityUpdatehighestBidSeriesInput = {
+  set?: number[]
+  push?: number | number[]
 }
 
-export type ArbitrageOpportunityCreateOrConnectWithoutPairInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  create: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput>
-}
-
-export type ArbitrageOpportunityCreateManyPairInputEnvelope = {
-  data: Prisma.ArbitrageOpportunityCreateManyPairInput | Prisma.ArbitrageOpportunityCreateManyPairInput[]
-  skipDuplicates?: boolean
-}
-
-export type ArbitrageOpportunityUpsertWithWhereUniqueWithoutPairInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  update: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedUpdateWithoutPairInput>
-  create: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutPairInput>
-}
-
-export type ArbitrageOpportunityUpdateWithWhereUniqueWithoutPairInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  data: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateWithoutPairInput, Prisma.ArbitrageOpportunityUncheckedUpdateWithoutPairInput>
-}
-
-export type ArbitrageOpportunityUpdateManyWithWhereWithoutPairInput = {
-  where: Prisma.ArbitrageOpportunityScalarWhereInput
-  data: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateManyMutationInput, Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutPairInput>
-}
-
-export type ArbitrageOpportunityScalarWhereInput = {
-  AND?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
-  OR?: Prisma.ArbitrageOpportunityScalarWhereInput[]
-  NOT?: Prisma.ArbitrageOpportunityScalarWhereInput | Prisma.ArbitrageOpportunityScalarWhereInput[]
-  createdAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  id?: Prisma.BigIntFilter<"ArbitrageOpportunity"> | bigint | number
-  kind?: Prisma.EnumArbitrageKindFilter<"ArbitrageOpportunity"> | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  buyMarketId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  sellMarketId?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  openedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  samples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  openNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  avgNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  peakAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
-  peakNetPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  peakBuyAsk?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.DecimalNullableFilter<"ArbitrageOpportunity"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-  sellTakerPpm?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
-}
-
-export type ArbitrageOpportunityCreateWithoutBuyMarketInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-  pair: Prisma.PairCreateNestedOneWithoutOpportunitiesInput
-  sellMarket: Prisma.MarketCreateNestedOneWithoutAsSellMarketInput
-}
-
-export type ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  pairId: number
-  sellMarketId: number
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-}
-
-export type ArbitrageOpportunityCreateOrConnectWithoutBuyMarketInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  create: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput>
-}
-
-export type ArbitrageOpportunityCreateManyBuyMarketInputEnvelope = {
-  data: Prisma.ArbitrageOpportunityCreateManyBuyMarketInput | Prisma.ArbitrageOpportunityCreateManyBuyMarketInput[]
-  skipDuplicates?: boolean
-}
-
-export type ArbitrageOpportunityCreateWithoutSellMarketInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-  pair: Prisma.PairCreateNestedOneWithoutOpportunitiesInput
-  buyMarket: Prisma.MarketCreateNestedOneWithoutAsBuyMarketInput
-}
-
-export type ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  pairId: number
-  buyMarketId: number
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-}
-
-export type ArbitrageOpportunityCreateOrConnectWithoutSellMarketInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  create: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput>
-}
-
-export type ArbitrageOpportunityCreateManySellMarketInputEnvelope = {
-  data: Prisma.ArbitrageOpportunityCreateManySellMarketInput | Prisma.ArbitrageOpportunityCreateManySellMarketInput[]
-  skipDuplicates?: boolean
-}
-
-export type ArbitrageOpportunityUpsertWithWhereUniqueWithoutBuyMarketInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  update: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedUpdateWithoutBuyMarketInput>
-  create: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutBuyMarketInput>
-}
-
-export type ArbitrageOpportunityUpdateWithWhereUniqueWithoutBuyMarketInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  data: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateWithoutBuyMarketInput, Prisma.ArbitrageOpportunityUncheckedUpdateWithoutBuyMarketInput>
-}
-
-export type ArbitrageOpportunityUpdateManyWithWhereWithoutBuyMarketInput = {
-  where: Prisma.ArbitrageOpportunityScalarWhereInput
-  data: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateManyMutationInput, Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketInput>
-}
-
-export type ArbitrageOpportunityUpsertWithWhereUniqueWithoutSellMarketInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  update: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedUpdateWithoutSellMarketInput>
-  create: Prisma.XOR<Prisma.ArbitrageOpportunityCreateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedCreateWithoutSellMarketInput>
-}
-
-export type ArbitrageOpportunityUpdateWithWhereUniqueWithoutSellMarketInput = {
-  where: Prisma.ArbitrageOpportunityWhereUniqueInput
-  data: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateWithoutSellMarketInput, Prisma.ArbitrageOpportunityUncheckedUpdateWithoutSellMarketInput>
-}
-
-export type ArbitrageOpportunityUpdateManyWithWhereWithoutSellMarketInput = {
-  where: Prisma.ArbitrageOpportunityScalarWhereInput
-  data: Prisma.XOR<Prisma.ArbitrageOpportunityUpdateManyMutationInput, Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketInput>
-}
-
-export type ArbitrageOpportunityCreateManyPairInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  buyMarketId: number
-  sellMarketId: number
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-}
-
-export type ArbitrageOpportunityUpdateWithoutPairInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  buyMarket?: Prisma.MarketUpdateOneRequiredWithoutAsBuyMarketNestedInput
-  sellMarket?: Prisma.MarketUpdateOneRequiredWithoutAsSellMarketNestedInput
-}
-
-export type ArbitrageOpportunityUncheckedUpdateWithoutPairInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  buyMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  sellMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type ArbitrageOpportunityUncheckedUpdateManyWithoutPairInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  buyMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  sellMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type ArbitrageOpportunityCreateManyBuyMarketInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  pairId: number
-  sellMarketId: number
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-}
-
-export type ArbitrageOpportunityCreateManySellMarketInput = {
-  createdAt?: Date | string
-  id?: bigint | number
-  kind?: $Enums.ArbitrageKind
-  pairId: number
-  buyMarketId: number
-  openedAt: Date | string
-  closedAt: Date | string
-  durationMs: number
-  samples: number
-  openNetPpm: number
-  avgNetPpm: number
-  peakAt: Date | string
-  peakNetPpm: number
-  peakBuyAsk: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote: runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm: number
-  sellTakerPpm: number
-}
-
-export type ArbitrageOpportunityUpdateWithoutBuyMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  pair?: Prisma.PairUpdateOneRequiredWithoutOpportunitiesNestedInput
-  sellMarket?: Prisma.MarketUpdateOneRequiredWithoutAsSellMarketNestedInput
-}
-
-export type ArbitrageOpportunityUncheckedUpdateWithoutBuyMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  sellMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type ArbitrageOpportunityUncheckedUpdateManyWithoutBuyMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  sellMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type ArbitrageOpportunityUpdateWithoutSellMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  pair?: Prisma.PairUpdateOneRequiredWithoutOpportunitiesNestedInput
-  buyMarket?: Prisma.MarketUpdateOneRequiredWithoutAsBuyMarketNestedInput
-}
-
-export type ArbitrageOpportunityUncheckedUpdateWithoutSellMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  buyMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  kind?: Prisma.EnumArbitrageKindFieldUpdateOperationsInput | $Enums.ArbitrageKind
-  pairId?: Prisma.IntFieldUpdateOperationsInput | number
-  buyMarketId?: Prisma.IntFieldUpdateOperationsInput | number
-  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
-  samples?: Prisma.IntFieldUpdateOperationsInput | number
-  openNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  avgNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  peakNetPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  peakBuyAsk?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakSellBid?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakQty?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakNotionalQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitQuote?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  peakProfitUsd?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  buyTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
-  sellTakerPpm?: Prisma.IntFieldUpdateOperationsInput | number
+export type ArbitrageOpportunityUpdatelowestAskSeriesInput = {
+  set?: number[]
+  push?: number | number[]
 }
 
 
@@ -1526,171 +1003,182 @@ export type ArbitrageOpportunityUncheckedUpdateManyWithoutSellMarketInput = {
 export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   createdAt?: boolean
   id?: boolean
-  kind?: boolean
-  pairId?: boolean
-  buyMarketId?: boolean
-  sellMarketId?: boolean
+  pair?: boolean
+  route?: boolean
+  highestBidVenue?: boolean
+  highestBidRawMarketId?: boolean
+  lowestAskVenue?: boolean
+  lowestAskRawMarketId?: boolean
+  highestBidTakerPpm?: boolean
+  lowestAskTakerPpm?: boolean
   openedAt?: boolean
+  netPpmAtOpen?: boolean
+  highestBidAtOpen?: boolean
+  lowestAskAtOpen?: boolean
   closedAt?: boolean
+  lastSeenAt?: boolean
   durationMs?: boolean
-  samples?: boolean
-  openNetPpm?: boolean
+  ticks?: boolean
   avgNetPpm?: boolean
-  peakAt?: boolean
   peakNetPpm?: boolean
-  peakBuyAsk?: boolean
-  peakSellBid?: boolean
-  peakQty?: boolean
-  peakNotionalQuote?: boolean
-  peakProfitQuote?: boolean
-  peakProfitUsd?: boolean
-  buyTakerPpm?: boolean
-  sellTakerPpm?: boolean
-  pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  buyMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-  sellMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
+  peakAt?: boolean
+  peakHighestBid?: boolean
+  peakLowestAsk?: boolean
+  minNetPpm?: boolean
+  sampleTsMs?: boolean
+  netPpmSeries?: boolean
+  highestBidSeries?: boolean
+  lowestAskSeries?: boolean
 }, ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   createdAt?: boolean
   id?: boolean
-  kind?: boolean
-  pairId?: boolean
-  buyMarketId?: boolean
-  sellMarketId?: boolean
+  pair?: boolean
+  route?: boolean
+  highestBidVenue?: boolean
+  highestBidRawMarketId?: boolean
+  lowestAskVenue?: boolean
+  lowestAskRawMarketId?: boolean
+  highestBidTakerPpm?: boolean
+  lowestAskTakerPpm?: boolean
   openedAt?: boolean
+  netPpmAtOpen?: boolean
+  highestBidAtOpen?: boolean
+  lowestAskAtOpen?: boolean
   closedAt?: boolean
+  lastSeenAt?: boolean
   durationMs?: boolean
-  samples?: boolean
-  openNetPpm?: boolean
+  ticks?: boolean
   avgNetPpm?: boolean
-  peakAt?: boolean
   peakNetPpm?: boolean
-  peakBuyAsk?: boolean
-  peakSellBid?: boolean
-  peakQty?: boolean
-  peakNotionalQuote?: boolean
-  peakProfitQuote?: boolean
-  peakProfitUsd?: boolean
-  buyTakerPpm?: boolean
-  sellTakerPpm?: boolean
-  pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  buyMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-  sellMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
+  peakAt?: boolean
+  peakHighestBid?: boolean
+  peakLowestAsk?: boolean
+  minNetPpm?: boolean
+  sampleTsMs?: boolean
+  netPpmSeries?: boolean
+  highestBidSeries?: boolean
+  lowestAskSeries?: boolean
 }, ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   createdAt?: boolean
   id?: boolean
-  kind?: boolean
-  pairId?: boolean
-  buyMarketId?: boolean
-  sellMarketId?: boolean
+  pair?: boolean
+  route?: boolean
+  highestBidVenue?: boolean
+  highestBidRawMarketId?: boolean
+  lowestAskVenue?: boolean
+  lowestAskRawMarketId?: boolean
+  highestBidTakerPpm?: boolean
+  lowestAskTakerPpm?: boolean
   openedAt?: boolean
+  netPpmAtOpen?: boolean
+  highestBidAtOpen?: boolean
+  lowestAskAtOpen?: boolean
   closedAt?: boolean
+  lastSeenAt?: boolean
   durationMs?: boolean
-  samples?: boolean
-  openNetPpm?: boolean
+  ticks?: boolean
   avgNetPpm?: boolean
-  peakAt?: boolean
   peakNetPpm?: boolean
-  peakBuyAsk?: boolean
-  peakSellBid?: boolean
-  peakQty?: boolean
-  peakNotionalQuote?: boolean
-  peakProfitQuote?: boolean
-  peakProfitUsd?: boolean
-  buyTakerPpm?: boolean
-  sellTakerPpm?: boolean
-  pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  buyMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-  sellMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
+  peakAt?: boolean
+  peakHighestBid?: boolean
+  peakLowestAsk?: boolean
+  minNetPpm?: boolean
+  sampleTsMs?: boolean
+  netPpmSeries?: boolean
+  highestBidSeries?: boolean
+  lowestAskSeries?: boolean
 }, ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type ArbitrageOpportunitySelectScalar = {
   createdAt?: boolean
   id?: boolean
-  kind?: boolean
-  pairId?: boolean
-  buyMarketId?: boolean
-  sellMarketId?: boolean
+  pair?: boolean
+  route?: boolean
+  highestBidVenue?: boolean
+  highestBidRawMarketId?: boolean
+  lowestAskVenue?: boolean
+  lowestAskRawMarketId?: boolean
+  highestBidTakerPpm?: boolean
+  lowestAskTakerPpm?: boolean
   openedAt?: boolean
+  netPpmAtOpen?: boolean
+  highestBidAtOpen?: boolean
+  lowestAskAtOpen?: boolean
   closedAt?: boolean
+  lastSeenAt?: boolean
   durationMs?: boolean
-  samples?: boolean
-  openNetPpm?: boolean
+  ticks?: boolean
   avgNetPpm?: boolean
-  peakAt?: boolean
   peakNetPpm?: boolean
-  peakBuyAsk?: boolean
-  peakSellBid?: boolean
-  peakQty?: boolean
-  peakNotionalQuote?: boolean
-  peakProfitQuote?: boolean
-  peakProfitUsd?: boolean
-  buyTakerPpm?: boolean
-  sellTakerPpm?: boolean
+  peakAt?: boolean
+  peakHighestBid?: boolean
+  peakLowestAsk?: boolean
+  minNetPpm?: boolean
+  sampleTsMs?: boolean
+  netPpmSeries?: boolean
+  highestBidSeries?: boolean
+  lowestAskSeries?: boolean
 }
 
-export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "kind" | "pairId" | "buyMarketId" | "sellMarketId" | "openedAt" | "closedAt" | "durationMs" | "samples" | "openNetPpm" | "avgNetPpm" | "peakAt" | "peakNetPpm" | "peakBuyAsk" | "peakSellBid" | "peakQty" | "peakNotionalQuote" | "peakProfitQuote" | "peakProfitUsd" | "buyTakerPpm" | "sellTakerPpm", ExtArgs["result"]["arbitrageOpportunity"]>
-export type ArbitrageOpportunityInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  buyMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-  sellMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-}
-export type ArbitrageOpportunityIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  buyMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-  sellMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-}
-export type ArbitrageOpportunityIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  pair?: boolean | Prisma.PairDefaultArgs<ExtArgs>
-  buyMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-  sellMarket?: boolean | Prisma.MarketDefaultArgs<ExtArgs>
-}
+export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries", ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ArbitrageOpportunity"
-  objects: {
-    pair: Prisma.$PairPayload<ExtArgs>
-    buyMarket: Prisma.$MarketPayload<ExtArgs>
-    sellMarket: Prisma.$MarketPayload<ExtArgs>
-  }
+  objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     createdAt: Date
     id: bigint
-    kind: $Enums.ArbitrageKind
-    pairId: number
-    buyMarketId: number
-    sellMarketId: number
-    openedAt: Date
-    closedAt: Date
-    durationMs: number
     /**
-     * Quote updates folded into this episode
+     * PairKey, spelled "BTC|USDT"
      */
-    samples: number
-    openNetPpm: number
-    avgNetPpm: number
-    peakAt: Date
-    peakNetPpm: number
-    peakBuyAsk: runtime.Decimal
-    peakSellBid: runtime.Decimal
+    pair: string
     /**
-     * The smaller of the two resting quantities at the top of both books
+     * RouteKey, so the bid venue and then the ask venue, spelled "bybit-binance"
      */
-    peakQty: runtime.Decimal
-    peakNotionalQuote: runtime.Decimal
-    peakProfitQuote: runtime.Decimal
-    /**
-     * Null when the quote asset has no USD reference price
-     */
-    peakProfitUsd: runtime.Decimal | null
+    route: string
+    highestBidVenue: string
+    highestBidRawMarketId: string
+    lowestAskVenue: string
+    lowestAskRawMarketId: string
     /**
      * The rates actually used, recorded so the row survives a later fee change
      */
-    buyTakerPpm: number
-    sellTakerPpm: number
+    highestBidTakerPpm: number
+    lowestAskTakerPpm: number
+    openedAt: Date
+    netPpmAtOpen: number
+    highestBidAtOpen: number
+    lowestAskAtOpen: number
+    closedAt: Date
+    /**
+     * The last tick that fed this route, so a wide gap to closedAt means it closed on a stale quote rather than on a collapsing spread
+     */
+    lastSeenAt: Date
+    durationMs: number
+    /**
+     * Ticks folded into this episode, which is also the length of every series below
+     */
+    ticks: number
+    avgNetPpm: number
+    peakNetPpm: number
+    peakAt: Date
+    /**
+     * The two prices read at the tick where netPpm peaked, not the extremes of their own series
+     */
+    peakHighestBid: number
+    peakLowestAsk: number
+    /**
+     * The worst reading of the episode, taken from netPpmSeries when the row is built
+     */
+    minNetPpm: number
+    sampleTsMs: number[]
+    netPpmSeries: number[]
+    highestBidSeries: number[]
+    lowestAskSeries: number[]
   }, ExtArgs["result"]["arbitrageOpportunity"]>
   composites: {}
 }
@@ -2085,9 +1573,6 @@ readonly fields: ArbitrageOpportunityFieldRefs;
  */
 export interface Prisma__ArbitrageOpportunityClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  pair<T extends Prisma.PairDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PairDefaultArgs<ExtArgs>>): Prisma.Prisma__PairClient<runtime.Types.Result.GetResult<Prisma.$PairPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  buyMarket<T extends Prisma.MarketDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MarketDefaultArgs<ExtArgs>>): Prisma.Prisma__MarketClient<runtime.Types.Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  sellMarket<T extends Prisma.MarketDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MarketDefaultArgs<ExtArgs>>): Prisma.Prisma__MarketClient<runtime.Types.Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2119,26 +1604,32 @@ export interface Prisma__ArbitrageOpportunityClient<T, Null = never, ExtArgs ext
 export interface ArbitrageOpportunityFieldRefs {
   readonly createdAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly id: Prisma.FieldRef<"ArbitrageOpportunity", 'BigInt'>
-  readonly kind: Prisma.FieldRef<"ArbitrageOpportunity", 'ArbitrageKind'>
-  readonly pairId: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly buyMarketId: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly sellMarketId: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly pair: Prisma.FieldRef<"ArbitrageOpportunity", 'String'>
+  readonly route: Prisma.FieldRef<"ArbitrageOpportunity", 'String'>
+  readonly highestBidVenue: Prisma.FieldRef<"ArbitrageOpportunity", 'String'>
+  readonly highestBidRawMarketId: Prisma.FieldRef<"ArbitrageOpportunity", 'String'>
+  readonly lowestAskVenue: Prisma.FieldRef<"ArbitrageOpportunity", 'String'>
+  readonly lowestAskRawMarketId: Prisma.FieldRef<"ArbitrageOpportunity", 'String'>
+  readonly highestBidTakerPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly lowestAskTakerPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
   readonly openedAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
+  readonly netPpmAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly highestBidAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly lowestAskAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly closedAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
+  readonly lastSeenAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly durationMs: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly samples: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly openNetPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly avgNetPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly ticks: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly avgNetPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly peakNetPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly peakAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
-  readonly peakNetPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly peakBuyAsk: Prisma.FieldRef<"ArbitrageOpportunity", 'Decimal'>
-  readonly peakSellBid: Prisma.FieldRef<"ArbitrageOpportunity", 'Decimal'>
-  readonly peakQty: Prisma.FieldRef<"ArbitrageOpportunity", 'Decimal'>
-  readonly peakNotionalQuote: Prisma.FieldRef<"ArbitrageOpportunity", 'Decimal'>
-  readonly peakProfitQuote: Prisma.FieldRef<"ArbitrageOpportunity", 'Decimal'>
-  readonly peakProfitUsd: Prisma.FieldRef<"ArbitrageOpportunity", 'Decimal'>
-  readonly buyTakerPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
-  readonly sellTakerPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly peakHighestBid: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly peakLowestAsk: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly minNetPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly sampleTsMs: Prisma.FieldRef<"ArbitrageOpportunity", 'Int[]'>
+  readonly netPpmSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
+  readonly highestBidSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
+  readonly lowestAskSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
 }
     
 
@@ -2155,10 +1646,6 @@ export type ArbitrageOpportunityFindUniqueArgs<ExtArgs extends runtime.Types.Ext
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
   /**
    * Filter, which ArbitrageOpportunity to fetch.
    */
@@ -2178,10 +1665,6 @@ export type ArbitrageOpportunityFindUniqueOrThrowArgs<ExtArgs extends runtime.Ty
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
-  /**
    * Filter, which ArbitrageOpportunity to fetch.
    */
   where: Prisma.ArbitrageOpportunityWhereUniqueInput
@@ -2199,10 +1682,6 @@ export type ArbitrageOpportunityFindFirstArgs<ExtArgs extends runtime.Types.Exte
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
   /**
    * Filter, which ArbitrageOpportunity to fetch.
    */
@@ -2252,10 +1731,6 @@ export type ArbitrageOpportunityFindFirstOrThrowArgs<ExtArgs extends runtime.Typ
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
-  /**
    * Filter, which ArbitrageOpportunity to fetch.
    */
   where?: Prisma.ArbitrageOpportunityWhereInput
@@ -2303,10 +1778,6 @@ export type ArbitrageOpportunityFindManyArgs<ExtArgs extends runtime.Types.Exten
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
   /**
    * Filter, which ArbitrageOpportunities to fetch.
    */
@@ -2356,10 +1827,6 @@ export type ArbitrageOpportunityCreateArgs<ExtArgs extends runtime.Types.Extensi
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
   /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
-  /**
    * The data needed to create a ArbitrageOpportunity.
    */
   data: Prisma.XOR<Prisma.ArbitrageOpportunityCreateInput, Prisma.ArbitrageOpportunityUncheckedCreateInput>
@@ -2393,10 +1860,6 @@ export type ArbitrageOpportunityCreateManyAndReturnArgs<ExtArgs extends runtime.
    */
   data: Prisma.ArbitrageOpportunityCreateManyInput | Prisma.ArbitrageOpportunityCreateManyInput[]
   skipDuplicates?: boolean
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -2411,10 +1874,6 @@ export type ArbitrageOpportunityUpdateArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
   /**
    * The data needed to update a ArbitrageOpportunity.
    */
@@ -2467,10 +1926,6 @@ export type ArbitrageOpportunityUpdateManyAndReturnArgs<ExtArgs extends runtime.
    * Limit how many ArbitrageOpportunities to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -2485,10 +1940,6 @@ export type ArbitrageOpportunityUpsertArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
   /**
    * The filter to search for the ArbitrageOpportunity to update in case it exists.
    */
@@ -2515,10 +1966,6 @@ export type ArbitrageOpportunityDeleteArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
   /**
    * Filter which ArbitrageOpportunity to delete.
    */
@@ -2551,8 +1998,4 @@ export type ArbitrageOpportunityDefaultArgs<ExtArgs extends runtime.Types.Extens
    * Omit specific fields from the ArbitrageOpportunity
    */
   omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
 }

@@ -1,4 +1,10 @@
 import { Logger } from '@nestjs/common';
+import type { Queue } from 'bullmq';
+import { toOpportunityRow } from '../db/conversion';
+import {
+  OPPORTUNITY_CLOSED_JOB,
+  type OpportunityClosedJob,
+} from './OpportunityWorker';
 import type {
   Cluster,
   Opportunity,
@@ -17,13 +23,12 @@ export class OpportunityManager {
   private logger = new Logger(OpportunityManager.name);
   private activeOpportunityMap: ActiveOpportunityMap = new Map();
 
-  // One tick: the venue at venueIndex has just written a validated quote into the cluster.
-  // Maintain first, then discover. Returns the opportunity this tick opened, or null.
-  validate(cluster: Cluster, venueIndex: number, now: number): Opportunity | null {
+  // Optional so the engine still runs without Redis, for example in the specs.
+  constructor(private readonly queue?: Queue<OpportunityClosedJob>) {}
+
+  validate(cluster: Cluster, venueIndex: number, now: number): void | null {
     const routes = this.activeOpportunityMap.get(cluster.pair);
 
-    // Every open route with a leg on the venue that just ticked is re-read from the cluster
-    // and fed its next sample. A route with no leg there has not changed.
     if (routes !== undefined) {
       for (const opportunity of routes.values()) {
         const b = opportunity.highestBidVenueIndex;
@@ -33,7 +38,7 @@ export class OpportunityManager {
       }
     }
 
-    // The cluster-wide scan only discovers; it never updates.
+    // The cluster-wide scan only discovers. It never updates.
     const highestBidResult = this.getEffectiveHighestBid(cluster, now);
     const lowestAskResult = this.getEffectiveLowestAsk(cluster, now);
 
@@ -56,7 +61,7 @@ export class OpportunityManager {
     }
 
     if (this.doesOpportunityAlreadyExist(cluster.pair, highestBidMarket, lowestAskMarket)) {
-      // Already tracked. The loop above fed it on this tick if one of its legs moved.
+      // Already tracked. The loop above fed it on this tick if one of its legs moved
       return null;
     }
 
@@ -69,22 +74,9 @@ export class OpportunityManager {
     this.logger.log(
       `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}`,
     );
-
-    return this.trackOpportunity({
-      cluster,
-      highestBid,
-      lowestAsk,
-      netPpm,
-      highestBidMarket,
-      lowestAskMarket,
-      highestBidVenueIndex: highestBidIndex,
-      lowestAskVenueIndex: lowestAskIndex,
-      now,
-    });
   }
 
-  // Records one reading of a route: opens the route if it is unknown, appends the sample otherwise.
-  // Thresholds are the caller's business; this records whatever it is given.
+
   trackOpportunity(O: Observation): Opportunity {
     const routeKey = this.getRouteKey(O.highestBidMarket, O.lowestAskMarket);
     let routes = this.activeOpportunityMap.get(O.cluster.pair);
@@ -150,7 +142,7 @@ export class OpportunityManager {
     };
   }
 
-  // Re-reads an open route from its own two legs, records the sample, then decides whether it closes.
+  // Re-reads an open route from its own two legs, records the sample, then decides whether it closes
   updateOpportunity(
     opportunity: Opportunity,
     cluster: Cluster,
@@ -164,7 +156,7 @@ export class OpportunityManager {
 
     this.recordSample(opportunity, highestBid, lowestAsk, netPpm, now);
 
-    // Recorded first, so a collapsing tick ends the series and the close log sees it.
+    // Recorded first, so a collapsing tick ends the series and the close log sees it
     if (this.shouldOpportunityBeClosed(opportunity, cluster, now, netPpm)) {
       this.closeOpportunity(opportunity, cluster.pair, now);
     }
@@ -226,9 +218,7 @@ export class OpportunityManager {
     return netPpm < CLOSURE_NET_PPM;
   }
 
-  // Closes every open route that no tick can reach any more. With the venue filter in validate,
-  // lastSeenAt is exactly the last time one of a route's legs ticked, so this needs no cluster access.
-  // Meant to run on a timer.
+  
   sweep(now: number): Opportunity[] {
     return this.closeWhere(
       now,
@@ -256,8 +246,9 @@ export class OpportunityManager {
       for (const opportunity of routes.values()) {
         if (!shouldClose(opportunity)) continue;
 
-        const result = this.closeOpportunity(opportunity, pair, now);
-        if (result !== null) closed.push(result);
+        if (this.closeOpportunity(opportunity, pair, now)) {
+          closed.push(opportunity);
+        }
       }
 
       if (routes.size === 0) {
@@ -268,16 +259,17 @@ export class OpportunityManager {
     return closed;
   }
 
+  // Returns whether this call is the one that closed the route.
   closeOpportunity(
     opportunity: Opportunity,
     pair: PairKey,
     now: number,
-  ): Opportunity | null {
+  ): boolean {
     if (opportunity.closedAt !== null) {
       this.logger.error(
         `Opportunity for ${pair} at ${now} wasn't closed because it's already closed`,
       );
-      return null;
+      return false;
     }
 
     opportunity.closedAt = now;
@@ -301,11 +293,33 @@ export class OpportunityManager {
       peakAt: opportunity.peakAt,
     });
 
-    // This must be a db write later instead of a return
-    return opportunity;
+    this.enqueueClosed(opportunity, pair, routeKey);
+
+    return true;
   }
 
-  // The venue we sell on, then the venue we buy on. Directional: "bybit-binance" != "binance-bybit".
+  // Never awaited. Awaiting Redis here would make the whole tick a promise chain, and another quote could mutate the cluster halfway through it.
+  private enqueueClosed(
+    opportunity: Opportunity,
+    pair: PairKey,
+    route: string,
+  ): void {
+    if (this.queue === undefined) return;
+
+    const rows = [toOpportunityRow(opportunity, pair, route)];
+
+    void this.queue
+      .add(OPPORTUNITY_CLOSED_JOB, { rows })
+      .catch((error: Error) => {
+        this.logger.error({
+          event: 'opportunity_enqueue_failed',
+          pair,
+          route,
+          error: error.message,
+        });
+      });
+  }
+
   getRouteKey(
     highestBidMarket: Market,
     lowestAskMarket: Market,
@@ -313,8 +327,7 @@ export class OpportunityManager {
     return `${highestBidMarket.venueId}-${lowestAskMarket.venueId}`;
   }
 
-  // A leg nobody has confirmed within MAX_QUOTE_AGE_MS is not a price. Without this the
-  // scan would reopen, on the same tick, a route the update loop just closed as stale.
+
   private getEffectiveHighestBid(
     cluster: Cluster,
     now: number,

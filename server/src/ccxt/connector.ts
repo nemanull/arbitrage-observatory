@@ -1,48 +1,48 @@
 import ccxt from 'ccxt';
-import { Exchange, Market as CCXTMarket } from 'ccxt';
-import { ExchangeSwapMarkets, SwapMarket } from './types';
+import { Exchange as CCXTVenue, Market as CCXTMarket } from 'ccxt';
+import { VenueSwapMarkets, SwapMarket } from './types';
 import { Logger } from '@nestjs/common';
 
-export class ExchangeConnector {
+export class VenueConnector {
   public logger: Logger;
 
   constructor() {
     this.logger = new Logger();
   }
 
-  exchanges = [
+  venues = [
     new ccxt.pro.binance(),
     new ccxt.pro.bybit(),
     new ccxt.pro.okx(),
     new ccxt.pro.coinbaseinternational(),
     new ccxt.pro.krakenfutures(),
-  ]; // This should be a fucntion that later gets all active exchnages from the db
+  ]; // This should be a function that later gets all enabled venues from the db
 
-  async getExchangeSwapMarkets(
-    exchange: Exchange,
-  ): Promise<ExchangeSwapMarkets | null> {
+  async getVenueSwapMarkets(
+    venue: CCXTVenue,
+  ): Promise<VenueSwapMarkets | null> {
     try {
-      const markets = await exchange.loadMarkets();
-      let exchnage_name = exchange.name;
+      const markets = await venue.loadMarkets();
+      let venueName = venue.name;
 
       if (!markets) {
-        this.logger.error(`Markets for ${exchange.name} are undefined`);
+        this.logger.error(`Markets for ${venue.name} are undefined`);
       }
-      if (!exchnage_name) {
-        exchnage_name = exchange.id;
-        this.logger.warn(`Exchnage ${exchange.id} doesn't have a name`);
+      if (!venueName) {
+        venueName = venue.id;
+        this.logger.warn(`Venue ${venue.id} doesn't have a name`);
       }
 
       const perpetuals = Object.values(markets).filter(isActiveSwapMarket);
 
       return {
-        exchangeId: exchange.id,
-        exchangeName: exchnage_name,
+        venueId: venue.id,
+        venueName,
         markets: perpetuals,
       };
     } catch {
       this.logger.error(
-        `There was an error with market loading for ${exchange.name}`,
+        `There was an error with market loading for ${venue.name}`,
       );
     }
     return null;
@@ -57,8 +57,3 @@ function isActiveSwapMarket(market: CCXTMarket): market is SwapMarket {
     market.active !== false
   );
 }
-
-
-
-
-

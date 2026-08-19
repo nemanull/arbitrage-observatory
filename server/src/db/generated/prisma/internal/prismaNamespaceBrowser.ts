@@ -51,9 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Exchange: 'Exchange',
-  ExchangeConfig: 'ExchangeConfig',
-  ExchangeFee: 'ExchangeFee',
+  Venue: 'Venue',
   Pair: 'Pair',
   Market: 'Market',
   ArbitrageOpportunity: 'ArbitrageOpportunity'
@@ -75,7 +73,7 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const ExchangeScalarFieldEnum = {
+export const VenueScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   id: 'id',
@@ -84,40 +82,7 @@ export const ExchangeScalarFieldEnum = {
   enabled: 'enabled'
 } as const
 
-export type ExchangeScalarFieldEnum = (typeof ExchangeScalarFieldEnum)[keyof typeof ExchangeScalarFieldEnum]
-
-
-export const ExchangeConfigScalarFieldEnum = {
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  id: 'id',
-  exchangeId: 'exchangeId',
-  wsUrl: 'wsUrl',
-  maxStreamsPerConnection: 'maxStreamsPerConnection',
-  maxArgsPerSubscribe: 'maxArgsPerSubscribe',
-  subscribeIntervalMs: 'subscribeIntervalMs',
-  keepaliveIntervalMs: 'keepaliveIntervalMs',
-  idleTimeoutMs: 'idleTimeoutMs',
-  maxConnectionAgeMs: 'maxConnectionAgeMs',
-  reconnectMinDelayMs: 'reconnectMinDelayMs'
-} as const
-
-export type ExchangeConfigScalarFieldEnum = (typeof ExchangeConfigScalarFieldEnum)[keyof typeof ExchangeConfigScalarFieldEnum]
-
-
-export const ExchangeFeeScalarFieldEnum = {
-  createdAt: 'createdAt',
-  id: 'id',
-  exchangeId: 'exchangeId',
-  feeClass: 'feeClass',
-  makerPpm: 'makerPpm',
-  takerPpm: 'takerPpm',
-  effectiveFrom: 'effectiveFrom',
-  effectiveTo: 'effectiveTo',
-  sourceUrl: 'sourceUrl'
-} as const
-
-export type ExchangeFeeScalarFieldEnum = (typeof ExchangeFeeScalarFieldEnum)[keyof typeof ExchangeFeeScalarFieldEnum]
+export type VenueScalarFieldEnum = (typeof VenueScalarFieldEnum)[keyof typeof VenueScalarFieldEnum]
 
 
 export const PairScalarFieldEnum = {
@@ -135,15 +100,13 @@ export const MarketScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   id: 'id',
-  exchangeId: 'exchangeId',
+  venueId: 'venueId',
   pairId: 'pairId',
-  venueSymbol: 'venueSymbol',
-  status: 'status',
-  feeClass: 'feeClass',
-  tickSize: 'tickSize',
-  qtyStep: 'qtyStep',
-  minNotional: 'minNotional',
-  lastSeenAt: 'lastSeenAt'
+  rawMarketId: 'rawMarketId',
+  linear: 'linear',
+  makerPpm: 'makerPpm',
+  takerPpm: 'takerPpm',
+  active: 'active'
 } as const
 
 export type MarketScalarFieldEnum = (typeof MarketScalarFieldEnum)[keyof typeof MarketScalarFieldEnum]
@@ -152,26 +115,32 @@ export type MarketScalarFieldEnum = (typeof MarketScalarFieldEnum)[keyof typeof 
 export const ArbitrageOpportunityScalarFieldEnum = {
   createdAt: 'createdAt',
   id: 'id',
-  kind: 'kind',
-  pairId: 'pairId',
-  buyMarketId: 'buyMarketId',
-  sellMarketId: 'sellMarketId',
+  pair: 'pair',
+  route: 'route',
+  highestBidVenue: 'highestBidVenue',
+  highestBidRawMarketId: 'highestBidRawMarketId',
+  lowestAskVenue: 'lowestAskVenue',
+  lowestAskRawMarketId: 'lowestAskRawMarketId',
+  highestBidTakerPpm: 'highestBidTakerPpm',
+  lowestAskTakerPpm: 'lowestAskTakerPpm',
   openedAt: 'openedAt',
+  netPpmAtOpen: 'netPpmAtOpen',
+  highestBidAtOpen: 'highestBidAtOpen',
+  lowestAskAtOpen: 'lowestAskAtOpen',
   closedAt: 'closedAt',
+  lastSeenAt: 'lastSeenAt',
   durationMs: 'durationMs',
-  samples: 'samples',
-  openNetPpm: 'openNetPpm',
+  ticks: 'ticks',
   avgNetPpm: 'avgNetPpm',
-  peakAt: 'peakAt',
   peakNetPpm: 'peakNetPpm',
-  peakBuyAsk: 'peakBuyAsk',
-  peakSellBid: 'peakSellBid',
-  peakQty: 'peakQty',
-  peakNotionalQuote: 'peakNotionalQuote',
-  peakProfitQuote: 'peakProfitQuote',
-  peakProfitUsd: 'peakProfitUsd',
-  buyTakerPpm: 'buyTakerPpm',
-  sellTakerPpm: 'sellTakerPpm'
+  peakAt: 'peakAt',
+  peakHighestBid: 'peakHighestBid',
+  peakLowestAsk: 'peakLowestAsk',
+  minNetPpm: 'minNetPpm',
+  sampleTsMs: 'sampleTsMs',
+  netPpmSeries: 'netPpmSeries',
+  highestBidSeries: 'highestBidSeries',
+  lowestAskSeries: 'lowestAskSeries'
 } as const
 
 export type ArbitrageOpportunityScalarFieldEnum = (typeof ArbitrageOpportunityScalarFieldEnum)[keyof typeof ArbitrageOpportunityScalarFieldEnum]
@@ -191,12 +160,4 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
-
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last'
-} as const
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

@@ -217,7 +217,6 @@ export type PairWhereInput = {
   quote?: Prisma.StringFilter<"Pair"> | string
   symbol?: Prisma.StringFilter<"Pair"> | string
   markets?: Prisma.MarketListRelationFilter
-  opportunities?: Prisma.ArbitrageOpportunityListRelationFilter
 }
 
 export type PairOrderByWithRelationInput = {
@@ -227,7 +226,6 @@ export type PairOrderByWithRelationInput = {
   quote?: Prisma.SortOrder
   symbol?: Prisma.SortOrder
   markets?: Prisma.MarketOrderByRelationAggregateInput
-  opportunities?: Prisma.ArbitrageOpportunityOrderByRelationAggregateInput
 }
 
 export type PairWhereUniqueInput = Prisma.AtLeast<{
@@ -241,7 +239,6 @@ export type PairWhereUniqueInput = Prisma.AtLeast<{
   base?: Prisma.StringFilter<"Pair"> | string
   quote?: Prisma.StringFilter<"Pair"> | string
   markets?: Prisma.MarketListRelationFilter
-  opportunities?: Prisma.ArbitrageOpportunityListRelationFilter
 }, "id" | "symbol" | "base_quote">
 
 export type PairOrderByWithAggregationInput = {
@@ -274,7 +271,6 @@ export type PairCreateInput = {
   quote: string
   symbol: string
   markets?: Prisma.MarketCreateNestedManyWithoutPairInput
-  opportunities?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutPairInput
 }
 
 export type PairUncheckedCreateInput = {
@@ -284,7 +280,6 @@ export type PairUncheckedCreateInput = {
   quote: string
   symbol: string
   markets?: Prisma.MarketUncheckedCreateNestedManyWithoutPairInput
-  opportunities?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutPairInput
 }
 
 export type PairUpdateInput = {
@@ -293,7 +288,6 @@ export type PairUpdateInput = {
   quote?: Prisma.StringFieldUpdateOperationsInput | string
   symbol?: Prisma.StringFieldUpdateOperationsInput | string
   markets?: Prisma.MarketUpdateManyWithoutPairNestedInput
-  opportunities?: Prisma.ArbitrageOpportunityUpdateManyWithoutPairNestedInput
 }
 
 export type PairUncheckedUpdateInput = {
@@ -303,7 +297,6 @@ export type PairUncheckedUpdateInput = {
   quote?: Prisma.StringFieldUpdateOperationsInput | string
   symbol?: Prisma.StringFieldUpdateOperationsInput | string
   markets?: Prisma.MarketUncheckedUpdateManyWithoutPairNestedInput
-  opportunities?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutPairNestedInput
 }
 
 export type PairCreateManyInput = {
@@ -385,26 +378,11 @@ export type PairUpdateOneRequiredWithoutMarketsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PairUpdateToOneWithWhereWithoutMarketsInput, Prisma.PairUpdateWithoutMarketsInput>, Prisma.PairUncheckedUpdateWithoutMarketsInput>
 }
 
-export type PairCreateNestedOneWithoutOpportunitiesInput = {
-  create?: Prisma.XOR<Prisma.PairCreateWithoutOpportunitiesInput, Prisma.PairUncheckedCreateWithoutOpportunitiesInput>
-  connectOrCreate?: Prisma.PairCreateOrConnectWithoutOpportunitiesInput
-  connect?: Prisma.PairWhereUniqueInput
-}
-
-export type PairUpdateOneRequiredWithoutOpportunitiesNestedInput = {
-  create?: Prisma.XOR<Prisma.PairCreateWithoutOpportunitiesInput, Prisma.PairUncheckedCreateWithoutOpportunitiesInput>
-  connectOrCreate?: Prisma.PairCreateOrConnectWithoutOpportunitiesInput
-  upsert?: Prisma.PairUpsertWithoutOpportunitiesInput
-  connect?: Prisma.PairWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.PairUpdateToOneWithWhereWithoutOpportunitiesInput, Prisma.PairUpdateWithoutOpportunitiesInput>, Prisma.PairUncheckedUpdateWithoutOpportunitiesInput>
-}
-
 export type PairCreateWithoutMarketsInput = {
   createdAt?: Date | string
   base: string
   quote: string
   symbol: string
-  opportunities?: Prisma.ArbitrageOpportunityCreateNestedManyWithoutPairInput
 }
 
 export type PairUncheckedCreateWithoutMarketsInput = {
@@ -413,7 +391,6 @@ export type PairUncheckedCreateWithoutMarketsInput = {
   base: string
   quote: string
   symbol: string
-  opportunities?: Prisma.ArbitrageOpportunityUncheckedCreateNestedManyWithoutPairInput
 }
 
 export type PairCreateOrConnectWithoutMarketsInput = {
@@ -437,7 +414,6 @@ export type PairUpdateWithoutMarketsInput = {
   base?: Prisma.StringFieldUpdateOperationsInput | string
   quote?: Prisma.StringFieldUpdateOperationsInput | string
   symbol?: Prisma.StringFieldUpdateOperationsInput | string
-  opportunities?: Prisma.ArbitrageOpportunityUpdateManyWithoutPairNestedInput
 }
 
 export type PairUncheckedUpdateWithoutMarketsInput = {
@@ -446,57 +422,6 @@ export type PairUncheckedUpdateWithoutMarketsInput = {
   base?: Prisma.StringFieldUpdateOperationsInput | string
   quote?: Prisma.StringFieldUpdateOperationsInput | string
   symbol?: Prisma.StringFieldUpdateOperationsInput | string
-  opportunities?: Prisma.ArbitrageOpportunityUncheckedUpdateManyWithoutPairNestedInput
-}
-
-export type PairCreateWithoutOpportunitiesInput = {
-  createdAt?: Date | string
-  base: string
-  quote: string
-  symbol: string
-  markets?: Prisma.MarketCreateNestedManyWithoutPairInput
-}
-
-export type PairUncheckedCreateWithoutOpportunitiesInput = {
-  createdAt?: Date | string
-  id?: number
-  base: string
-  quote: string
-  symbol: string
-  markets?: Prisma.MarketUncheckedCreateNestedManyWithoutPairInput
-}
-
-export type PairCreateOrConnectWithoutOpportunitiesInput = {
-  where: Prisma.PairWhereUniqueInput
-  create: Prisma.XOR<Prisma.PairCreateWithoutOpportunitiesInput, Prisma.PairUncheckedCreateWithoutOpportunitiesInput>
-}
-
-export type PairUpsertWithoutOpportunitiesInput = {
-  update: Prisma.XOR<Prisma.PairUpdateWithoutOpportunitiesInput, Prisma.PairUncheckedUpdateWithoutOpportunitiesInput>
-  create: Prisma.XOR<Prisma.PairCreateWithoutOpportunitiesInput, Prisma.PairUncheckedCreateWithoutOpportunitiesInput>
-  where?: Prisma.PairWhereInput
-}
-
-export type PairUpdateToOneWithWhereWithoutOpportunitiesInput = {
-  where?: Prisma.PairWhereInput
-  data: Prisma.XOR<Prisma.PairUpdateWithoutOpportunitiesInput, Prisma.PairUncheckedUpdateWithoutOpportunitiesInput>
-}
-
-export type PairUpdateWithoutOpportunitiesInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  base?: Prisma.StringFieldUpdateOperationsInput | string
-  quote?: Prisma.StringFieldUpdateOperationsInput | string
-  symbol?: Prisma.StringFieldUpdateOperationsInput | string
-  markets?: Prisma.MarketUpdateManyWithoutPairNestedInput
-}
-
-export type PairUncheckedUpdateWithoutOpportunitiesInput = {
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  base?: Prisma.StringFieldUpdateOperationsInput | string
-  quote?: Prisma.StringFieldUpdateOperationsInput | string
-  symbol?: Prisma.StringFieldUpdateOperationsInput | string
-  markets?: Prisma.MarketUncheckedUpdateManyWithoutPairNestedInput
 }
 
 
@@ -506,12 +431,10 @@ export type PairUncheckedUpdateWithoutOpportunitiesInput = {
 
 export type PairCountOutputType = {
   markets: number
-  opportunities: number
 }
 
 export type PairCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   markets?: boolean | PairCountOutputTypeCountMarketsArgs
-  opportunities?: boolean | PairCountOutputTypeCountOpportunitiesArgs
 }
 
 /**
@@ -531,13 +454,6 @@ export type PairCountOutputTypeCountMarketsArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.MarketWhereInput
 }
 
-/**
- * PairCountOutputType without action
- */
-export type PairCountOutputTypeCountOpportunitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ArbitrageOpportunityWhereInput
-}
-
 
 export type PairSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   createdAt?: boolean
@@ -546,7 +462,6 @@ export type PairSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   quote?: boolean
   symbol?: boolean
   markets?: boolean | Prisma.Pair$marketsArgs<ExtArgs>
-  opportunities?: boolean | Prisma.Pair$opportunitiesArgs<ExtArgs>
   _count?: boolean | Prisma.PairCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pair"]>
 
@@ -577,7 +492,6 @@ export type PairSelectScalar = {
 export type PairOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "base" | "quote" | "symbol", ExtArgs["result"]["pair"]>
 export type PairInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   markets?: boolean | Prisma.Pair$marketsArgs<ExtArgs>
-  opportunities?: boolean | Prisma.Pair$opportunitiesArgs<ExtArgs>
   _count?: boolean | Prisma.PairCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PairIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -587,13 +501,15 @@ export type $PairPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "Pair"
   objects: {
     markets: Prisma.$MarketPayload<ExtArgs>[]
-    opportunities: Prisma.$ArbitrageOpportunityPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     createdAt: Date
     id: number
     base: string
     quote: string
+    /**
+     * The PairKey the engine uses, spelled "BTC|USDT"
+     */
     symbol: string
   }, ExtArgs["result"]["pair"]>
   composites: {}
@@ -990,7 +906,6 @@ readonly fields: PairFieldRefs;
 export interface Prisma__PairClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   markets<T extends Prisma.Pair$marketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Pair$marketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MarketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  opportunities<T extends Prisma.Pair$opportunitiesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Pair$opportunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ArbitrageOpportunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1439,30 +1354,6 @@ export type Pair$marketsArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.MarketScalarFieldEnum | Prisma.MarketScalarFieldEnum[]
-}
-
-/**
- * Pair.opportunities
- */
-export type Pair$opportunitiesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ArbitrageOpportunity
-   */
-  select?: Prisma.ArbitrageOpportunitySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ArbitrageOpportunity
-   */
-  omit?: Prisma.ArbitrageOpportunityOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ArbitrageOpportunityInclude<ExtArgs> | null
-  where?: Prisma.ArbitrageOpportunityWhereInput
-  orderBy?: Prisma.ArbitrageOpportunityOrderByWithRelationInput | Prisma.ArbitrageOpportunityOrderByWithRelationInput[]
-  cursor?: Prisma.ArbitrageOpportunityWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ArbitrageOpportunityScalarFieldEnum | Prisma.ArbitrageOpportunityScalarFieldEnum[]
 }
 
 /**

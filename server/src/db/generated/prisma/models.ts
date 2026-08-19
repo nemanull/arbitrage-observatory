@@ -8,9 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/Exchange.js'
-export type * from './models/ExchangeConfig.js'
-export type * from './models/ExchangeFee.js'
+export type * from './models/Venue.js'
 export type * from './models/Pair.js'
 export type * from './models/Market.js'
 export type * from './models/ArbitrageOpportunity.js'

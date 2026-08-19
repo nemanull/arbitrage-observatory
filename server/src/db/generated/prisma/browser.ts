@@ -18,21 +18,11 @@ export { Prisma }
 export * as $Enums from './enums.js'
 export * from './enums.js';
 /**
- * Model Exchange
- * 
+ * Model Venue
+ * A venue we watch.
+ * Socket settings and fee schedules live in code next to VenueSpec, so this table only records which venues exist.
  */
-export type Exchange = Prisma.ExchangeModel
-/**
- * Model ExchangeConfig
- * Connection settings for the public spot feed
- */
-export type ExchangeConfig = Prisma.ExchangeConfigModel
-/**
- * Model ExchangeFee
- * Rows are append only.
- * A rate change closes the old row and inserts a new one
- */
-export type ExchangeFee = Prisma.ExchangeFeeModel
+export type Venue = Prisma.VenueModel
 /**
  * Model Pair
  * Base and quote are normalized codes rather than venue spellings
@@ -40,13 +30,14 @@ export type ExchangeFee = Prisma.ExchangeFeeModel
 export type Pair = Prisma.PairModel
 /**
  * Model Market
- * 
+ * One venue's listing of one pair, and the row Market in src/engine/types.ts is built from
  */
 export type Market = Prisma.MarketModel
 /**
  * Model ArbitrageOpportunity
- * One episode during which a spread stayed profitable, not a single moment
- * A row opens when the fee-adjusted edge clears every threshold and closes when the edge falls back
- * buyMarket quotes the lower ask and sellMarket quotes the higher bid
+ * One closed Opportunity from src/engine/types.ts, so one episode during which a route stayed profitable rather than a single moment.
+ * We sell into the highest bid and buy from the lowest ask.
+ * Every price and every ppm reading here is already fee adjusted.
+ * The legs are recorded by slug rather than by foreign key, so a row keeps its meaning after a delisting or a catalog rebuild, and the writer needs no id lookup.
  */
 export type ArbitrageOpportunity = Prisma.ArbitrageOpportunityModel
