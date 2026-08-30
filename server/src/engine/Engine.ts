@@ -4,7 +4,6 @@ import type { ClusterIndex, PairKey, VenueIndexMap } from './types';
 import { OpportunityManager } from './OpportunityManager';
 import type { OpportunityClosedJob } from './OpportunityWorker';
 
-
 type SingleMarketClusterQuote = {
   bid: number;
   ask: number;
@@ -32,23 +31,25 @@ type InvalidQuoteWarnState = {
 
 export class Engine {
   private readonly logger = new Logger(Engine.name);
-  
+
   private readonly ClusterIndex: ClusterIndex;
   private readonly venueIndexMap: VenueIndexMap;
   private readonly opportunityManager: OpportunityManager;
-  private readonly invalidQuoteWarnStates = new Map<string, InvalidQuoteWarnState>();
+  private readonly invalidQuoteWarnStates = new Map<
+    string,
+    InvalidQuoteWarnState
+  >();
 
   constructor(
     clusterIndex: ClusterIndex,
     venueIndexMap: VenueIndexMap,
-    queue?: Queue<OpportunityClosedJob>,
+    queue: Queue<OpportunityClosedJob>,
   ) {
     this.ClusterIndex = clusterIndex;
     this.venueIndexMap = venueIndexMap;
     this.opportunityManager = new OpportunityManager(queue);
   }
 
-  
   updateQuote(
     venueId: string,
     rawMarketId: string,
@@ -70,7 +71,9 @@ export class Engine {
 
     const venueIndex = this.venueIndexMap.get(venueId);
     if (venueIndex === undefined) {
-      this.logger.warn(`No venueIndex found in the venueIndexMap for venueId: ${venueId}`);
+      this.logger.warn(
+        `No venueIndex found in the venueIndexMap for venueId: ${venueId}`,
+      );
       return;
     }
 
@@ -87,12 +90,14 @@ export class Engine {
       cluster.ask[venueIndex] = clusterQuote.ask;
       cluster.recvTs[venueIndex] = clusterQuote.recvTs;
 
-
       // Evaluate the opportunity
-      this.opportunityManager.validate(cluster, venueIndex, clusterQuote.recvTs);
+      this.opportunityManager.validate(
+        cluster,
+        venueIndex,
+        clusterQuote.recvTs,
+      );
     }
   }
-
 
   validateQuote(
     quote: SingleMarketClusterQuote,
@@ -137,7 +142,14 @@ export class Engine {
       return true;
     }
 
-    this.reportInvalidQuote(quote, issues, venueId, rawMarketId, clusterPair, venueIndex);
+    this.reportInvalidQuote(
+      quote,
+      issues,
+      venueId,
+      rawMarketId,
+      clusterPair,
+      venueIndex,
+    );
 
     return false;
   }
@@ -155,7 +167,11 @@ export class Engine {
     let state = this.invalidQuoteWarnStates.get(key);
 
     if (state === undefined) {
-      state = { occurrenceCount: 0, suppressedCount: 0, lastWarnedAt: Number.NEGATIVE_INFINITY };
+      state = {
+        occurrenceCount: 0,
+        suppressedCount: 0,
+        lastWarnedAt: Number.NEGATIVE_INFINITY,
+      };
       this.invalidQuoteWarnStates.set(key, state);
     }
 
@@ -184,6 +200,4 @@ export class Engine {
     state.lastWarnedAt = now;
     state.suppressedCount = 0;
   }
-
-
 }

@@ -23,10 +23,13 @@ export class OpportunityManager {
   private logger = new Logger(OpportunityManager.name);
   private activeOpportunityMap: ActiveOpportunityMap = new Map();
 
-  // Optional so the engine still runs without Redis, for example in the specs.
-  constructor(private readonly queue?: Queue<OpportunityClosedJob>) {}
+  constructor(private readonly queue: Queue<OpportunityClosedJob>) {}
 
-  validate(cluster: Cluster, venueIndex: number, now: number): void | null {
+  validate(
+    cluster: Cluster,
+    venueIndex: number,
+    now: number,
+  ): Opportunity | null {
     const routes = this.activeOpportunityMap.get(cluster.pair);
 
     if (routes !== undefined) {
@@ -60,7 +63,13 @@ export class OpportunityManager {
       return null;
     }
 
-    if (this.doesOpportunityAlreadyExist(cluster.pair, highestBidMarket, lowestAskMarket)) {
+    if (
+      this.doesOpportunityAlreadyExist(
+        cluster.pair,
+        highestBidMarket,
+        lowestAskMarket,
+      )
+    ) {
       // Already tracked. The loop above fed it on this tick if one of its legs moved
       return null;
     }
@@ -74,8 +83,19 @@ export class OpportunityManager {
     this.logger.log(
       `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}`,
     );
-  }
 
+    return this.trackOpportunity({
+      cluster,
+      highestBid,
+      lowestAsk,
+      netPpm,
+      highestBidMarket,
+      lowestAskMarket,
+      highestBidVenueIndex: highestBidIndex,
+      lowestAskVenueIndex: lowestAskIndex,
+      now,
+    });
+  }
 
   trackOpportunity(O: Observation): Opportunity {
     const routeKey = this.getRouteKey(O.highestBidMarket, O.lowestAskMarket);
@@ -109,7 +129,9 @@ export class OpportunityManager {
       return false;
     }
 
-    return opportunities.has(this.getRouteKey(highestBidMarket, lowestAskMarket));
+    return opportunities.has(
+      this.getRouteKey(highestBidMarket, lowestAskMarket),
+    );
   }
 
   createNewOpportunity(O: Observation): Opportunity {
@@ -218,7 +240,6 @@ export class OpportunityManager {
     return netPpm < CLOSURE_NET_PPM;
   }
 
-  
   sweep(now: number): Opportunity[] {
     return this.closeWhere(
       now,
@@ -304,7 +325,10 @@ export class OpportunityManager {
     pair: PairKey,
     route: string,
   ): void {
-    if (this.queue === undefined) return;
+    if (this.queue === undefined) {
+      this.logger.error(`Queue was undefined during closing process`);
+      return;
+    }
 
     const rows = [toOpportunityRow(opportunity, pair, route)];
 
@@ -320,13 +344,9 @@ export class OpportunityManager {
       });
   }
 
-  getRouteKey(
-    highestBidMarket: Market,
-    lowestAskMarket: Market,
-  ): string {
+  getRouteKey(highestBidMarket: Market, lowestAskMarket: Market): string {
     return `${highestBidMarket.venueId}-${lowestAskMarket.venueId}`;
   }
-
 
   private getEffectiveHighestBid(
     cluster: Cluster,

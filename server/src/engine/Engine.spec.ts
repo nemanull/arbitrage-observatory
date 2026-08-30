@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
 import { Engine } from './Engine';
 import type { Cluster, ClusterIndex, Market } from './types';
 
@@ -40,10 +41,7 @@ function makeIndex(): ClusterIndex {
   return {
     clusters: [cluster],
     clusterByRawMarketId: new Map(
-      VENUES.map((venueId) => [
-        venueId,
-        new Map([[RAW_MARKET_ID, cluster]]),
-      ]),
+      VENUES.map((venueId) => [venueId, new Map([[RAW_MARKET_ID, cluster]])]),
     ),
     venueIndexMap: new Map(VENUES.map((venueId, i) => [venueId, i])),
   };
@@ -63,7 +61,11 @@ describe('Engine.updateQuote', () => {
   it('updates the quote at venue index zero', () => {
     jest.spyOn(Logger.prototype, 'error').mockImplementation();
     const index = makeIndex();
-    const engine = new Engine(index, index.venueIndexMap);
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
 
     engine.updateQuote('binance', RAW_MARKET_ID, {
       bid: 100,
@@ -119,7 +121,11 @@ describe('Engine.updateQuote', () => {
   ])('reports a $name with update context', ({ quote, issue }) => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     const index = makeIndex();
-    const engine = new Engine(index, index.venueIndexMap);
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
 
     engine.updateQuote('binance', RAW_MARKET_ID, quote);
 
@@ -143,7 +149,11 @@ describe('Engine.updateQuote', () => {
   it('reports every applicable issue for one rejected quote', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     const index = makeIndex();
-    const engine = new Engine(index, index.venueIndexMap);
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
     const quote = { bid: Number.NaN, ask: -1, recvTs: 0 };
 
     engine.updateQuote('binance', RAW_MARKET_ID, quote);
@@ -151,11 +161,7 @@ describe('Engine.updateQuote', () => {
     expectQuoteColumnsToBeEmpty(index.clusters[0]);
     expect(warn).toHaveBeenCalledWith(
       expect.objectContaining({
-        issues: [
-          'bid_not_finite',
-          'ask_not_positive',
-          'recv_ts_not_positive',
-        ],
+        issues: ['bid_not_finite', 'ask_not_positive', 'recv_ts_not_positive'],
       }),
     );
   });
@@ -165,7 +171,11 @@ describe('Engine.updateQuote', () => {
     jest.spyOn(Date, 'now').mockImplementation(() => now);
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     const index = makeIndex();
-    const engine = new Engine(index, index.venueIndexMap);
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
     const quote = { bid: 0, ask: 101, recvTs: 1_000 };
 
     engine.updateQuote('binance', RAW_MARKET_ID, quote);
@@ -198,7 +208,11 @@ describe('Engine.updateQuote', () => {
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     const index = makeIndex();
-    const engine = new Engine(index, index.venueIndexMap);
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
 
     engine.updateQuote('binance', RAW_MARKET_ID, {
       bid: 0,

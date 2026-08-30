@@ -1,5 +1,7 @@
 import { OpportunityManager } from './OpportunityManager';
+import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
 import type { ActiveOpportunityMap, Cluster, Market } from './types';
+import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
 
 const TAKER_PPM = 550;
 
@@ -81,7 +83,7 @@ function openOn(manager: OpportunityManager, cluster: Cluster, now: number) {
 
 describe('OpportunityManager.validate', () => {
   it('opens the best route once it clears MIN_NET_PPM', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000);
@@ -96,7 +98,7 @@ describe('OpportunityManager.validate', () => {
   });
 
   it('does not open a route below MIN_NET_PPM', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
@@ -109,7 +111,7 @@ describe('OpportunityManager.validate', () => {
   // The open threshold gates opening only. An episode that dips below it is still the
   // same episode and has to keep receiving data, or the 5000/1000 band cannot work.
   it('keeps feeding an open route that has fallen below MIN_NET_PPM', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -127,7 +129,7 @@ describe('OpportunityManager.validate', () => {
   });
 
   it('closes an open route once it falls below CLOSE_NET_PPM', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -141,7 +143,7 @@ describe('OpportunityManager.validate', () => {
   });
 
   it('tracks the peak instant, including the two prices behind it', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -163,7 +165,7 @@ describe('OpportunityManager.validate', () => {
 
 describe('OpportunityManager concurrent routes on one pair', () => {
   it('holds a second route open alongside the first', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000); // best ask is binance -> bybit-binance
@@ -173,13 +175,16 @@ describe('OpportunityManager concurrent routes on one pair', () => {
     tick(manager, cluster, BINANCE, 99.9, 100, 2_000);
 
     expect(second?.lowestAskMarket.venueId).toBe('okx');
-    expect([...routes(manager)!.keys()]).toEqual(['bybit-binance', 'bybit-okx']);
+    expect([...routes(manager)!.keys()]).toEqual([
+      'bybit-binance',
+      'bybit-okx',
+    ]);
   });
 
   // Once okx undercuts it, bybit-binance is never the cluster's best route again, so
   // only the per-route update path can still see it.
   it('keeps updating a route the cluster scan no longer reports', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const overtaken = openOn(manager, cluster, 1_000)!;
@@ -202,7 +207,7 @@ describe('OpportunityManager concurrent routes on one pair', () => {
 
 describe('OpportunityManager staleness', () => {
   it('closes a route whose older leg has gone quiet', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -215,7 +220,7 @@ describe('OpportunityManager staleness', () => {
   });
 
   it('sweeps open routes that no tick can reach', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -231,7 +236,7 @@ describe('OpportunityManager staleness', () => {
   });
 
   it('closes every route touching a dead venue', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000);
@@ -251,7 +256,7 @@ describe('OpportunityManager staleness', () => {
 describe('OpportunityManager.trackOpportunity', () => {
   // It is the caller that owns MIN_NET_PPM and CLOSE_NET_PPM; this records whatever it is given.
   it('records a reading regardless of how small the edge is', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opportunity = manager.trackOpportunity({
@@ -271,7 +276,7 @@ describe('OpportunityManager.trackOpportunity', () => {
   });
 
   it('updates the existing route instead of replacing it', () => {
-    const manager = new OpportunityManager();
+    const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const observation = {
@@ -300,5 +305,29 @@ describe('OpportunityManager.trackOpportunity', () => {
     expect(first.netPpmSeries).toEqual([8_000, 9_000]);
     expect(first.sampleTs).toEqual([0, 500]);
     expect(routes(manager)!.size).toBe(1);
+  });
+});
+
+describe('OpportunityManager persistence', () => {
+  it('enqueues the closed opportunity', () => {
+    const queue = createOpportunityQueueMock();
+    const add = jest.spyOn(queue, 'add');
+    const manager = new OpportunityManager(queue);
+    const cluster = makeCluster();
+
+    openOn(manager, cluster, 1_000);
+    tick(manager, cluster, BYBIT, 100.1, 101.5, 2_000);
+
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(add).toHaveBeenCalledWith(OPPORTUNITY_CLOSED_JOB, {
+      rows: [
+        expect.objectContaining({
+          pair: 'BTC|USDT',
+          route: 'bybit-binance',
+          openedAt: new Date(1_000).toISOString(),
+          closedAt: new Date(2_000).toISOString(),
+        }),
+      ],
+    });
   });
 });
