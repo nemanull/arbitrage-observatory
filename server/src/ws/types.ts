@@ -1,38 +1,29 @@
 import type WebSocket from 'ws';
 import type { Market } from '../engine/types';
 
-export type VenueSpec = {
-  keepalive: {
-    mode: 'server' | 'json' | 'text' | 'protocol';
-    payload?: string;
-    intervalMs: number;
-    onlyWhenIdle: boolean;
-  };
-  chunk: {
-    unit: 'chars' | 'bytes' | 'none';
-    budget: number;
-    scope: 'frame' | 'connection';
-  };
-  maxConnectionAgeMs?: number;
-  firstSubscribeDeadlineMs?: number;
-  unknownSymbolIsExpected: boolean;
-  sign?(frame: object): object;
-};
-
 export type EndpointPlan = {
+  id: string; // 'bybit#linear#0'
   url: string;
   markets: Market[];
 };
 
-export type VenueConnection = {
-  id: string;
+export type SingleSocketConnection = {
+  id: string; // the plan's id, so the logs read the same across reconnects
+  plan: EndpointPlan;
   socket: WebSocket;
-  endpoint: EndpointPlan;
+
+  lastMessageAt: number;
+  attempt: number;
+
+  reopenOnClose: boolean;
+
+  //timers like ping/ 24h refresh and any repetative stuff that we need to account for
+  timers: NodeJS.Timeout[];
 };
 
 export type NormalizedQuote = {
   rawMarketId: string;
   bid: number;
   ask: number;
-  receivedAtMs: number;
+  recvTs: number;
 };

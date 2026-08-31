@@ -16,7 +16,7 @@ import type {
 
 const MIN_NET_PPM = 5_000; // after fees
 const CLOSURE_NET_PPM = 1_000; // after fees
-const MAX_QUOTE_AGE_MS = 5_000;
+export const MAX_QUOTE_AGE_MS = 5_000;
 const MAX_OPPORTUNITY_AGE_MS = 5 * 60_000;
 
 export class OpportunityManager {

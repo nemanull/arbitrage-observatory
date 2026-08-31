@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Queue } from 'bullmq';
-import type { ClusterIndex, PairKey, VenueIndexMap } from './types';
-import { OpportunityManager } from './OpportunityManager';
+import type { Cluster, ClusterIndex, PairKey, VenueIndexMap } from './types';
+import { MAX_QUOTE_AGE_MS, OpportunityManager } from './OpportunityManager';
 import type { OpportunityClosedJob } from './OpportunityWorker';
 
 type SingleMarketClusterQuote = {
@@ -78,7 +78,7 @@ export class Engine {
     }
 
     if (
-      this.validateQuote(
+      !this.validateQuote(
         clusterQuote,
         venueId,
         rawMarketId,
@@ -86,17 +86,64 @@ export class Engine {
         venueIndex,
       )
     ) {
-      cluster.bid[venueIndex] = clusterQuote.bid;
-      cluster.ask[venueIndex] = clusterQuote.ask;
-      cluster.recvTs[venueIndex] = clusterQuote.recvTs;
-
-      // Evaluate the opportunity
-      this.opportunityManager.validate(
-        cluster,
-        venueIndex,
-        clusterQuote.recvTs,
-      );
+      return;
     }
+
+    if (
+      clusterQuote.recvTs - cluster.recvTs[venueIndex] < MAX_QUOTE_AGE_MS &&
+      cluster.bid[venueIndex] === clusterQuote.bid &&
+      cluster.ask[venueIndex] === clusterQuote.ask
+    ) {
+      cluster.recvTs[venueIndex] = clusterQuote.recvTs;
+      return;
+    }
+
+    cluster.bid[venueIndex] = clusterQuote.bid;
+    cluster.ask[venueIndex] = clusterQuote.ask;
+    cluster.recvTs[venueIndex] = clusterQuote.recvTs;
+
+    this.opportunityManager.validate(cluster, venueIndex, clusterQuote.recvTs);
+  }
+
+
+  tracks(venueId: string, rawMarketId: string): boolean {
+    return this.resolveSlot(venueId, rawMarketId) !== null;
+  }
+
+  // Called when a socket dies. recvTs 0 is already "never spoke"
+  markStale(venueId: string, rawMarketIds: readonly string[]): void {
+    const venueIndex = this.venueIndexMap.get(venueId);
+    const clusters = this.ClusterIndex.clusterByRawMarketId.get(venueId);
+
+    if (venueIndex === undefined || clusters === undefined) {
+      return;
+    }
+
+    for (const rawMarketId of rawMarketIds) {
+      const cluster = clusters.get(rawMarketId);
+      if (cluster === undefined) continue;
+
+      cluster.recvTs[venueIndex] = 0;
+    }
+  }
+
+  private resolveSlot(
+    venueId: string,
+    rawMarketId: string,
+  ): { cluster: Cluster; venueIndex: number } | null {
+    const cluster = this.ClusterIndex.clusterByRawMarketId
+      .get(venueId)
+      ?.get(rawMarketId);
+    if (cluster === undefined) {
+      return null;
+    }
+
+    const venueIndex = this.venueIndexMap.get(venueId);
+    if (venueIndex === undefined) {
+      return null;
+    }
+
+    return { cluster, venueIndex };
   }
 
   validateQuote(

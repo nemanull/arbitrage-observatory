@@ -1,48 +1,42 @@
 # Venue WebSocket protocol differences
 
 Date: 2026-07-30.
-Question: if one base class serves the Binance, Bybit, OKX, Kraken Futures, and Coinbase International feeds, what actually differs between the five venues?
+Question: what differs between the Binance, Bybit, OKX, Kraken Futures, and Coinbase International WebSocket feeds?
 
 Scope of the investigation: the five WebSocket profiles under [`profiles/`](../profiles/).
 Every claim below carries a file and line reference.
 This doc is the companion to [`2026-07-30-ccxt-ws-ingest-feasibility.md`](./2026-07-30-ccxt-ws-ingest-feasibility.md).
 That doc records why CCXT Pro is not the transport.
-This one records what the replacement has to absorb, and where the abstraction boundary falls.
+This one records how the five venue protocols differ from each other.
 
 ## 1. Answer
 
 Sixteen things differ between the five venues.
-Only three of them differ as behaviour.
-The other thirteen differ as data, which is the entire reason a shared base class is worth writing.
-
-| axis | section | kind | owner |
-|---|---|---|---|
-| endpoint split axis | 2 | behaviour | adapter |
-| subscribe frame shape | 3 | behaviour | adapter |
-| message parse and routing | 8 | behaviour | adapter |
-| chunk unit and budget | 4 | data | adapter constant |
-| keepalive mechanism | 5 | data | adapter constant |
-| connection lifetime and maintenance notice | 6 | data, plus one hook | adapter constant |
-| handshake and operation rate limits | 6 | data | adapter constant |
-| public market data authentication | 7 | data, plus one hook | adapter constant |
-| subscribe acknowledgement shape | 9 | data | adapter |
-| symbol identifier format | 10.1 | data | registry |
-| number representation | 10.2 | data | adapter parse |
-| timestamp representation | 10.3 | data | adapter parse |
-| size unit | 10.4 | data | registry, applied in adapter parse |
-| sequence semantics | 10.5 | data | shared guard, adapter supplies or omits |
-| idle repeat behaviour | 11 | data | shared, handled uniformly |
-| unknown symbol expectation | 3 | data | adapter constant |
-
 Sections 2 to 11 enumerate them.
-Section 12 states what the shared engine owns.
-Section 13 states the adapter surface.
-Section 14 lists the assumptions that look shared and are not.
+
+| axis | section |
+|---|---|
+| endpoint split axis | 2 |
+| subscribe frame shape | 3 |
+| unknown symbol expectation | 3 |
+| chunk unit and budget | 4 |
+| keepalive mechanism | 5 |
+| connection lifetime and maintenance notice | 6 |
+| handshake and operation rate limits | 6 |
+| public market data authentication | 7 |
+| message parse and routing | 8 |
+| subscribe acknowledgement shape | 9 |
+| symbol identifier format | 10.1 |
+| number representation | 10.2 |
+| timestamp representation | 10.3 |
+| size unit | 10.4 |
+| sequence semantics | 10.5 |
+| idle repeat behaviour | 11 |
 
 ## 2. Connection topology
 
 Each venue splits its endpoints on a different axis.
-This is the first assumption that breaks a naive design, because "one socket per venue" is true on none of them once more than one channel is needed.
+"One socket per venue" is true on none of them once more than one channel is needed.
 
 | venue | split axis | consequence | evidence |
 |---|---|---|---|
@@ -52,8 +46,7 @@ This is the first assumption that breaks a naive design, because "one socket per
 | Kraken | product line | `futures.kraken.com/ws/v1` covers all derivatives, and Spot is a different API with different wire conventions | [`kraken/websocket.md:58-72`](../profiles/kraken/websocket.md) |
 | Coinbase | platform | Advanced Trade, Exchange, International, Prime, and Derivatives are five products with five protocols | [`coinbase/websocket.md:47-71`](../profiles/coinbase/websocket.md) |
 
-The consequence for the base class is that the endpoint list is adapter-owned and returns a list rather than a single URL.
-The key that decides the split is different on every venue, so it cannot be a shared parameter either.
+The key that decides the split is different on every venue.
 
 ## 3. Subscription frame shape
 
@@ -99,20 +92,16 @@ Coinbase International sends the cross product of products and channels, with au
 
 Sources are [`bybit/websocket.md:179-193`](../profiles/bybit/websocket.md), [`okx/websocket.md:139-152`](../profiles/okx/websocket.md), [`kraken/websocket.md:500-511`](../profiles/kraken/websocket.md), and [`coinbase/websocket.md:357-370`](../profiles/coinbase/websocket.md).
 
-The Binance case matters more than the shape difference suggests.
+Binance differs in more than shape.
 `!bookTicker` is a single all-symbol firehose, so subscription is not a function of the instrument list at all.
-Two consequences follow, and both are easy to miss.
+Frame count scales with instrument count on the other four venues and not on Binance.
 
-1. The subscribe frame builder ignores its instrument argument on Binance.
-   The base class must not assume that frame count scales with instrument count.
-2. Binance delivers messages for symbols that were never requested.
-   An unknown symbol lookup miss is a normal condition on Binance and an error condition on the other four venues.
-   The unknown symbol counter therefore needs a per-venue expectation, or Binance looks permanently broken in metrics.
+Binance also delivers messages for symbols that were never requested.
+An unknown symbol is a normal condition on Binance and an error condition on the other four venues.
 
 ## 4. Chunking unit and budget
 
-The chunker is shared code.
-Its budget, its unit, and its scope are not.
+The unit, the budget, and the scope of the subscription cap differ on all five.
 
 | venue | budget | unit | scope | evidence |
 |---|---|---|---|---|
@@ -123,12 +112,11 @@ Its budget, its unit, and its scope are not.
 | Coinbase International | none published | not applicable | not applicable | [`coinbase/websocket.md:357-370`](../profiles/coinbase/websocket.md) |
 
 Bybit's cap is cumulative across the connection and OKX's applies to a single payload.
-That difference is not cosmetic.
-The chunker holds state on Bybit and is stateless on OKX.
+Exceeding the cap on Bybit therefore needs a second connection, and exceeding it on OKX needs a second payload on the same connection.
 
 ## 5. Keepalive
 
-This is the most venue-specific part of the connection engine.
+This is the most venue-specific part of the protocol.
 Four incompatible mechanisms appear across five venues.
 
 | venue | who initiates | payload | timing | evidence |
@@ -141,14 +129,11 @@ Four incompatible mechanisms appear across five venues.
 
 Kraken Futures adds one more difference.
 Its `heartbeat` feed must be explicitly subscribed, and the documentation does not define its cadence, at [`kraken/websocket.md:613`](../profiles/kraken/websocket.md).
-Liveness on that venue is therefore something the feed asks for rather than something it receives by default.
-
-The base class owns the timer.
-The adapter owns the mode, the payload, the interval, and whether the ping is conditional on idleness.
+Liveness on that venue is something the client asks for rather than something it receives by default.
 
 ## 6. Lifecycle and rate limits
 
-These numbers set the reconnect policy, and they differ by an order of magnitude between venues.
+These numbers differ by an order of magnitude between venues.
 
 | venue | handshake rate | concurrency | forced reconnect | in-band notice | evidence |
 |---|---|---|---|---|---|
@@ -158,14 +143,12 @@ These numbers set the reconnect policy, and they differ by an order of magnitude
 | Kraken Futures | not published | 100 concurrent connections, 100 requests per second per connection | none | none | [`kraken/websocket.md:683-684`](../profiles/kraken/websocket.md) |
 | Coinbase International | ten attempts in any 30 second interval | not published | none | none | [`coinbase/websocket.md:423`](../profiles/coinbase/websocket.md) |
 
-Three items do not generalize.
+Three items have no counterpart on the other four venues.
 
 1. OKX allows only 480 subscribe, unsubscribe, and login operations per connection per hour, at [`okx/websocket.md:223`](../profiles/okx/websocket.md).
-   Subscription churn is architecturally forbidden there.
-   A rule that is ordinary elsewhere, resubscribe when the instrument set changes, has to become apply on the next scheduled refresh on OKX.
+   No other venue publishes a cap on subscription churn.
 2. OKX is the only venue that warns before dropping the connection.
-   Handling `64008` means opening a replacement connection, subscribing it, verifying it, and only then retiring the old one.
-   That path exists for exactly one adapter, so it belongs behind a control message hook rather than in the shared engine.
+   The `notice` with code `64008` arrives about 60 seconds before a service upgrade closes the socket, at [`okx/websocket.md:94`](../profiles/okx/websocket.md).
 3. Coinbase International requires the first subscription within three seconds of connecting, at [`coinbase/websocket.md:374`](../profiles/coinbase/websocket.md).
    No other venue has a connect to subscribe deadline.
 
@@ -177,8 +160,6 @@ Coinbase International requires it.
 The signature is a Base64 encoded HMAC SHA-256 over `TIMESTAMP + KEY + CBINTLMD + PASSPHRASE`, at [`coinbase/websocket.md:372`](../profiles/coinbase/websocket.md).
 The request time is epoch seconds and must be within 30 seconds of the request, at [`coinbase/websocket.md:373`](../profiles/coinbase/websocket.md).
 The credentials travel inside the first subscribe frame rather than in a separate login step.
-
-One venue out of five needs this, so it is an optional frame signing hook and not a base class concern.
 
 ## 8. Message routing
 
@@ -192,8 +173,8 @@ The routing key is in a different place on every venue.
 | Kraken Futures | flat, no nesting | `product_id` | the `feed` name itself changes between `book_snapshot` and `book` | [`kraken/websocket.md:543-601`](../profiles/kraken/websocket.md) |
 | Coinbase International | `{channel, type, product_id, sequence, ...}` | `product_id` | `type` is `SNAPSHOT` or `UPDATE` | [`coinbase/websocket.md:376-396`](../profiles/coinbase/websocket.md) |
 
-OKX also always wraps payloads in an array, so the parse function iterates even for a one-level snapshot.
-Kraken signalling a snapshot by changing the feed name rather than by setting a type field means its dispatch table is keyed differently from every other venue.
+OKX also always wraps payloads in an array, so a one-level snapshot still arrives as a list.
+Kraken Futures signals a snapshot by changing the feed name rather than by setting a type field, so its snapshot signal sits in a different field from every other venue.
 
 ## 9. Subscribe acknowledgement
 
@@ -205,13 +186,13 @@ Kraken signalling a snapshot by changing the feed name rather than by setting a 
 | Kraken Futures | `{event: "subscribed", feed, product_ids}` | [`kraken/websocket.md:500-511`](../profiles/kraken/websocket.md) |
 | Coinbase International | confirmations carry no sequence number | [`coinbase/websocket.md:416`](../profiles/coinbase/websocket.md) |
 
-Two traps sit here.
-Bybit uses two acknowledgement families within one venue, so a single parser is not enough.
+Two venues break the pattern.
+Bybit uses two acknowledgement families within one venue.
 OKX can acknowledge a subscription and then terminate it with `channel-conn-count-error`, at [`okx/websocket.md:233`](../profiles/okx/websocket.md), so an acknowledgement is not proof of success there.
 
 ## 10. Payload semantics
 
-These five produce silently wrong numbers rather than visible failures, which is why they are specified rather than left to the implementer.
+These five produce silently wrong numbers rather than visible failures.
 
 ### 10.1 Symbol identifier format
 
@@ -224,15 +205,12 @@ These five produce silently wrong numbers rather than visible failures, which is
 | Coinbase International | `BTC-PERP`, becoming `BTC_USDC-PERPETUAL` after the 2026-09-09 cutover | same | [`coinbase/websocket.md:512`](../profiles/coinbase/websocket.md) and [`:440`](../profiles/coinbase/websocket.md) |
 
 Binance is the only venue where the subscribe key and the routing key are not the same string.
-The registry therefore stores the venue raw id and the feed resolves it with a map lookup.
-String manipulation is never correct here, because `BTC` and `XBT` must not be normalized by string replacement without product metadata, at [`kraken/websocket.md:714`](../profiles/kraken/websocket.md).
+Kraken Futures spells the base asset `XBT` rather than `BTC`, and the profile records that this is not a string substitution without product metadata, at [`kraken/websocket.md:714`](../profiles/kraken/websocket.md).
 
 ### 10.2 Number representation
 
 Binance, Bybit, OKX, and Coinbase send prices and sizes as JSON strings, at [`binance/websocket.md:675`](../profiles/binance/websocket.md), [`bybit/websocket.md:913`](../profiles/bybit/websocket.md), [`okx/websocket.md:898`](../profiles/okx/websocket.md), and [`coinbase/websocket.md:376-396`](../profiles/coinbase/websocket.md).
 Kraken Futures sends them as JSON numbers, at [`kraken/websocket.md:513-535`](../profiles/kraken/websocket.md).
-
-One venue out of five differs, so even a field read this trivial cannot be shared.
 
 ### 10.3 Timestamp representation
 
@@ -244,8 +222,7 @@ One venue out of five differs, so even a field read this trivial cannot be share
 | Kraken Futures | integer epoch milliseconds, where Kraken Spot uses RFC 3339 instead | `time` and `timestamp` | [`kraken/websocket.md:484`](../profiles/kraken/websocket.md) and [`:707`](../profiles/kraken/websocket.md) |
 | Coinbase International | RFC 3339 string such as `2023-05-10T14:58:47.547Z` | `time` | [`coinbase/websocket.md:512`](../profiles/coinbase/websocket.md) |
 
-Coinbase is the most expensive parse of the five, because every message needs a date parse rather than a number read.
-The normalized contract stores milliseconds as a number, so the conversion belongs in the adapter.
+Coinbase International is the only one of the five that carries a date string rather than a number.
 
 ### 10.4 Size unit
 
@@ -253,8 +230,7 @@ Binance USD-M linear, Bybit linear, and Coinbase International report size in ba
 OKX reports derivative book size in contracts, at [`okx/websocket.md:905`](../profiles/okx/websocket.md).
 Kraken Futures `PF_` contracts also report size in contracts, and the multiplier comes from REST rather than the socket, at [`kraken/websocket.md:713`](../profiles/kraken/websocket.md).
 
-The adapter converts to base units at write time using `contractSize` from the registry.
-Comparing raw sizes across venues without that conversion compares contracts against coins.
+Comparing raw sizes across venues compares contracts against coins.
 
 ### 10.5 Sequence semantics
 
@@ -268,8 +244,8 @@ Four mutually incompatible models across five venues.
 | Kraken Futures | `book` carries `seq`, `ticker` carries none, and no gap or reset algorithm is documented | [`kraken/websocket.md:596`](../profiles/kraken/websocket.md) |
 | Coinbase International | `sequence` increases across the entire session rather than per product, so it is structurally unusable per instrument | [`coinbase/websocket.md:415`](../profiles/coinbase/websocket.md) |
 
-This is why the shared submit path treats the sequence as a not-older-than guard, with zero meaning absent, and never as a gap detector.
-A gap detector in the base class fires continuously on Bybit and is impossible to implement on three of the five venues.
+Binance is the only venue of the five that documents a gap detection rule.
+Three of the five publish no usable per-instrument sequence at all for the best bid and ask channels: OKX `bbo-tbt`, Kraken Futures `ticker`, and Coinbase International, whose `sequence` is session scoped.
 
 ## 11. Idle repeat behaviour
 
@@ -281,110 +257,4 @@ A gap detector in the base class fires continuously on Bybit and is impossible t
 | Kraken Futures | always, because the full ticker sends complete state even when one field changed | [`kraken/websocket.md:537`](../profiles/kraken/websocket.md) |
 | Coinbase International | no | [`coinbase/websocket.md:376-396`](../profiles/coinbase/websocket.md) |
 
-This is the one axis that generalizes cleanly.
-Four float comparisons in the shared submit path cover all five cases.
-Liveness is refreshed and the comparator is not woken, which is where the saving is.
-
-## 12. What the shared engine owns
-
-Written once, identical on every venue.
-
-- Open the socket with compression and UTF-8 validation disabled.
-- Drive the keepalive timer from the adapter's descriptor.
-- Apply jittered exponential backoff and reconnect, floored by the venue's handshake rate limit.
-- Resubscribe after reconnect.
-- Drive the chunker from the adapter's budget descriptor.
-- Mark every instrument on a dropped connection stale in one pass, before any reconnect attempt.
-- Apply the ordering guard, the unchanged quote check, and the staleness allowance.
-- Write the quote columns and call the sink.
-- Count parse failures, unknown symbols, and reconnects.
-
-## 13. Adapter surface
-
-Note, 2026-08-01: the market data ingest design this section originally deferred to was never committed.
-The accepted storage design is the per-cluster index in `server/src/engine/types.ts`, recorded in [`../plans/2026-07-31-instrument-index-design.md`](../plans/2026-07-31-instrument-index-design.md) section 0.
-Nothing in this doc depends on its shape.
-Every adapter needs only the venue's raw market id string and where its quote lands.
-Read `Instrument[]` below as `Market[]` from `server/src/engine/types.ts`, resolved to a `Slot` at message time.
-
-Note, 2026-08-04: the members below shipped under different names, and frames are objects rather than strings so that `sign` can rewrite one before it is serialized.
-The accepted contract is `server/src/ws/ws.ts:18-24`, recorded in [`../plans/2026-08-03-websocket-feed-foundation-design.md`](../plans/2026-08-03-websocket-feed-foundation-design.md).
-The three axis split this section derives is unchanged.
-
-Three abstract members, because only three axes are behaviour.
-
-```ts
-abstract getAllEndpoints(markets: Market[]): EndpointPlan[];
-abstract getSubscribeFrames(markets: Market[]): object[];
-abstract handleMessages(raw: Buffer, connection: VenueConnection): void;
-```
-
-Everything else is a record the shared engine reads.
-
-```ts
-type VenueSpec = {
-  keepalive: {
-    mode: 'server' | 'json' | 'text' | 'protocol';
-    payload?: string;
-    intervalMs: number;
-    onlyWhenIdle: boolean;
-  };
-  chunk: {
-    unit: 'chars' | 'bytes' | 'none';
-    budget: number;
-    scope: 'frame' | 'connection';
-  };
-  maxConnectionAgeMs?: number;
-  minHandshakeIntervalMs: number;
-  firstSubscribeDeadlineMs?: number;
-  unknownSymbolIsExpected: boolean;
-  sign?(frame: object): object;
-}
-```
-
-Concrete values for the five venues, taken from the sections above.
-
-| field | binance | bybit | okx | krakenfutures | coinbaseinternational |
-|---|---|---|---|---|---|
-| `keepalive.mode` | `server` | `json` | `text` | `protocol` | `protocol` |
-| `keepalive.payload` | none | `{"op":"ping"}` | `ping` | none | none |
-| `keepalive.intervalMs` | not applicable | 20,000 | 30,000 | 30,000 | 30,000 |
-| `keepalive.onlyWhenIdle` | not applicable | false | true | false | false |
-| `chunk.unit` | `none` | `chars` | `bytes` | `none` | `none` |
-| `chunk.budget` | not applicable | 18,000 | 57,344 | not applicable | not applicable |
-| `chunk.scope` | not applicable | `connection` | `frame` | not applicable | not applicable |
-| `maxConnectionAgeMs` | 82,800,000 | none | none | none | none |
-| `minHandshakeIntervalMs` | 1,000 | 600 | 334 | 1,000 | 3,000 |
-| `firstSubscribeDeadlineMs` | none | none | none | none | 3,000 |
-| `unknownSymbolIsExpected` | true | false | false | false | false |
-| `sign` | none | none | none | none | required |
-
-The Bybit and OKX chunk budgets carry headroom below the published caps of 21,000 characters and 64 KB.
-The Binance maximum connection age is 23 hours against a published 24 hour limit, so the reconnect is proactive rather than a reaction to being dropped.
-Keepalive intervals for Kraken Futures and Coinbase International are engineering choices, because Kraken publishes only a 60 second ceiling and Coinbase publishes nothing.
-
-## 14. Assumptions that look shared and are not
-
-These are the five ways a base class over these venues goes wrong.
-
-1. One socket per venue.
-   Binance splits by data class and Bybit splits by market family, so the endpoint list is a list.
-2. Subscribe frames scale with the instrument list.
-   Binance `!bookTicker` ignores the instrument list entirely.
-3. Only subscribed symbols arrive.
-   Binance delivers the whole market, so an unknown symbol is expected there and is an error on the other four venues.
-4. Every message carries a numeric millisecond timestamp.
-   Coinbase International sends RFC 3339 text and OKX sends a decimal string.
-5. Every message carries a usable per-instrument sequence.
-   Kraken Futures `ticker` carries none and the Coinbase International sequence is session scoped.
-
-## 15. Consequence for the design
-
-The adapter split this document derives in sections 12 and 13, three behavioural members plus a data record, holds against all sixteen axes.
-The market data ingest design of 2026-07-30 that first recorded that split was never committed; sections 12 and 13 here are its surviving record until the WebSocket feed design doc replaces it.
-
-Two additions to that split are warranted and are not yet recorded in a design.
-
-1. A control message hook, for OKX `notice` code `64008` and for Bybit `u` equal to 1.
-   Both are in-band signals that change connection or instrument state rather than quote state.
-2. A per-venue `unknownSymbolIsExpected` flag, because the Binance firehose otherwise reports the rest of the market as a permanent parse anomaly.
+Three of the five repeat unchanged state, and Binance and Coinbase International do not.

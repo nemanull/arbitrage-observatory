@@ -1,22 +1,15 @@
-import ccxt from 'ccxt';
 import { Exchange as CCXTVenue, Market as CCXTMarket } from 'ccxt';
 import { VenueSwapMarkets, SwapMarket } from './types';
 import { Logger } from '@nestjs/common';
 
 export class VenueConnector {
   public logger: Logger;
+  private venues: CCXTVenue[];
 
-  constructor() {
+  constructor(venues: CCXTVenue[]) {
     this.logger = new Logger();
+    this.venues = venues;
   }
-
-  venues = [
-    new ccxt.pro.binance(),
-    new ccxt.pro.bybit(),
-    new ccxt.pro.okx(),
-    new ccxt.pro.coinbaseinternational(),
-    new ccxt.pro.krakenfutures(),
-  ]; // This should be a function that later gets all enabled venues from the db
 
   async getVenueSwapMarkets(
     venue: CCXTVenue,
