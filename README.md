@@ -15,11 +15,11 @@ cp app/.env.example app/.env
 
 ## Infrastructure
 
-Postgres and Redis run in Docker.
+Postgres, Redis, and SigNoz run in Docker.
 Start them before the server.
 
 ```bash
-pnpm infra:up         # start both, waits until healthy
+pnpm infra:up         # start everything, waits until healthy
 pnpm infra:down       # stop
 pnpm infra:logs       # follow logs
 pnpm infra:reset      # stop and delete all stored data
@@ -28,6 +28,18 @@ pnpm infra:reset      # stop and delete all stored data
 Postgres is on `localhost:5532` and Redis is on `localhost:6479`, both bound to loopback.
 The ports are non-default so they do not clash with other projects on the same machine.
 Set `POSTGRES_PORT` or `REDIS_PORT` in the environment to change them.
+
+## Observability
+
+The server exports logs, traces, and metrics to a local SigNoz over OTLP, so a failure in a background job is still readable long after the terminal is gone.
+The UI is on http://localhost:8180 and it accepts any email and password, since the container registers nothing.
+
+Setup and upgrades are covered in [infra/signoz/README.md](./infra/signoz/README.md).
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to an empty value in `server/.env` to run without exporting.
+
+```bash
+docker compose up -d --wait postgres redis   # skip SigNoz on a constrained machine
+```
 
 ## Database
 

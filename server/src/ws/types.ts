@@ -12,6 +12,9 @@ export type SingleSocketConnection = {
   plan: EndpointPlan;
   socket: WebSocket;
 
+  // The only symbols this socket routes, copied from plan.markets when it opens.
+  accepted: Set<string>;
+
   lastMessageAt: number;
   attempt: number;
 

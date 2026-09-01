@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Pair
- * Base and quote are normalized codes rather than venue spellings
+ * 
  */
 export type PairModel = runtime.Types.Result.DefaultSelection<Prisma.$PairPayload>
 

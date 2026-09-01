@@ -12,10 +12,13 @@ packages:
 # ccxt ships a postinstall that only prints an ASCII-art donation banner, so it stays disabled.
 # bufferutil is an optional native accelerator for ws frame masking.
 # It needs a C toolchain to compile, which the Docker image does not carry, so the pure JavaScript fallback is used instead.
+# protobufjs (via the OTLP proto exporters) ships a postinstall that only prints a version-scheme
+# warning and writes nothing, so it stays disabled.
 allowBuilds:
   '@prisma/engines': true
   bufferutil: false
   ccxt: false
   msgpackr-extract: false
   prisma: true
+  protobufjs: false
   unrs-resolver: false

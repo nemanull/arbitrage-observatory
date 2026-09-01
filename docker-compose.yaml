@@ -3,6 +3,9 @@
 
 name: arbitrage-observatory
 
+include:
+  - path: ./infra/signoz/compose.yaml
+
 services:
   postgres:
     image: postgres:18-alpine

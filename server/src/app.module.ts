@@ -1,6 +1,7 @@
 import { BullModule, type BullRootModuleOptions } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullMQOtel } from 'bullmq-otel';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './db/prisma';
@@ -19,6 +20,7 @@ import {
         connection: {
           url: configService.getOrThrow<string>('REDIS_URL'),
         },
+        telemetry: new BullMQOtel('observatory-queue'),
       }),
     }),
     BullModule.registerQueue({

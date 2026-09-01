@@ -18,6 +18,7 @@ export abstract class VenueFeed {
   protected readonly logger: Logger;
   private readonly connections: SingleSocketConnection[] = [];
   private readonly reconnectTimers = new Set<NodeJS.Timeout>();
+  private readonly warnedUnknown = new Set<string>();
   private running = false;
 
   protected abstract readonly maxSilenceMs: number;
@@ -77,6 +78,7 @@ export abstract class VenueFeed {
       id: plan.id,
       plan,
       socket,
+      accepted: new Set(plan.markets.map((m) => m.rawMarketId)),
       lastMessageAt: 0,
       attempt,
       reopenOnClose: true,
@@ -139,6 +141,22 @@ export abstract class VenueFeed {
     kill.unref();
     c.socket.once('close', () => clearTimeout(kill));
     c.socket.close();
+  }
+
+  // A socket routes only the symbols on its own plan, which is also the slice markStale covers on close.
+  // A venue can deliver a symbol nobody asked for, and a rawMarketId spelled differently from the venue's own id looks identical here.
+  // The first drop of each symbol is therefore logged, because that second case is otherwise completely silent.
+  protected accepts(c: SingleSocketConnection, rawMarketId: string): boolean {
+    if (c.accepted.has(rawMarketId)) {
+      return true;
+    }
+
+    if (!this.warnedUnknown.has(rawMarketId)) {
+      this.warnedUnknown.add(rawMarketId);
+      this.logger.warn(`${c.id}: dropped an unsubscribed symbol ${rawMarketId}`);
+    }
+
+    return false;
   }
 
   protected submit(q: NormalizedQuote): void {

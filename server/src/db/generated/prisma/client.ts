@@ -41,13 +41,12 @@ export { Prisma }
 
 /**
  * Model Venue
- * A venue we watch.
- * Socket settings and fee schedules live in code next to VenueSpec, so this table only records which venues exist.
+ * 
  */
 export type Venue = Prisma.VenueModel
 /**
  * Model Pair
- * Base and quote are normalized codes rather than venue spellings
+ * 
  */
 export type Pair = Prisma.PairModel
 /**

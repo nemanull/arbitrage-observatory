@@ -14,8 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Venue
- * A venue we watch.
- * Socket settings and fee schedules live in code next to VenueSpec, so this table only records which venues exist.
+ * 
  */
 export type VenueModel = runtime.Types.Result.DefaultSelection<Prisma.$VenuePayload>
 
@@ -551,9 +550,6 @@ export type $VenuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     createdAt: Date
     updatedAt: Date
     id: number
-    /**
-     * Must match Venue.id in src/engine/types.ts, which is also the ccxt exchange id
-     */
     slug: string
     name: string
     enabled: boolean
