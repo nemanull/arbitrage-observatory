@@ -105,6 +105,11 @@ export class Engine {
     this.opportunityManager.validate(cluster, venueIndex, clusterQuote.recvTs);
   }
 
+  // A route only closes on the tick path when one of its own legs moves.
+  // A route whose venues both went quiet has no tick left to close it, so a timer outside the engine drives this.
+  sweep(now: number): number {
+    return this.opportunityManager.sweep(now).length;
+  }
 
   tracks(venueId: string, rawMarketId: string): boolean {
     return this.resolveSlot(venueId, rawMarketId) !== null;

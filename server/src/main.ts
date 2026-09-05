@@ -31,4 +31,8 @@ async function bootstrap(): Promise<void> {
   logger.log(`Server is running on http://localhost:${port}`);
 }
 
-void bootstrap();
+// A boot failure must exit nonzero rather than leave a process that listens but streams nothing.
+void bootstrap().catch((e: Error) => {
+  console.error(e);
+  process.exit(1);
+});

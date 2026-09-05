@@ -1,0 +1,14 @@
+# Backlog
+
+Work that is identified but not scheduled.
+[`ROADMAP.md`](./ROADMAP.md) holds the committed stages, and this file indexes everything found along the way that has no stage yet.
+Rules for this tree live in [AGENTS.md](./AGENTS.md).
+
+Each entry is one file under [`backlog/`](./backlog/), and every entry gets one row below.
+An entry states the finding, the evidence behind it, and what finishing the work would mean.
+An entry leaves the backlog when it becomes a dated design under [`plans/`](./plans/).
+Rows are not ordered by priority.
+
+| Entry | Status | Recorded | Summary |
+| --- | --- | --- | --- |
+| [`2026-09-05-dynamic-taker-fee-resolution.md`](./backlog/2026-09-05-dynamic-taker-fee-resolution.md) | Not started | 2026-09-05 | A taker fee is one static number per venue, and the real rate depends on the account, the product line, and the symbol. |

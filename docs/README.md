@@ -22,6 +22,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 
 ## Reference
 
+- [`BACKLOG.md`](./BACKLOG.md) indexes identified work that has no roadmap stage yet, one row per file under [`backlog/`](./backlog/).
 - [`ROADMAP.md`](./ROADMAP.md) tracks the planned project stages.
 - [`WIKI.md`](./WIKI.md) defines the current market cluster and arbitrage opportunity terminology.
 - [`profiles/binance/fees.md`](./profiles/binance/fees.md) records Binance fees by entity, product, account tier, and service.

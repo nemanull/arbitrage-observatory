@@ -9,6 +9,7 @@ import {
   OpportunityWorker,
   OPPORTUNITY_CLOSED_QUEUE,
 } from './engine/OpportunityWorker';
+import { Orchestrator } from './orchestrator';
 
 @Module({
   imports: [
@@ -32,6 +33,6 @@ import {
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService, OpportunityWorker],
+  providers: [AppService, PrismaService, OpportunityWorker, Orchestrator],
 })
 export class AppModule {}
