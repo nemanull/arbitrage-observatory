@@ -12,3 +12,4 @@ Rows are not ordered by priority.
 | Entry | Status | Recorded | Summary |
 | --- | --- | --- | --- |
 | [`2026-09-05-dynamic-taker-fee-resolution.md`](./backlog/2026-09-05-dynamic-taker-fee-resolution.md) | Not started | 2026-09-05 | A taker fee is one static number per venue, and the real rate depends on the account, the product line, and the symbol. |
+| [`2026-09-05-coinbase-derivatives-cutover.md`](./backlog/2026-09-05-coinbase-derivatives-cutover.md) | Not started | 2026-09-05 | Coinbase International derivatives move to a Deribit powered gateway on 2026-09-09, and the perpetual product ids change with no parallel running window. |

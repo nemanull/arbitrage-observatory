@@ -43,7 +43,13 @@ export class Orchestrator
   private readonly logger = new Logger(Orchestrator.name);
 
   // Later this will be a db query
-  private activeVenues: string[] = ['binance', 'bybit', 'okx'];
+  private activeVenues: string[] = [
+    'binance',
+    'bybit',
+    'okx',
+    'krakenfutures',
+    'coinbase',
+  ];
 
   private run: Run | null = null;
   private starting = false;
@@ -184,6 +190,7 @@ export class Orchestrator
     return new VenueConnector(
       registration.createExchange(),
       registration.takerPpm,
+      registration.marketFilter,
     ).loadVenue();
   }
 

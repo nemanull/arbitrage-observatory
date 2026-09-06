@@ -1,5 +1,5 @@
 import { Exchange as CCXTVenue, Market as CCXTMarket } from 'ccxt';
-import { VenueSwapMarkets, SwapMarket } from './types';
+import { VenueSwapMarkets, SwapMarket, MarketFilter } from './types';
 import { Logger } from '@nestjs/common';
 import type { Market, Venue } from '../engine/types';
 
@@ -7,11 +7,18 @@ export class VenueConnector {
   public logger: Logger;
   private venue: CCXTVenue;
   private takerPpm: number | undefined;
+  private marketFilter: MarketFilter | undefined;
 
   // takerPpm overrides what CCXT reports, because CCXT ships one static table and the profile research is the verified source.
-  constructor(venue: CCXTVenue, takerPpm?: number) {
+  // marketFilter narrows the venue's swap markets, because a venue contributes at most one market per pair and some list two.
+  constructor(
+    venue: CCXTVenue,
+    takerPpm?: number,
+    marketFilter?: MarketFilter,
+  ) {
     this.venue = venue;
     this.takerPpm = takerPpm;
+    this.marketFilter = marketFilter;
     this.logger = new Logger(`CCXT ${venue.id}`);
   }
 
@@ -53,7 +60,16 @@ export class VenueConnector {
         this.logger.warn(`Venue ${venue.id} doesn't have a name`);
       }
 
-      const perpetuals = Object.values(markets).filter(isActiveSwapMarket);
+      const swaps = Object.values(markets).filter(isActiveSwapMarket);
+      const filter = this.marketFilter;
+      const perpetuals =
+        filter === undefined ? swaps : swaps.filter((m) => filter(m));
+
+      if (perpetuals.length < swaps.length) {
+        this.logger.log(
+          `market filter kept ${perpetuals.length} of ${swaps.length} swap markets`,
+        );
+      }
 
       return {
         venueId: venue.id,

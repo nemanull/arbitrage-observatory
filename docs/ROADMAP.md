@@ -23,5 +23,4 @@
 - [x] Add orchestration
 
 # Phase 3
-- [ ] Add Coinbase and Kraken
-- [ ] Add frontend
+- [x] Add Coinbase and Kraken
