@@ -7,6 +7,7 @@ import {
   Venue,
   PairKey,
 } from './types';
+import { DENIED_PAIRS, PRICE_SCALE, getPriceScale } from './clusterOverrides';
 import { Logger } from '@nestjs/common';
 
 export class ClusterIndexBuilder {
@@ -35,6 +36,8 @@ export class ClusterIndexBuilder {
     }
 
     this.clusterByRawMarketId = this.createClusterByRawMarketIdMap(this.clusters);
+
+    this.logOverrides(pairMarkets);
 
     this.logger.log(
       `Built ${this.clusters.length} clusters across ${venues.length} venues`,
@@ -73,8 +76,12 @@ export class ClusterIndexBuilder {
       }
 
       markets[i] = market;
-      bidMul[i] = 1 - market.takerPpm / 1000000;
-      askMul[i] = 1 + market.takerPpm / 1000000;
+
+      //Will be improved
+      const scale = getPriceScale(market.venueId, market.rawMarketId);
+
+      bidMul[i] = (1 - market.takerPpm / 1000000) * scale;
+      askMul[i] = (1 + market.takerPpm / 1000000) * scale;
 
       marketCount++;
     }
@@ -103,6 +110,11 @@ export class ClusterIndexBuilder {
     const clusters: Cluster[] = [];
 
     for (const pair of allPairs.keys()) {
+
+      if (DENIED_PAIRS.has(pair)) {
+        continue;
+      }
+
       const markets = allPairs.get(pair);
 
       if (markets === undefined) {
@@ -118,6 +130,30 @@ export class ClusterIndexBuilder {
     }
 
     return clusters;
+  }
+
+  private logOverrides(pairMarkets: Map<PairKey, Market[]>): void {
+    const denied = [...pairMarkets.keys()].filter((pair) =>
+      DENIED_PAIRS.has(pair),
+    );
+
+    if (denied.length > 0) {
+      this.logger.warn(
+        `Denied ${denied.length} pair(s) as ticker collisions: ${denied.join(', ')}`,
+      );
+    }
+
+    const scaled = PRICE_SCALE.filter((s) =>
+      this.clusterByRawMarketId.get(s.venueId)?.has(s.rawMarketId),
+    );
+
+    if (scaled.length > 0) {
+      this.logger.warn(
+        `Applied ${scaled.length} hardcoded price scale(s): ${scaled
+          .map((s) => `${s.venueId}/${s.rawMarketId} x${s.scale}`)
+          .join(', ')}`,
+      );
+    }
   }
 
   createClusterIndex(Clusters: Cluster[]): ClusterIndex {

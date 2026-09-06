@@ -1,25 +1,33 @@
 import { Exchange as CCXTVenue, Market as CCXTMarket } from 'ccxt';
-import { VenueSwapMarkets, SwapMarket, MarketFilter } from './types';
+import {
+  VenueSwapMarkets,
+  SwapMarket,
+  MarketFilter,
+  VenueConnectorOptions,
+} from './types';
 import { Logger } from '@nestjs/common';
 import type { Market, Venue } from '../engine/types';
 
 export class VenueConnector {
   public logger: Logger;
   private venue: CCXTVenue;
-  private takerPpm: number | undefined;
+  protected takerPpm: number | undefined;
+  protected ccxtTakerPpm: number | undefined;
   private marketFilter: MarketFilter | undefined;
 
-  // takerPpm overrides what CCXT reports, because CCXT ships one static table and the profile research is the verified source.
-  // marketFilter narrows the venue's swap markets, because a venue contributes at most one market per pair and some list two.
-  constructor(
-    venue: CCXTVenue,
-    takerPpm?: number,
-    marketFilter?: MarketFilter,
-  ) {
+  // The options are the venue's registration, so a rate lives beside the venue it describes rather than at this call site.
+  constructor(venue: CCXTVenue, options: VenueConnectorOptions = {}) {
     this.venue = venue;
-    this.takerPpm = takerPpm;
-    this.marketFilter = marketFilter;
+    this.takerPpm = options.takerPpm;
+    this.ccxtTakerPpm = options.ccxtTakerPpm;
+    this.marketFilter = options.marketFilter;
     this.logger = new Logger(`CCXT ${venue.id}`);
+  }
+
+  // True when CCXT's number is the one the registration already accounts for, which is the case that needs no warning.
+  // A venue that serves a real per market fee, so that no single number can describe what CCXT reports, overrides this.
+  protected isExpectedCcxtTakerPpm(ccxtPpm: number, market: Market): boolean {
+    return ccxtPpm === (this.ccxtTakerPpm ?? market.takerPpm);
   }
 
   async loadVenue(): Promise<Venue | null> {
@@ -88,7 +96,7 @@ export class VenueConnector {
     const markets: Market[] = [];
     const reportedPpm = new Set<number>();
     let skipped = 0;
-    let disagreeing = 0;
+    let unexpected = 0;
 
     for (const ccxtMarket of swapMarkets.markets) {
       const market = this.toMarket(swapMarkets.venueId, ccxtMarket);
@@ -100,9 +108,9 @@ export class VenueConnector {
 
       const ccxtPpm = toPpm(ccxtMarket.taker);
 
-      if (ccxtPpm !== null && ccxtPpm !== market.takerPpm) {
+      if (ccxtPpm !== null && !this.isExpectedCcxtTakerPpm(ccxtPpm, market)) {
         reportedPpm.add(ccxtPpm);
-        disagreeing++;
+        unexpected++;
       }
 
       markets.push(market);
@@ -114,9 +122,9 @@ export class VenueConnector {
       );
     }
 
-    if (disagreeing > 0) {
+    if (unexpected > 0) {
       this.logger.warn(
-        `CCXT reports ${[...reportedPpm].join(', ')} ppm on ${disagreeing} of ${markets.length} markets, and the registry says ${this.takerPpm}`,
+        `CCXT reports ${[...reportedPpm].join(', ')} ppm on ${unexpected} of ${markets.length} markets, and ${this.ccxtTakerPpm ?? this.takerPpm} ppm was expected`,
       );
     }
 

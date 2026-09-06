@@ -15,13 +15,26 @@ import type {
 } from './types';
 
 const MIN_NET_PPM = 5_000; // after fees
+const MAX_PLAUSIBLE_NET_PPM = 100_000;
 const CLOSURE_NET_PPM = 1_000; // after fees
 export const MAX_QUOTE_AGE_MS = 5_000;
 const MAX_OPPORTUNITY_AGE_MS = 5 * 60_000;
 
+const IMPLAUSIBLE_NET_PPM_WARN_WINDOW_MS = 10_000;
+
+type ImplausibleNetPpmWarnState = {
+  occurrenceCount: number; // rejections seen for this route since the engine started
+  suppressedCount: number; // rejections swallowed since the last warning
+  lastWarnedAt: number;
+};
+
 export class OpportunityManager {
   private logger = new Logger(OpportunityManager.name);
   private activeOpportunityMap: ActiveOpportunityMap = new Map();
+  private readonly implausibleNetPpmWarnStates = new Map<
+    string,
+    ImplausibleNetPpmWarnState
+  >();
 
   constructor(private readonly queue: Queue<OpportunityClosedJob>) {}
 
@@ -77,6 +90,19 @@ export class OpportunityManager {
     const netPpm = (highestBid / lowestAsk - 1) * 1_000_000;
 
     if (netPpm < MIN_NET_PPM) {
+      return null;
+    }
+
+    if (netPpm > MAX_PLAUSIBLE_NET_PPM) {
+      this.reportImplausibleNetPpm(
+        cluster,
+        highestBidMarket,
+        lowestAskMarket,
+        highestBid,
+        lowestAsk,
+        netPpm,
+        now,
+      );
       return null;
     }
 
@@ -182,6 +208,52 @@ export class OpportunityManager {
     if (this.shouldOpportunityBeClosed(opportunity, cluster, now, netPpm)) {
       this.closeOpportunity(opportunity, cluster.pair, now);
     }
+  }
+
+  private reportImplausibleNetPpm(
+    cluster: Cluster,
+    highestBidMarket: Market,
+    lowestAskMarket: Market,
+    highestBid: number,
+    lowestAsk: number,
+    netPpm: number,
+    now: number,
+  ): void {
+    const route = this.getRouteKey(highestBidMarket, lowestAskMarket);
+    const key = `${cluster.pair}|${route}`;
+    let state = this.implausibleNetPpmWarnStates.get(key);
+
+    if (state === undefined) {
+      state = {
+        occurrenceCount: 0,
+        suppressedCount: 0,
+        lastWarnedAt: Number.NEGATIVE_INFINITY,
+      };
+      this.implausibleNetPpmWarnStates.set(key, state);
+    }
+
+    state.occurrenceCount += 1;
+
+    if (now - state.lastWarnedAt < IMPLAUSIBLE_NET_PPM_WARN_WINDOW_MS) {
+      state.suppressedCount += 1;
+      return;
+    }
+
+    this.logger.warn({
+      event: 'opportunity_rejected',
+      reason: 'implausible_net_ppm',
+      pair: cluster.pair,
+      route,
+      netPpm,
+      maxPlausibleNetPpm: MAX_PLAUSIBLE_NET_PPM,
+      highestBid,
+      lowestAsk,
+      occurrenceCount: state.occurrenceCount,
+      suppressedCount: state.suppressedCount,
+    });
+
+    state.lastWarnedAt = now;
+    state.suppressedCount = 0;
   }
 
   private recordSample(

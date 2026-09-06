@@ -189,8 +189,7 @@ export class Orchestrator
 
     return new VenueConnector(
       registration.createExchange(),
-      registration.takerPpm,
-      registration.marketFilter,
+      registration,
     ).loadVenue();
   }
 

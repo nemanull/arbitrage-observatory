@@ -14,3 +14,9 @@ export type SwapMarket = CCXTMarketInterface & {
 // Narrows a venue's swap markets before clustering.
 // A venue contributes at most one market per pair, so a venue that lists two contracts on one pair chooses between them here.
 export type MarketFilter = (market: SwapMarket) => boolean;
+
+export type VenueConnectorOptions = {
+  takerPpm?: number;
+  ccxtTakerPpm?: number;
+  marketFilter?: MarketFilter;
+};

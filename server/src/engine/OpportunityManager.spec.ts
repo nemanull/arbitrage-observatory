@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { OpportunityManager } from './OpportunityManager';
 import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
 import type { ActiveOpportunityMap, Cluster, Market } from './types';
@@ -69,6 +70,11 @@ function activeMap(manager: OpportunityManager): ActiveOpportunityMap {
 
 function routes(manager: OpportunityManager) {
   return activeMap(manager).get('BTC|USDT');
+}
+
+function warnings(manager: OpportunityManager) {
+  const logger = Reflect.get(manager, 'logger') as Logger;
+  return jest.spyOn(logger, 'warn').mockImplementation(() => undefined);
 }
 
 // bybit bids 101 against a binance ask of 100: ~8890ppm after 55bp taker each side.
@@ -329,5 +335,68 @@ describe('OpportunityManager persistence', () => {
         }),
       ],
     });
+  });
+});
+
+// The general net for a collision clusterOverrides does not know about. okx bidding 1000 against a
+// binance ask of 100 is ~8.99M ppm: the two legs are not the same asset, whatever the ticker says.
+describe('OpportunityManager plausibility ceiling', () => {
+  it('rejects a reading above MAX_PLAUSIBLE_NET_PPM, and says so', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    expect(tick(manager, cluster, OKX, 1_000, 1_001, 1_000)).toBeNull();
+
+    expect(routes(manager)).toBeUndefined();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'opportunity_rejected',
+        reason: 'implausible_net_ppm',
+        pair: 'BTC|USDT',
+        route: 'okx-binance',
+        maxPlausibleNetPpm: 100_000,
+      }),
+    );
+  });
+
+  it('still opens a large but plausible edge', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    const opened = tick(manager, cluster, OKX, 109, 110, 1_000); // ~88802ppm, under the ceiling
+
+    expect(Math.round(opened!.netPpmAtOpen)).toBe(88_802);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  // A cluster like this is broken on every tick for the life of the process. Both legs have to keep
+  // printing inside MAX_QUOTE_AGE_MS for the route to be reachable at all, so the burst is 5s apart
+  // while the warning window is 10s.
+  it('warns once per window and carries the suppressed count', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    for (const now of [1_000, 4_000, 8_000]) {
+      tick(manager, cluster, BINANCE, 99.9, 100, now);
+      tick(manager, cluster, OKX, 1_000, 1_001, now);
+    }
+
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 12_000);
+
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        occurrenceCount: 6,
+        suppressedCount: 4,
+      }),
+    );
   });
 });
