@@ -1,4 +1,4 @@
-export type PairKey = string; // "BTC|USDT"
+export type PairKey = string; // "BTC|USDT". USD and USDC markets sit under the USDT key, see quoteFamily.ts
 type RouteKey = string; // "bybit-binance": the venue we sell on, then the venue we buy on
 
 export type CloseReason =
@@ -17,12 +17,13 @@ export type Market = {
   venueId: string; // 'bybit'
   rawMarketId: string; // 'BTCUSDT': the symbol exactly as the venue's socket spells it
   base: string; // 'BTC'
-  quote: string; // 'USDT'
+  quote: string; // 'USDT', as the venue spells it. The cluster key folds USD and USDC into USDT
   takerPpm: number; // taker fee in parts per million: 550 = 0.055%
   linear: boolean;
 };
 
-// A Cluster is a set of markets that trade the same asset on different exchanges with the same base and settlement currency.
+// A Cluster is a set of markets that trade the same asset on different exchanges with the same base and a dollar settlement asset.
+// USD, USDC and USDT count as one asset here.
 // Every array is one slot per venue, so a cluster never has to grow. readonly forbids replacing an array, not writing into one.
 export type Cluster = {
   readonly pair: PairKey; // 'BTC|USDT'

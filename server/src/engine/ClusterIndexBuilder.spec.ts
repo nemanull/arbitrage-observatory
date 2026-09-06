@@ -2,19 +2,26 @@ import { ClusterIndexBuilder } from './ClusterIndexBuilder';
 import { createVenueIndexMap } from './shared';
 import type { Market, Venue } from './types';
 
-// Covers only what clusterOverrides adds. Everything else about the builder is untested for now.
+// Covers only what clusterOverrides and quoteFamily add. Everything else about the builder is untested for now.
 
 const TAKER_PPM: Record<string, number> = {
   binance: 500,
   bybit: 550,
   okx: 500,
+  krakenfutures: 500,
+  coinbase: 400,
 };
 
 const BINANCE = 0;
 const BYBIT = 1;
 const OKX = 2;
 
-function market(venueId: string, rawMarketId: string, base: string): Market {
+function market(
+  venueId: string,
+  rawMarketId: string,
+  base: string,
+  contract: Partial<Pick<Market, 'quote' | 'linear'>> = {},
+): Market {
   return {
     venueId,
     rawMarketId,
@@ -22,6 +29,7 @@ function market(venueId: string, rawMarketId: string, base: string): Market {
     quote: 'USDT',
     takerPpm: TAKER_PPM[venueId],
     linear: true,
+    ...contract,
   };
 }
 
@@ -109,5 +117,89 @@ describe('ClusterIndexBuilder PRICE_SCALE', () => {
 
     expect(cluster.bidMul[1]).toBeCloseTo(1 - 500 / 1e6, 12);
     expect(cluster.askMul[1]).toBeCloseTo(1 + 500 / 1e6, 12);
+  });
+});
+
+describe('ClusterIndexBuilder QUOTE_FAMILY', () => {
+  it('clusters USD, USDC and USDT markets of one coin under the USDT key', () => {
+    const b = build([
+      venue('binance', [market('binance', 'BTCUSDT', 'BTC')]),
+      venue('krakenfutures', [
+        market('krakenfutures', 'PF_XBTUSD', 'BTC', { quote: 'USD' }),
+      ]),
+      venue('coinbase', [
+        market('coinbase', 'BTC-PERP-INTX', 'BTC', { quote: 'USDC' }),
+      ]),
+    ]);
+
+    expect(b.clusters.map((c) => c.pair)).toEqual(['BTC|USDT']);
+    expect(b.clusters[0].markets.map((m) => m?.rawMarketId)).toEqual([
+      'BTCUSDT',
+      'PF_XBTUSD',
+      'BTC-PERP-INTX',
+    ]);
+    expect(b.clusterByRawMarketId.get('krakenfutures')?.get('PF_XBTUSD')).toBe(
+      b.clusters[0],
+    );
+    expect(b.clusterByRawMarketId.get('coinbase')?.get('BTC-PERP-INTX')).toBe(
+      b.clusters[0],
+    );
+  });
+
+  it('keeps the USDT linear contract when a venue lists twins, whatever the listing order', () => {
+    const b = build([
+      venue('binance', [
+        market('binance', 'BTCUSD_PERP', 'BTC', { quote: 'USD', linear: false }),
+        market('binance', 'BTCUSDC', 'BTC', { quote: 'USDC' }),
+        market('binance', 'BTCUSDT', 'BTC'),
+      ]),
+      venue('bybit', [
+        market('bybit', 'BTCUSDT', 'BTC'),
+        market('bybit', 'BTCPERP', 'BTC', { quote: 'USDC' }),
+        market('bybit', 'BTCUSD', 'BTC', { quote: 'USD', linear: false }),
+      ]),
+    ]);
+
+    expect(b.clusters.map((c) => c.pair)).toEqual(['BTC|USDT']);
+    expect(b.clusters[0].markets.map((m) => m?.rawMarketId)).toEqual([
+      'BTCUSDT',
+      'BTCUSDT',
+    ]);
+    // The twins are not in the index, so no feed subscribes to them.
+    expect(b.clusterByRawMarketId.get('binance')?.has('BTCUSD_PERP')).toBe(false);
+    expect(b.clusterByRawMarketId.get('binance')?.has('BTCUSDC')).toBe(false);
+    expect(b.clusterByRawMarketId.get('bybit')?.has('BTCPERP')).toBe(false);
+    expect(b.clusterByRawMarketId.get('bybit')?.has('BTCUSD')).toBe(false);
+  });
+
+  it('keeps a USDC or inverse contract where a venue has nothing better', () => {
+    const b = build([
+      venue('binance', [market('binance', 'ETHUSDC', 'ETH', { quote: 'USDC' })]),
+      venue('bybit', [
+        market('bybit', 'ETHUSD', 'ETH', { quote: 'USD', linear: false }),
+      ]),
+    ]);
+
+    expect(b.clusters.map((c) => c.pair)).toEqual(['ETH|USDT']);
+    expect(b.clusters[0].markets.map((m) => m?.rawMarketId)).toEqual([
+      'ETHUSDC',
+      'ETHUSD',
+    ]);
+  });
+
+  it('leaves a non-dollar quote in its own cluster', () => {
+    const b = build([
+      venue('binance', [
+        market('binance', 'ETHBTC', 'ETH', { quote: 'BTC' }),
+        market('binance', 'ETHUSDT', 'ETH'),
+      ]),
+      venue('bybit', [market('bybit', 'ETHUSDT', 'ETH')]),
+    ]);
+
+    expect(b.clusters.map((c) => c.pair)).toEqual(['ETH|USDT']);
+    expect(b.clusters[0].markets.map((m) => m?.rawMarketId)).toEqual([
+      'ETHUSDT',
+      'ETHUSDT',
+    ]);
   });
 });

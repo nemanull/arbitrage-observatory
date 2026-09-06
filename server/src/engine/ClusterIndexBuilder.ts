@@ -8,6 +8,7 @@ import {
   PairKey,
 } from './types';
 import { DENIED_PAIRS, PRICE_SCALE, getPriceScale } from './clusterOverrides';
+import { clusterQuote, marketRank } from './quoteFamily';
 import { Logger } from '@nestjs/common';
 
 export class ClusterIndexBuilder {
@@ -196,14 +197,19 @@ export class ClusterIndexBuilder {
           pairs.set(pair, [m]);
           continue;
         }
-        if (markets.some((x) => x.venueId === m.venueId)) {
-          this.logger.error(
-            `${pair}: ${m.venueId} already has a market; skipping ${m.rawMarketId}`,
-          );
+        const twin = markets.findIndex((x) => x.venueId === m.venueId);
+
+        if (twin === -1) {
+          markets.push(m);
           continue;
         }
 
-        markets.push(m);
+        const kept = marketRank(m) < marketRank(markets[twin]) ? m : markets[twin];
+        const dropped = kept === m ? markets[twin] : m;
+        markets[twin] = kept;
+        this.logger.debug(
+          `${pair}: ${m.venueId} keeps ${kept.rawMarketId} over ${dropped.rawMarketId}`,
+        );
       }
     }
 
@@ -217,7 +223,7 @@ export class ClusterIndexBuilder {
   }
 
   getPairFromRaw(base: string, quote: string): PairKey {
-    return `${base}|${quote}`;
+    return `${base}|${clusterQuote(quote)}`;
   }
 
   separatePairIntoRaw(pair: PairKey): { base: string; quote: string } {

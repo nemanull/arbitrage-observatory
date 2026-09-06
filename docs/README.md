@@ -23,6 +23,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`implemented/2026-08-19-schema-rework-design.md`](./implemented/2026-08-19-schema-rework-design.md) records the reconciled design for the Venue schema rework and the column sources of a stored arbitrage opportunity.
 - [`implemented/2026-09-06-close-reasons-design.md`](./implemented/2026-09-06-close-reasons-design.md) records the reconciled design for the four close reasons, the feed-owned liveness, and the shutdown flush.
 - [`implemented/2026-09-06-close-reasons-plan.md`](./implemented/2026-09-06-close-reasons-plan.md) records the reconciled plan that shipped the close reasons.
+- [`implemented/2026-09-06-quote-family-design.md`](./implemented/2026-09-06-quote-family-design.md) records the decision that USD, USDC and USDT are one settlement asset for clustering, and the rank that picks one contract per venue.
 
 ## Reference
 

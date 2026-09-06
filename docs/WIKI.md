@@ -5,8 +5,10 @@
   // (USDT), so their prices are directly comparable. An arbitrage opportunity
   // is a fee-adjusted price gap between two markets of one cluster.
   //
-  // Markets settling in different currencies (USD vs USDT) never share a
-  // cluster: their price gap is the stablecoin spread, not arbitrage.
+  // USD, USDC and USDT count as one settlement asset.
+  // Kraken PF_XBTUSD and Coinbase BTC-PERP-INTX sit in the BTC|USDT cluster, because the stablecoin basis is normally under 100 ppm against a 5000 ppm opening threshold.
+  // A venue that lists a USDC or inverse twin next to its USDT linear contributes the USDT linear only.
+  // Any other quote, such as BTC, stays its own cluster.
   //
   // An episode is the stored form of an opportunity: one row from the tick
   // that opened it to the one that closed it. It ends for exactly one of four

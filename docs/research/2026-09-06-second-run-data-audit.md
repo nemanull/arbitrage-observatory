@@ -215,7 +215,7 @@ The engine closes an opportunity because it is stable, then reopens it at the ne
 | 3 | Close only for a real reason and record `closeReason` | Section 6. Zero of 617 episodes ended on the spread, all ended on silence |
 | 4 | Shutdown flush, the first audit's section 15 item 2 | 3 lost, measured |
 | 5 | Gate with underlying market hours for equity perps | New class, section 2a |
-| 6 | Decide USD, USDC and USDT quote handling | Otherwise kraken and coinbase stay at 1% of output |
+| 6 | Decide USD, USDC and USDT quote handling | Done 2026-09-06, see [`2026-09-06-quote-family-design.md`](../implemented/2026-09-06-quote-family-design.md). Otherwise kraken and coinbase stay at 1% of output |
 | 7 | Tolerance in the invariant checks | Section 1 caveat |
 
 The first audit's items 4 and 5, the two staleness clocks and the per-leg age and size, remain the largest distortions.
