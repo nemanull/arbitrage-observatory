@@ -16,6 +16,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-07-30-venue-ws-protocol-differences.md`](./research/2026-07-30-venue-ws-protocol-differences.md) maps the sixteen axes on which the five venue sockets differ.
 - [`research/2026-09-05-arbitrage-opportunity-data-audit.md`](./research/2026-09-05-arbitrage-opportunity-data-audit.md) audits the first engine run and finds that 67% of its rows compare different assets or different contract units.
 - [`research/2026-09-06-second-run-data-audit.md`](./research/2026-09-06-second-run-data-audit.md) audits the run with the cluster overrides in place and finds the remaining rows are dominated by non-converging and fragmented spreads.
+- [`research/2026-09-06-third-run-data-audit.md`](./research/2026-09-06-third-run-data-audit.md) audits the first run with the quote family and finds that roundTripPpm measures a thin book's width, that duration alone cannot separate stale quotes from slow-venue orders, and that no row proves a capturable spread.
 
 ## Implemented
 

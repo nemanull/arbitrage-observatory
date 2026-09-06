@@ -66,7 +66,6 @@ CREATE TABLE "ArbitrageOpportunity" (
     "closedAt" TIMESTAMP(3) NOT NULL,
     "closeReason" "OpportunityCloseReason" NOT NULL,
     "netPpmAtClose" DOUBLE PRECISION NOT NULL,
-    "roundTripPpm" DOUBLE PRECISION NOT NULL,
     "lastSeenAt" TIMESTAMP(3) NOT NULL,
     "durationMs" INTEGER NOT NULL,
     "ticks" INTEGER NOT NULL,

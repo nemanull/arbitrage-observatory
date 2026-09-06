@@ -515,12 +515,6 @@ describe('OpportunityManager persistence', () => {
     expect(add.mock.calls[0][1].rows[0].netPpmAtClose).toBe(
       add.mock.calls[0][1].rows[0].minNetPpm,
     );
-    // open minus close cancels the fees both carry, and a round trip pays four fills at TAKER_PPM
-    const row = add.mock.calls[0][1].rows[0];
-    expect(row.roundTripPpm).toBeCloseTo(
-      row.netPpmAtOpen - row.netPpmAtClose - 4 * TAKER_PPM,
-      6,
-    );
   });
 });
 

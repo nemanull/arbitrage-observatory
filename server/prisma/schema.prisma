@@ -108,9 +108,6 @@ model ArbitrageOpportunity {
   closeReason   OpportunityCloseReason
   /// The last reading before the episode ended, the same measure as netPpmAtOpen taken at the last tick
   netPpmAtClose Float
-  /// Redundant, derived from this row: netPpmAtOpen minus netPpmAtClose minus two of each fill, because the subtraction cancels the fees both readings carry and a round trip pays four
-  /// An upper bound, in parts per million of the buy-leg notional. Closing also crosses both venues' own widths, which the row does not store
-  roundTripPpm  Float
   /// The last tick that fed this route. A wide gap to closedAt means neither leg changed for that long
   lastSeenAt    DateTime
   durationMs    Int

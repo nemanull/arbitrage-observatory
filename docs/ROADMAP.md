@@ -25,3 +25,10 @@
 # Phase 3
 - [x] Add Coinbase and Kraken
 - [x] Record why an episode closed, and stop closing on silence
+
+# Phase 4
+
+- [ ] Write only episodes that live at least one second, so sub-second flickers never reach the table.
+- [ ] Record both sides of both legs and the size at the touch at open, peak and close, so a row carries each leg's width and the size behind the reading.
+- [ ] Fetch a book snapshot a few levels deep for both legs once per episode at the one second mark, and store the edge at fixed notionals and a stale flag when the cross is gone.
+- [ ] Classify long lived spreads such as ANTHROPIC and OPENAI by each leg's index, mark and funding, and use the same index check at cluster build to replace the hand kept denial and scale lists.

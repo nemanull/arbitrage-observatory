@@ -812,7 +812,6 @@ export const ArbitrageOpportunityScalarFieldEnum = {
   closedAt: 'closedAt',
   closeReason: 'closeReason',
   netPpmAtClose: 'netPpmAtClose',
-  roundTripPpm: 'roundTripPpm',
   lastSeenAt: 'lastSeenAt',
   durationMs: 'durationMs',
   ticks: 'ticks',
