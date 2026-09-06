@@ -1,5 +1,4 @@
 import type { Opportunity, PairKey } from '../engine/types';
-import { min } from '../shared/shared';
 import type { ArbitrageOpportunityRow } from './writes';
 
 // Turns a closed Opportunity into the row the worker inserts.
@@ -11,8 +10,9 @@ export function toOpportunityRow(
   route: string,
 ): ArbitrageOpportunityRow {
   const closedAt = opportunity.closedAt;
+  const closeReason = opportunity.closeReason;
 
-  if (closedAt === null) {
+  if (closedAt === null || closeReason === null) {
     throw new Error(`Opportunity for ${pair} on route ${route} is still open`);
   }
 
@@ -34,6 +34,7 @@ export function toOpportunityRow(
     lowestAskAtOpen: opportunity.lowestAskAtOpen,
 
     closedAt: new Date(closedAt).toISOString(),
+    closeReason,
     lastSeenAt: new Date(opportunity.lastSeenAt).toISOString(),
     durationMs: closedAt - opportunity.openedAt,
 
@@ -43,8 +44,7 @@ export function toOpportunityRow(
     peakAt: new Date(opportunity.peakAt).toISOString(),
     peakHighestBid: opportunity.peakHighestBid,
     peakLowestAsk: opportunity.peakLowestAsk,
-    // One pass at close time, because the engine only tracks a running peak.
-    minNetPpm: min(opportunity.netPpmSeries),
+    minNetPpm: opportunity.minNetPpm,
 
     sampleTsMs: opportunity.sampleTs,
     netPpmSeries: opportunity.netPpmSeries,

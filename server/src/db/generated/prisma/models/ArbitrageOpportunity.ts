@@ -14,10 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model ArbitrageOpportunity
- * One closed Opportunity from src/engine/types.ts, so one episode during which a route stayed profitable rather than a single moment.
- * We sell into the highest bid and buy from the lowest ask.
- * Every price and every ppm reading here is already fee adjusted.
- * The legs are recorded by slug rather than by foreign key, so a row keeps its meaning after a delisting or a catalog rebuild, and the writer needs no id lookup.
+ * 
  */
 export type ArbitrageOpportunityModel = runtime.Types.Result.DefaultSelection<Prisma.$ArbitrageOpportunityPayload>
 
@@ -85,6 +82,7 @@ export type ArbitrageOpportunityMinAggregateOutputType = {
   highestBidAtOpen: number | null
   lowestAskAtOpen: number | null
   closedAt: Date | null
+  closeReason: $Enums.OpportunityCloseReason | null
   lastSeenAt: Date | null
   durationMs: number | null
   ticks: number | null
@@ -112,6 +110,7 @@ export type ArbitrageOpportunityMaxAggregateOutputType = {
   highestBidAtOpen: number | null
   lowestAskAtOpen: number | null
   closedAt: Date | null
+  closeReason: $Enums.OpportunityCloseReason | null
   lastSeenAt: Date | null
   durationMs: number | null
   ticks: number | null
@@ -139,6 +138,7 @@ export type ArbitrageOpportunityCountAggregateOutputType = {
   highestBidAtOpen: number
   lowestAskAtOpen: number
   closedAt: number
+  closeReason: number
   lastSeenAt: number
   durationMs: number
   ticks: number
@@ -212,6 +212,7 @@ export type ArbitrageOpportunityMinAggregateInputType = {
   highestBidAtOpen?: true
   lowestAskAtOpen?: true
   closedAt?: true
+  closeReason?: true
   lastSeenAt?: true
   durationMs?: true
   ticks?: true
@@ -239,6 +240,7 @@ export type ArbitrageOpportunityMaxAggregateInputType = {
   highestBidAtOpen?: true
   lowestAskAtOpen?: true
   closedAt?: true
+  closeReason?: true
   lastSeenAt?: true
   durationMs?: true
   ticks?: true
@@ -266,6 +268,7 @@ export type ArbitrageOpportunityCountAggregateInputType = {
   highestBidAtOpen?: true
   lowestAskAtOpen?: true
   closedAt?: true
+  closeReason?: true
   lastSeenAt?: true
   durationMs?: true
   ticks?: true
@@ -384,6 +387,7 @@ export type ArbitrageOpportunityGroupByOutputType = {
   highestBidAtOpen: number
   lowestAskAtOpen: number
   closedAt: Date
+  closeReason: $Enums.OpportunityCloseReason
   lastSeenAt: Date
   durationMs: number
   ticks: number
@@ -438,6 +442,7 @@ export type ArbitrageOpportunityWhereInput = {
   highestBidAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   lowestAskAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonFilter<"ArbitrageOpportunity"> | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   ticks?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
@@ -469,6 +474,7 @@ export type ArbitrageOpportunityOrderByWithRelationInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  closeReason?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -503,6 +509,7 @@ export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
   highestBidAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   lowestAskAtOpen?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonFilter<"ArbitrageOpportunity"> | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   ticks?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
@@ -534,6 +541,7 @@ export type ArbitrageOpportunityOrderByWithAggregationInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  closeReason?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -573,6 +581,7 @@ export type ArbitrageOpportunityScalarWhereWithAggregatesInput = {
   highestBidAtOpen?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
   lowestAskAtOpen?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
   closedAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonWithAggregatesFilter<"ArbitrageOpportunity"> | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
   ticks?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
@@ -604,6 +613,7 @@ export type ArbitrageOpportunityCreateInput = {
   highestBidAtOpen: number
   lowestAskAtOpen: number
   closedAt: Date | string
+  closeReason: $Enums.OpportunityCloseReason
   lastSeenAt: Date | string
   durationMs: number
   ticks: number
@@ -635,6 +645,7 @@ export type ArbitrageOpportunityUncheckedCreateInput = {
   highestBidAtOpen: number
   lowestAskAtOpen: number
   closedAt: Date | string
+  closeReason: $Enums.OpportunityCloseReason
   lastSeenAt: Date | string
   durationMs: number
   ticks: number
@@ -666,6 +677,7 @@ export type ArbitrageOpportunityUpdateInput = {
   highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -697,6 +709,7 @@ export type ArbitrageOpportunityUncheckedUpdateInput = {
   highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -728,6 +741,7 @@ export type ArbitrageOpportunityCreateManyInput = {
   highestBidAtOpen: number
   lowestAskAtOpen: number
   closedAt: Date | string
+  closeReason: $Enums.OpportunityCloseReason
   lastSeenAt: Date | string
   durationMs: number
   ticks: number
@@ -759,6 +773,7 @@ export type ArbitrageOpportunityUpdateManyMutationInput = {
   highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -790,6 +805,7 @@ export type ArbitrageOpportunityUncheckedUpdateManyInput = {
   highestBidAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   lowestAskAtOpen?: Prisma.FloatFieldUpdateOperationsInput | number
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -837,6 +853,7 @@ export type ArbitrageOpportunityCountOrderByAggregateInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  closeReason?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -888,6 +905,7 @@ export type ArbitrageOpportunityMaxOrderByAggregateInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  closeReason?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -915,6 +933,7 @@ export type ArbitrageOpportunityMinOrderByAggregateInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   closedAt?: Prisma.SortOrder
+  closeReason?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -978,6 +997,10 @@ export type FloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type EnumOpportunityCloseReasonFieldUpdateOperationsInput = {
+  set?: $Enums.OpportunityCloseReason
+}
+
 export type ArbitrageOpportunityUpdatesampleTsMsInput = {
   set?: number[]
   push?: number | number[]
@@ -1016,6 +1039,7 @@ export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.
   highestBidAtOpen?: boolean
   lowestAskAtOpen?: boolean
   closedAt?: boolean
+  closeReason?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1047,6 +1071,7 @@ export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtim
   highestBidAtOpen?: boolean
   lowestAskAtOpen?: boolean
   closedAt?: boolean
+  closeReason?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1078,6 +1103,7 @@ export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtim
   highestBidAtOpen?: boolean
   lowestAskAtOpen?: boolean
   closedAt?: boolean
+  closeReason?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1109,6 +1135,7 @@ export type ArbitrageOpportunitySelectScalar = {
   highestBidAtOpen?: boolean
   lowestAskAtOpen?: boolean
   closedAt?: boolean
+  closeReason?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1124,7 +1151,7 @@ export type ArbitrageOpportunitySelectScalar = {
   lowestAskSeries?: boolean
 }
 
-export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries", ExtArgs["result"]["arbitrageOpportunity"]>
+export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries", ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ArbitrageOpportunity"
@@ -1155,12 +1182,16 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
     lowestAskAtOpen: number
     closedAt: Date
     /**
-     * The last tick that fed this route, so a wide gap to closedAt means it closed on a stale quote rather than on a collapsing spread
+     * Why the episode ended. Nothing else ends one
+     */
+    closeReason: $Enums.OpportunityCloseReason
+    /**
+     * The last tick that fed this route. A wide gap to closedAt means neither leg changed for that long
      */
     lastSeenAt: Date
     durationMs: number
     /**
-     * Ticks folded into this episode, which is also the length of every series below
+     * Ticks folded into this episode. The series below keep the first 10 000 of them, so their length is min(ticks, 10000)
      */
     ticks: number
     avgNetPpm: number
@@ -1617,6 +1648,7 @@ export interface ArbitrageOpportunityFieldRefs {
   readonly highestBidAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly lowestAskAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly closedAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
+  readonly closeReason: Prisma.FieldRef<"ArbitrageOpportunity", 'OpportunityCloseReason'>
   readonly lastSeenAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly durationMs: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
   readonly ticks: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>

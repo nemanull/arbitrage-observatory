@@ -7,7 +7,7 @@ import { OkxFeed } from './okx';
 const VENUE_ID = 'okx';
 const TAKER_PPM = 500;
 
-// recvTs must come from the local clock, because MAX_QUOTE_AGE_MS is compared against Date.now() everywhere.
+// recvTs must come from the local clock, because openedAt, sampleTs and durationMs are measured on it across every venue.
 // A venue timestamp here would make staleness depend on clock skew, so the quote is asserted whole rather than partially.
 const LOCAL_NOW = 1_700_000_000_000;
 const PUBLIC_URL = 'wss://ws.okx.com:8443/ws/v5/public';

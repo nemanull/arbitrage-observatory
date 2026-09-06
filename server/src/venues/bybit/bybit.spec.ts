@@ -8,7 +8,7 @@ import type { BybitOrderbookLevel } from './types';
 const VENUE_ID = 'bybit';
 const TAKER_PPM = 550;
 
-// recvTs must come from the local clock, because MAX_QUOTE_AGE_MS is compared against Date.now() everywhere.
+// recvTs must come from the local clock, because openedAt, sampleTs and durationMs are measured on it across every venue.
 // A venue timestamp here would make staleness depend on clock skew, so the quote is asserted whole rather than partially.
 const LOCAL_NOW = 1_700_000_000_000;
 

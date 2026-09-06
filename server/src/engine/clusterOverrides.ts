@@ -4,6 +4,7 @@ export const DENIED_PAIRS: ReadonlySet<PairKey> = new Set<PairKey>([
   'BB|USDT',
   'ON|USDT',
   'QNT|USDT',
+  'ONE|USDT', // Same asset, but the two venues' index baskets sit 5.3% apart, so the perps never converge (2026-09-06 audit, 2a).
 ]);
 
 export type PriceScale = {

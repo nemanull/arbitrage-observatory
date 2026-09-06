@@ -9,7 +9,11 @@
 * 🟢 You can import this file directly.
 */
 
+export const OpportunityCloseReason = {
+  spread_collapsed: 'spread_collapsed',
+  feed_down: 'feed_down',
+  age_cap: 'age_cap',
+  shutdown: 'shutdown'
+} as const
 
-
-// This file is empty because there are no enums in the schema.
-export {}
+export type OpportunityCloseReason = (typeof OpportunityCloseReason)[keyof typeof OpportunityCloseReason]

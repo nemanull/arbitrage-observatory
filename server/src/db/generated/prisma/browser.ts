@@ -34,9 +34,6 @@ export type Pair = Prisma.PairModel
 export type Market = Prisma.MarketModel
 /**
  * Model ArbitrageOpportunity
- * One closed Opportunity from src/engine/types.ts, so one episode during which a route stayed profitable rather than a single moment.
- * We sell into the highest bid and buy from the lowest ask.
- * Every price and every ppm reading here is already fee adjusted.
- * The legs are recorded by slug rather than by foreign key, so a row keeps its meaning after a delisting or a catalog rebuild, and the writer needs no id lookup.
+ * 
  */
 export type ArbitrageOpportunity = Prisma.ArbitrageOpportunityModel

@@ -139,7 +139,7 @@ export class ClusterIndexBuilder {
 
     if (denied.length > 0) {
       this.logger.warn(
-        `Denied ${denied.length} pair(s) as ticker collisions: ${denied.join(', ')}`,
+        `Denied ${denied.length} pair(s) as non-comparable clusters: ${denied.join(', ')}`,
       );
     }
 

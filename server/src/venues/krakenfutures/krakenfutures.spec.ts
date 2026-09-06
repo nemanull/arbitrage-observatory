@@ -7,7 +7,7 @@ import { KrakenFuturesFeed } from './krakenfutures';
 const VENUE_ID = 'krakenfutures';
 const TAKER_PPM = 500;
 
-// recvTs must come from the local clock, because MAX_QUOTE_AGE_MS is compared against Date.now() everywhere.
+// recvTs must come from the local clock, because openedAt, sampleTs and durationMs are measured on it across every venue.
 const LOCAL_NOW = 1_700_000_000_000;
 const PUBLIC_URL = 'wss://futures.kraken.com/ws/v1';
 

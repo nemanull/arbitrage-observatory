@@ -71,9 +71,15 @@ model Market {
 }
 
 /// One closed Opportunity from src/engine/types.ts, so one episode during which a route stayed profitable rather than a single moment.
-/// We sell into the highest bid and buy from the lowest ask.
 /// Every price and every ppm reading here is already fee adjusted.
 /// The legs are recorded by slug rather than by foreign key, so a row keeps its meaning after a delisting or a catalog rebuild, and the writer needs no id lookup.
+enum OpportunityCloseReason {
+  spread_collapsed
+  feed_down
+  age_cap
+  shutdown
+}
+
 model ArbitrageOpportunity {
   createdAt DateTime @default(now())
 
@@ -98,12 +104,14 @@ model ArbitrageOpportunity {
   highestBidAtOpen Float
   lowestAskAtOpen  Float
 
-  closedAt   DateTime
-  /// The last tick that fed this route, so a wide gap to closedAt means it closed on a stale quote rather than on a collapsing spread
-  lastSeenAt DateTime
+  closedAt    DateTime
+  /// Why the episode ended. Nothing else ends one
+  closeReason OpportunityCloseReason
+  /// The last tick that fed this route. A wide gap to closedAt means neither leg changed for that long
+  lastSeenAt  DateTime
   durationMs Int
 
-  /// Ticks folded into this episode, which is also the length of every series below
+  /// Ticks folded into this episode. The series below keep the first 10 000 of them, so their length is min(ticks, 10000)
   ticks          Int
   avgNetPpm      Float
   peakNetPpm     Float

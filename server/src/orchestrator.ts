@@ -2,8 +2,8 @@ import { InjectQueue } from '@nestjs/bullmq';
 import {
   Injectable,
   Logger,
+  type BeforeApplicationShutdown,
   type OnApplicationBootstrap,
-  type OnApplicationShutdown,
 } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import { VenueConnector } from './ccxt/connector';
@@ -38,7 +38,7 @@ export type OrchestratorStatus = {
 
 @Injectable()
 export class Orchestrator
-  implements OnApplicationBootstrap, OnApplicationShutdown
+  implements OnApplicationBootstrap, BeforeApplicationShutdown
 {
   private readonly logger = new Logger(Orchestrator.name);
 
@@ -63,8 +63,8 @@ export class Orchestrator
     await this.start();
   }
 
-  onApplicationShutdown(): void {
-    this.stop();
+  async beforeApplicationShutdown(): Promise<void> {
+    await this.stop();
   }
 
   async start(): Promise<void> {
@@ -133,7 +133,7 @@ export class Orchestrator
     }
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     const run = this.run;
     if (run === null) {
       return;
@@ -142,14 +142,18 @@ export class Orchestrator
     this.run = null;
     clearInterval(run.sweepTimer);
 
+    // Feeds first, so nothing opens behind the flush. Their close events land later and find nothing open.
     for (const feed of run.feeds) {
       feed.stop();
     }
+
+    const closed = await run.engine.shutdown(Date.now());
 
     this.logger.log({
       event: 'orchestrator_stopped',
       venues: run.venues.map((venue) => venue.id),
       upMs: Date.now() - run.startedAt,
+      closed,
     });
   }
 

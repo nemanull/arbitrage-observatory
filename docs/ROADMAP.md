@@ -24,3 +24,4 @@
 
 # Phase 3
 - [x] Add Coinbase and Kraken
+- [x] Record why an episode closed, and stop closing on silence

@@ -6,19 +6,21 @@ import {
   type OpportunityClosedJob,
 } from './OpportunityWorker';
 import type {
+  ActiveOpportunityMap,
+  CloseReason,
   Cluster,
+  Market,
+  Observation,
   Opportunity,
   PairKey,
-  Observation,
-  ActiveOpportunityMap,
-  Market,
 } from './types';
 
 const MIN_NET_PPM = 5_000; // after fees
 const MAX_PLAUSIBLE_NET_PPM = 100_000;
 const CLOSURE_NET_PPM = 1_000; // after fees
-export const MAX_QUOTE_AGE_MS = 5_000;
 const MAX_OPPORTUNITY_AGE_MS = 5 * 60_000;
+// A route that never collapses runs to MAX_OPPORTUNITY_AGE_MS, which at the 436 samples/s seen on OPENAI is 130k samples. The counters keep going past this, only the series stop.
+export const MAX_SERIES_LENGTH = 10_000;
 
 const IMPLAUSIBLE_NET_PPM_WARN_WINDOW_MS = 10_000;
 
@@ -35,6 +37,7 @@ export class OpportunityManager {
     string,
     ImplausibleNetPpmWarnState
   >();
+  private readonly pendingWrites = new Set<Promise<void>>(); // queue writes in flight, so shutdown can wait for them
 
   constructor(private readonly queue: Queue<OpportunityClosedJob>) {}
 
@@ -55,8 +58,8 @@ export class OpportunityManager {
     }
 
     // The cluster-wide scan only discovers. It never updates.
-    const highestBidResult = this.getEffectiveHighestBid(cluster, now);
-    const lowestAskResult = this.getEffectiveLowestAsk(cluster, now);
+    const highestBidResult = this.getEffectiveHighestBid(cluster);
+    const lowestAskResult = this.getEffectiveLowestAsk(cluster);
 
     if (highestBidResult === null || lowestAskResult === null) {
       return null;
@@ -179,6 +182,7 @@ export class OpportunityManager {
       peakAt: O.now,
       peakHighestBid: O.highestBid,
       peakLowestAsk: O.lowestAsk,
+      minNetPpm: O.netPpm,
       lastSeenAt: O.now,
 
       netPpmSeries: [O.netPpm],
@@ -187,6 +191,7 @@ export class OpportunityManager {
       sampleTs: [0],
 
       closedAt: null,
+      closeReason: null,
     };
   }
 
@@ -205,8 +210,10 @@ export class OpportunityManager {
     this.recordSample(opportunity, highestBid, lowestAsk, netPpm, now);
 
     // Recorded first, so a collapsing tick ends the series and the close log sees it
-    if (this.shouldOpportunityBeClosed(opportunity, cluster, now, netPpm)) {
-      this.closeOpportunity(opportunity, cluster.pair, now);
+    const reason = this.closeReasonFor(opportunity, cluster, now, netPpm);
+
+    if (reason !== null) {
+      this.closeOpportunity(opportunity, cluster.pair, now, reason);
     }
   }
 
@@ -274,63 +281,101 @@ export class OpportunityManager {
       opportunity.peakLowestAsk = lowestAsk;
     }
 
+    if (netPpm < opportunity.minNetPpm) {
+      opportunity.minNetPpm = netPpm;
+    }
+
+    if (opportunity.netPpmSeries.length >= MAX_SERIES_LENGTH) {
+      return;
+    }
+
     opportunity.netPpmSeries.push(netPpm);
     opportunity.highestBidSeries.push(highestBid);
     opportunity.lowestAskSeries.push(lowestAsk);
     opportunity.sampleTs.push(now - opportunity.openedAt);
   }
 
-  shouldOpportunityBeClosed(
+  // Silence is not on this list. Every feed is change-driven, so a quiet leg is an unchanged leg, and a dead one is reported by markStale.
+  closeReasonFor(
     opportunity: Opportunity,
     cluster: Cluster,
     now: number,
     netPpm: number,
-  ): boolean {
+  ): CloseReason | null {
     const bidIndex = opportunity.highestBidVenueIndex;
     const askIndex = opportunity.lowestAskVenueIndex;
 
-    if (
-      now - cluster.recvTs[bidIndex] > MAX_QUOTE_AGE_MS ||
-      now - cluster.recvTs[askIndex] > MAX_QUOTE_AGE_MS
-    ) {
-      return true;
+    // closeOpportunitiesOnVenue closes these itself. This only guards the invariant that an open route has two live legs
+    if (cluster.recvTs[bidIndex] <= 0 || cluster.recvTs[askIndex] <= 0) {
+      return 'feed_down';
     }
 
-    if (
-      cluster.markets[bidIndex] === null ||
-      cluster.markets[askIndex] === null ||
-      cluster.bid[bidIndex] <= 0 ||
-      cluster.ask[askIndex] <= 0
-    ) {
-      return true;
+    if (netPpm < CLOSURE_NET_PPM) {
+      return 'spread_collapsed';
     }
 
-    if (now - opportunity.openedAt > MAX_OPPORTUNITY_AGE_MS) {
-      return true;
+    if (now - opportunity.openedAt >= MAX_OPPORTUNITY_AGE_MS) {
+      return 'age_cap';
     }
 
-    return netPpm < CLOSURE_NET_PPM;
+    return null;
   }
 
+  // The age cap needs a timer. A route whose legs stop changing has no tick left to reach it.
   sweep(now: number): Opportunity[] {
-    return this.closeWhere(
+    return this.closeOpportunitiesWhere(
       now,
-      (opportunity) => now - opportunity.lastSeenAt > MAX_QUOTE_AGE_MS,
+      'age_cap',
+      (opportunity) => now - opportunity.openedAt >= MAX_OPPORTUNITY_AGE_MS,
     );
   }
 
-  // Closes every open route with a leg on the venue, e.g. when its socket dies.
-  closeVenue(venueId: string, now: number): Opportunity[] {
-    return this.closeWhere(
-      now,
-      (opportunity) =>
-        opportunity.highestBidMarket.venueId === venueId ||
-        opportunity.lowestAskMarket.venueId === venueId,
-    );
-  }
-
-  private closeWhere(
+  // Closes every open opportunity on the pair with a leg on this venue, which is what a dying socket needs.
+  closeOpportunitiesOnVenue(
+    pair: PairKey,
+    venueIndex: number,
     now: number,
+  ): Opportunity[] {
+    const routes = this.activeOpportunityMap.get(pair);
+
+    if (routes === undefined) {
+      return [];
+    }
+
+    const closed: Opportunity[] = [];
+
+    for (const opportunity of routes.values()) {
+      if (
+        opportunity.highestBidVenueIndex !== venueIndex &&
+        opportunity.lowestAskVenueIndex !== venueIndex
+      ) {
+        continue;
+      }
+
+      if (this.closeOpportunity(opportunity, pair, now, 'feed_down')) {
+        closed.push(opportunity);
+      }
+    }
+
+    if (routes.size === 0) {
+      this.activeOpportunityMap.delete(pair);
+    }
+
+    return closed;
+  }
+
+  // Closes everything and waits for the queue, so a stop loses no episode. Returns how many it closed.
+  async shutdown(now: number): Promise<number> {
+    const closed = this.closeOpportunitiesWhere(now, 'shutdown', () => true);
+
+    await Promise.allSettled([...this.pendingWrites]);
+
+    return closed.length;
+  }
+
+  private closeOpportunitiesWhere(
+    now: number,
+    reason: CloseReason,
     shouldClose: (opportunity: Opportunity) => boolean,
   ): Opportunity[] {
     const closed: Opportunity[] = [];
@@ -339,7 +384,7 @@ export class OpportunityManager {
       for (const opportunity of routes.values()) {
         if (!shouldClose(opportunity)) continue;
 
-        if (this.closeOpportunity(opportunity, pair, now)) {
+        if (this.closeOpportunity(opportunity, pair, now, reason)) {
           closed.push(opportunity);
         }
       }
@@ -357,6 +402,7 @@ export class OpportunityManager {
     opportunity: Opportunity,
     pair: PairKey,
     now: number,
+    reason: CloseReason,
   ): boolean {
     if (opportunity.closedAt !== null) {
       this.logger.error(
@@ -366,6 +412,7 @@ export class OpportunityManager {
     }
 
     opportunity.closedAt = now;
+    opportunity.closeReason = reason;
 
     const routeKey = this.getRouteKey(
       opportunity.highestBidMarket,
@@ -378,12 +425,14 @@ export class OpportunityManager {
       event: 'opportunity_closed',
       pair,
       route: routeKey,
+      reason,
       durationMs: opportunity.closedAt - opportunity.openedAt,
       ticks: opportunity.ticksSinceStart,
       netPpmAtOpen: opportunity.netPpmAtOpen,
       meanNetPpm: opportunity.netPpmSum / opportunity.ticksSinceStart,
       peakNetPpm: opportunity.peakNetPpm,
       peakAt: opportunity.peakAt,
+      minNetPpm: opportunity.minNetPpm,
     });
 
     this.enqueueClosed(opportunity, pair, routeKey);
@@ -391,7 +440,8 @@ export class OpportunityManager {
     return true;
   }
 
-  // Never awaited. Awaiting Redis here would make the whole tick a promise chain, and another quote could mutate the cluster halfway through it.
+  // Never awaited on the tick path. Awaiting Redis here would make the whole tick a promise chain, and another quote could mutate the cluster halfway through it.
+  // The promise is kept so shutdown can wait for it.
   private enqueueClosed(
     opportunity: Opportunity,
     pair: PairKey,
@@ -404,16 +454,24 @@ export class OpportunityManager {
 
     const rows = [toOpportunityRow(opportunity, pair, route)];
 
-    void this.queue
+    const write: Promise<void> = this.queue
       .add(OPPORTUNITY_CLOSED_JOB, { rows })
-      .catch((error: Error) => {
-        this.logger.error({
-          event: 'opportunity_enqueue_failed',
-          pair,
-          route,
-          error: error.message,
-        });
+      .then(
+        () => undefined,
+        (error: Error) => {
+          this.logger.error({
+            event: 'opportunity_enqueue_failed',
+            pair,
+            route,
+            error: error.message,
+          });
+        },
+      )
+      .finally(() => {
+        this.pendingWrites.delete(write);
       });
+
+    this.pendingWrites.add(write);
   }
 
   getRouteKey(highestBidMarket: Market, lowestAskMarket: Market): string {
@@ -422,13 +480,12 @@ export class OpportunityManager {
 
   private getEffectiveHighestBid(
     cluster: Cluster,
-    now: number,
   ): { index: number; value: number } | null {
     let highest = 0;
     let index = -1;
 
     for (let i = 0; i < cluster.bid.length; i++) {
-      if (now - cluster.recvTs[i] > MAX_QUOTE_AGE_MS) continue;
+      if (cluster.recvTs[i] <= 0) continue;
 
       const bidAfterFees = cluster.bid[i] * cluster.bidMul[i];
 
@@ -447,13 +504,12 @@ export class OpportunityManager {
 
   private getEffectiveLowestAsk(
     cluster: Cluster,
-    now: number,
   ): { index: number; value: number } | null {
     let lowest = Infinity;
     let index = -1;
 
     for (let i = 0; i < cluster.ask.length; i++) {
-      if (now - cluster.recvTs[i] > MAX_QUOTE_AGE_MS) continue;
+      if (cluster.recvTs[i] <= 0) continue;
 
       const ask = cluster.ask[i];
       const askAfterFees = ask * cluster.askMul[i];

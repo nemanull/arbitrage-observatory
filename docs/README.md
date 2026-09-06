@@ -14,11 +14,15 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-07-26-exchange-websocket-comparison.md`](./research/2026-07-26-exchange-websocket-comparison.md) compares market data, subscriptions, recovery, and execution feeds.
 - [`research/2026-07-30-ccxt-ws-ingest-feasibility.md`](./research/2026-07-30-ccxt-ws-ingest-feasibility.md) audits CCXT 4.5.68 internals against the cost of streaming every perpetual swap.
 - [`research/2026-07-30-venue-ws-protocol-differences.md`](./research/2026-07-30-venue-ws-protocol-differences.md) maps the sixteen axes on which the five venue sockets differ.
+- [`research/2026-09-05-arbitrage-opportunity-data-audit.md`](./research/2026-09-05-arbitrage-opportunity-data-audit.md) audits the first engine run and finds that 67% of its rows compare different assets or different contract units.
+- [`research/2026-09-06-second-run-data-audit.md`](./research/2026-09-06-second-run-data-audit.md) audits the run with the cluster overrides in place and finds the remaining rows are dominated by non-converging and fragmented spreads.
 
 ## Implemented
 
 - [`implemented/2026-07-26-exchange-profiles-design.md`](./implemented/2026-07-26-exchange-profiles-design.md) records the reconciled design for the fee and WebSocket research package.
 - [`implemented/2026-08-19-schema-rework-design.md`](./implemented/2026-08-19-schema-rework-design.md) records the reconciled design for the Venue schema rework and the column sources of a stored arbitrage opportunity.
+- [`implemented/2026-09-06-close-reasons-design.md`](./implemented/2026-09-06-close-reasons-design.md) records the reconciled design for the four close reasons, the feed-owned liveness, and the shutdown flush.
+- [`implemented/2026-09-06-close-reasons-plan.md`](./implemented/2026-09-06-close-reasons-plan.md) records the reconciled plan that shipped the close reasons.
 
 ## Reference
 

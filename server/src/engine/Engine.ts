@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import type { Cluster, ClusterIndex, PairKey, VenueIndexMap } from './types';
-import { MAX_QUOTE_AGE_MS, OpportunityManager } from './OpportunityManager';
+import { OpportunityManager } from './OpportunityManager';
 import type { OpportunityClosedJob } from './OpportunityWorker';
 
 type SingleMarketClusterQuote = {
@@ -39,6 +39,7 @@ export class Engine {
     string,
     InvalidQuoteWarnState
   >();
+  private stopping = false; // once shutdown has flushed, a late frame must not open a route nobody will flush
 
   constructor(
     clusterIndex: ClusterIndex,
@@ -55,6 +56,10 @@ export class Engine {
     rawMarketId: string,
     clusterQuote: SingleMarketClusterQuote,
   ): void {
+    if (this.stopping) {
+      return;
+    }
+
     const venueMap = this.ClusterIndex.clusterByRawMarketId.get(venueId);
     if (!venueMap) {
       this.logger.warn(`No venue map found for venueId: ${venueId}`);
@@ -89,8 +94,9 @@ export class Engine {
       return;
     }
 
+    // An identical repeat carries nothing new for a live slot. After markStale the slot is not live, so the same numbers are a fresh quote and run discovery.
     if (
-      clusterQuote.recvTs - cluster.recvTs[venueIndex] < MAX_QUOTE_AGE_MS &&
+      cluster.recvTs[venueIndex] > 0 &&
       cluster.bid[venueIndex] === clusterQuote.bid &&
       cluster.ask[venueIndex] === clusterQuote.ask
     ) {
@@ -105,8 +111,7 @@ export class Engine {
     this.opportunityManager.validate(cluster, venueIndex, clusterQuote.recvTs);
   }
 
-  // A route only closes on the tick path when one of its own legs moves.
-  // A route whose venues both went quiet has no tick left to close it, so a timer outside the engine drives this.
+  // The age cap needs a timer. A route whose legs stop changing has no tick left to reach it.
   sweep(now: number): number {
     return this.opportunityManager.sweep(now).length;
   }
@@ -115,7 +120,7 @@ export class Engine {
     return this.resolveSlot(venueId, rawMarketId) !== null;
   }
 
-  // Called when a socket dies. recvTs 0 is already "never spoke"
+  // Called when a socket dies. Its markets stop counting as live until their next frame, and every open route on them closes here, because no later tick can be trusted to do it.
   markStale(venueId: string, rawMarketIds: readonly string[]): void {
     const venueIndex = this.venueIndexMap.get(venueId);
     const clusters = this.ClusterIndex.clusterByRawMarketId.get(venueId);
@@ -124,12 +129,35 @@ export class Engine {
       return;
     }
 
+    const now = Date.now();
+    let closed = 0;
+
     for (const rawMarketId of rawMarketIds) {
       const cluster = clusters.get(rawMarketId);
       if (cluster === undefined) continue;
 
       cluster.recvTs[venueIndex] = 0;
+      closed += this.opportunityManager.closeOpportunitiesOnVenue(
+        cluster.pair,
+        venueIndex,
+        now,
+      ).length;
     }
+
+    if (closed > 0) {
+      this.logger.log({
+        event: 'feed_down_closed_opportunities',
+        venueId,
+        markets: rawMarketIds.length,
+        closed,
+      });
+    }
+  }
+
+  // Closes every open route and waits for the queue. Quotes arriving after this are dropped.
+  shutdown(now: number): Promise<number> {
+    this.stopping = true;
+    return this.opportunityManager.shutdown(now);
   }
 
   private resolveSlot(

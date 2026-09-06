@@ -1,6 +1,11 @@
+export type PairKey = string; // "BTC|USDT"
+type RouteKey = string; // "bybit-binance": the venue we sell on, then the venue we buy on
 
-export type PairKey = string;   // "BTC|USDT"
-type RouteKey = string;  // "bybit-binance": the venue we sell on, then the venue we buy on
+export type CloseReason =
+  | 'spread_collapsed' // the route's own reading fell below CLOSURE_NET_PPM
+  | 'feed_down' // the socket carrying one leg closed
+  | 'age_cap' // MAX_OPPORTUNITY_AGE_MS, the chunk boundary of a basis that never collapses
+  | 'shutdown'; // the orchestrator stopped and flushed the route
 
 export type Venue = {
   id: string; // 'binance',
@@ -15,18 +20,18 @@ export type Market = {
   quote: string; // 'USDT'
   takerPpm: number; // taker fee in parts per million: 550 = 0.055%
   linear: boolean;
-}
+};
 
 // A Cluster is a set of markets that trade the same asset on different exchanges with the same base and settlement currency.
 // Every array is one slot per venue, so a cluster never has to grow. readonly forbids replacing an array, not writing into one.
 export type Cluster = {
   readonly pair: PairKey; // 'BTC|USDT'
-  readonly markets: (Market | null)[]; 
+  readonly markets: (Market | null)[];
   readonly bidMul: Float64Array; // Bid multiplier: 1 - taker fee
   readonly askMul: Float64Array; // Ask multiplier: 1 + taker fee
-  readonly bid: Float64Array; 
+  readonly bid: Float64Array;
   readonly ask: Float64Array;
-  readonly recvTs: Float64Array; // 0 = never spoke, and also = venue does not list this pair. Unix timestamp in milliseconds
+  readonly recvTs: Float64Array; // Unix ms. 0 = never spoke, venue does not list this pair, or its socket is down (Engine.markStale)
 };
 
 export type ClusterIndex = {
@@ -35,8 +40,8 @@ export type ClusterIndex = {
   venueIndexMap: VenueIndexMap;
 };
 
-export type ClusterByRawMarketId = Map<string, Map<string, Cluster>>; // <binance, <BTCUSDT, Cluster>> We use it to understand which cluster a market belongs to 
-export type VenueIndexMap = Map<string, number>; // <"binance", 0> index 
+export type ClusterByRawMarketId = Map<string, Map<string, Cluster>>; // <binance, <BTCUSDT, Cluster>> We use it to understand which cluster a market belongs to
+export type VenueIndexMap = Map<string, number>; // <"binance", 0> index
 
 // netPpm, highestBid, lowestAsk are all after fee adjustments. An output of a runtime validation
 export type Opportunity = {
@@ -60,16 +65,17 @@ export type Opportunity = {
   peakAt: number;
   peakHighestBid: number;
   peakLowestAsk: number;
+  minNetPpm: number;
   lastSeenAt: number;
 
   netPpmSeries: number[];
   highestBidSeries: number[];
   lowestAskSeries: number[];
-  sampleTs: number[]; // ms since openedAt, one per sample
-  
-  closedAt: number | null;
-};
+  sampleTs: number[]; // ms since openedAt, one per sample. The four series stop at MAX_SERIES_LENGTH, the counters above do not
 
+  closedAt: number | null;
+  closeReason: CloseReason | null;
+};
 
 // One fee-adjusted reading of a single route.
 export type Observation = {

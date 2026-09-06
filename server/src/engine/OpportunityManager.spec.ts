@@ -1,10 +1,11 @@
 import { Logger } from '@nestjs/common';
-import { OpportunityManager } from './OpportunityManager';
+import { MAX_SERIES_LENGTH, OpportunityManager } from './OpportunityManager';
 import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
 import type { ActiveOpportunityMap, Cluster, Market } from './types';
 import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
 
 const TAKER_PPM = 550;
+const AGE_CAP_MS = 5 * 60_000;
 
 function market(venueId: string): Market {
   return {
@@ -100,6 +101,7 @@ describe('OpportunityManager.validate', () => {
     expect(Math.round(opened!.netPpmAtOpen)).toBe(8_890);
     expect(opened?.openedAt).toBe(1_000);
     expect(opened?.closedAt).toBeNull();
+    expect(opened?.closeReason).toBeNull();
     expect([...routes(manager)!.keys()]).toEqual(['bybit-binance']);
   });
 
@@ -131,6 +133,7 @@ describe('OpportunityManager.validate', () => {
     expect(stillOpen?.lastSeenAt).toBe(2_000);
     expect(stillOpen?.netPpmSeries).toHaveLength(2);
     expect(Math.round(stillOpen!.netPpmSeries[1])).toBe(2_996);
+    expect(Math.round(stillOpen!.minNetPpm)).toBe(2_996);
     expect(stillOpen?.sampleTs).toEqual([0, 1_000]);
   });
 
@@ -144,8 +147,10 @@ describe('OpportunityManager.validate', () => {
 
     expect(routes(manager)!.has('bybit-binance')).toBe(false);
     expect(opened.closedAt).toBe(2_000);
+    expect(opened.closeReason).toBe('spread_collapsed');
     // the collapsing tick is recorded before the close, so the series ends on it
     expect(opened.netPpmSeries).toHaveLength(2);
+    expect(opened.minNetPpm).toBe(opened.netPpmSeries[1]);
   });
 
   it('tracks the peak instant, including the two prices behind it', () => {
@@ -207,55 +212,222 @@ describe('OpportunityManager concurrent routes on one pair', () => {
     tick(manager, cluster, OKX, 99.4, 99.5, 3_000);
 
     expect(overtaken.closedAt).toBe(3_000);
+    expect(overtaken.closeReason).toBe('spread_collapsed');
     expect([...routes(manager)!.keys()]).toEqual(['bybit-okx']);
   });
 });
 
-describe('OpportunityManager staleness', () => {
-  it('closes a route whose older leg has gone quiet', () => {
+// Silence is not a close reason. Every feed is change-driven, so a leg that has not printed is a leg
+// that has not changed, and only the age cap, a collapse, a dead socket or a shutdown ends an episode.
+describe('OpportunityManager silence and the age cap', () => {
+  it('keeps a route open while one leg stays quiet for minutes', () => {
     const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
 
     // binance keeps printing, bybit does not
-    tick(manager, cluster, BINANCE, 99.9, 100, 40_000);
+    tick(manager, cluster, BINANCE, 99.9, 100, 120_000);
 
-    expect(opened.closedAt).toBe(40_000);
-    expect(routes(manager)!.size).toBe(0);
+    expect(opened.closedAt).toBeNull();
+    expect(opened.lastSeenAt).toBe(120_000);
+    expect(manager.sweep(120_000)).toEqual([]);
+    expect(routes(manager)!.get('bybit-binance')).toBe(opened);
   });
 
-  it('sweeps open routes that no tick can reach', () => {
+  it('sweeps a route that reached MAX_OPPORTUNITY_AGE_MS', () => {
     const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
 
-    expect(manager.sweep(2_000)).toEqual([]);
+    expect(manager.sweep(1_000 + AGE_CAP_MS - 1)).toEqual([]);
     expect(opened.closedAt).toBeNull();
 
-    const closed = manager.sweep(40_000);
+    const closed = manager.sweep(1_000 + AGE_CAP_MS);
 
     expect(closed).toEqual([opened]);
-    expect(opened.closedAt).toBe(40_000);
+    expect(opened.closedAt).toBe(1_000 + AGE_CAP_MS);
+    expect(opened.closeReason).toBe('age_cap');
     expect(activeMap(manager).has('BTC|USDT')).toBe(false);
   });
 
-  it('closes every route touching a dead venue', () => {
+  // The cap is a chunk boundary, not the end of the basis: the tick that closes the old episode opens the next one.
+  it('closes at the cap on the tick path and lets the same tick reopen the route', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const first = openOn(manager, cluster, 1_000)!;
+
+    const second = tick(
+      manager,
+      cluster,
+      BYBIT,
+      101,
+      101.5,
+      1_000 + AGE_CAP_MS,
+    );
+
+    expect(first.closedAt).toBe(1_000 + AGE_CAP_MS);
+    expect(first.closeReason).toBe('age_cap');
+    expect(first.netPpmSeries).toHaveLength(2);
+    expect(second).not.toBeNull();
+    expect(second).not.toBe(first);
+    expect(second?.openedAt).toBe(1_000 + AGE_CAP_MS);
+    expect(routes(manager)!.get('bybit-binance')).toBe(second);
+  });
+});
+
+describe('OpportunityManager feed down', () => {
+  it('closes every route with a leg in the dead slot, and only those', () => {
     const manager = new OpportunityManager(createOpportunityQueueMock());
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000);
-    tick(manager, cluster, OKX, 99.4, 99.5, 2_000);
+    tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // bybit-okx opens alongside bybit-binance
     tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
     tick(manager, cluster, BINANCE, 99.9, 100, 2_000);
 
     expect(routes(manager)!.size).toBe(2);
 
-    const closed = manager.closeVenue('bybit', 3_000);
+    expect(
+      manager.closeOpportunitiesOnVenue('BTC|USDT', OKX, 3_000),
+    ).toHaveLength(1);
+    expect([...routes(manager)!.keys()]).toEqual(['bybit-binance']);
 
-    expect(closed).toHaveLength(2); // bybit is the sell leg of both
+    const closed = manager.closeOpportunitiesOnVenue('BTC|USDT', BYBIT, 4_000);
+
+    expect(closed).toHaveLength(1);
+    expect(closed[0].closedAt).toBe(4_000);
+    expect(closed[0].closeReason).toBe('feed_down');
     expect(activeMap(manager).has('BTC|USDT')).toBe(false);
+  });
+
+  it('ignores a leg whose socket is down when discovering', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    tick(manager, cluster, OKX, 99.4, 100.5, 1_000);
+    cluster.bid[BYBIT] = 101;
+    cluster.ask[BYBIT] = 101.5;
+    cluster.recvTs[BYBIT] = 0; // the numbers are there, the socket is not
+
+    expect(tick(manager, cluster, BINANCE, 99.9, 100.01, 2_000)).toBeNull();
+    expect(routes(manager)).toBeUndefined();
+  });
+
+  it('returns nothing for a pair with no open routes', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+
+    expect(manager.closeOpportunitiesOnVenue('BTC|USDT', BYBIT, 1_000)).toEqual(
+      [],
+    );
+  });
+});
+
+describe('OpportunityManager.shutdown', () => {
+  it('closes every open route with shutdown and waits for the queue', async () => {
+    const queue = createOpportunityQueueMock();
+    let settle: () => void = () => undefined;
+    const add = jest.spyOn(queue, 'add').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          settle = () => resolve({});
+        }) as never,
+    );
+    const manager = new OpportunityManager(queue);
+    const cluster = makeCluster();
+
+    const opened = openOn(manager, cluster, 1_000)!;
+
+    let done = false;
+    const closing = manager.shutdown(5_000).then((count) => {
+      done = true;
+      return count;
+    });
+
+    expect(opened.closedAt).toBe(5_000);
+    expect(opened.closeReason).toBe('shutdown');
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(activeMap(manager).size).toBe(0);
+
+    await Promise.resolve();
+    expect(done).toBe(false); // still waiting on Redis
+
+    settle();
+    expect(await closing).toBe(1);
+  });
+
+  it('also waits for a write that was already in flight', async () => {
+    const queue = createOpportunityQueueMock();
+    let settle: () => void = () => undefined;
+    jest.spyOn(queue, 'add').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          settle = () => resolve({});
+        }) as never,
+    );
+    const manager = new OpportunityManager(queue);
+    const cluster = makeCluster();
+
+    openOn(manager, cluster, 1_000);
+    tick(manager, cluster, BYBIT, 100.1, 101.5, 2_000); // collapses, write in flight
+
+    let done = false;
+    const closing = manager.shutdown(3_000).then(() => {
+      done = true;
+    });
+
+    await Promise.resolve();
+    expect(done).toBe(false);
+
+    settle();
+    await closing;
+    expect(done).toBe(true);
+  });
+});
+
+describe('OpportunityManager series cap', () => {
+  it('stops the series at MAX_SERIES_LENGTH while the counters keep going', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const observation = {
+      cluster,
+      highestBidMarket: bybitMarket,
+      lowestAskMarket: binanceMarket,
+      highestBidVenueIndex: BYBIT,
+      lowestAskVenueIndex: BINANCE,
+      highestBid: 101,
+      lowestAsk: 100,
+      netPpm: 8_000,
+      now: 1_000,
+    };
+
+    const opportunity = manager.trackOpportunity(observation);
+
+    for (let i = 1; i < MAX_SERIES_LENGTH + 5; i++) {
+      manager.trackOpportunity({
+        ...observation,
+        netPpm: 8_000 + i,
+        now: 1_000 + i,
+      });
+    }
+
+    // past the cap: a new peak and a new minimum, neither of which the series can hold
+    manager.trackOpportunity({ ...observation, netPpm: 20_000, now: 20_000 });
+    manager.trackOpportunity({ ...observation, netPpm: 500, now: 20_001 });
+
+    expect(opportunity.netPpmSeries).toHaveLength(MAX_SERIES_LENGTH);
+    expect(opportunity.highestBidSeries).toHaveLength(MAX_SERIES_LENGTH);
+    expect(opportunity.lowestAskSeries).toHaveLength(MAX_SERIES_LENGTH);
+    expect(opportunity.sampleTs).toHaveLength(MAX_SERIES_LENGTH);
+    expect(opportunity.ticksSinceStart).toBe(1 + MAX_SERIES_LENGTH + 4 + 2); // the open, the loop, the two past the cap
+    expect(opportunity.peakNetPpm).toBe(20_000);
+    expect(opportunity.peakAt).toBe(20_000);
+    expect(opportunity.minNetPpm).toBe(500);
+    expect(opportunity.lastSeenAt).toBe(20_001);
   });
 });
 
@@ -308,6 +480,7 @@ describe('OpportunityManager.trackOpportunity', () => {
     expect(first.netPpmAtOpen).toBe(8_000);
     expect(first.peakNetPpm).toBe(9_000);
     expect(first.peakAt).toBe(1_500);
+    expect(first.minNetPpm).toBe(8_000);
     expect(first.netPpmSeries).toEqual([8_000, 9_000]);
     expect(first.sampleTs).toEqual([0, 500]);
     expect(routes(manager)!.size).toBe(1);
@@ -315,7 +488,7 @@ describe('OpportunityManager.trackOpportunity', () => {
 });
 
 describe('OpportunityManager persistence', () => {
-  it('enqueues the closed opportunity', () => {
+  it('enqueues the closed opportunity with its reason', () => {
     const queue = createOpportunityQueueMock();
     const add = jest.spyOn(queue, 'add');
     const manager = new OpportunityManager(queue);
@@ -332,9 +505,13 @@ describe('OpportunityManager persistence', () => {
           route: 'bybit-binance',
           openedAt: new Date(1_000).toISOString(),
           closedAt: new Date(2_000).toISOString(),
+          closeReason: 'spread_collapsed',
+          ticks: 2,
         }),
       ],
     });
+    // the collapsing sample is the minimum, and it is what closed the route
+    expect(add.mock.calls[0][1].rows[0].minNetPpm).toBeLessThan(1_000);
   });
 });
 
@@ -374,8 +551,7 @@ describe('OpportunityManager plausibility ceiling', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  // A cluster like this is broken on every tick for the life of the process. Both legs have to keep
-  // printing inside MAX_QUOTE_AGE_MS for the route to be reachable at all, so the burst is 5s apart
+  // A cluster like this is broken on every tick for the life of the process. The bursts are 4s apart
   // while the warning window is 10s.
   it('warns once per window and carries the suppressed count', () => {
     const manager = new OpportunityManager(createOpportunityQueueMock());

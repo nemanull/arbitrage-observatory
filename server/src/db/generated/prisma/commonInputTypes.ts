@@ -134,6 +134,13 @@ export type FloatFilter<$PrismaModel = never> = {
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
 }
 
+export type EnumOpportunityCloseReasonFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpportunityCloseReason | Prisma.EnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpportunityCloseReasonFilter<$PrismaModel> | $Enums.OpportunityCloseReason
+}
+
 export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
   equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
   in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>
@@ -164,6 +171,16 @@ export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatFilter<$PrismaModel>
   _min?: Prisma.NestedFloatFilter<$PrismaModel>
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
+export type EnumOpportunityCloseReasonWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpportunityCloseReason | Prisma.EnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpportunityCloseReasonWithAggregatesFilter<$PrismaModel> | $Enums.OpportunityCloseReason
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOpportunityCloseReasonFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOpportunityCloseReasonFilter<$PrismaModel>
 }
 
 export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -284,6 +301,13 @@ export type NestedBigIntFilter<$PrismaModel = never> = {
   not?: Prisma.NestedBigIntFilter<$PrismaModel> | bigint | number
 }
 
+export type NestedEnumOpportunityCloseReasonFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpportunityCloseReason | Prisma.EnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpportunityCloseReasonFilter<$PrismaModel> | $Enums.OpportunityCloseReason
+}
+
 export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
   equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
   in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel>
@@ -314,6 +338,16 @@ export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatFilter<$PrismaModel>
   _min?: Prisma.NestedFloatFilter<$PrismaModel>
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
+export type NestedEnumOpportunityCloseReasonWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OpportunityCloseReason | Prisma.EnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  in?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OpportunityCloseReason[] | Prisma.ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOpportunityCloseReasonWithAggregatesFilter<$PrismaModel> | $Enums.OpportunityCloseReason
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOpportunityCloseReasonFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOpportunityCloseReasonFilter<$PrismaModel>
 }
 
 

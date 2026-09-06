@@ -23,12 +23,15 @@ function makeMarket(venueId: string): Market {
   };
 }
 
+// The multipliers are filled, so a quote pair that clears the fees can open a route. Zero-filled they cannot.
 function makeCluster(): Cluster {
+  const markets = VENUES.map(makeMarket);
+
   return {
     pair: 'BTC|USDT',
-    markets: VENUES.map(makeMarket),
-    bidMul: new Float64Array(VENUES.length),
-    askMul: new Float64Array(VENUES.length),
+    markets,
+    bidMul: Float64Array.from(markets, (m) => 1 - m.takerPpm / 1_000_000),
+    askMul: Float64Array.from(markets, (m) => 1 + m.takerPpm / 1_000_000),
     bid: new Float64Array(VENUES.length),
     ask: new Float64Array(VENUES.length),
     recvTs: new Float64Array(VENUES.length),
@@ -226,5 +229,143 @@ describe('Engine.updateQuote', () => {
     });
 
     expect(warn).toHaveBeenCalledTimes(2);
+  });
+});
+
+// bybit bids 101 against a binance ask of 100: ~8890ppm after 55bp taker each side.
+function openRoute(engine: Engine): void {
+  engine.updateQuote('binance', RAW_MARKET_ID, {
+    bid: 99.9,
+    ask: 100,
+    recvTs: 1_000,
+  });
+  engine.updateQuote('bybit', RAW_MARKET_ID, {
+    bid: 101,
+    ask: 101.5,
+    recvTs: 1_000,
+  });
+}
+
+function openRoutes(engine: Engine): Map<string, unknown> {
+  const manager = Reflect.get(engine, 'opportunityManager') as object;
+  const active = Reflect.get(manager, 'activeOpportunityMap') as Map<
+    string,
+    Map<string, unknown>
+  >;
+
+  return active.get('BTC|USDT') ?? new Map<string, unknown>();
+}
+
+describe('Engine repeats and dead sockets', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('drops an identical repeat at any age and only refreshes recvTs', () => {
+    const index = makeIndex();
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
+    const manager = Reflect.get(engine, 'opportunityManager') as object;
+    const validate = jest.spyOn(
+      manager as { validate: () => unknown },
+      'validate',
+    );
+
+    engine.updateQuote('binance', RAW_MARKET_ID, {
+      bid: 100,
+      ask: 101,
+      recvTs: 1_000,
+    });
+    engine.updateQuote('binance', RAW_MARKET_ID, {
+      bid: 100,
+      ask: 101,
+      recvTs: 120_000,
+    });
+
+    expect(validate).toHaveBeenCalledTimes(1);
+    expect(index.clusters[0].recvTs[0]).toBe(120_000);
+  });
+
+  it('takes the same numbers as a fresh quote after markStale', () => {
+    const index = makeIndex();
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
+    const manager = Reflect.get(engine, 'opportunityManager') as object;
+    const validate = jest.spyOn(
+      manager as { validate: () => unknown },
+      'validate',
+    );
+
+    engine.updateQuote('binance', RAW_MARKET_ID, {
+      bid: 100,
+      ask: 101,
+      recvTs: 1_000,
+    });
+    engine.markStale('binance', [RAW_MARKET_ID]);
+
+    expect(index.clusters[0].recvTs[0]).toBe(0);
+
+    engine.updateQuote('binance', RAW_MARKET_ID, {
+      bid: 100,
+      ask: 101,
+      recvTs: 2_000,
+    });
+
+    expect(validate).toHaveBeenCalledTimes(2);
+    expect(index.clusters[0].recvTs[0]).toBe(2_000);
+  });
+
+  it('closes the open routes on the dead markets with feed_down', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(5_000);
+    const queue = createOpportunityQueueMock();
+    const add = jest.spyOn(queue, 'add');
+    const index = makeIndex();
+    const engine = new Engine(index, index.venueIndexMap, queue);
+
+    openRoute(engine);
+    expect([...openRoutes(engine).keys()]).toEqual(['bybit-binance']);
+
+    engine.markStale('bybit', [RAW_MARKET_ID]);
+
+    expect(openRoutes(engine).size).toBe(0);
+    expect(add).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        rows: [
+          expect.objectContaining({
+            closeReason: 'feed_down',
+            closedAt: new Date(5_000).toISOString(),
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('flushes on shutdown and ignores quotes from then on', async () => {
+    const queue = createOpportunityQueueMock();
+    const add = jest.spyOn(queue, 'add');
+    const index = makeIndex();
+    const engine = new Engine(index, index.venueIndexMap, queue);
+
+    openRoute(engine);
+
+    expect(await engine.shutdown(9_000)).toBe(1);
+    expect(add).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        rows: [expect.objectContaining({ closeReason: 'shutdown' })],
+      }),
+    );
+
+    openRoute(engine);
+
+    expect(openRoutes(engine).size).toBe(0);
+    expect(add).toHaveBeenCalledTimes(1);
   });
 });
