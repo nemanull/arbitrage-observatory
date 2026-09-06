@@ -512,6 +512,9 @@ describe('OpportunityManager persistence', () => {
     });
     // the collapsing sample is the minimum, and it is what closed the route
     expect(add.mock.calls[0][1].rows[0].minNetPpm).toBeLessThan(1_000);
+    expect(add.mock.calls[0][1].rows[0].netPpmAtClose).toBe(
+      add.mock.calls[0][1].rows[0].minNetPpm,
+    );
   });
 });
 

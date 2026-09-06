@@ -17,7 +17,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model Venue {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -104,12 +103,14 @@ model ArbitrageOpportunity {
   highestBidAtOpen Float
   lowestAskAtOpen  Float
 
-  closedAt    DateTime
+  closedAt      DateTime
   /// Why the episode ended. Nothing else ends one
-  closeReason OpportunityCloseReason
+  closeReason   OpportunityCloseReason
+  /// The last reading before the episode ended. What a round trip could have kept is at most netPpmAtOpen minus this minus the two closing fills
+  netPpmAtClose Float
   /// The last tick that fed this route. A wide gap to closedAt means neither leg changed for that long
-  lastSeenAt  DateTime
-  durationMs Int
+  lastSeenAt    DateTime
+  durationMs    Int
 
   /// Ticks folded into this episode. The series below keep the first 10 000 of them, so their length is min(ticks, 10000)
   ticks          Int

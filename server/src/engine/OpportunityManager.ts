@@ -184,6 +184,7 @@ export class OpportunityManager {
       peakLowestAsk: O.lowestAsk,
       minNetPpm: O.netPpm,
       lastSeenAt: O.now,
+      lastNetPpm: O.netPpm,
 
       netPpmSeries: [O.netPpm],
       highestBidSeries: [O.highestBid],
@@ -273,6 +274,7 @@ export class OpportunityManager {
     opportunity.ticksSinceStart += 1;
     opportunity.netPpmSum += netPpm;
     opportunity.lastSeenAt = now;
+    opportunity.lastNetPpm = netPpm;
 
     if (netPpm > opportunity.peakNetPpm) {
       opportunity.peakNetPpm = netPpm;

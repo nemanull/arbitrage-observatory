@@ -67,6 +67,7 @@ export type Opportunity = {
   peakLowestAsk: number;
   minNetPpm: number;
   lastSeenAt: number;
+  lastNetPpm: number;
 
   netPpmSeries: number[];
   highestBidSeries: number[];
