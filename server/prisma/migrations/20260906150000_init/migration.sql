@@ -1,28 +1,12 @@
--- Exchange becomes Venue, and the two tables that held venue settings are gone.
--- Socket settings and fee schedules now live in code next to VenueSpec, so nothing reads them from Postgres.
--- Market and ArbitrageOpportunity are dropped and rebuilt rather than altered, because every column of both changed shape and this stage has no rows worth carrying over.
--- Pair is unchanged and is kept as it is.
+-- Squashed on 2026-09-06 from init, seed_exchanges, venue_core and close_snapshot, which git history keeps up to 4831b20.
+-- The seeded Exchange rows were already dropped by venue_core, so the squash loses no data.
+-- Generated from schema.prisma so that every column sits where the schema puts it.
 
--- DropTable
-DROP TABLE IF EXISTS "ArbitrageOpportunity";
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
 
--- DropTable
-DROP TABLE IF EXISTS "ExchangeConfig";
-
--- DropTable
-DROP TABLE IF EXISTS "ExchangeFee";
-
--- DropTable
-DROP TABLE IF EXISTS "Market";
-
--- DropTable
-DROP TABLE IF EXISTS "Exchange";
-
--- DropEnum
-DROP TYPE IF EXISTS "MarketStatus";
-
--- DropEnum
-DROP TYPE IF EXISTS "ArbitrageKind";
+-- CreateEnum
+CREATE TYPE "OpportunityCloseReason" AS ENUM ('spread_collapsed', 'feed_down', 'age_cap', 'shutdown');
 
 -- CreateTable
 CREATE TABLE "Venue" (
@@ -34,6 +18,17 @@ CREATE TABLE "Venue" (
     "enabled" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "Venue_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Pair" (
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id" SERIAL NOT NULL,
+    "base" TEXT NOT NULL,
+    "quote" TEXT NOT NULL,
+    "symbol" TEXT NOT NULL,
+
+    CONSTRAINT "Pair_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -69,6 +64,9 @@ CREATE TABLE "ArbitrageOpportunity" (
     "highestBidAtOpen" DOUBLE PRECISION NOT NULL,
     "lowestAskAtOpen" DOUBLE PRECISION NOT NULL,
     "closedAt" TIMESTAMP(3) NOT NULL,
+    "closeReason" "OpportunityCloseReason" NOT NULL,
+    "netPpmAtClose" DOUBLE PRECISION NOT NULL,
+    "roundTripPpm" DOUBLE PRECISION NOT NULL,
     "lastSeenAt" TIMESTAMP(3) NOT NULL,
     "durationMs" INTEGER NOT NULL,
     "ticks" INTEGER NOT NULL,
@@ -88,6 +86,12 @@ CREATE TABLE "ArbitrageOpportunity" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Venue_slug_key" ON "Venue"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Pair_symbol_key" ON "Pair"("symbol");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Pair_base_quote_key" ON "Pair"("base", "quote");
 
 -- CreateIndex
 CREATE INDEX "Market_pairId_active_idx" ON "Market"("pairId", "active");

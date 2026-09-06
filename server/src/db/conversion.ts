@@ -36,6 +36,12 @@ export function toOpportunityRow(
     closedAt: new Date(closedAt).toISOString(),
     closeReason,
     netPpmAtClose: opportunity.lastNetPpm,
+    roundTripPpm:
+      opportunity.netPpmAtOpen -
+      opportunity.lastNetPpm -
+      2 *
+        (opportunity.highestBidMarket.takerPpm +
+          opportunity.lowestAskMarket.takerPpm),
     lastSeenAt: new Date(opportunity.lastSeenAt).toISOString(),
     durationMs: closedAt - opportunity.openedAt,
 

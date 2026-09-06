@@ -86,6 +86,9 @@ The source is a closed `Opportunity` named `o`, plus the `pair` and `route` the 
 | `highestBidAtOpen` | `o.highestBidAtOpen` |
 | `lowestAskAtOpen` | `o.lowestAskAtOpen` |
 | `closedAt` | `o.closedAt`, which the converter refuses to accept as null |
+| `closeReason` | `o.closeReason`, which the converter refuses to accept as null |
+| `netPpmAtClose` | `o.lastNetPpm` |
+| `roundTripPpm` | `o.netPpmAtOpen - o.lastNetPpm - 2 * (bid taker + ask taker)`, redundant by design, and an upper bound because the closing widths are not stored |
 | `lastSeenAt` | `o.lastSeenAt` |
 | `durationMs` | `o.closedAt - o.openedAt` |
 | `ticks` | `o.ticksSinceStart` |

@@ -34,6 +34,7 @@ export type ArbitrageOpportunityAvgAggregateOutputType = {
   highestBidAtOpen: number | null
   lowestAskAtOpen: number | null
   netPpmAtClose: number | null
+  roundTripPpm: number | null
   durationMs: number | null
   ticks: number | null
   avgNetPpm: number | null
@@ -55,6 +56,7 @@ export type ArbitrageOpportunitySumAggregateOutputType = {
   highestBidAtOpen: number | null
   lowestAskAtOpen: number | null
   netPpmAtClose: number | null
+  roundTripPpm: number | null
   durationMs: number | null
   ticks: number | null
   avgNetPpm: number | null
@@ -86,6 +88,7 @@ export type ArbitrageOpportunityMinAggregateOutputType = {
   closedAt: Date | null
   closeReason: $Enums.OpportunityCloseReason | null
   netPpmAtClose: number | null
+  roundTripPpm: number | null
   lastSeenAt: Date | null
   durationMs: number | null
   ticks: number | null
@@ -115,6 +118,7 @@ export type ArbitrageOpportunityMaxAggregateOutputType = {
   closedAt: Date | null
   closeReason: $Enums.OpportunityCloseReason | null
   netPpmAtClose: number | null
+  roundTripPpm: number | null
   lastSeenAt: Date | null
   durationMs: number | null
   ticks: number | null
@@ -144,6 +148,7 @@ export type ArbitrageOpportunityCountAggregateOutputType = {
   closedAt: number
   closeReason: number
   netPpmAtClose: number
+  roundTripPpm: number
   lastSeenAt: number
   durationMs: number
   ticks: number
@@ -169,6 +174,7 @@ export type ArbitrageOpportunityAvgAggregateInputType = {
   highestBidAtOpen?: true
   lowestAskAtOpen?: true
   netPpmAtClose?: true
+  roundTripPpm?: true
   durationMs?: true
   ticks?: true
   avgNetPpm?: true
@@ -190,6 +196,7 @@ export type ArbitrageOpportunitySumAggregateInputType = {
   highestBidAtOpen?: true
   lowestAskAtOpen?: true
   netPpmAtClose?: true
+  roundTripPpm?: true
   durationMs?: true
   ticks?: true
   avgNetPpm?: true
@@ -221,6 +228,7 @@ export type ArbitrageOpportunityMinAggregateInputType = {
   closedAt?: true
   closeReason?: true
   netPpmAtClose?: true
+  roundTripPpm?: true
   lastSeenAt?: true
   durationMs?: true
   ticks?: true
@@ -250,6 +258,7 @@ export type ArbitrageOpportunityMaxAggregateInputType = {
   closedAt?: true
   closeReason?: true
   netPpmAtClose?: true
+  roundTripPpm?: true
   lastSeenAt?: true
   durationMs?: true
   ticks?: true
@@ -279,6 +288,7 @@ export type ArbitrageOpportunityCountAggregateInputType = {
   closedAt?: true
   closeReason?: true
   netPpmAtClose?: true
+  roundTripPpm?: true
   lastSeenAt?: true
   durationMs?: true
   ticks?: true
@@ -399,6 +409,7 @@ export type ArbitrageOpportunityGroupByOutputType = {
   closedAt: Date
   closeReason: $Enums.OpportunityCloseReason
   netPpmAtClose: number
+  roundTripPpm: number
   lastSeenAt: Date
   durationMs: number
   ticks: number
@@ -455,6 +466,7 @@ export type ArbitrageOpportunityWhereInput = {
   closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonFilter<"ArbitrageOpportunity"> | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  roundTripPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   lastSeenAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   ticks?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
@@ -488,6 +500,7 @@ export type ArbitrageOpportunityOrderByWithRelationInput = {
   closedAt?: Prisma.SortOrder
   closeReason?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -524,6 +537,7 @@ export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
   closedAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonFilter<"ArbitrageOpportunity"> | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  roundTripPpm?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
   lastSeenAt?: Prisma.DateTimeFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   ticks?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
@@ -557,6 +571,7 @@ export type ArbitrageOpportunityOrderByWithAggregationInput = {
   closedAt?: Prisma.SortOrder
   closeReason?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -598,6 +613,7 @@ export type ArbitrageOpportunityScalarWhereWithAggregatesInput = {
   closedAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonWithAggregatesFilter<"ArbitrageOpportunity"> | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  roundTripPpm?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
   lastSeenAt?: Prisma.DateTimeWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string
   durationMs?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
   ticks?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
@@ -631,6 +647,7 @@ export type ArbitrageOpportunityCreateInput = {
   closedAt: Date | string
   closeReason: $Enums.OpportunityCloseReason
   netPpmAtClose: number
+  roundTripPpm: number
   lastSeenAt: Date | string
   durationMs: number
   ticks: number
@@ -664,6 +681,7 @@ export type ArbitrageOpportunityUncheckedCreateInput = {
   closedAt: Date | string
   closeReason: $Enums.OpportunityCloseReason
   netPpmAtClose: number
+  roundTripPpm: number
   lastSeenAt: Date | string
   durationMs: number
   ticks: number
@@ -697,6 +715,7 @@ export type ArbitrageOpportunityUpdateInput = {
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatFieldUpdateOperationsInput | number
+  roundTripPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -730,6 +749,7 @@ export type ArbitrageOpportunityUncheckedUpdateInput = {
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatFieldUpdateOperationsInput | number
+  roundTripPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -763,6 +783,7 @@ export type ArbitrageOpportunityCreateManyInput = {
   closedAt: Date | string
   closeReason: $Enums.OpportunityCloseReason
   netPpmAtClose: number
+  roundTripPpm: number
   lastSeenAt: Date | string
   durationMs: number
   ticks: number
@@ -796,6 +817,7 @@ export type ArbitrageOpportunityUpdateManyMutationInput = {
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatFieldUpdateOperationsInput | number
+  roundTripPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -829,6 +851,7 @@ export type ArbitrageOpportunityUncheckedUpdateManyInput = {
   closedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   closeReason?: Prisma.EnumOpportunityCloseReasonFieldUpdateOperationsInput | $Enums.OpportunityCloseReason
   netPpmAtClose?: Prisma.FloatFieldUpdateOperationsInput | number
+  roundTripPpm?: Prisma.FloatFieldUpdateOperationsInput | number
   lastSeenAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
   ticks?: Prisma.IntFieldUpdateOperationsInput | number
@@ -878,6 +901,7 @@ export type ArbitrageOpportunityCountOrderByAggregateInput = {
   closedAt?: Prisma.SortOrder
   closeReason?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -901,6 +925,7 @@ export type ArbitrageOpportunityAvgOrderByAggregateInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
@@ -932,6 +957,7 @@ export type ArbitrageOpportunityMaxOrderByAggregateInput = {
   closedAt?: Prisma.SortOrder
   closeReason?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -961,6 +987,7 @@ export type ArbitrageOpportunityMinOrderByAggregateInput = {
   closedAt?: Prisma.SortOrder
   closeReason?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   lastSeenAt?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
@@ -980,6 +1007,7 @@ export type ArbitrageOpportunitySumOrderByAggregateInput = {
   highestBidAtOpen?: Prisma.SortOrder
   lowestAskAtOpen?: Prisma.SortOrder
   netPpmAtClose?: Prisma.SortOrder
+  roundTripPpm?: Prisma.SortOrder
   durationMs?: Prisma.SortOrder
   ticks?: Prisma.SortOrder
   avgNetPpm?: Prisma.SortOrder
@@ -1069,6 +1097,7 @@ export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.
   closedAt?: boolean
   closeReason?: boolean
   netPpmAtClose?: boolean
+  roundTripPpm?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1102,6 +1131,7 @@ export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtim
   closedAt?: boolean
   closeReason?: boolean
   netPpmAtClose?: boolean
+  roundTripPpm?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1135,6 +1165,7 @@ export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtim
   closedAt?: boolean
   closeReason?: boolean
   netPpmAtClose?: boolean
+  roundTripPpm?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1168,6 +1199,7 @@ export type ArbitrageOpportunitySelectScalar = {
   closedAt?: boolean
   closeReason?: boolean
   netPpmAtClose?: boolean
+  roundTripPpm?: boolean
   lastSeenAt?: boolean
   durationMs?: boolean
   ticks?: boolean
@@ -1183,7 +1215,7 @@ export type ArbitrageOpportunitySelectScalar = {
   lowestAskSeries?: boolean
 }
 
-export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "netPpmAtClose" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries", ExtArgs["result"]["arbitrageOpportunity"]>
+export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "netPpmAtClose" | "roundTripPpm" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries", ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ArbitrageOpportunity"
@@ -1218,9 +1250,14 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
      */
     closeReason: $Enums.OpportunityCloseReason
     /**
-     * The last reading before the episode ended. What a round trip could have kept is at most netPpmAtOpen minus this minus the two closing fills
+     * The last reading before the episode ended, the same measure as netPpmAtOpen taken at the last tick
      */
     netPpmAtClose: number
+    /**
+     * Redundant, derived from this row: netPpmAtOpen minus netPpmAtClose minus two of each fill, because the subtraction cancels the fees both readings carry and a round trip pays four
+     * An upper bound, in parts per million of the buy-leg notional. Closing also crosses both venues' own widths, which the row does not store
+     */
+    roundTripPpm: number
     /**
      * The last tick that fed this route. A wide gap to closedAt means neither leg changed for that long
      */
@@ -1686,6 +1723,7 @@ export interface ArbitrageOpportunityFieldRefs {
   readonly closedAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly closeReason: Prisma.FieldRef<"ArbitrageOpportunity", 'OpportunityCloseReason'>
   readonly netPpmAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly roundTripPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly lastSeenAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly durationMs: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
   readonly ticks: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
