@@ -109,14 +109,25 @@ export class OpportunityManager {
       return null;
     }
 
+    const b = highestBidIndex;
+    const a = lowestAskIndex;
+    const highestBidSize = cluster.bidSize[b] * cluster.sizeMul[b];
+    const lowestAskSize = cluster.askSize[a] * cluster.sizeMul[a];
+    const highestBidLegAsk = cluster.ask[b] * cluster.askMul[b];
+    const lowestAskLegBid = cluster.bid[a] * cluster.bidMul[a];
+
     this.logger.log(
-      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}`,
+      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask`,
     );
 
     return this.trackOpportunity({
       cluster,
       highestBid,
       lowestAsk,
+      highestBidSize,
+      lowestAskSize,
+      highestBidLegAsk,
+      lowestAskLegBid,
       netPpm,
       highestBidMarket,
       lowestAskMarket,
@@ -138,7 +149,17 @@ export class OpportunityManager {
     const existing = routes.get(routeKey);
 
     if (existing !== undefined) {
-      this.recordSample(existing, O.highestBid, O.lowestAsk, O.netPpm, O.now);
+      this.recordSample(
+        existing,
+        O.highestBid,
+        O.lowestAsk,
+        O.highestBidSize,
+        O.lowestAskSize,
+        O.highestBidLegAsk,
+        O.lowestAskLegBid,
+        O.netPpm,
+        O.now,
+      );
       return existing;
     }
 
@@ -175,6 +196,10 @@ export class OpportunityManager {
       netPpmAtOpen: O.netPpm,
       highestBidAtOpen: O.highestBid,
       lowestAskAtOpen: O.lowestAsk,
+      highestBidSizeAtOpen: O.highestBidSize,
+      lowestAskSizeAtOpen: O.lowestAskSize,
+      highestBidLegAskAtOpen: O.highestBidLegAsk,
+      lowestAskLegBidAtOpen: O.lowestAskLegBid,
 
       ticksSinceStart: 1,
       netPpmSum: O.netPpm,
@@ -182,9 +207,17 @@ export class OpportunityManager {
       peakAt: O.now,
       peakHighestBid: O.highestBid,
       peakLowestAsk: O.lowestAsk,
+      peakHighestBidSize: O.highestBidSize,
+      peakLowestAskSize: O.lowestAskSize,
+      peakHighestBidLegAsk: O.highestBidLegAsk,
+      peakLowestAskLegBid: O.lowestAskLegBid,
       minNetPpm: O.netPpm,
       lastSeenAt: O.now,
       lastNetPpm: O.netPpm,
+      lastHighestBidSize: O.highestBidSize,
+      lastLowestAskSize: O.lowestAskSize,
+      lastHighestBidLegAsk: O.highestBidLegAsk,
+      lastLowestAskLegBid: O.lowestAskLegBid,
 
       netPpmSeries: [O.netPpm],
       highestBidSeries: [O.highestBid],
@@ -206,9 +239,23 @@ export class OpportunityManager {
     const a = opportunity.lowestAskVenueIndex;
     const highestBid = cluster.bid[b] * cluster.bidMul[b];
     const lowestAsk = cluster.ask[a] * cluster.askMul[a];
+    const highestBidSize = cluster.bidSize[b] * cluster.sizeMul[b];
+    const lowestAskSize = cluster.askSize[a] * cluster.sizeMul[a];
+    const highestBidLegAsk = cluster.ask[b] * cluster.askMul[b];
+    const lowestAskLegBid = cluster.bid[a] * cluster.bidMul[a];
     const netPpm = (highestBid / lowestAsk - 1) * 1_000_000;
 
-    this.recordSample(opportunity, highestBid, lowestAsk, netPpm, now);
+    this.recordSample(
+      opportunity,
+      highestBid,
+      lowestAsk,
+      highestBidSize,
+      lowestAskSize,
+      highestBidLegAsk,
+      lowestAskLegBid,
+      netPpm,
+      now,
+    );
 
     // Recorded first, so a collapsing tick ends the series and the close log sees it
     const reason = this.closeReasonFor(opportunity, cluster, now, netPpm);
@@ -268,6 +315,10 @@ export class OpportunityManager {
     opportunity: Opportunity,
     highestBid: number,
     lowestAsk: number,
+    highestBidSize: number,
+    lowestAskSize: number,
+    highestBidLegAsk: number,
+    lowestAskLegBid: number,
     netPpm: number,
     now: number,
   ): void {
@@ -275,12 +326,20 @@ export class OpportunityManager {
     opportunity.netPpmSum += netPpm;
     opportunity.lastSeenAt = now;
     opportunity.lastNetPpm = netPpm;
+    opportunity.lastHighestBidSize = highestBidSize;
+    opportunity.lastLowestAskSize = lowestAskSize;
+    opportunity.lastHighestBidLegAsk = highestBidLegAsk;
+    opportunity.lastLowestAskLegBid = lowestAskLegBid;
 
     if (netPpm > opportunity.peakNetPpm) {
       opportunity.peakNetPpm = netPpm;
       opportunity.peakAt = now;
       opportunity.peakHighestBid = highestBid;
       opportunity.peakLowestAsk = lowestAsk;
+      opportunity.peakHighestBidSize = highestBidSize;
+      opportunity.peakLowestAskSize = lowestAskSize;
+      opportunity.peakHighestBidLegAsk = highestBidLegAsk;
+      opportunity.peakLowestAskLegBid = lowestAskLegBid;
     }
 
     if (netPpm < opportunity.minNetPpm) {

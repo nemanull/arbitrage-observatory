@@ -45,6 +45,7 @@ function market(rawMarketId: string, base = 'BTC'): Market {
     quote: 'USD',
     takerPpm: TAKER_PPM,
     linear: true,
+    contractSize: 1,
   };
 }
 
@@ -144,6 +145,8 @@ describe('KrakenFuturesFeed.handleMessage', () => {
       rawMarketId: 'PF_XBTUSD',
       bid: 79874,
       ask: 79875,
+      bidSize: 0.0656,
+      askSize: 0.0617,
       recvTs: LOCAL_NOW,
     });
   });
@@ -161,6 +164,8 @@ describe('KrakenFuturesFeed.handleMessage', () => {
       rawMarketId: 'PF_SHIBUSD',
       bid: 5.494e-6,
       ask: 5.498e-6,
+      bidSize: 200803000,
+      askSize: 20812000,
       recvTs: LOCAL_NOW,
     });
   });

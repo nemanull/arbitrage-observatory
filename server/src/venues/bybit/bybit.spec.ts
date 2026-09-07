@@ -27,6 +27,7 @@ function market(rawMarketId: string, linear = true): Market {
     quote: 'USDT',
     takerPpm: TAKER_PPM,
     linear,
+    contractSize: 1,
   };
 }
 
@@ -174,6 +175,8 @@ describe('BybitFeed.handleMessage', () => {
       rawMarketId: '0GUSDT',
       bid: 0.2225,
       ask: 0.2226,
+      bidSize: 1952.1,
+      askSize: 1.2,
       recvTs: LOCAL_NOW,
     });
   });

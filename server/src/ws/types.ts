@@ -28,5 +28,7 @@ export type NormalizedQuote = {
   rawMarketId: string;
   bid: number;
   ask: number;
+  bidSize: number; // contracts resting at the bid, as the venue counts them
+  askSize: number;
   recvTs: number;
 };

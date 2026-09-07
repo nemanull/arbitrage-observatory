@@ -2,7 +2,7 @@ import type { Market } from '../../engine/types';
 import type { EndpointPlan, SingleSocketConnection } from '../../ws/types';
 import { chunk } from '../../ws/shared';
 import { VenueFeed } from '../../ws/VenueFeed';
-import type { BybitStreamFrame } from './types';
+import type { BybitOrderbookLevel, BybitStreamFrame } from './types';
 
 // Bybit splits its public endpoints by market family, and one connection cannot carry topics from two families.
 const LINEAR_URL = 'wss://stream.bybit.com/v5/public/linear';
@@ -73,7 +73,7 @@ export class BybitFeed extends VenueFeed {
     const data = frame.data;
 
     if (data && typeof data.s === 'string') {
-      this.submitSnapshot(data.s, data.b?.[0]?.[0], data.a?.[0]?.[0], c);
+      this.submitSnapshot(data.s, data.b?.[0], data.a?.[0], c);
       return;
     }
 
@@ -82,8 +82,8 @@ export class BybitFeed extends VenueFeed {
 
   private submitSnapshot(
     symbol: string,
-    bid: string | undefined,
-    ask: string | undefined,
+    bid: BybitOrderbookLevel | undefined,
+    ask: BybitOrderbookLevel | undefined,
     c: SingleSocketConnection,
   ): void {
     if (!this.accepts(c, symbol)) {
@@ -96,8 +96,10 @@ export class BybitFeed extends VenueFeed {
 
     this.submit({
       rawMarketId: symbol,
-      bid: Number(bid),
-      ask: Number(ask),
+      bid: Number(bid[0]),
+      ask: Number(ask[0]),
+      bidSize: Number(bid[1]),
+      askSize: Number(ask[1]),
       recvTs: Date.now(),
     });
   }

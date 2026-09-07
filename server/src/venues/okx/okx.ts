@@ -89,6 +89,8 @@ export class OkxFeed extends VenueFeed {
         rawMarketId: instId,
         bid: Number(bid[0]),
         ask: Number(ask[0]),
+        bidSize: Number(bid[1]),
+        askSize: Number(ask[1]),
         recvTs: Date.now(),
       });
     }

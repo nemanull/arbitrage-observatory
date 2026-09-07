@@ -98,6 +98,8 @@ export class CoinbaseFeed extends VenueFeed {
       rawMarketId: ticker.product_id,
       bid: Number(ticker.best_bid),
       ask: Number(ticker.best_ask),
+      bidSize: Number(ticker.best_bid_quantity),
+      askSize: Number(ticker.best_ask_quantity),
       recvTs: Date.now(),
     });
   }

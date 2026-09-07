@@ -25,6 +25,10 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`implemented/2026-09-06-close-reasons-design.md`](./implemented/2026-09-06-close-reasons-design.md) records the reconciled design for the four close reasons, the feed-owned liveness, and the shutdown flush.
 - [`implemented/2026-09-06-close-reasons-plan.md`](./implemented/2026-09-06-close-reasons-plan.md) records the reconciled plan that shipped the close reasons.
 - [`implemented/2026-09-06-quote-family-design.md`](./implemented/2026-09-06-quote-family-design.md) records the decision that USD, USDC and USDT are one settlement asset for clustering, and the rank that picks one contract per venue.
+- [`implemented/2026-09-06-book-sizes-and-far-sides-design.md`](./implemented/2026-09-06-book-sizes-and-far-sides-design.md) records the reconciled design that carries top-of-book sizes and each leg's far side into the in-memory opportunity.
+- [`implemented/2026-09-06-book-sizes-and-far-sides-plan.md`](./implemented/2026-09-06-book-sizes-and-far-sides-plan.md) records the reconciled plan that shipped it across the connector, builder, engine, manager and feeds.
+- [`implemented/2026-09-06-depth-block-design.md`](./implemented/2026-09-06-depth-block-design.md) records the reconciled design for the flat depth block in the cluster and the engine's write path into it.
+- [`implemented/2026-09-06-depth-block-plan.md`](./implemented/2026-09-06-depth-block-plan.md) records the reconciled plan that shipped the depth block.
 
 ## Reference
 

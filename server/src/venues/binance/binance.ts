@@ -2,7 +2,7 @@ import type { Market } from '../../engine/types';
 import type { EndpointPlan, SingleSocketConnection } from '../../ws/types';
 import { chunk } from '../../ws/shared';
 import { VenueFeed } from '../../ws/VenueFeed';
-import type { BinanceStreamFrame } from './types';
+import type { BinanceBookTicker, BinanceStreamFrame } from './types';
 
 // Binance routes book data to its own host and path.
 // Trades, mark price, and funding live on /market/ws, which a top-of-book feed never needs.
@@ -86,7 +86,7 @@ export class BinanceFeed extends VenueFeed {
       typeof event.b === 'string' &&
       typeof event.a === 'string'
     ) {
-      this.submitBookTicker(event.s, event.b, event.a, c);
+      this.submitBookTicker(event.s, event, c);
       return;
     }
 
@@ -95,8 +95,7 @@ export class BinanceFeed extends VenueFeed {
 
   private submitBookTicker(
     symbol: string,
-    bid: string,
-    ask: string,
+    event: Partial<BinanceBookTicker>,
     c: SingleSocketConnection,
   ): void {
     if (!this.accepts(c, symbol)) {
@@ -105,8 +104,10 @@ export class BinanceFeed extends VenueFeed {
 
     this.submit({
       rawMarketId: symbol,
-      bid: Number(bid),
-      ask: Number(ask),
+      bid: Number(event.b),
+      ask: Number(event.a),
+      bidSize: Number(event.B),
+      askSize: Number(event.A),
       recvTs: Date.now(),
     });
   }

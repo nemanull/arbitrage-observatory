@@ -44,6 +44,7 @@ function market(rawMarketId: string): Market {
     quote: 'USDC',
     takerPpm: TAKER_PPM,
     linear: true,
+    contractSize: 1,
   };
 }
 
@@ -148,12 +149,16 @@ describe('CoinbaseFeed.handleMessage', () => {
       rawMarketId: 'BTC-PERP-INTX',
       bid: 79879,
       ask: 79879.1,
+      bidSize: 2.9352,
+      askSize: 1.7389,
       recvTs: LOCAL_NOW,
     });
     expect(updateQuote).toHaveBeenNthCalledWith(2, VENUE_ID, 'BTC-PERP-INTX', {
       rawMarketId: 'BTC-PERP-INTX',
       bid: 79914.5,
       ask: 79914.6,
+      bidSize: 0.7944,
+      askSize: 0.7554,
       recvTs: LOCAL_NOW,
     });
   });
@@ -169,8 +174,20 @@ describe('CoinbaseFeed.handleMessage', () => {
 
     feed.handleMessage(
       tickerFrame([
-        { product_id: 'BTC-PERP-INTX', best_bid: '1', best_ask: '2' },
-        { product_id: 'ETH-PERP-INTX', best_bid: '3', best_ask: '4' },
+        {
+          product_id: 'BTC-PERP-INTX',
+          best_bid: '1',
+          best_ask: '2',
+          best_bid_quantity: '5',
+          best_ask_quantity: '6',
+        },
+        {
+          product_id: 'ETH-PERP-INTX',
+          best_bid: '3',
+          best_ask: '4',
+          best_bid_quantity: '7',
+          best_ask_quantity: '8',
+        },
       ]),
       c,
     );
@@ -180,12 +197,16 @@ describe('CoinbaseFeed.handleMessage', () => {
       rawMarketId: 'BTC-PERP-INTX',
       bid: 1,
       ask: 2,
+      bidSize: 5,
+      askSize: 6,
       recvTs: LOCAL_NOW,
     });
     expect(updateQuote).toHaveBeenNthCalledWith(2, VENUE_ID, 'ETH-PERP-INTX', {
       rawMarketId: 'ETH-PERP-INTX',
       bid: 3,
       ask: 4,
+      bidSize: 7,
+      askSize: 8,
       recvTs: LOCAL_NOW,
     });
   });

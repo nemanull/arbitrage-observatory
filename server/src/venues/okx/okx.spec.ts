@@ -32,6 +32,7 @@ function market(rawMarketId: string, linear = true): Market {
     quote: linear ? 'USDT' : 'USD',
     takerPpm: TAKER_PPM,
     linear,
+    contractSize: 1,
   };
 }
 
@@ -130,6 +131,8 @@ describe('OkxFeed.handleMessage', () => {
       rawMarketId: 'DATA-USDT-SWAP',
       bid: 0.181,
       ask: 0.1811,
+      bidSize: 557,
+      askSize: 3,
       recvTs: LOCAL_NOW,
     });
   });

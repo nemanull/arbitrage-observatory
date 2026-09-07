@@ -25,6 +25,7 @@ function market(rawMarketId: string, linear = true): Market {
     quote: 'USDT',
     takerPpm: TAKER_PPM,
     linear,
+    contractSize: 1,
   };
 }
 
@@ -53,16 +54,22 @@ function connection(plan: EndpointPlan): SingleSocketConnection {
   } as unknown as SingleSocketConnection;
 }
 
-function bookTicker(symbol: string, bid: string, ask: string): Buffer {
+function bookTicker(
+  symbol: string,
+  bid: string,
+  ask: string,
+  bidSize = '1',
+  askSize = '1',
+): Buffer {
   return Buffer.from(
     JSON.stringify({
       e: 'bookTicker',
       u: 1,
       s: symbol,
       b: bid,
-      B: '1',
+      B: bidSize,
       a: ask,
-      A: '1',
+      A: askSize,
       T: 1,
       E: 1,
       st: 1,
@@ -137,12 +144,18 @@ describe('BinanceFeed.handleMessage', () => {
     const { feed, updateQuote } = makeFeed([market('BTCUSDT')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(bookTicker('BTCUSDT', '1943.64', '1943.65'), c);
+    // Distinct sizes, so a swapped B and A would fail here.
+    feed.handleMessage(
+      bookTicker('BTCUSDT', '1943.64', '1943.65', '4.213', '0.087'),
+      c,
+    );
 
     expect(updateQuote).toHaveBeenCalledWith(VENUE_ID, 'BTCUSDT', {
       rawMarketId: 'BTCUSDT',
       bid: 1943.64,
       ask: 1943.65,
+      bidSize: 4.213,
+      askSize: 0.087,
       recvTs: LOCAL_NOW,
     });
   });

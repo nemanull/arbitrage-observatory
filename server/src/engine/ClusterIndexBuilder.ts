@@ -1,6 +1,7 @@
 import {
   Market,
   Cluster,
+  ClusterDepth,
   ClusterIndex,
   ClusterByRawMarketId,
   VenueIndexMap,
@@ -11,6 +12,35 @@ import { DENIED_PAIRS, PRICE_SCALE, getPriceScale } from './clusterOverrides';
 import { clusterQuote, marketRank } from './quoteFamily';
 import { Logger } from '@nestjs/common';
 
+// Twenty covers the 0.5% band where an edge can still be positive on the finest-tick books, and sits inside what every venue returns cheaply.
+export const DEPTH_LEVELS = 20;
+
+export type ClusterIndexBuilderOptions = {
+  depthLevels?: number;
+};
+
+export function createClusterDepth(
+  width: number,
+  levels: number,
+): ClusterDepth {
+  if (!Number.isInteger(levels) || levels < 1 || levels > 255) {
+    throw new Error(
+      `depth levels must be an integer from 1 to 255, got ${levels}`,
+    );
+  }
+
+  return {
+    maxLevels: levels,
+    bidPrice: new Float64Array(width * levels),
+    bidSize: new Float64Array(width * levels),
+    askPrice: new Float64Array(width * levels),
+    askSize: new Float64Array(width * levels),
+    bidLevelCount: new Uint8Array(width),
+    askLevelCount: new Uint8Array(width),
+    writtenAt: new Float64Array(width),
+  };
+}
+
 export class ClusterIndexBuilder {
   private readonly logger: Logger = new Logger('ClusterIndex');
 
@@ -18,17 +48,23 @@ export class ClusterIndexBuilder {
   public readonly venueIndexMap: VenueIndexMap;
   public readonly clusters: Cluster[];
   public readonly clusterByRawMarketId: ClusterByRawMarketId;
+  public readonly depthLevels: number;
 
-  constructor(venues: Venue[], venueIndexMap:VenueIndexMap) {
+  constructor(
+    venues: Venue[],
+    venueIndexMap: VenueIndexMap,
+    options: ClusterIndexBuilderOptions = {},
+  ) {
     if (venues.length < 2) {
       throw new Error('At least 2 venues are required');
     }
 
     this.venues = venues;
     this.venueIndexMap = venueIndexMap;
+    this.depthLevels = options.depthLevels ?? DEPTH_LEVELS;
 
-    const pairMarkets = this.getPairMarkets(); 
-    this.clusters = this.createClusters(pairMarkets); 
+    const pairMarkets = this.getPairMarkets();
+    this.clusters = this.createClusters(pairMarkets);
 
     if (this.clusters.length === 0) {
       throw new Error(
@@ -36,7 +72,9 @@ export class ClusterIndexBuilder {
       );
     }
 
-    this.clusterByRawMarketId = this.createClusterByRawMarketIdMap(this.clusters);
+    this.clusterByRawMarketId = this.createClusterByRawMarketIdMap(
+      this.clusters,
+    );
 
     this.logOverrides(pairMarkets);
 
@@ -59,6 +97,7 @@ export class ClusterIndexBuilder {
     const markets = new Array<Market | null>(width).fill(null);
     const bidMul = new Float64Array(width);
     const askMul = new Float64Array(width);
+    const sizeMul = new Float64Array(width);
 
     for (const market of _markets) {
       const i = this.venueIndexMap.get(market.venueId);
@@ -83,6 +122,7 @@ export class ClusterIndexBuilder {
 
       bidMul[i] = (1 - market.takerPpm / 1000000) * scale;
       askMul[i] = (1 + market.takerPpm / 1000000) * scale;
+      sizeMul[i] = market.contractSize / scale;
 
       marketCount++;
     }
@@ -99,9 +139,13 @@ export class ClusterIndexBuilder {
       markets,
       bidMul,
       askMul,
+      sizeMul,
       bid: new Float64Array(width),
       ask: new Float64Array(width),
+      bidSize: new Float64Array(width),
+      askSize: new Float64Array(width),
       recvTs: new Float64Array(width),
+      depth: createClusterDepth(width, this.depthLevels),
     };
 
     return c;
@@ -111,7 +155,6 @@ export class ClusterIndexBuilder {
     const clusters: Cluster[] = [];
 
     for (const pair of allPairs.keys()) {
-
       if (DENIED_PAIRS.has(pair)) {
         continue;
       }
@@ -204,7 +247,8 @@ export class ClusterIndexBuilder {
           continue;
         }
 
-        const kept = marketRank(m) < marketRank(markets[twin]) ? m : markets[twin];
+        const kept =
+          marketRank(m) < marketRank(markets[twin]) ? m : markets[twin];
         const dropped = kept === m ? markets[twin] : m;
         markets[twin] = kept;
         this.logger.debug(
@@ -268,5 +312,4 @@ export class ClusterIndexBuilder {
 
     return map;
   }
-
 }

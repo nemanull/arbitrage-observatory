@@ -7,7 +7,6 @@ import type { KrakenFuturesFrame } from './types';
 const PUBLIC_URL = 'wss://futures.kraken.com/ws/v1';
 const CHANNEL = 'ticker';
 
-
 const MARKETS_PER_CONNECTION = 100;
 const PRODUCTS_PER_FRAME = 100;
 
@@ -53,7 +52,7 @@ export class KrakenFuturesFeed extends VenueFeed {
     const frame = JSON.parse(raw.toString('utf8')) as KrakenFuturesFrame;
 
     if (frame.feed === CHANNEL && typeof frame.product_id === 'string') {
-      this.submitTicker(frame.product_id, frame.bid, frame.ask, c);
+      this.submitTicker(frame.product_id, frame, c);
       return;
     }
 
@@ -62,14 +61,14 @@ export class KrakenFuturesFeed extends VenueFeed {
 
   private submitTicker(
     productId: string,
-    bid: number | undefined,
-    ask: number | undefined,
+    ticker: KrakenFuturesFrame,
     c: SingleSocketConnection,
   ): void {
     if (!this.accepts(c, productId)) {
       return;
     }
 
+    const { bid, ask } = ticker;
     if (bid === undefined || ask === undefined || !(bid > 0) || !(ask > 0)) {
       return;
     }
@@ -78,6 +77,8 @@ export class KrakenFuturesFeed extends VenueFeed {
       rawMarketId: productId,
       bid,
       ask,
+      bidSize: Number(ticker.bid_size),
+      askSize: Number(ticker.ask_size),
       recvTs: Date.now(),
     });
   }

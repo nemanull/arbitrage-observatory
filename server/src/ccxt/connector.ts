@@ -97,6 +97,7 @@ export class VenueConnector {
     const reportedPpm = new Set<number>();
     let skipped = 0;
     let unexpected = 0;
+    let nonUnitContracts = 0;
 
     for (const ccxtMarket of swapMarkets.markets) {
       const market = this.toMarket(swapMarkets.venueId, ccxtMarket);
@@ -113,6 +114,10 @@ export class VenueConnector {
         unexpected++;
       }
 
+      if (market.contractSize !== 1) {
+        nonUnitContracts++;
+      }
+
       markets.push(market);
     }
 
@@ -125,6 +130,12 @@ export class VenueConnector {
     if (unexpected > 0) {
       this.logger.warn(
         `CCXT reports ${[...reportedPpm].join(', ')} ppm on ${unexpected} of ${markets.length} markets, and ${this.ccxtTakerPpm ?? this.takerPpm} ppm was expected`,
+      );
+    }
+
+    if (nonUnitContracts > 0) {
+      this.logger.log(
+        `${nonUnitContracts} of ${markets.length} markets have a contract size other than 1 coin, so their sizes arrive in contracts`,
       );
     }
 
@@ -153,6 +164,7 @@ export class VenueConnector {
       quote: market.quote,
       takerPpm,
       linear: market.linear === true,
+      contractSize: toContractSize(market.contractSize),
     };
   }
 }
@@ -163,6 +175,14 @@ function toPpm(taker: number | undefined): number | null {
   }
 
   return Math.round(taker * 1_000_000);
+}
+
+function toContractSize(size: number | null | undefined): number {
+  if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
+    return 1;
+  }
+
+  return size;
 }
 
 function isActiveSwapMarket(market: CCXTMarket): market is SwapMarket {

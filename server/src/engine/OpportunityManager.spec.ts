@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { createClusterDepth } from './ClusterIndexBuilder';
 import { MAX_SERIES_LENGTH, OpportunityManager } from './OpportunityManager';
 import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
 import type { ActiveOpportunityMap, Cluster, Market } from './types';
@@ -15,6 +16,7 @@ function market(venueId: string): Market {
     quote: 'USDT',
     takerPpm: TAKER_PPM,
     linear: true,
+    contractSize: 1,
   };
 }
 
@@ -31,10 +33,12 @@ function makeCluster(): Cluster {
   const width = markets.length;
   const bidMul = new Float64Array(width);
   const askMul = new Float64Array(width);
+  const sizeMul = new Float64Array(width);
 
   markets.forEach((m, i) => {
     bidMul[i] = 1 - m.takerPpm / 1_000_000;
     askMul[i] = 1 + m.takerPpm / 1_000_000;
+    sizeMul[i] = m.contractSize;
   });
 
   return {
@@ -42,9 +46,13 @@ function makeCluster(): Cluster {
     markets,
     bidMul,
     askMul,
+    sizeMul,
     bid: new Float64Array(width),
     ask: new Float64Array(width),
+    bidSize: new Float64Array(width),
+    askSize: new Float64Array(width),
     recvTs: new Float64Array(width),
+    depth: createClusterDepth(width, 4), // the manager never reads the block
   };
 }
 
@@ -57,9 +65,13 @@ function tick(
   bid: number,
   ask: number,
   now: number,
+  bidSize = 0,
+  askSize = 0,
 ) {
   cluster.bid[index] = bid;
   cluster.ask[index] = ask;
+  cluster.bidSize[index] = bidSize;
+  cluster.askSize[index] = askSize;
   cluster.recvTs[index] = now;
 
   return manager.validate(cluster, index, now);
@@ -401,6 +413,10 @@ describe('OpportunityManager series cap', () => {
       lowestAskVenueIndex: BINANCE,
       highestBid: 101,
       lowestAsk: 100,
+      highestBidSize: 2,
+      lowestAskSize: 5,
+      highestBidLegAsk: 101.5,
+      lowestAskLegBid: 99.9,
       netPpm: 8_000,
       now: 1_000,
     };
@@ -445,6 +461,10 @@ describe('OpportunityManager.trackOpportunity', () => {
       lowestAskVenueIndex: BINANCE,
       highestBid: 100.01,
       lowestAsk: 100,
+      highestBidSize: 2,
+      lowestAskSize: 5,
+      highestBidLegAsk: 100.02,
+      lowestAskLegBid: 99.99,
       netPpm: 100,
       now: 1_000,
     });
@@ -465,6 +485,10 @@ describe('OpportunityManager.trackOpportunity', () => {
       lowestAskVenueIndex: BINANCE,
       highestBid: 101,
       lowestAsk: 100,
+      highestBidSize: 2,
+      lowestAskSize: 5,
+      highestBidLegAsk: 101.5,
+      lowestAskLegBid: 99.9,
       netPpm: 8_000,
       now: 1_000,
     };
@@ -577,5 +601,112 @@ describe('OpportunityManager plausibility ceiling', () => {
         suppressedCount: 4,
       }),
     );
+  });
+});
+
+// The cluster holds raw sizes, so a reading applies sizeMul.
+// The far sides go through the same multipliers as the touch.
+describe('OpportunityManager book sizes and far sides', () => {
+  const BID_MUL = 1 - TAKER_PPM / 1e6;
+  const ASK_MUL = 1 + TAKER_PPM / 1e6;
+  // expect.closeTo is typed any, which the lint forbids inside an object literal
+  const near = (value: number): number => expect.closeTo(value, 9) as number;
+
+  // bybit-binance opens on the bybit tick.
+  // binance rests 4 at its bid and 5 at its ask, bybit 2 and 3.
+  function openWithSizes(manager: OpportunityManager, cluster: Cluster) {
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000, 4, 5);
+    return tick(manager, cluster, BYBIT, 101, 101.5, 1_000, 2, 3)!;
+  }
+
+  it('snapshots the sizes and far sides of the tick that opened the route', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const opened = openWithSizes(manager, cluster);
+
+    expect(opened).toMatchObject({
+      highestBidSizeAtOpen: 2,
+      lowestAskSizeAtOpen: 5,
+      highestBidLegAskAtOpen: near(101.5 * ASK_MUL),
+      lowestAskLegBidAtOpen: near(99.9 * BID_MUL),
+      peakHighestBidSize: 2,
+      peakLowestAskSize: 5,
+      peakHighestBidLegAsk: near(101.5 * ASK_MUL),
+      peakLowestAskLegBid: near(99.9 * BID_MUL),
+      lastHighestBidSize: 2,
+      lastLowestAskSize: 5,
+      lastHighestBidLegAsk: near(101.5 * ASK_MUL),
+      lastLowestAskLegBid: near(99.9 * BID_MUL),
+    });
+  });
+
+  it('moves the peak reading with a new peak and keeps the open one', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const opened = openWithSizes(manager, cluster);
+
+    tick(manager, cluster, BYBIT, 101.2, 101.7, 2_000, 6, 7); // ~10887ppm, a new peak
+    tick(manager, cluster, BYBIT, 100.8, 101.3, 3_000, 8, 9); // ~6892ppm, under it
+
+    expect(opened.peakAt).toBe(2_000);
+    expect(opened).toMatchObject({
+      highestBidSizeAtOpen: 2,
+      lowestAskSizeAtOpen: 5,
+      highestBidLegAskAtOpen: near(101.5 * ASK_MUL),
+      lowestAskLegBidAtOpen: near(99.9 * BID_MUL),
+      peakHighestBidSize: 6,
+      peakLowestAskSize: 5,
+      peakHighestBidLegAsk: near(101.7 * ASK_MUL),
+      peakLowestAskLegBid: near(99.9 * BID_MUL),
+      lastHighestBidSize: 8,
+      lastLowestAskSize: 5,
+      lastHighestBidLegAsk: near(101.3 * ASK_MUL),
+      lastLowestAskLegBid: near(99.9 * BID_MUL),
+    });
+  });
+
+  it('carries the last reading of either leg through to the close', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const opened = openWithSizes(manager, cluster);
+
+    tick(manager, cluster, BINANCE, 99.8, 100.05, 2_000, 12, 13); // the buy leg moves, ~8386ppm
+
+    expect(opened).toMatchObject({
+      lastHighestBidSize: 2,
+      lastLowestAskSize: 13,
+      lastHighestBidLegAsk: near(101.5 * ASK_MUL),
+      lastLowestAskLegBid: near(99.8 * BID_MUL),
+    });
+
+    tick(manager, cluster, BYBIT, 100.1, 101.4, 3_000, 10, 11); // ~-600ppm, collapses
+
+    expect(opened.closeReason).toBe('spread_collapsed');
+    expect(opened).toMatchObject({
+      highestBidSizeAtOpen: 2,
+      lowestAskSizeAtOpen: 5,
+      peakHighestBidSize: 2,
+      peakLowestAskSize: 5,
+      peakHighestBidLegAsk: near(101.5 * ASK_MUL),
+      peakLowestAskLegBid: near(99.9 * BID_MUL),
+      lastHighestBidSize: 10,
+      lastLowestAskSize: 13,
+      lastHighestBidLegAsk: near(101.4 * ASK_MUL),
+      lastLowestAskLegBid: near(99.8 * BID_MUL),
+    });
+  });
+
+  it('reads a raw size through the slot multiplier', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    cluster.sizeMul[BYBIT] = 10; // ten coins per contract
+
+    const opened = openWithSizes(manager, cluster);
+
+    expect(opened.highestBidSizeAtOpen).toBe(20);
+    expect(opened.lowestAskSizeAtOpen).toBe(5); // binance stays at one coin per contract
   });
 });

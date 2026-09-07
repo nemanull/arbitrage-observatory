@@ -1,12 +1,20 @@
 import { Logger } from '@nestjs/common';
 import type { Queue } from 'bullmq';
-import type { Cluster, ClusterIndex, PairKey, VenueIndexMap } from './types';
+import type {
+  BookLevel,
+  Cluster,
+  ClusterIndex,
+  PairKey,
+  VenueIndexMap,
+} from './types';
 import { OpportunityManager } from './OpportunityManager';
 import type { OpportunityClosedJob } from './OpportunityWorker';
 
 type SingleMarketClusterQuote = {
   bid: number;
   ask: number;
+  bidSize: number; // raw contracts, see NormalizedQuote
+  askSize: number;
   recvTs: number;
 };
 
@@ -16,6 +24,10 @@ type QuoteValidationIssue =
   | 'ask_not_finite'
   | 'ask_not_positive'
   | 'crossed_quote'
+  | 'bid_size_not_finite'
+  | 'bid_size_negative' // zero is valid: an empty level is a fact about the book
+  | 'ask_size_not_finite'
+  | 'ask_size_negative'
   | 'recv_ts_not_finite'
   | 'recv_ts_not_positive';
 
@@ -94,7 +106,12 @@ export class Engine {
       return;
     }
 
-    // An identical repeat carries nothing new for a live slot. After markStale the slot is not live, so the same numbers are a fresh quote and run discovery.
+    // Sizes land before the repeat check, so a size-only change is stored but never runs discovery.
+    cluster.bidSize[venueIndex] = clusterQuote.bidSize;
+    cluster.askSize[venueIndex] = clusterQuote.askSize;
+
+    // A repeat of the same prices carries nothing new for a live slot, whatever the sizes did.
+    // After markStale the slot is not live, so the same numbers are a fresh quote and run discovery.
     if (
       cluster.recvTs[venueIndex] > 0 &&
       cluster.bid[venueIndex] === clusterQuote.bid &&
@@ -179,6 +196,68 @@ export class Engine {
     return { cluster, venueIndex };
   }
 
+  updateDepth(
+    venueId: string,
+    rawMarketId: string,
+    bids: readonly BookLevel[],
+    asks: readonly BookLevel[],
+    ts: number,
+  ): boolean {
+    if (this.stopping) {
+      return false;
+    }
+
+    const slot = this.resolveSlot(venueId, rawMarketId);
+    if (slot === null) {
+      this.logger.warn({
+        event: 'depth_update_rejected',
+        venueId,
+        rawMarketId,
+        issue: 'unknown_market',
+      });
+      return false;
+    }
+
+    const issue =
+      depthIssue(bids, 'bid') ??
+      depthIssue(asks, 'ask') ??
+      (!Number.isFinite(ts) || ts <= 0 ? 'ts_not_positive' : null);
+
+    if (issue !== null) {
+      this.logger.warn({
+        event: 'depth_update_rejected',
+        venueId,
+        rawMarketId,
+        pair: slot.cluster.pair,
+        issue,
+        bids: bids.length,
+        asks: asks.length,
+      });
+      return false;
+    }
+
+    const depth = slot.cluster.depth;
+    const base = slot.venueIndex * depth.maxLevels;
+    const bidLevelCount = Math.min(bids.length, depth.maxLevels);
+    const askLevelCount = Math.min(asks.length, depth.maxLevels);
+
+    for (let l = 0; l < bidLevelCount; l++) {
+      depth.bidPrice[base + l] = bids[l][0];
+      depth.bidSize[base + l] = bids[l][1];
+    }
+
+    for (let l = 0; l < askLevelCount; l++) {
+      depth.askPrice[base + l] = asks[l][0];
+      depth.askSize[base + l] = asks[l][1];
+    }
+
+    depth.bidLevelCount[slot.venueIndex] = bidLevelCount;
+    depth.askLevelCount[slot.venueIndex] = askLevelCount;
+    depth.writtenAt[slot.venueIndex] = ts;
+
+    return true;
+  }
+
   validateQuote(
     quote: SingleMarketClusterQuote,
     venueId: string,
@@ -210,6 +289,18 @@ export class Engine {
       quote.bid > quote.ask
     ) {
       (issues ??= []).push('crossed_quote');
+    }
+
+    if (!Number.isFinite(quote.bidSize)) {
+      (issues ??= []).push('bid_size_not_finite');
+    } else if (quote.bidSize < 0) {
+      (issues ??= []).push('bid_size_negative');
+    }
+
+    if (!Number.isFinite(quote.askSize)) {
+      (issues ??= []).push('ask_size_not_finite');
+    } else if (quote.askSize < 0) {
+      (issues ??= []).push('ask_size_negative');
     }
 
     if (!Number.isFinite(quote.recvTs)) {
@@ -272,6 +363,8 @@ export class Engine {
       venueIndex,
       bid: quote.bid,
       ask: quote.ask,
+      bidSize: quote.bidSize,
+      askSize: quote.askSize,
       recvTs: quote.recvTs,
       occurrenceCount: state.occurrenceCount,
       suppressedCount: state.suppressedCount,
@@ -280,4 +373,41 @@ export class Engine {
     state.lastWarnedAt = now;
     state.suppressedCount = 0;
   }
+}
+
+type DepthIssue =
+  | 'bid_price_invalid'
+  | 'bid_size_invalid'
+  | 'bids_out_of_order'
+  | 'ask_price_invalid'
+  | 'ask_size_invalid'
+  | 'asks_out_of_order'
+  | 'ts_not_positive';
+
+function depthIssue(
+  levels: readonly BookLevel[],
+  side: 'bid' | 'ask',
+): DepthIssue | null {
+  for (let l = 0; l < levels.length; l++) {
+    const [price, size] = levels[l];
+
+    if (!Number.isFinite(price) || price <= 0) {
+      return side === 'bid' ? 'bid_price_invalid' : 'ask_price_invalid';
+    }
+
+    if (!Number.isFinite(size) || size < 0) {
+      return side === 'bid' ? 'bid_size_invalid' : 'ask_size_invalid';
+    }
+
+    if (l > 0) {
+      const previous = levels[l - 1][0];
+      const ordered = side === 'bid' ? price <= previous : price >= previous;
+
+      if (!ordered) {
+        return side === 'bid' ? 'bids_out_of_order' : 'asks_out_of_order';
+      }
+    }
+  }
+
+  return null;
 }

@@ -20,6 +20,20 @@ export type Market = {
   quote: string; // 'USDT', as the venue spells it. The cluster key folds USD and USDC into USDT
   takerPpm: number; // taker fee in parts per million: 550 = 0.055%
   linear: boolean;
+  contractSize: number;
+};
+
+export type BookLevel = [price: number, size: number];
+
+export type ClusterDepth = {
+  readonly maxLevels: number; // default at 20
+  readonly bidPrice: Float64Array; // width × maxLevels, descending inside a slot
+  readonly bidSize: Float64Array; // raw contracts
+  readonly askPrice: Float64Array; // ascending inside a slot
+  readonly askSize: Float64Array;
+  readonly bidLevelCount: Uint8Array; // filled entries per slot, 0 = nothing held
+  readonly askLevelCount: Uint8Array;
+  readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses depth older than the episode it judges
 };
 
 // A Cluster is a set of markets that trade the same asset on different exchanges with the same base and a dollar settlement asset.
@@ -28,11 +42,15 @@ export type Market = {
 export type Cluster = {
   readonly pair: PairKey; // 'BTC|USDT'
   readonly markets: (Market | null)[];
-  readonly bidMul: Float64Array; // Bid multiplier: 1 - taker fee
-  readonly askMul: Float64Array; // Ask multiplier: 1 + taker fee
-  readonly bid: Float64Array;
+  readonly bidMul: Float64Array; // Bid multiplier: (1 - taker fee) × price scale, applied when a reading is taken, never at write
+  readonly askMul: Float64Array; // Ask multiplier: (1 + taker fee) × price scale
+  readonly sizeMul: Float64Array; // contractSize / price scale, so price × size keeps the raw notional on a scaled market
+  readonly bid: Float64Array; // raw, as the venue quotes it
   readonly ask: Float64Array;
+  readonly bidSize: Float64Array; // raw contracts resting at the bid. Written on every message, but a size-only change is not a tick
+  readonly askSize: Float64Array;
   readonly recvTs: Float64Array; // Unix ms. 0 = never spoke, venue does not list this pair, or its socket is down (Engine.markStale)
+  readonly depth: ClusterDepth;
 };
 
 export type ClusterIndex = {
@@ -58,6 +76,11 @@ export type Opportunity = {
   netPpmAtOpen: number;
   highestBidAtOpen: number;
   lowestAskAtOpen: number;
+  // The far sides and the touch sizes are kept at open, peak and last only. No series, so MAX_SERIES_LENGTH still bounds the row
+  highestBidSizeAtOpen: number;
+  lowestAskSizeAtOpen: number;
+  highestBidLegAskAtOpen: number;
+  lowestAskLegBidAtOpen: number;
 
   // O(1), every tick, never sampled away
   ticksSinceStart: number;
@@ -66,9 +89,17 @@ export type Opportunity = {
   peakAt: number;
   peakHighestBid: number;
   peakLowestAsk: number;
+  peakHighestBidSize: number;
+  peakLowestAskSize: number;
+  peakHighestBidLegAsk: number;
+  peakLowestAskLegBid: number;
   minNetPpm: number;
   lastSeenAt: number;
   lastNetPpm: number;
+  lastHighestBidSize: number;
+  lastLowestAskSize: number;
+  lastHighestBidLegAsk: number;
+  lastLowestAskLegBid: number;
 
   netPpmSeries: number[];
   highestBidSeries: number[];
@@ -79,7 +110,7 @@ export type Opportunity = {
   closeReason: CloseReason | null;
 };
 
-// One fee-adjusted reading of a single route.
+// One fee-adjusted reading of a single route, with the far side and the touch size of each leg.
 export type Observation = {
   cluster: Cluster;
   highestBidMarket: Market;
@@ -88,6 +119,10 @@ export type Observation = {
   lowestAskVenueIndex: number;
   highestBid: number;
   lowestAsk: number;
+  highestBidSize: number; // coins you could sell at highestBid, already × sizeMul
+  lowestAskSize: number; // coins you could buy at lowestAsk
+  highestBidLegAsk: number; // the other side of the venue we sell on, fee adjusted like highestBid. Its distance to highestBid is that book's width
+  lowestAskLegBid: number; // the other side of the venue we buy on
   netPpm: number;
   now: number;
 };

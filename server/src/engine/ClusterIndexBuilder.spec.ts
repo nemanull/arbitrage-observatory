@@ -1,8 +1,13 @@
-import { ClusterIndexBuilder } from './ClusterIndexBuilder';
+import {
+  ClusterIndexBuilder,
+  createClusterDepth,
+  DEPTH_LEVELS,
+} from './ClusterIndexBuilder';
+import type { ClusterIndexBuilderOptions } from './ClusterIndexBuilder';
 import { createVenueIndexMap } from './shared';
 import type { Market, Venue } from './types';
 
-// Covers only what clusterOverrides and quoteFamily add. Everything else about the builder is untested for now.
+// Covers what clusterOverrides, quoteFamily, the size multiplier and the depth block add. Everything else about the builder is untested for now.
 
 const TAKER_PPM: Record<string, number> = {
   binance: 500,
@@ -20,7 +25,7 @@ function market(
   venueId: string,
   rawMarketId: string,
   base: string,
-  contract: Partial<Pick<Market, 'quote' | 'linear'>> = {},
+  contract: Partial<Pick<Market, 'quote' | 'linear' | 'contractSize'>> = {},
 ): Market {
   return {
     venueId,
@@ -29,6 +34,7 @@ function market(
     quote: 'USDT',
     takerPpm: TAKER_PPM[venueId],
     linear: true,
+    contractSize: 1,
     ...contract,
   };
 }
@@ -37,8 +43,11 @@ function venue(id: string, markets: Market[]): Venue {
   return { id, name: id, markets };
 }
 
-function build(venues: Venue[]): ClusterIndexBuilder {
-  return new ClusterIndexBuilder(venues, createVenueIndexMap(venues));
+function build(
+  venues: Venue[],
+  options?: ClusterIndexBuilderOptions,
+): ClusterIndexBuilder {
+  return new ClusterIndexBuilder(venues, createVenueIndexMap(venues), options);
 }
 
 describe('ClusterIndexBuilder DENIED_PAIRS', () => {
@@ -120,6 +129,57 @@ describe('ClusterIndexBuilder PRICE_SCALE', () => {
   });
 });
 
+describe('ClusterIndexBuilder sizeMul', () => {
+  it('is the contract size on a market outside PRICE_SCALE', () => {
+    const builder = build([
+      venue('binance', [market('binance', 'BTCUSDT', 'BTC')]),
+      // okx sells a hundredth of a coin per BTC contract, and nothing in PRICE_SCALE names this market
+      venue('okx', [
+        market('okx', 'BTC-USDT-SWAP', 'BTC', { contractSize: 0.01 }),
+      ]),
+    ]);
+
+    const cluster = builder.clusters[0];
+
+    expect(cluster.sizeMul[BINANCE]).toBe(1);
+    expect(cluster.sizeMul[1]).toBe(0.01);
+  });
+
+  it('divides the contract size by the price scale on a scaled market only', () => {
+    const builder = build([
+      venue('binance', [market('binance', 'ANTHROPICUSDT', 'ANTHROPIC')]),
+      venue('bybit', [market('bybit', 'ANTHROPICUSDT', 'ANTHROPIC')]),
+      // A contract of 100 units at a tenth of the price is 10 coins at the scaled price, so price times size keeps the raw notional
+      venue('okx', [
+        market('okx', 'ANTHROPIC-USDT-SWAP', 'ANTHROPIC', {
+          contractSize: 100,
+        }),
+      ]),
+    ]);
+
+    const cluster = builder.clusters[0];
+
+    expect(cluster.sizeMul[OKX]).toBeCloseTo(100 / 10, 12);
+    expect(cluster.sizeMul[BINANCE]).toBe(1);
+    expect(cluster.sizeMul[BYBIT]).toBe(1);
+  });
+
+  it('allocates zeroed size arrays with one slot per venue', () => {
+    const builder = build([
+      venue('binance', [market('binance', 'BTCUSDT', 'BTC')]),
+      venue('bybit', [market('bybit', 'BTCUSDT', 'BTC')]),
+      venue('okx', [market('okx', 'BTC-USDT-SWAP', 'BTC')]),
+    ]);
+
+    const cluster = builder.clusters[0];
+
+    expect(cluster.bidSize).toBeInstanceOf(Float64Array);
+    expect(cluster.askSize).toBeInstanceOf(Float64Array);
+    expect(Array.from(cluster.bidSize)).toEqual([0, 0, 0]);
+    expect(Array.from(cluster.askSize)).toEqual([0, 0, 0]);
+  });
+});
+
 describe('ClusterIndexBuilder QUOTE_FAMILY', () => {
   it('clusters USD, USDC and USDT markets of one coin under the USDT key', () => {
     const b = build([
@@ -149,7 +209,10 @@ describe('ClusterIndexBuilder QUOTE_FAMILY', () => {
   it('keeps the USDT linear contract when a venue lists twins, whatever the listing order', () => {
     const b = build([
       venue('binance', [
-        market('binance', 'BTCUSD_PERP', 'BTC', { quote: 'USD', linear: false }),
+        market('binance', 'BTCUSD_PERP', 'BTC', {
+          quote: 'USD',
+          linear: false,
+        }),
         market('binance', 'BTCUSDC', 'BTC', { quote: 'USDC' }),
         market('binance', 'BTCUSDT', 'BTC'),
       ]),
@@ -166,7 +229,9 @@ describe('ClusterIndexBuilder QUOTE_FAMILY', () => {
       'BTCUSDT',
     ]);
     // The twins are not in the index, so no feed subscribes to them.
-    expect(b.clusterByRawMarketId.get('binance')?.has('BTCUSD_PERP')).toBe(false);
+    expect(b.clusterByRawMarketId.get('binance')?.has('BTCUSD_PERP')).toBe(
+      false,
+    );
     expect(b.clusterByRawMarketId.get('binance')?.has('BTCUSDC')).toBe(false);
     expect(b.clusterByRawMarketId.get('bybit')?.has('BTCPERP')).toBe(false);
     expect(b.clusterByRawMarketId.get('bybit')?.has('BTCUSD')).toBe(false);
@@ -174,7 +239,9 @@ describe('ClusterIndexBuilder QUOTE_FAMILY', () => {
 
   it('keeps a USDC or inverse contract where a venue has nothing better', () => {
     const b = build([
-      venue('binance', [market('binance', 'ETHUSDC', 'ETH', { quote: 'USDC' })]),
+      venue('binance', [
+        market('binance', 'ETHUSDC', 'ETH', { quote: 'USDC' }),
+      ]),
       venue('bybit', [
         market('bybit', 'ETHUSD', 'ETH', { quote: 'USD', linear: false }),
       ]),
@@ -201,5 +268,54 @@ describe('ClusterIndexBuilder QUOTE_FAMILY', () => {
       'ETHUSDT',
       'ETHUSDT',
     ]);
+  });
+});
+
+describe('ClusterIndexBuilder depth block', () => {
+  function threeVenues(): Venue[] {
+    return [
+      venue('binance', [market('binance', 'BTCUSDT', 'BTC')]),
+      venue('bybit', [market('bybit', 'BTCUSDT', 'BTC')]),
+      venue('okx', [market('okx', 'BTC-USDT-SWAP', 'BTC')]),
+    ];
+  }
+
+  it('reserves DEPTH_LEVELS zero-filled entries per venue slot by default', () => {
+    const { depth } = build(threeVenues()).clusters[0];
+
+    expect(depth.maxLevels).toBe(DEPTH_LEVELS);
+    for (const column of [
+      depth.bidPrice,
+      depth.bidSize,
+      depth.askPrice,
+      depth.askSize,
+    ]) {
+      expect(column).toBeInstanceOf(Float64Array);
+      expect(column).toHaveLength(3 * DEPTH_LEVELS);
+      expect(column.every((x) => x === 0)).toBe(true);
+    }
+    expect(depth.bidLevelCount).toBeInstanceOf(Uint8Array);
+    expect(depth.askLevelCount).toBeInstanceOf(Uint8Array);
+    expect(Array.from(depth.bidLevelCount)).toEqual([0, 0, 0]);
+    expect(Array.from(depth.askLevelCount)).toEqual([0, 0, 0]);
+    expect(Array.from(depth.writtenAt)).toEqual([0, 0, 0]);
+  });
+
+  it('takes the level count from the depthLevels option', () => {
+    const builder = build(threeVenues(), { depthLevels: 4 });
+    const { depth } = builder.clusters[0];
+
+    expect(builder.depthLevels).toBe(4);
+    expect(depth.maxLevels).toBe(4);
+    expect(depth.bidPrice).toHaveLength(12);
+    expect(depth.bidSize).toHaveLength(12);
+    expect(depth.askPrice).toHaveLength(12);
+    expect(depth.askSize).toHaveLength(12);
+  });
+
+  it.each([0, 256, 2.5])('refuses %p levels', (levels) => {
+    expect(() => createClusterDepth(3, levels)).toThrow(
+      'depth levels must be an integer from 1 to 255',
+    );
   });
 });
