@@ -1,5 +1,4 @@
 // One level of an OKX book, which is a positional array rather than an object.
-// The third element is a deprecated field that OKX keeps at '0' on every derivative.
 export type OkxBookLevel = [
   price: string,
   size: string,
@@ -7,11 +6,12 @@ export type OkxBookLevel = [
   orderCount: string,
 ];
 
-// The bbo-tbt payload, which is complete top-of-book state on every message.
-export type OkxBboData = {
+export type OkxBooksData = {
   asks: OkxBookLevel[];
   bids: OkxBookLevel[];
   ts: string; // venue send time in milliseconds, as a decimal string
+  checksum: number; // retired 2026-06-23, always 0
+  prevSeqId: number; // -1 on a snapshot, otherwise the seqId of the message this one follows
   seqId: number;
 };
 
@@ -19,7 +19,8 @@ export type OkxBboData = {
 // Data, subscribe acknowledgements, errors, and notices all share the socket, so nothing here is guaranteed to be present.
 export type OkxStreamFrame = {
   arg?: { channel: string; instId: string };
-  data?: OkxBboData[];
+  action?: string; // 'snapshot' or 'update' on a books frame
+  data?: OkxBooksData[];
   event?: string; // 'subscribe', 'error', or 'notice'
   code?: string;
   msg?: string;

@@ -28,7 +28,25 @@
 
 # Phase 4
 
-- [ ] Make the minimum episode age a configuration value rather than a constant, so flickers can be kept out of the table without building the engine around one number.
-- [x] Record both sides of both legs and the size at the touch at open, peak and close in the engine, so a row can carry each leg's width and the size behind the reading. The row itself is the next line's work.
-- [ ] Fetch a book snapshot a few levels deep for both legs at open and at close, off the tick path, and store the edge at fixed notionals and a stale flag when the snapshot shows no cross. The in-memory depth block and its write path shipped on 2026-09-06, the fetch, the walk and the guard remain.
-- [ ] Classify long lived spreads such as ANTHROPIC and OPENAI by each leg's index, mark and funding, and use the same index check at cluster build to replace the hand kept denial and scale lists.
+- [ ] Make the minimum episode age a config value, not a constant.
+- [x] Record both sides and the touch sizes of both legs at open, peak and close in the engine.
+- [x] Stream a twenty level book for every market from each venue's WebSocket into the engine.
+- [ ] Classify long lived spreads such as ANTHROPIC and OPENAI by index, mark and funding, and use the index check at cluster build instead of the hand kept lists.
+
+# Phase 5
+
+The legitimacy ruleset: prove a row was an opportunity and not dust, a stale quote, a thin book or a standing basis.
+
+- [ ] Carry touch sizes and far sides at open, peak and close to the row.
+- [ ] Count ticks per leg and record whether both legs moved, excluding the closing tick.
+- [ ] Walk the depth block at open into an edge at 1k, 5k and 20k dollars and a crossed flag on the row.
+- [ ] Write the ruleset design: hard gates, tags, and the threshold each takes from the audits.
+- [ ] Rank in SQL from the tags and re-audit one run before any tag becomes an engine gate.
+
+# Phase 6
+
+- [ ] Fill binance's illiquid markets at subscribe time from a REST snapshot.
+- [ ] Measure the resync rate through a busy hour before considering per market resubscription.
+- [ ] Decide on the secondary top of book detector, GitHub issue #2, once a gap or a mismatch is seen.
+- [ ] Fix the venue profiles: coinbase sequence per connection, okx checksum retired and VIP5, binance chains only pu.
+- [ ] Shard by pair when one event loop is not enough, about 20k messages a second.

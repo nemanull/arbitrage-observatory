@@ -12,6 +12,9 @@ The prose style rules from the root [AGENTS.md](../AGENTS.md) apply to every doc
   Reconciled designs and plans move here when their work is done.
 - [`backlog/`](./backlog/) holds one file per piece of identified work that has no stage yet.
   An entry moves out when it becomes a dated design in [`plans/`](./plans/).
+- [`bestiary/`](./bestiary/) holds one file per way an arbitrage reading can be wrong.
+  An entry names the failure, shows the row that produced it, shows the book behind that row, and says how to detect it.
+  Entries are named after the failure and are not date-prefixed, because they describe the domain rather than a piece of work.
 - [`README.md`](./README.md) is the index.
   Every doc in this tree gets one line there, except a backlog entry, which gets its line in [`BACKLOG.md`](./BACKLOG.md) instead.
 - A folder is created on first use, not preemptively.

@@ -8,11 +8,11 @@ export type EndpointPlan = {
 };
 
 export type SingleSocketConnection = {
-  id: string; // the plan's id, so the logs read the same across reconnects
+  id: string; // the plan's id
   plan: EndpointPlan;
   socket: WebSocket;
 
-  // The only symbols this socket routes, copied from plan.markets when it opens.
+  // plan.markets when it opens
   accepted: Set<string>;
 
   lastMessageAt: number;
@@ -20,15 +20,5 @@ export type SingleSocketConnection = {
 
   reopenOnClose: boolean;
 
-  //timers like ping/ 24h refresh and any repetative stuff that we need to account for
   timers: NodeJS.Timeout[];
-};
-
-export type NormalizedQuote = {
-  rawMarketId: string;
-  bid: number;
-  ask: number;
-  bidSize: number; // contracts resting at the bid, as the venue counts them
-  askSize: number;
-  recvTs: number;
 };

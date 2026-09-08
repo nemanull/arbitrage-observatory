@@ -24,7 +24,7 @@ This work does not:
 - add a catalog sync that fills Venue, Pair, and Market from ccxt,
 - change `OpportunityManager`, which still returns a closed `Opportunity` instead of enqueueing it,
 - add the per venue config that replaces the deleted `ExchangeConfig` and `ExchangeFee` tables,
-- touch [`server/src/ws/ws.spec.ts`](../../server/src/ws/ws.spec.ts), which is a stale pre-engine draft and still fails `tsgo -p tsconfig.json --noEmit` for reasons unrelated to this work.
+- touch `server/src/ws/ws.spec.ts`, which was a stale pre-engine draft that still failed `tsgo -p tsconfig.json --noEmit` for reasons unrelated to this work, and which has since been removed.
 
 ## Decisions
 

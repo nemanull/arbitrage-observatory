@@ -820,3 +820,220 @@ describe('Engine depth block', () => {
     expect(snapshotDepth(depth)).toEqual(before);
   });
 });
+
+// One book message writes the block and the level zero quote together.
+describe('Engine.updateBook', () => {
+  const BIDS: BookLevel[] = [
+    [101, 2],
+    [100.9, 4],
+    [100.8, 1],
+    [100.7, 8],
+  ];
+  const ASKS: BookLevel[] = [
+    [101.5, 3],
+    [101.6, 5],
+    [101.7, 2],
+    [101.8, 6],
+  ];
+  const BYBIT = 1;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  function makeEngine() {
+    const queue = createOpportunityQueueMock();
+    const index = makeIndex();
+    const engine = new Engine(index, index.venueIndexMap, queue);
+
+    return {
+      engine,
+      queue,
+      cluster: index.clusters[0],
+      depth: index.clusters[0].depth,
+    };
+  }
+
+  function slotRange(column: Float64Array, slot: number): number[] {
+    return [...column.subarray(slot * LEVELS, (slot + 1) * LEVELS)];
+  }
+
+  it('exposes the block size a feed must hand it', () => {
+    const { engine } = makeEngine();
+
+    expect(engine.depthLevels).toBe(LEVELS);
+  });
+
+  it('writes the block and level zero and runs discovery once', () => {
+    const { engine, cluster, depth } = makeEngine();
+    const validate = spyOnValidate(engine);
+
+    expect(engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000)).toBe(
+      true,
+    );
+
+    expect(slotRange(depth.bidPrice, BYBIT)).toEqual([
+      101, 100.9, 100.8, 100.7,
+    ]);
+    expect(slotRange(depth.askSize, BYBIT)).toEqual([3, 5, 2, 6]);
+    expect(depth.bidLevelCount[BYBIT]).toBe(4);
+    expect(depth.askLevelCount[BYBIT]).toBe(4);
+    expect(depth.writtenAt[BYBIT]).toBe(1_000);
+    expect(cluster.bid[BYBIT]).toBe(101);
+    expect(cluster.ask[BYBIT]).toBe(101.5);
+    expect(cluster.bidSize[BYBIT]).toBe(2);
+    expect(cluster.askSize[BYBIT]).toBe(3);
+    expect(cluster.recvTs[BYBIT]).toBe(1_000);
+    expect(validate).toHaveBeenCalledTimes(1);
+  });
+
+  it('rewrites the block on an unchanged top without running discovery', () => {
+    const { engine, cluster, depth } = makeEngine();
+    const validate = spyOnValidate(engine);
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
+
+    const deeper: BookLevel[] = [BIDS[0], [100.95, 9], BIDS[1], BIDS[2]];
+    engine.updateBook('bybit', RAW_MARKET_ID, deeper, ASKS, 2_000);
+
+    expect(validate).toHaveBeenCalledTimes(1);
+    expect(slotRange(depth.bidPrice, BYBIT)).toEqual([
+      101, 100.95, 100.9, 100.8,
+    ]);
+    expect(depth.writtenAt[BYBIT]).toBe(2_000);
+    expect(cluster.recvTs[BYBIT]).toBe(2_000);
+  });
+
+  it('opens a route from the tops of two books', () => {
+    const { engine } = makeEngine();
+
+    engine.updateBook(
+      'binance',
+      RAW_MARKET_ID,
+      [[99.9, 4]],
+      [
+        [100, 5],
+        [100.1, 1],
+      ],
+      1_000,
+    );
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
+
+    expect([...openRoutes(engine).keys()]).toEqual(['bybit-binance']);
+  });
+
+  it('keeps the one side of a one-sided book and drops the quote, closing its routes', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(5_000);
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { engine, cluster, depth, queue } = makeEngine();
+    const add = jest.spyOn(queue, 'add');
+    openRoute(engine);
+    expect(openRoutes(engine).size).toBe(1);
+
+    expect(engine.updateBook('bybit', RAW_MARKET_ID, BIDS, [], 3_000)).toBe(
+      true,
+    );
+
+    expect(depth.bidLevelCount[BYBIT]).toBe(4);
+    expect(depth.askLevelCount[BYBIT]).toBe(0);
+    expect(depth.writtenAt[BYBIT]).toBe(3_000);
+    expect(cluster.recvTs[BYBIT]).toBe(0);
+    expect(cluster.bid[BYBIT]).toBe(101); // the last quote stays readable, the zero recvTs is what says it is not live
+    expect(openRoutes(engine).size).toBe(0);
+    expect(add).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        rows: [expect.objectContaining({ closeReason: 'feed_down' })],
+      }),
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'book_one_sided',
+        venueId: 'bybit',
+        rawMarketId: RAW_MARKET_ID,
+        emptySide: 'asks',
+        closed: 1,
+      }),
+    );
+
+    // The side stays empty on the next message, and nothing is logged again.
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, [], 4_000);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes a book with both sides back as a fresh quote after a one-sided one', () => {
+    const { engine, cluster } = makeEngine();
+    const validate = spyOnValidate(engine);
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, [], 2_000);
+
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 3_000);
+
+    expect(cluster.recvTs[BYBIT]).toBe(3_000);
+    expect(validate).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects an out of order side whole and leaves both the block and the quote as they were', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { engine, cluster, depth } = makeEngine();
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
+
+    expect(
+      engine.updateBook(
+        'bybit',
+        RAW_MARKET_ID,
+        [...BIDS].reverse(),
+        ASKS,
+        2_000,
+      ),
+    ).toBe(false);
+
+    expect(slotRange(depth.bidPrice, BYBIT)).toEqual([
+      101, 100.9, 100.8, 100.7,
+    ]);
+    expect(depth.writtenAt[BYBIT]).toBe(1_000);
+    expect(cluster.recvTs[BYBIT]).toBe(1_000);
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'depth_update_rejected',
+        issue: 'bids_out_of_order',
+      }),
+    );
+  });
+
+  it('warns and writes nothing for an unknown market', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { engine } = makeEngine();
+
+    expect(engine.updateBook('bybit', 'NOPEUSDT', BIDS, ASKS, 1_000)).toBe(
+      false,
+    );
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'book_update_rejected',
+        issue: 'unknown_market',
+      }),
+    );
+  });
+
+  it('drops a book after shutdown', async () => {
+    const { engine, depth } = makeEngine();
+    await engine.shutdown(9_000);
+
+    expect(engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 10_000)).toBe(
+      false,
+    );
+    expect(depth.bidLevelCount[BYBIT]).toBe(0);
+  });
+
+  it('clears the depth slot with the quote on markStale', () => {
+    const { engine, cluster, depth } = makeEngine();
+    engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
+
+    engine.markStale('bybit', [RAW_MARKET_ID]);
+
+    expect(cluster.recvTs[BYBIT]).toBe(0);
+    expect(depth.bidLevelCount[BYBIT]).toBe(0);
+    expect(depth.askLevelCount[BYBIT]).toBe(0);
+    expect(depth.writtenAt[BYBIT]).toBe(0);
+  });
+});

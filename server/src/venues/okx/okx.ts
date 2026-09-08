@@ -1,17 +1,22 @@
-import type { Market } from '../../engine/types';
+import type { BookLevel, Market } from '../../engine/types';
 import type { EndpointPlan, SingleSocketConnection } from '../../ws/types';
 import { chunk } from '../../ws/shared';
 import { VenueFeed } from '../../ws/VenueFeed';
-import type { OkxBboData, OkxStreamFrame } from './types';
+import type { OkxBookLevel, OkxBooksData, OkxStreamFrame } from './types';
 
 const PUBLIC_URL = 'wss://ws.okx.com:8443/ws/v5/public';
-const CHANNEL = 'bbo-tbt';
 
-//450 is the cap
+// 400 levels at a 100 ms push, snapshot then updates. The tick by tick book channels need a VIP login.
+const CHANNEL = 'books';
+
+// Two connections carried 473 instruments of `books` with full coverage on 2026-09-07.
 const MARKETS_PER_CONNECTION = 250;
 
-// This is roughtly 10 KB, when the cap is 64 KB
+// This is roughly 10 KB, when the cap is 64 KB
 const ARGS_PER_FRAME = 200;
+
+// Okx allows three handshakes a second per IP.
+const CONNECT_STAGGER_MS = 400;
 
 const MAX_SILENCE_MS = 60_000;
 const PING_INTERVAL_MS = 20_000;
@@ -21,6 +26,8 @@ const PONG_FRAME = 'pong';
 
 export class OkxFeed extends VenueFeed {
   protected readonly maxSilenceMs = MAX_SILENCE_MS;
+  protected readonly connectStaggerMs = CONNECT_STAGGER_MS;
+  private readonly lastSeqId = new Map<string, number>(); // `seqId` of the last frame applied, per instrument
 
   protected planEndpoints(): EndpointPlan[] {
     return chunk(this.venue.markets, MARKETS_PER_CONNECTION).map(
@@ -61,38 +68,65 @@ export class OkxFeed extends VenueFeed {
     const frame = JSON.parse(text) as OkxStreamFrame;
     const arg = frame.arg;
     if (arg?.channel === CHANNEL && Array.isArray(frame.data)) {
-      this.submitBbo(arg.instId, frame.data, c);
+      this.applyBooks(arg.instId, frame.action, frame.data, c);
       return;
     }
 
     this.handleControlFrame(frame, c);
   }
 
-  private submitBbo(
+  private applyBooks(
     instId: string,
-    data: OkxBboData[],
+    action: string | undefined,
+    data: OkxBooksData[],
     c: SingleSocketConnection,
   ): void {
     if (!this.accepts(c, instId)) {
       return;
     }
 
-    for (const book of data) {
-      const bid = book.bids[0];
-      const ask = book.asks[0];
+    for (const entry of data) {
+      const bids = entry.bids.map(toLevel);
+      const asks = entry.asks.map(toLevel);
 
-      if (!bid || !ask) {
+      if (action === 'snapshot') {
+        this.lastSeqId.set(instId, entry.seqId);
+        this.resetBook(instId, bids, asks);
         continue;
       }
 
-      this.submit({
-        rawMarketId: instId,
-        bid: Number(bid[0]),
-        ask: Number(ask[0]),
-        bidSize: Number(bid[1]),
-        askSize: Number(ask[1]),
-        recvTs: Date.now(),
-      });
+      const book = this.bookOf(instId);
+      const last = this.lastSeqId.get(instId);
+
+      if (book === undefined || last === undefined) {
+        this.resync(c, instId, 'update_before_snapshot');
+        return;
+      }
+
+      if (entry.prevSeqId !== last) {
+        this.resync(c, instId, 'sequence_gap', {
+          expected: last,
+          got: entry.prevSeqId,
+          seqId: entry.seqId,
+        });
+        return;
+      }
+
+      if (entry.seqId === entry.prevSeqId) {
+        continue;
+      }
+
+      this.lastSeqId.set(instId, entry.seqId);
+
+      for (let i = 0; i < bids.length; i++) {
+        book.setBid(bids[i][0], bids[i][1]);
+      }
+
+      for (let i = 0; i < asks.length; i++) {
+        book.setAsk(asks[i][0], asks[i][1]);
+      }
+
+      this.publish(instId, book);
     }
   }
 
@@ -108,4 +142,8 @@ export class OkxFeed extends VenueFeed {
       this.logger.warn(`${c.id}: notice ${frame.code}: ${frame.msg}`);
     }
   }
+}
+
+function toLevel(level: OkxBookLevel): BookLevel {
+  return [Number(level[0]), Number(level[1])];
 }

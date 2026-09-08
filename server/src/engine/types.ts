@@ -2,10 +2,10 @@ export type PairKey = string; // "BTC|USDT". USD and USDC markets sit under the 
 type RouteKey = string; // "bybit-binance": the venue we sell on, then the venue we buy on
 
 export type CloseReason =
-  | 'spread_collapsed' // the route's own reading fell below CLOSURE_NET_PPM
+  | 'spread_collapsed' // fell below CLOSURE_NET_PPM
   | 'feed_down' // the socket carrying one leg closed
-  | 'age_cap' // MAX_OPPORTUNITY_AGE_MS, the chunk boundary of a basis that never collapses
-  | 'shutdown'; // the orchestrator stopped and flushed the route
+  | 'age_cap' // MAX_OPPORTUNITY_AGE_MS
+  | 'shutdown';
 
 export type Venue = {
   id: string; // 'binance',
@@ -17,7 +17,7 @@ export type Market = {
   venueId: string; // 'bybit'
   rawMarketId: string; // 'BTCUSDT': the symbol exactly as the venue's socket spells it
   base: string; // 'BTC'
-  quote: string; // 'USDT', as the venue spells it. The cluster key folds USD and USDC into USDT
+  quote: string; // 'USDT'
   takerPpm: number; // taker fee in parts per million: 550 = 0.055%
   linear: boolean;
   contractSize: number;
@@ -36,9 +36,6 @@ export type ClusterDepth = {
   readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses depth older than the episode it judges
 };
 
-// A Cluster is a set of markets that trade the same asset on different exchanges with the same base and a dollar settlement asset.
-// USD, USDC and USDT count as one asset here.
-// Every array is one slot per venue, so a cluster never has to grow. readonly forbids replacing an array, not writing into one.
 export type Cluster = {
   readonly pair: PairKey; // 'BTC|USDT'
   readonly markets: (Market | null)[];
@@ -67,7 +64,6 @@ export type Opportunity = {
   highestBidMarket: Market;
   lowestAskMarket: Market;
 
-  // positions of the venues in the cluster
   highestBidVenueIndex: number;
   lowestAskVenueIndex: number;
 
@@ -76,7 +72,7 @@ export type Opportunity = {
   netPpmAtOpen: number;
   highestBidAtOpen: number;
   lowestAskAtOpen: number;
-  // The far sides and the touch sizes are kept at open, peak and last only. No series, so MAX_SERIES_LENGTH still bounds the row
+
   highestBidSizeAtOpen: number;
   lowestAskSizeAtOpen: number;
   highestBidLegAskAtOpen: number;
@@ -104,13 +100,13 @@ export type Opportunity = {
   netPpmSeries: number[];
   highestBidSeries: number[];
   lowestAskSeries: number[];
-  sampleTs: number[]; // ms since openedAt, one per sample. The four series stop at MAX_SERIES_LENGTH, the counters above do not
+  sampleTs: number[]; // ms since openedAt, one per sample
 
   closedAt: number | null;
   closeReason: CloseReason | null;
 };
 
-// One fee-adjusted reading of a single route, with the far side and the touch size of each leg.
+
 export type Observation = {
   cluster: Cluster;
   highestBidMarket: Market;
@@ -119,8 +115,8 @@ export type Observation = {
   lowestAskVenueIndex: number;
   highestBid: number;
   lowestAsk: number;
-  highestBidSize: number; // coins you could sell at highestBid, already × sizeMul
-  lowestAskSize: number; // coins you could buy at lowestAsk
+  highestBidSize: number; // coins we could sell at highestBid, already × sizeMul
+  lowestAskSize: number; // coins we could buy at lowestAsk
   highestBidLegAsk: number; // the other side of the venue we sell on, fee adjusted like highestBid. Its distance to highestBid is that book's width
   lowestAskLegBid: number; // the other side of the venue we buy on
   netPpm: number;

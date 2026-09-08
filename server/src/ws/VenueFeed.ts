@@ -1,12 +1,9 @@
 import { Logger } from '@nestjs/common';
 import WebSocket, { type RawData } from 'ws';
 import type { Engine } from '../engine/Engine';
-import type { Market, Venue } from '../engine/types';
-import type {
-  EndpointPlan,
-  SingleSocketConnection,
-  NormalizedQuote,
-} from './types';
+import type { BookLevel, Market, Venue } from '../engine/types';
+import { OrderBook } from './OrderBook';
+import type { EndpointPlan, SingleSocketConnection } from './types';
 
 const RECONNECT_BASE_MS = 500;
 const MAX_RECONNECT_DELAY_MS = 30_000;
@@ -19,9 +16,12 @@ export abstract class VenueFeed {
   private readonly connections: SingleSocketConnection[] = [];
   private readonly reconnectTimers = new Set<NodeJS.Timeout>();
   private readonly warnedUnknown = new Set<string>();
+  private readonly books = new Map<string, OrderBook>();
   private running = false;
 
   protected abstract readonly maxSilenceMs: number;
+  protected readonly connectStaggerMs: number = 0; // pause between opens at start, for venues that cap handshakes or client messages per IP
+  protected readonly reconnectJitterMs: number = RECONNECT_JITTER_MS;
 
   constructor(
     protected readonly venue: Venue,
@@ -43,7 +43,7 @@ export abstract class VenueFeed {
 
     this.running = true;
     for (let i = 0; i < plans.length; i++) {
-      this.openConnection(plans[i]);
+      this.openLater(plans[i], i * this.connectStaggerMs);
     }
 
     this.logger.log(`started with ${plans.length} connection(s)`);
@@ -56,7 +56,7 @@ export abstract class VenueFeed {
     this.running = false;
 
     this.logger.log(
-      `stopping: ${this.connections.length} connection(s), ${this.reconnectTimers.size} pending reconnect(s)`,
+      `stopping: ${this.connections.length} connection(s), ${this.reconnectTimers.size} pending timer(s)`,
     );
 
     const timers = [...this.reconnectTimers];
@@ -73,7 +73,8 @@ export abstract class VenueFeed {
   }
 
   protected openConnection(plan: EndpointPlan, attempt = 0): void {
-    const socket = new WebSocket(plan.url);
+    // Deflate is refused on purpose. Inflation cost about half the CPU per message, and inbound bandwidth is not a constraint.
+    const socket = new WebSocket(plan.url, { perMessageDeflate: false });
     const c: SingleSocketConnection = {
       id: plan.id,
       plan,
@@ -93,6 +94,22 @@ export abstract class VenueFeed {
     socket.on('pong', () => (c.lastMessageAt = Date.now()));
   }
 
+  private openLater(plan: EndpointPlan, delayMs: number): void {
+    if (delayMs <= 0) {
+      this.openConnection(plan);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      this.reconnectTimers.delete(timer);
+      if (this.running) {
+        this.openConnection(plan);
+      }
+    }, delayMs);
+
+    this.reconnectTimers.add(timer);
+  }
+
   private onOpen(c: SingleSocketConnection): void {
     c.lastMessageAt = Date.now();
     try {
@@ -110,6 +127,10 @@ export abstract class VenueFeed {
   }
 
   private onMessage(raw: RawData, c: SingleSocketConnection): void {
+    if (c.socket.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
     c.lastMessageAt = Date.now();
     c.attempt = 0;
 
@@ -124,10 +145,13 @@ export abstract class VenueFeed {
 
   private onClose(c: SingleSocketConnection): void {
     this.clearTimers(c);
-    this.engine.markStale(
-      this.venue.id,
-      c.plan.markets.map((m) => m.rawMarketId),
-    );
+
+    const rawMarketIds = c.plan.markets.map((m) => m.rawMarketId);
+    for (let i = 0; i < rawMarketIds.length; i++) {
+      this.books.delete(rawMarketIds[i]);
+    }
+
+    this.engine.markStale(this.venue.id, rawMarketIds);
     this.removeConnection(c);
     if (this.running && c.reopenOnClose) {
       this.scheduleReconnect(c.plan, c.attempt + 1);
@@ -153,14 +177,70 @@ export abstract class VenueFeed {
 
     if (!this.warnedUnknown.has(rawMarketId)) {
       this.warnedUnknown.add(rawMarketId);
-      this.logger.warn(`${c.id}: dropped an unsubscribed symbol ${rawMarketId}`);
+      this.logger.warn(
+        `${c.id}: dropped an unsubscribed symbol ${rawMarketId}`,
+      );
     }
 
     return false;
   }
 
-  protected submit(q: NormalizedQuote): void {
-    this.engine.updateQuote(this.venue.id, q.rawMarketId, q);
+  protected bookOf(rawMarketId: string): OrderBook | undefined {
+    return this.books.get(rawMarketId);
+  }
+
+  protected resetBook(
+    rawMarketId: string,
+    bids: readonly BookLevel[],
+    asks: readonly BookLevel[],
+    now = Date.now(),
+  ): void {
+    let book = this.books.get(rawMarketId);
+
+    if (book === undefined) {
+      book = new OrderBook();
+      this.books.set(rawMarketId, book);
+    }
+
+    book.reset(bids, asks);
+    this.publish(rawMarketId, book, now);
+  }
+
+  protected publish(
+    rawMarketId: string,
+    book: OrderBook,
+    now = Date.now(),
+  ): void {
+    const levels = this.engine.depthLevels;
+
+    this.engine.updateBook(
+      this.venue.id,
+      rawMarketId,
+      book.topBids(levels),
+      book.topAsks(levels),
+      now,
+    );
+  }
+
+  protected resync(
+    c: SingleSocketConnection,
+    rawMarketId: string,
+    reason: string,
+    detail: Record<string, unknown> = {},
+  ): void {
+    if (c.socket.readyState !== WebSocket.OPEN) {
+      return; // already restarting
+    }
+
+    this.logger.warn({
+      event: 'book_resync',
+      connection: c.id,
+      rawMarketId,
+      reason,
+      ...detail,
+    });
+
+    c.socket.terminate(); // 'close' does the rest
   }
 
   private addConnection(c: SingleSocketConnection): void {
@@ -207,7 +287,7 @@ export abstract class VenueFeed {
       RECONNECT_BASE_MS * 2 ** (attempt - 1),
       MAX_RECONNECT_DELAY_MS,
     );
-    const delay = backoff + Math.random() * RECONNECT_JITTER_MS;
+    const delay = backoff + Math.random() * this.reconnectJitterMs;
 
     const timer = setTimeout(() => {
       this.reconnectTimers.delete(timer);
@@ -232,6 +312,7 @@ export abstract class VenueFeed {
       return Buffer.from(raw);
     }
   }
+
   protected abstract planEndpoints(): EndpointPlan[];
   protected abstract getSubscribeFrames(markets: Market[]): object[];
   protected abstract startKeepalive(c: SingleSocketConnection): void;

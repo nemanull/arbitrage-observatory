@@ -10,7 +10,7 @@ Every time-sensitive claim links directly to an official source and records its 
 
 **Tech Stack:** Markdown, official exchange documentation, official REST and WebSocket API references, JSON, and repository prose rules.
 
-**Design of record:** [`2026-07-26-exchange-profiles-design.md`](./2026-07-26-exchange-profiles-design.md).
+**Design of record:** [`2026-07-26-exchange-profiles-design.md`](../implemented/2026-07-26-exchange-profiles-design.md).
 
 ---
 

@@ -17,6 +17,17 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-05-arbitrage-opportunity-data-audit.md`](./research/2026-09-05-arbitrage-opportunity-data-audit.md) audits the first engine run and finds that 67% of its rows compare different assets or different contract units.
 - [`research/2026-09-06-second-run-data-audit.md`](./research/2026-09-06-second-run-data-audit.md) audits the run with the cluster overrides in place and finds the remaining rows are dominated by non-converging and fragmented spreads.
 - [`research/2026-09-06-third-run-data-audit.md`](./research/2026-09-06-third-run-data-audit.md) audits the first run with the quote family and finds that roundTripPpm measures a thin book's width, that duration alone cannot separate stale quotes from slow-venue orders, and that no row proves a capturable spread.
+- [`research/2026-09-06-venue-depth-endpoints-probe.md`](./research/2026-09-06-venue-depth-endpoints-probe.md) measures each venue's REST book endpoint and depth channel and records the shapes, the latency, kraken's ascending bids and coinbase's one second edge cache.
+- [`research/2026-09-07-depth-stream-scaling.md`](./research/2026-09-07-depth-stream-scaling.md) measures the whole pipeline for streamed depth on five venues, sizes the fifty venue universe at about 15,000 markets, and finds the single event loop is the one structural blocker, with pair sharding as the path.
+- [`research/2026-09-07-depth-sequence-gaps.md`](./research/2026-09-07-depth-sequence-gaps.md) measures zero sequence gaps in 12.48 million deltas on the four delta depth venues, confirms the maintained book against the venues' own top of book and REST, and records how far each ticker channel lags the book.
+
+## Bestiary
+
+- [`bestiary/thin-book.md`](./bestiary/thin-book.md) describes a market whose best price is real and holds eleven dollars, and the one maker whose cancel moves it 7%.
+- [`bestiary/flicker.md`](./bestiary/flicker.md) describes a cross that lived under one millisecond, which is 438 of the third run's 745 rows.
+- [`bestiary/stale-quote.md`](./bestiary/stale-quote.md) describes a price the engine held for 22 seconds after it stopped existing, because the coinbase channel only speaks when a trade happens.
+- [`bestiary/slow-venue-resting-order.md`](./bestiary/slow-venue-resting-order.md) describes the one honest class of the third run, a real kraken order that did not move for 28 seconds, and why it still is not free money.
+- [`bestiary/withdrawn-side.md`](./bestiary/withdrawn-side.md) describes a book that loses a whole side, and the feed that drops that message without telling the engine.
 
 ## Implemented
 

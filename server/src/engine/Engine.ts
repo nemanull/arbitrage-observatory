@@ -7,13 +7,14 @@ import type {
   PairKey,
   VenueIndexMap,
 } from './types';
+import { DEPTH_LEVELS } from './ClusterIndexBuilder';
 import { OpportunityManager } from './OpportunityManager';
 import type { OpportunityClosedJob } from './OpportunityWorker';
 
 type SingleMarketClusterQuote = {
   bid: number;
   ask: number;
-  bidSize: number; // raw contracts, see NormalizedQuote
+  bidSize: number; // raw contracts, as the venue counts them
   askSize: number;
   recvTs: number;
 };
@@ -35,6 +36,8 @@ type QuoteValidationIssue =
 // One warning per (venue, market, issue set) per window; the next warning carries the counts.
 const INVALID_QUOTE_WARN_WINDOW_MS = 10_000;
 
+type Slot = { cluster: Cluster; venueIndex: number };
+
 type InvalidQuoteWarnState = {
   occurrenceCount: number; // rejections seen for this key since the engine started
   suppressedCount: number; // rejections swallowed since the last warning
@@ -52,6 +55,7 @@ export class Engine {
     InvalidQuoteWarnState
   >();
   private stopping = false; // once shutdown has flushed, a late frame must not open a route nobody will flush
+  readonly depthLevels: number; // levels per side a feed hands updateBook, what the block holds
 
   constructor(
     clusterIndex: ClusterIndex,
@@ -61,6 +65,8 @@ export class Engine {
     this.ClusterIndex = clusterIndex;
     this.venueIndexMap = venueIndexMap;
     this.opportunityManager = new OpportunityManager(queue);
+    this.depthLevels =
+      clusterIndex.clusters[0]?.depth.maxLevels ?? DEPTH_LEVELS;
   }
 
   updateQuote(
@@ -93,6 +99,70 @@ export class Engine {
       );
       return;
     }
+
+    this.applyQuote(
+      { cluster, venueIndex },
+      venueId,
+      rawMarketId,
+      clusterQuote,
+    );
+  }
+
+  updateBook(
+    venueId: string,
+    rawMarketId: string,
+    bids: readonly BookLevel[],
+    asks: readonly BookLevel[],
+    recvTs: number,
+  ): boolean {
+    if (this.stopping) {
+      return false;
+    }
+
+    const slot = this.resolveSlot(venueId, rawMarketId);
+    if (slot === null) {
+      this.logger.warn({
+        event: 'book_update_rejected',
+        venueId,
+        rawMarketId,
+        issue: 'unknown_market',
+      });
+      return false;
+    }
+
+    if (!this.writeDepth(slot, venueId, rawMarketId, bids, asks, recvTs)) {
+      return false;
+    }
+
+    if (bids.length === 0 || asks.length === 0) {
+      this.dropQuote(
+        slot,
+        venueId,
+        rawMarketId,
+        recvTs,
+        bids.length === 0 ? 'bids' : 'asks',
+      );
+      return true;
+    }
+
+    this.applyQuote(slot, venueId, rawMarketId, {
+      bid: bids[0][0],
+      ask: asks[0][0],
+      bidSize: bids[0][1],
+      askSize: asks[0][1],
+      recvTs,
+    });
+
+    return true;
+  }
+
+  private applyQuote(
+    slot: Slot,
+    venueId: string,
+    rawMarketId: string,
+    clusterQuote: SingleMarketClusterQuote,
+  ): void {
+    const { cluster, venueIndex } = slot;
 
     if (
       !this.validateQuote(
@@ -128,6 +198,35 @@ export class Engine {
     this.opportunityManager.validate(cluster, venueIndex, clusterQuote.recvTs);
   }
 
+  private dropQuote(
+    slot: Slot,
+    venueId: string,
+    rawMarketId: string,
+    now: number,
+    emptySide: 'bids' | 'asks',
+  ): void {
+    const { cluster, venueIndex } = slot;
+    const wasLive = cluster.recvTs[venueIndex] > 0;
+
+    cluster.recvTs[venueIndex] = 0;
+    const closed = this.opportunityManager.closeOpportunitiesOnVenue(
+      cluster.pair,
+      venueIndex,
+      now,
+    ).length;
+
+    if (wasLive) {
+      this.logger.warn({
+        event: 'book_one_sided',
+        venueId,
+        rawMarketId,
+        pair: cluster.pair,
+        emptySide,
+        closed,
+      });
+    }
+  }
+
   // The age cap needs a timer. A route whose legs stop changing has no tick left to reach it.
   sweep(now: number): number {
     return this.opportunityManager.sweep(now).length;
@@ -138,6 +237,7 @@ export class Engine {
   }
 
   // Called when a socket dies. Its markets stop counting as live until their next frame, and every open route on them closes here, because no later tick can be trusted to do it.
+  // The depth goes with the quote, since the same socket carried both.
   markStale(venueId: string, rawMarketIds: readonly string[]): void {
     const venueIndex = this.venueIndexMap.get(venueId);
     const clusters = this.ClusterIndex.clusterByRawMarketId.get(venueId);
@@ -154,6 +254,9 @@ export class Engine {
       if (cluster === undefined) continue;
 
       cluster.recvTs[venueIndex] = 0;
+      cluster.depth.bidLevelCount[venueIndex] = 0;
+      cluster.depth.askLevelCount[venueIndex] = 0;
+      cluster.depth.writtenAt[venueIndex] = 0;
       closed += this.opportunityManager.closeOpportunitiesOnVenue(
         cluster.pair,
         venueIndex,
@@ -177,10 +280,7 @@ export class Engine {
     return this.opportunityManager.shutdown(now);
   }
 
-  private resolveSlot(
-    venueId: string,
-    rawMarketId: string,
-  ): { cluster: Cluster; venueIndex: number } | null {
+  private resolveSlot(venueId: string, rawMarketId: string): Slot | null {
     const cluster = this.ClusterIndex.clusterByRawMarketId
       .get(venueId)
       ?.get(rawMarketId);
@@ -218,6 +318,17 @@ export class Engine {
       return false;
     }
 
+    return this.writeDepth(slot, venueId, rawMarketId, bids, asks, ts);
+  }
+
+  private writeDepth(
+    slot: Slot,
+    venueId: string,
+    rawMarketId: string,
+    bids: readonly BookLevel[],
+    asks: readonly BookLevel[],
+    ts: number,
+  ): boolean {
     const issue =
       depthIssue(bids, 'bid') ??
       depthIssue(asks, 'ask') ??

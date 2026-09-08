@@ -9,19 +9,18 @@ const TAKER_PPM = 400;
 
 // recvTs must come from the local clock, because openedAt, sampleTs and durationMs are measured on it across every venue.
 const LOCAL_NOW = 1_700_000_000_000;
+const LEVELS = 20;
 const PUBLIC_URL = 'wss://advanced-trade-ws.coinbase.com';
 
-// Every frame below was captured verbatim from the live venue on 2026-09-05.
+// Captured verbatim from the live venue on 2026-09-07, with the update count cut down.
 const SNAPSHOT_FRAME =
-  '{"channel":"ticker","timestamp":"2026-09-05T22:10:29.562008293Z","sequence_num":0,"events":[{"type":"snapshot","tickers":[{"type":"ticker","product_id":"BTC-PERP-INTX","price":"79879.1","volume_24_h":"14152.6899","low_24_h":"79445","high_24_h":"80206","low_52_w":"57705.8","high_52_w":"126340.3","price_percent_chg_24_h":"0.25541069034937","best_bid":"79879","best_ask":"79879.1","best_bid_quantity":"2.9352","best_ask_quantity":"1.7389"}]}]}';
-const UPDATE_FRAME =
-  '{"channel":"ticker","timestamp":"2026-09-05T21:52:10.940239371Z","sequence_num":91,"events":[{"type":"update","tickers":[{"type":"ticker","product_id":"BTC-PERP-INTX","price":"79914.6","volume_24_h":"14174.4213","low_24_h":"79445","high_24_h":"80206","low_52_w":"57705.8","high_52_w":"126340.3","price_percent_chg_24_h":"0.27303411671707","best_bid":"79914.5","best_ask":"79914.6","best_bid_quantity":"0.7944","best_ask_quantity":"0.7554"}]}]}';
-const TICKER_ACK =
-  '{"channel":"subscriptions","timestamp":"2026-09-05T22:10:29.562097895Z","sequence_num":2,"events":[{"subscriptions":{"ticker":["BTC-PERP-INTX","ETH-PERP-INTX"]}}]}';
+  '{"channel":"l2_data","client_id":"","timestamp":"2026-09-07T01:57:58.894355Z","sequence_num":0,"events":[{"type":"snapshot","product_id":"BTC-PERP-INTX","updates":[{"side":"offer","event_time":"2026-09-07T01:57:58.894355Z","price_level":"79944.1","new_quantity":"1.2"},{"side":"bid","event_time":"2026-09-07T01:57:58.894355Z","price_level":"79943.9","new_quantity":"3.0105"},{"side":"bid","event_time":"2026-09-07T01:57:58.894355Z","price_level":"79943.8","new_quantity":"0.5"},{"side":"offer","event_time":"2026-09-07T01:57:58.894355Z","price_level":"79944","new_quantity":"0.048"}]}]}';
+const LEVEL2_ACK =
+  '{"channel":"subscriptions","timestamp":"2026-09-07T23:37:22.278662782Z","sequence_num":1,"events":[{"subscriptions":{"level2":["BTC-PERP-INTX","ETH-PERP-INTX"]}}]}';
 const HEARTBEATS_ACK =
-  '{"channel":"subscriptions","timestamp":"2026-09-05T22:10:29.563180868Z","sequence_num":3,"events":[{"subscriptions":{"heartbeats":["heartbeats"],"ticker":["BTC-PERP-INTX","ETH-PERP-INTX"]}}]}';
+  '{"channel":"subscriptions","timestamp":"2026-09-07T23:37:22.278739877Z","sequence_num":2,"events":[{"subscriptions":{"heartbeats":["heartbeats"],"level2":["BTC-PERP-INTX","ETH-PERP-INTX"]}}]}';
 const HEARTBEAT_FRAME =
-  '{"channel":"heartbeats","timestamp":"2026-09-05T22:10:30.260465255Z","sequence_num":4,"events":[{"current_time":"2026-09-05 22:10:30.25788961 +0000 UTC m=+139651.272674714","heartbeat_counter":139651}]}';
+  '{"channel":"heartbeats","timestamp":"2026-09-07T23:37:22.675755362Z","sequence_num":3,"events":[{"current_time":"2026-09-07 23:37:22.674409 +0000 UTC m=+139651.272674714","heartbeat_counter":139651}]}';
 // The venue reports an unknown channel name as an authentication failure, which is not what went wrong.
 const ERROR_FRAME = '{"type":"error","message":"authentication failure"}';
 
@@ -33,7 +32,13 @@ type FeedProbe = {
 };
 
 function socketStub() {
-  return { readyState: 1, OPEN: 1, ping: jest.fn(), send: jest.fn() };
+  return {
+    readyState: 1,
+    OPEN: 1,
+    ping: jest.fn(),
+    send: jest.fn(),
+    terminate: jest.fn(),
+  };
 }
 
 function market(rawMarketId: string): Market {
@@ -53,16 +58,20 @@ function markets(count: number): Market[] {
 }
 
 function makeFeed(venueMarkets: Market[]) {
-  const updateQuote = jest.fn();
+  const updateBook = jest.fn();
   const venue: Venue = {
     id: VENUE_ID,
     name: 'Coinbase Advanced',
     markets: venueMarkets,
   };
-  const engine = { updateQuote, markStale: jest.fn() } as unknown as Engine;
+  const engine = {
+    updateBook,
+    markStale: jest.fn(),
+    depthLevels: LEVELS,
+  } as unknown as Engine;
   const feed = new CoinbaseFeed(venue, engine) as unknown as FeedProbe;
 
-  return { feed, updateQuote };
+  return { feed, updateBook };
 }
 
 function connection(
@@ -81,13 +90,20 @@ function connection(
   } as unknown as SingleSocketConnection;
 }
 
-function tickerFrame(tickers: Record<string, unknown>[]): Buffer {
+function l2Frame(
+  sequence: number,
+  events: {
+    type: 'snapshot' | 'update';
+    product_id: string;
+    updates: {
+      side: 'bid' | 'offer';
+      price_level: string;
+      new_quantity: string;
+    }[];
+  }[],
+): Buffer {
   return Buffer.from(
-    JSON.stringify({
-      channel: 'ticker',
-      sequence_num: 1,
-      events: [{ type: 'update', tickers }],
-    }),
+    JSON.stringify({ channel: 'l2_data', sequence_num: sequence, events }),
   );
 }
 
@@ -97,14 +113,17 @@ afterEach(() => {
 });
 
 describe('CoinbaseFeed.planEndpoints', () => {
-  it('puts every market on one connection', () => {
-    const { feed } = makeFeed(markets(53));
+  it('puts about thirty products on each connection', () => {
+    const { feed } = makeFeed(markets(61));
     const plans = feed.planEndpoints();
 
-    expect(plans).toHaveLength(1);
-    expect(plans[0].id).toBe('coinbase#swap#0');
+    expect(plans.map((p) => p.id)).toEqual([
+      'coinbase#swap#0',
+      'coinbase#swap#1',
+      'coinbase#swap#2',
+    ]);
+    expect(plans.map((p) => p.markets.length)).toEqual([30, 30, 1]);
     expect(plans[0].url).toBe(PUBLIC_URL);
-    expect(plans[0].markets).toHaveLength(53);
   });
 
   it('returns nothing when the venue lists no markets', () => {
@@ -115,224 +134,285 @@ describe('CoinbaseFeed.planEndpoints', () => {
 });
 
 describe('CoinbaseFeed.getSubscribeFrames', () => {
-  // The order is load bearing. Every acknowledgement lists the whole subscription set, and the ticker key has to be
-  // present on the first one, or the acknowledgement check reads it as every product having been rejected.
-  it('subscribes ticker before heartbeats', () => {
+  it('subscribes level2 before heartbeats', () => {
     const { feed } = makeFeed([]);
-    const frames = feed.getSubscribeFrames(markets(2)) as {
-      type: string;
-      channel: string;
-      product_ids?: string[];
-    }[];
+    const frames = feed.getSubscribeFrames(markets(2));
 
-    expect(frames).toHaveLength(2);
-    expect(frames[0]).toEqual({
-      type: 'subscribe',
-      channel: 'ticker',
-      product_ids: ['SYM0-PERP-INTX', 'SYM1-PERP-INTX'],
-    });
-    expect(frames[1]).toEqual({ type: 'subscribe', channel: 'heartbeats' });
+    expect(frames).toEqual([
+      {
+        type: 'subscribe',
+        channel: 'level2',
+        product_ids: ['SYM0-PERP-INTX', 'SYM1-PERP-INTX'],
+      },
+      { type: 'subscribe', channel: 'heartbeats' },
+    ]);
   });
 });
 
 describe('CoinbaseFeed.handleMessage', () => {
-  // A snapshot is the only frame the equity tracking perpetuals send outside market hours, so it cannot be filtered out.
-  it('submits a quote from both the snapshot and the update', () => {
+  const BTC = market('BTC-PERP-INTX');
+  const ETH = market('ETH-PERP-INTX');
+
+  it('hands the engine a snapshot as the whole book, sorted, with offers as asks', () => {
     jest.spyOn(Date, 'now').mockReturnValue(LOCAL_NOW);
-    const { feed, updateQuote } = makeFeed([market('BTC-PERP-INTX')]);
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
     const c = connection(feed.planEndpoints()[0]);
 
     feed.handleMessage(Buffer.from(SNAPSHOT_FRAME), c);
-    feed.handleMessage(Buffer.from(UPDATE_FRAME), c);
 
-    expect(updateQuote).toHaveBeenNthCalledWith(1, VENUE_ID, 'BTC-PERP-INTX', {
-      rawMarketId: 'BTC-PERP-INTX',
-      bid: 79879,
-      ask: 79879.1,
-      bidSize: 2.9352,
-      askSize: 1.7389,
-      recvTs: LOCAL_NOW,
-    });
-    expect(updateQuote).toHaveBeenNthCalledWith(2, VENUE_ID, 'BTC-PERP-INTX', {
-      rawMarketId: 'BTC-PERP-INTX',
-      bid: 79914.5,
-      ask: 79914.6,
-      bidSize: 0.7944,
-      askSize: 0.7554,
-      recvTs: LOCAL_NOW,
-    });
+    expect(updateBook).toHaveBeenCalledWith(
+      VENUE_ID,
+      'BTC-PERP-INTX',
+      [
+        [79943.9, 3.0105],
+        [79943.8, 0.5],
+      ],
+      [
+        [79944, 0.048],
+        [79944.1, 1.2],
+      ],
+      LOCAL_NOW,
+    );
   });
 
-  // The envelope names no product, so a frame carrying several tickers has to be routed element by element.
-  it('routes every ticker in one frame by its own product id', () => {
-    jest.spyOn(Date, 'now').mockReturnValue(LOCAL_NOW);
-    const { feed, updateQuote } = makeFeed([
-      market('BTC-PERP-INTX'),
-      market('ETH-PERP-INTX'),
-    ]);
+  it('applies an update event and hands over the new top', () => {
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
     const c = connection(feed.planEndpoints()[0]);
+    feed.handleMessage(Buffer.from(SNAPSHOT_FRAME), c);
 
     feed.handleMessage(
-      tickerFrame([
+      l2Frame(1, [
         {
+          type: 'update',
           product_id: 'BTC-PERP-INTX',
-          best_bid: '1',
-          best_ask: '2',
-          best_bid_quantity: '5',
-          best_ask_quantity: '6',
-        },
-        {
-          product_id: 'ETH-PERP-INTX',
-          best_bid: '3',
-          best_ask: '4',
-          best_bid_quantity: '7',
-          best_ask_quantity: '8',
+          updates: [
+            { side: 'bid', price_level: '79943.9', new_quantity: '0' },
+            { side: 'offer', price_level: '79944', new_quantity: '2' },
+          ],
         },
       ]),
       c,
     );
 
-    expect(updateQuote).toHaveBeenCalledTimes(2);
-    expect(updateQuote).toHaveBeenNthCalledWith(1, VENUE_ID, 'BTC-PERP-INTX', {
-      rawMarketId: 'BTC-PERP-INTX',
-      bid: 1,
-      ask: 2,
-      bidSize: 5,
-      askSize: 6,
-      recvTs: LOCAL_NOW,
-    });
-    expect(updateQuote).toHaveBeenNthCalledWith(2, VENUE_ID, 'ETH-PERP-INTX', {
-      rawMarketId: 'ETH-PERP-INTX',
-      bid: 3,
-      ask: 4,
-      bidSize: 7,
-      askSize: 8,
-      recvTs: LOCAL_NOW,
-    });
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTC-PERP-INTX',
+      [[79943.8, 0.5]],
+      [
+        [79944, 2],
+        [79944.1, 1.2],
+      ],
+      expect.any(Number),
+    );
+  });
+
+  it('counts the sequence across every channel on the connection', () => {
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
+    const socket = socketStub();
+    const c = connection(feed.planEndpoints()[0], socket);
+
+    feed.handleMessage(Buffer.from(SNAPSHOT_FRAME), c);
+    feed.handleMessage(Buffer.from(LEVEL2_ACK), c);
+    feed.handleMessage(Buffer.from(HEARTBEATS_ACK), c);
+    feed.handleMessage(Buffer.from(HEARTBEAT_FRAME), c);
+    feed.handleMessage(
+      l2Frame(4, [
+        {
+          type: 'update',
+          product_id: 'BTC-PERP-INTX',
+          updates: [{ side: 'bid', price_level: '79943.7', new_quantity: '1' }],
+        },
+      ]),
+      c,
+    );
+
+    expect(socket.terminate).not.toHaveBeenCalled();
+    expect(updateBook).toHaveBeenCalledTimes(2);
+  });
+
+  it('restarts the connection on a sequence gap and drops the frame', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
+    const socket = socketStub();
+    const c = connection(feed.planEndpoints()[0], socket);
+    feed.handleMessage(Buffer.from(SNAPSHOT_FRAME), c);
+
+    feed.handleMessage(
+      l2Frame(2, [
+        {
+          type: 'update',
+          product_id: 'BTC-PERP-INTX',
+          updates: [{ side: 'bid', price_level: '79943.7', new_quantity: '1' }],
+        },
+      ]),
+      c,
+    );
+
+    expect(updateBook).toHaveBeenCalledTimes(1);
+    expect(socket.terminate).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'book_resync',
+        reason: 'sequence_gap',
+        expected: 1,
+        got: 2,
+      }),
+    );
+  });
+
+  it('restarts the connection on an update with no snapshot behind it', () => {
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
+    const socket = socketStub();
+    const c = connection(feed.planEndpoints()[0], socket);
+
+    feed.handleMessage(
+      l2Frame(0, [
+        {
+          type: 'update',
+          product_id: 'BTC-PERP-INTX',
+          updates: [{ side: 'bid', price_level: '79943.7', new_quantity: '1' }],
+        },
+      ]),
+      c,
+    );
+
+    expect(updateBook).not.toHaveBeenCalled();
+    expect(socket.terminate).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes every event in one frame by its own product id', () => {
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
+    const c = connection(feed.planEndpoints()[0]);
+
+    feed.handleMessage(
+      l2Frame(0, [
+        {
+          type: 'snapshot',
+          product_id: 'BTC-PERP-INTX',
+          updates: [{ side: 'bid', price_level: '79943.9', new_quantity: '1' }],
+        },
+        {
+          type: 'snapshot',
+          product_id: 'ETH-PERP-INTX',
+          updates: [{ side: 'offer', price_level: '3001', new_quantity: '2' }],
+        },
+      ]),
+      c,
+    );
+
+    expect(updateBook).toHaveBeenCalledTimes(2);
+    expect(updateBook).toHaveBeenCalledWith(
+      VENUE_ID,
+      'BTC-PERP-INTX',
+      [[79943.9, 1]],
+      [],
+      expect.any(Number),
+    );
+    expect(updateBook).toHaveBeenCalledWith(
+      VENUE_ID,
+      'ETH-PERP-INTX',
+      [],
+      [[3001, 2]],
+      expect.any(Number),
+    );
   });
 
   it('treats a heartbeat as liveness only', () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-    const { feed, updateQuote } = makeFeed([market('BTC-PERP-INTX')]);
+    const { feed, updateBook } = makeFeed([BTC, ETH]);
     const c = connection(feed.planEndpoints()[0]);
 
     feed.handleMessage(Buffer.from(HEARTBEAT_FRAME), c);
 
-    expect(updateQuote).not.toHaveBeenCalled();
-    expect(warn).not.toHaveBeenCalled();
-    expect(error).not.toHaveBeenCalled();
+    expect(updateBook).not.toHaveBeenCalled();
   });
 
   it('stays silent when the acknowledgement lists every subscribed product', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const { feed } = makeFeed([
-      market('BTC-PERP-INTX'),
-      market('ETH-PERP-INTX'),
-    ]);
+    const { feed } = makeFeed([BTC, ETH]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(Buffer.from(TICKER_ACK), c);
+    feed.handleMessage(Buffer.from(LEVEL2_ACK), c);
     feed.handleMessage(Buffer.from(HEARTBEATS_ACK), c);
 
     expect(warn).not.toHaveBeenCalled();
   });
 
-  // The venue never rejects a bad product id, it omits it, so without this check a drifted catalog looks permanently quiet.
   it('warns about a subscribed product the acknowledgement omits', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const { feed } = makeFeed([
-      market('BTC-PERP-INTX'),
-      market('ETH-PERP-INTX'),
-      market('SOL-PERP-INTX'),
-    ]);
+    const { feed } = makeFeed([BTC, ETH, market('SOL-PERP-INTX')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(Buffer.from(TICKER_ACK), c);
+    feed.handleMessage(Buffer.from(LEVEL2_ACK), c);
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('SOL-PERP-INTX');
     expect(warn.mock.calls[0][0]).toContain('1 of 3');
+    expect(warn.mock.calls[0][0]).toContain('SOL-PERP-INTX');
   });
 
-  it('warns when the acknowledgement carries no ticker list at all', () => {
+  it('warns when the acknowledgement carries no level2 list at all', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const { feed } = makeFeed([market('BTC-PERP-INTX')]);
+    const { feed } = makeFeed([BTC]);
     const c = connection(feed.planEndpoints()[0]);
 
     feed.handleMessage(
       Buffer.from(
-        '{"channel":"subscriptions","sequence_num":0,"events":[{"subscriptions":{}}]}',
+        JSON.stringify({
+          channel: 'subscriptions',
+          sequence_num: 0,
+          events: [{ subscriptions: { heartbeats: ['heartbeats'] } }],
+        }),
       ),
       c,
     );
 
     expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('1 of 1');
   });
 
   it('drops a product the connection did not subscribe to, and warns once', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const { feed, updateQuote } = makeFeed([market('BTC-PERP-INTX')]);
+    const { feed, updateBook } = makeFeed([BTC]);
     const c = connection(feed.planEndpoints()[0]);
-    const raw = tickerFrame([
-      { product_id: 'ETH-PERP-INTX', best_bid: '1', best_ask: '2' },
-    ]);
+    const stray = {
+      type: 'snapshot' as const,
+      product_id: 'ETH-PERP-INTX',
+      updates: [
+        { side: 'bid' as const, price_level: '3000', new_quantity: '1' },
+      ],
+    };
 
-    feed.handleMessage(raw, c);
-    feed.handleMessage(raw, c);
+    feed.handleMessage(l2Frame(0, [stray]), c);
+    feed.handleMessage(l2Frame(1, [stray]), c);
 
-    expect(updateQuote).not.toHaveBeenCalled();
+    expect(updateBook).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);
-  });
-
-  it('ignores a ticker missing either side', () => {
-    const { feed, updateQuote } = makeFeed([market('BTC-PERP-INTX')]);
-    const c = connection(feed.planEndpoints()[0]);
-
-    feed.handleMessage(
-      tickerFrame([{ product_id: 'BTC-PERP-INTX', best_ask: '2' }]),
-      c,
-    );
-    feed.handleMessage(
-      tickerFrame([{ product_id: 'BTC-PERP-INTX', best_bid: '1' }]),
-      c,
-    );
-    feed.handleMessage(
-      tickerFrame([
-        { product_id: 'BTC-PERP-INTX', best_bid: '', best_ask: '2' },
-      ]),
-      c,
-    );
-
-    expect(updateQuote).not.toHaveBeenCalled();
   });
 
   it('logs the raw text of an error frame', () => {
     const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-    const { feed, updateQuote } = makeFeed([market('BTC-PERP-INTX')]);
+    const { feed } = makeFeed([BTC]);
     const c = connection(feed.planEndpoints()[0]);
 
     feed.handleMessage(Buffer.from(ERROR_FRAME), c);
 
-    expect(updateQuote).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledTimes(1);
     expect(error.mock.calls[0][0]).toContain('authentication failure');
   });
 });
 
 describe('CoinbaseFeed.startKeepalive', () => {
-  // The venue sends no protocol pings and expects none, so the heartbeats subscription is the whole keepalive.
   it('installs no timer and writes nothing to the socket', () => {
     jest.useFakeTimers();
-    const socket = socketStub();
     const { feed } = makeFeed([market('BTC-PERP-INTX')]);
+    const socket = socketStub();
     const c = connection(feed.planEndpoints()[0], socket);
 
     feed.startKeepalive(c);
-    jest.advanceTimersByTime(120_000);
+    jest.advanceTimersByTime(60_000);
 
     expect(c.timers).toHaveLength(0);
-    expect(socket.ping).not.toHaveBeenCalled();
     expect(socket.send).not.toHaveBeenCalled();
+    expect(socket.ping).not.toHaveBeenCalled();
   });
 });

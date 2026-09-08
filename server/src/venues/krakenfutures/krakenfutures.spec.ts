@@ -9,21 +9,7 @@ const TAKER_PPM = 500;
 
 // recvTs must come from the local clock, because openedAt, sampleTs and durationMs are measured on it across every venue.
 const LOCAL_NOW = 1_700_000_000_000;
-const PUBLIC_URL = 'wss://futures.kraken.com/ws/v1';
-
-// Every frame below was captured verbatim from the live venue on 2026-09-05.
-const TICKER_FRAME =
-  '{"time":1788646159008,"product_id":"PF_XBTUSD","funding_rate":0.9941052570914733,"funding_rate_prediction":0.74094239761875,"relative_funding_rate":0.000012439370833333,"relative_funding_rate_prediction":9.275625e-6,"next_funding_rate_time":1788649200000,"leverage":"100x","premium":0.0,"feed":"ticker","bid":79874.0,"ask":79875.0,"bid_size":0.0656,"ask_size":0.0617,"volume":2426.872,"dtm":0,"index":79871.28,"last":79874.0,"change":0.3,"suspended":false,"tag":"perpetual","pair":"XBT:USD","openInterest":2055.214,"markPrice":79873.40587777576,"maturityTime":0,"post_only":false,"volumeQuote":193603003.7945,"open":79634.0,"high":80210.0,"low":79457.0}';
-
-// A low priced contract, whose prices arrive in exponent notation rather than as plain decimals.
-const EXPONENT_FRAME =
-  '{"time":1788646159008,"product_id":"PF_SHIBUSD","feed":"ticker","bid":5.494e-6,"ask":5.498e-6,"bid_size":200803000.0,"ask_size":20812000.0,"tag":"perpetual","pair":"SHIB:USD"}';
-
-const CONNECT_BANNER = '{"event":"info","version":1}';
-const SUBSCRIBE_ACK =
-  '{"event":"subscribed","feed":"ticker","product_ids":["PF_XBTUSD"]}';
-const ALERT_FRAME =
-  '{"event":"alert","message":"Couldn\'t subscribe to invalid product `PF_NOTAREALTHING`"}';
+const LEVELS = 20;
 
 type FeedProbe = {
   planEndpoints(): EndpointPlan[];
@@ -32,16 +18,11 @@ type FeedProbe = {
   handleMessage(raw: Buffer, c: SingleSocketConnection): void;
 };
 
-function socketStub() {
-  return { readyState: 1, OPEN: 1, ping: jest.fn(), send: jest.fn() };
-}
-
-// CCXT normalizes the base to BTC while market.id keeps the venue's XBT spelling, so the two are never derived from each other.
-function market(rawMarketId: string, base = 'BTC'): Market {
+function market(rawMarketId: string): Market {
   return {
     venueId: VENUE_ID,
     rawMarketId,
-    base,
+    base: rawMarketId.slice(3, -3),
     quote: 'USD',
     takerPpm: TAKER_PPM,
     linear: true,
@@ -50,22 +31,34 @@ function market(rawMarketId: string, base = 'BTC'): Market {
 }
 
 function markets(count: number): Market[] {
-  return Array.from({ length: count }, (_, i) =>
-    market(`PF_SYM${i}USD`, `SYM${i}`),
-  );
+  return Array.from({ length: count }, (_, i) => market(`PF_SYM${i}USD`));
+}
+
+function socketStub() {
+  return {
+    readyState: 1,
+    OPEN: 1,
+    ping: jest.fn(),
+    send: jest.fn(),
+    terminate: jest.fn(),
+  };
 }
 
 function makeFeed(venueMarkets: Market[]) {
-  const updateQuote = jest.fn();
+  const updateBook = jest.fn();
   const venue: Venue = {
     id: VENUE_ID,
     name: 'Kraken Futures',
     markets: venueMarkets,
   };
-  const engine = { updateQuote, markStale: jest.fn() } as unknown as Engine;
+  const engine = {
+    updateBook,
+    markStale: jest.fn(),
+    depthLevels: LEVELS,
+  } as unknown as Engine;
   const feed = new KrakenFuturesFeed(venue, engine) as unknown as FeedProbe;
 
-  return { feed, updateQuote };
+  return { feed, updateBook };
 }
 
 function connection(
@@ -84,11 +77,54 @@ function connection(
   } as unknown as SingleSocketConnection;
 }
 
-function ticker(productId: string, bid: unknown, ask: unknown): Buffer {
+// The shapes captured live on 2026-09-07, with the level count cut down. Prices and quantities are JSON numbers.
+function snapshot(
+  productId: string,
+  seq: number,
+  bids: { price: number; qty: number }[],
+  asks: { price: number; qty: number }[],
+): Buffer {
   return Buffer.from(
-    JSON.stringify({ feed: 'ticker', product_id: productId, bid, ask }),
+    JSON.stringify({
+      feed: 'book_snapshot',
+      product_id: productId,
+      timestamp: 1788746279044,
+      seq,
+      tickSize: null,
+      bids,
+      asks,
+    }),
   );
 }
+
+function delta(
+  productId: string,
+  seq: number,
+  side: 'buy' | 'sell',
+  price: number,
+  qty: number,
+): Buffer {
+  return Buffer.from(
+    JSON.stringify({
+      feed: 'book',
+      product_id: productId,
+      side,
+      seq,
+      price,
+      qty,
+      timestamp: 1788746279050,
+    }),
+  );
+}
+
+const SNAPSHOT_BIDS = [
+  { price: 79943, qty: 0.0062 },
+  { price: 79942, qty: 1.5 },
+];
+const SNAPSHOT_ASKS = [
+  { price: 79944, qty: 0.048 },
+  { price: 79945, qty: 2 },
+];
 
 afterEach(() => {
   jest.useRealTimers();
@@ -97,15 +133,15 @@ afterEach(() => {
 
 describe('KrakenFuturesFeed.planEndpoints', () => {
   it('chunks every market onto the one public endpoint', () => {
-    const { feed } = makeFeed([market('PF_XBTUSD'), ...markets(120)]);
+    const { feed } = makeFeed(markets(150));
     const plans = feed.planEndpoints();
 
     expect(plans.map((p) => p.id)).toEqual([
       'krakenfutures#swap#0',
       'krakenfutures#swap#1',
     ]);
-    expect(plans.map((p) => p.markets.length)).toEqual([100, 21]);
-    expect(plans.map((p) => p.url)).toEqual([PUBLIC_URL, PUBLIC_URL]);
+    expect(plans.map((p) => p.markets.length)).toEqual([100, 50]);
+    expect(plans[0].url).toBe('wss://futures.kraken.com/ws/v1');
   });
 
   it('returns nothing when the venue lists no markets', () => {
@@ -116,119 +152,217 @@ describe('KrakenFuturesFeed.planEndpoints', () => {
 });
 
 describe('KrakenFuturesFeed.getSubscribeFrames', () => {
-  it('names the feed once and passes the product ids as one array', () => {
+  it('names the book feed once and passes the product ids as one array', () => {
     const { feed } = makeFeed([]);
-    const frames = feed.getSubscribeFrames(markets(250)) as {
+    const frames = feed.getSubscribeFrames(markets(150)) as {
       event: string;
       feed: string;
       product_ids: string[];
     }[];
 
-    expect(frames).toHaveLength(3);
+    expect(frames).toHaveLength(2);
     expect(frames[0].event).toBe('subscribe');
-    expect(frames[0].feed).toBe('ticker');
+    expect(frames[0].feed).toBe('book');
     expect(frames[0].product_ids).toHaveLength(100);
     expect(frames[0].product_ids[0]).toBe('PF_SYM0USD');
-    expect(frames[2].product_ids).toHaveLength(50);
+    expect(frames[1].product_ids).toHaveLength(50);
   });
 });
 
 describe('KrakenFuturesFeed.handleMessage', () => {
-  it('submits a subscribed ticker frame as a quote', () => {
+  it('hands the engine a subscribed snapshot as the whole book', () => {
     jest.spyOn(Date, 'now').mockReturnValue(LOCAL_NOW);
-    const { feed, updateQuote } = makeFeed([market('PF_XBTUSD')]);
+    const { feed, updateBook } = makeFeed([market('PF_XBTUSD')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(Buffer.from(TICKER_FRAME), c);
+    feed.handleMessage(
+      snapshot('PF_XBTUSD', 186304944, SNAPSHOT_BIDS, SNAPSHOT_ASKS),
+      c,
+    );
 
-    expect(updateQuote).toHaveBeenCalledWith(VENUE_ID, 'PF_XBTUSD', {
-      rawMarketId: 'PF_XBTUSD',
-      bid: 79874,
-      ask: 79875,
-      bidSize: 0.0656,
-      askSize: 0.0617,
-      recvTs: LOCAL_NOW,
-    });
+    expect(updateBook).toHaveBeenCalledWith(
+      VENUE_ID,
+      'PF_XBTUSD',
+      [
+        [79943, 0.0062],
+        [79942, 1.5],
+      ],
+      [
+        [79944, 0.048],
+        [79945, 2],
+      ],
+      LOCAL_NOW,
+    );
   });
 
-  // Kraken is the only venue that sends prices as JSON numbers.
-  // A string guard copied from another feed would reject every quote while the socket stayed healthy, so this is the regression guard.
-  it('takes numeric prices straight through, including exponent notation', () => {
-    jest.spyOn(Date, 'now').mockReturnValue(LOCAL_NOW);
-    const { feed, updateQuote } = makeFeed([market('PF_SHIBUSD', 'SHIB')]);
+  it('applies one level deltas in sequence on either side', () => {
+    const { feed, updateBook } = makeFeed([market('PF_XBTUSD')]);
+    const c = connection(feed.planEndpoints()[0]);
+    feed.handleMessage(
+      snapshot('PF_XBTUSD', 186304944, SNAPSHOT_BIDS, SNAPSHOT_ASKS),
+      c,
+    );
+
+    feed.handleMessage(delta('PF_XBTUSD', 186304945, 'buy', 79943, 0.5), c);
+    feed.handleMessage(delta('PF_XBTUSD', 186304946, 'sell', 79944, 0), c);
+
+    expect(updateBook).toHaveBeenCalledTimes(3);
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'PF_XBTUSD',
+      [
+        [79943, 0.5],
+        [79942, 1.5],
+      ],
+      [[79945, 2]],
+      expect.any(Number),
+    );
+  });
+
+  it('keeps the sequence per product, so two products interleave freely', () => {
+    const { feed, updateBook } = makeFeed([
+      market('PF_XBTUSD'),
+      market('PF_ETHUSD'),
+    ]);
+    const socket = socketStub();
+    const c = connection(feed.planEndpoints()[0], socket);
+    feed.handleMessage(
+      snapshot('PF_XBTUSD', 10, SNAPSHOT_BIDS, SNAPSHOT_ASKS),
+      c,
+    );
+    feed.handleMessage(
+      snapshot(
+        'PF_ETHUSD',
+        500,
+        [{ price: 3000, qty: 1 }],
+        [{ price: 3001, qty: 1 }],
+      ),
+      c,
+    );
+
+    feed.handleMessage(delta('PF_ETHUSD', 501, 'buy', 2999, 1), c);
+    feed.handleMessage(delta('PF_XBTUSD', 11, 'buy', 79941, 1), c);
+    feed.handleMessage(delta('PF_ETHUSD', 502, 'sell', 3002, 1), c);
+
+    expect(socket.terminate).not.toHaveBeenCalled();
+    expect(updateBook).toHaveBeenCalledTimes(5);
+  });
+
+  it('restarts the connection on a sequence gap and applies nothing', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { feed, updateBook } = makeFeed([market('PF_XBTUSD')]);
+    const socket = socketStub();
+    const c = connection(feed.planEndpoints()[0], socket);
+    feed.handleMessage(
+      snapshot('PF_XBTUSD', 186304944, SNAPSHOT_BIDS, SNAPSHOT_ASKS),
+      c,
+    );
+
+    feed.handleMessage(delta('PF_XBTUSD', 186304947, 'buy', 79943, 0.5), c);
+
+    expect(updateBook).toHaveBeenCalledTimes(1);
+    expect(socket.terminate).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'book_resync',
+        rawMarketId: 'PF_XBTUSD',
+        reason: 'sequence_gap',
+        expected: 186304945,
+        got: 186304947,
+      }),
+    );
+  });
+
+  it('restarts the connection on a delta with no snapshot behind it', () => {
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { feed, updateBook } = makeFeed([market('PF_XBTUSD')]);
+    const socket = socketStub();
+    const c = connection(feed.planEndpoints()[0], socket);
+
+    feed.handleMessage(delta('PF_XBTUSD', 1, 'buy', 79943, 0.5), c);
+
+    expect(updateBook).not.toHaveBeenCalled();
+    expect(socket.terminate).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes a one sided snapshot through with the empty side empty', () => {
+    const { feed, updateBook } = makeFeed([market('PF_LAYERUSD')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(Buffer.from(EXPONENT_FRAME), c);
+    feed.handleMessage(snapshot('PF_LAYERUSD', 7, SNAPSHOT_BIDS, []), c);
 
-    expect(updateQuote).toHaveBeenCalledWith(VENUE_ID, 'PF_SHIBUSD', {
-      rawMarketId: 'PF_SHIBUSD',
-      bid: 5.494e-6,
-      ask: 5.498e-6,
-      bidSize: 200803000,
-      askSize: 20812000,
-      recvTs: LOCAL_NOW,
-    });
+    expect(updateBook).toHaveBeenCalledWith(
+      VENUE_ID,
+      'PF_LAYERUSD',
+      expect.any(Array),
+      [],
+      expect.any(Number),
+    );
   });
 
   it('drops a product the connection did not subscribe to, and warns once', () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const { feed, updateQuote } = makeFeed([market('PF_XBTUSD')]);
+    const { feed, updateBook } = makeFeed([market('PF_XBTUSD')]);
     const c = connection(feed.planEndpoints()[0]);
-    const raw = ticker('PF_ETHUSD', 2491.5, 2491.6);
 
-    feed.handleMessage(raw, c);
-    feed.handleMessage(raw, c);
+    feed.handleMessage(
+      snapshot('PF_ETHUSD', 1, SNAPSHOT_BIDS, SNAPSHOT_ASKS),
+      c,
+    );
+    feed.handleMessage(
+      snapshot('PF_ETHUSD', 1, SNAPSHOT_BIDS, SNAPSHOT_ASKS),
+      c,
+    );
 
-    expect(updateQuote).not.toHaveBeenCalled();
+    expect(updateBook).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);
-  });
-
-  it('ignores a zero sided and a one sided book', () => {
-    const { feed, updateQuote } = makeFeed([market('PF_XBTUSD')]);
-    const c = connection(feed.planEndpoints()[0]);
-
-    feed.handleMessage(ticker('PF_XBTUSD', 0, 0), c);
-    feed.handleMessage(ticker('PF_XBTUSD', 79874, undefined), c);
-    feed.handleMessage(ticker('PF_XBTUSD', undefined, 79875), c);
-
-    expect(updateQuote).not.toHaveBeenCalled();
   });
 
   it('logs an alert and stays silent on the banner and the acknowledgement', () => {
     const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const log = jest.spyOn(Logger.prototype, 'log').mockImplementation();
-    const debug = jest.spyOn(Logger.prototype, 'debug').mockImplementation();
-    const { feed, updateQuote } = makeFeed([market('PF_XBTUSD')]);
+    const { feed, updateBook } = makeFeed([market('PF_XBTUSD')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(Buffer.from(ALERT_FRAME), c);
-    feed.handleMessage(Buffer.from(CONNECT_BANNER), c);
-    feed.handleMessage(Buffer.from(SUBSCRIBE_ACK), c);
+    feed.handleMessage(
+      Buffer.from(JSON.stringify({ event: 'info', version: 1 })),
+      c,
+    );
+    feed.handleMessage(
+      Buffer.from(
+        JSON.stringify({
+          event: 'subscribed',
+          feed: 'book',
+          product_ids: ['PF_XBTUSD'],
+        }),
+      ),
+      c,
+    );
+    feed.handleMessage(
+      Buffer.from(
+        JSON.stringify({
+          event: 'alert',
+          message: 'Bad request: invalid product `PF_NOPEUSD`',
+        }),
+      ),
+      c,
+    );
 
-    expect(updateQuote).not.toHaveBeenCalled();
+    expect(updateBook).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledTimes(1);
-    // A plan opens with one acknowledgement per product, so a line each would bury the open of every socket.
-    expect(warn).not.toHaveBeenCalled();
-    expect(log).not.toHaveBeenCalled();
-    expect(debug).not.toHaveBeenCalled();
   });
 });
 
 describe('KrakenFuturesFeed.startKeepalive', () => {
-  // Every JSON ping shape this venue accepts is answered with 'Bad websocket message', because the JSON
-  // application ping Kraken documents belongs to the spot socket. Only a protocol ping works here.
   it('sends a protocol ping and never a JSON one', () => {
     jest.useFakeTimers();
-    const socket = socketStub();
     const { feed } = makeFeed([market('PF_XBTUSD')]);
+    const socket = socketStub();
     const c = connection(feed.planEndpoints()[0], socket);
 
     feed.startKeepalive(c);
-    jest.advanceTimersByTime(60_000);
+    jest.advanceTimersByTime(20_000);
 
-    expect(socket.ping).toHaveBeenCalledTimes(3);
+    expect(socket.ping).toHaveBeenCalledTimes(1);
     expect(socket.send).not.toHaveBeenCalled();
-    expect(c.timers).toHaveLength(1);
   });
 });

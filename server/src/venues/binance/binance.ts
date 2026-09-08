@@ -1,13 +1,16 @@
-import type { Market } from '../../engine/types';
+import type { BookLevel, Market } from '../../engine/types';
 import type { EndpointPlan, SingleSocketConnection } from '../../ws/types';
 import { chunk } from '../../ws/shared';
 import { VenueFeed } from '../../ws/VenueFeed';
-import type { BinanceBookTicker, BinanceStreamFrame } from './types';
+import type { BinanceDepthLevel, BinanceStreamFrame } from './types';
 
 // Binance routes book data to its own host and path.
-// Trades, mark price, and funding live on /market/ws, which a top-of-book feed never needs.
+// Trades, mark price, and funding live on /market/ws, which a book feed never needs.
 const USD_M_BOOK_URL = 'wss://fstream.binance.com/public/ws';
 const COIN_M_BOOK_URL = 'wss://dstream.binance.com/ws';
+
+
+const STREAM_SUFFIX = '@depth20@100ms';
 
 // USD-M allows 1024 streams per connection and COIN-M publishes no limit at all. We play it safe for now
 const MARKETS_PER_CONNECTION = 200;
@@ -82,34 +85,29 @@ export class BinanceFeed extends VenueFeed {
     const event = frame.data ?? frame;
 
     if (
+      event.e === 'depthUpdate' &&
       typeof event.s === 'string' &&
-      typeof event.b === 'string' &&
-      typeof event.a === 'string'
+      Array.isArray(event.b) &&
+      Array.isArray(event.a)
     ) {
-      this.submitBookTicker(event.s, event, c);
+      this.applySnapshot(event.s, event.b, event.a, c);
       return;
     }
 
     this.handleControlFrame(frame, c);
   }
 
-  private submitBookTicker(
+  private applySnapshot(
     symbol: string,
-    event: Partial<BinanceBookTicker>,
+    bids: BinanceDepthLevel[],
+    asks: BinanceDepthLevel[],
     c: SingleSocketConnection,
   ): void {
     if (!this.accepts(c, symbol)) {
       return;
     }
 
-    this.submit({
-      rawMarketId: symbol,
-      bid: Number(event.b),
-      ask: Number(event.a),
-      bidSize: Number(event.B),
-      askSize: Number(event.A),
-      recvTs: Date.now(),
-    });
+    this.resetBook(symbol, bids.map(toLevel), asks.map(toLevel));
   }
 
   private handleControlFrame(
@@ -126,6 +124,10 @@ export class BinanceFeed extends VenueFeed {
   }
 }
 
+function toLevel(level: BinanceDepthLevel): BookLevel {
+  return [Number(level[0]), Number(level[1])];
+}
+
 function streamName(market: Market): string {
-  return `${market.rawMarketId.toLowerCase()}@bookTicker`;
+  return `${market.rawMarketId.toLowerCase()}${STREAM_SUFFIX}`;
 }
