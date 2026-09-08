@@ -51,5 +51,31 @@ export function toOpportunityRow(
     netPpmSeries: opportunity.netPpmSeries,
     highestBidSeries: opportunity.highestBidSeries,
     lowestAskSeries: opportunity.lowestAskSeries,
+    edgeAvgPpmSeries: opportunity.edgeAvgPpmSeries,
+    edgeNotionalSeries: opportunity.edgeNotionalSeries,
+
+    edgeAvgPpmAtOpen: opportunity.edgeAtOpen?.avgPpm ?? null,
+    edgeSizeAtOpen: opportunity.edgeAtOpen?.size ?? null,
+    edgeNotionalAtOpen: opportunity.edgeAtOpen?.notional ?? null,
+    edgeExhaustedAtOpen: opportunity.edgeAtOpen?.exhausted ?? null,
+    edgeBuyLevelsAtOpen: opportunity.edgeAtOpen?.buyLevels ?? null,
+    edgeSellLevelsAtOpen: opportunity.edgeAtOpen?.sellLevels ?? null,
+
+    peakEdgeAvgPpm: opportunity.peakEdge?.avgPpm ?? null,
+    peakEdgeSize: opportunity.peakEdge?.size ?? null,
+    peakEdgeNotional: opportunity.peakEdge?.notional ?? null,
+    peakEdgeExhausted: opportunity.peakEdge?.exhausted ?? null,
+    peakEdgeAt:
+      opportunity.peakEdge === null
+        ? null
+        : new Date(opportunity.peakEdgeAt).toISOString(),
+
+    edgeAvgPpmAtClose: opportunity.lastEdge?.avgPpm ?? null,
+    edgeSizeAtClose: opportunity.lastEdge?.size ?? null,
+    edgeNotionalAtClose: opportunity.lastEdge?.notional ?? null,
+    edgeExhaustedAtClose: opportunity.lastEdge?.exhausted ?? null,
+
+    maxEdgeNotional: opportunity.maxEdgeNotional,
+    edgeSamples: opportunity.edgeSamples,
   };
 }

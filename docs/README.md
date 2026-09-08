@@ -20,6 +20,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-06-venue-depth-endpoints-probe.md`](./research/2026-09-06-venue-depth-endpoints-probe.md) measures each venue's REST book endpoint and depth channel and records the shapes, the latency, kraken's ascending bids and coinbase's one second edge cache.
 - [`research/2026-09-07-depth-stream-scaling.md`](./research/2026-09-07-depth-stream-scaling.md) measures the whole pipeline for streamed depth on five venues, sizes the fifty venue universe at about 15,000 markets, and finds the single event loop is the one structural blocker, with pair sharding as the path.
 - [`research/2026-09-07-depth-sequence-gaps.md`](./research/2026-09-07-depth-sequence-gaps.md) measures zero sequence gaps in 12.48 million deltas on the four delta depth venues, confirms the maintained book against the venues' own top of book and REST, and records how far each ticker channel lags the book.
+- [`research/2026-09-08-fourth-run-data-audit.md`](./research/2026-09-08-fourth-run-data-audit.md) audits the first run with the book feeds and the ladder walk, finds five standing basis and equity pairs behind 389 of 597 rows and a ten dollar coinbase bot behind every coinbase peak, and lists what to verify on the next run.
 
 ## Bestiary
 
@@ -28,6 +29,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`bestiary/stale-quote.md`](./bestiary/stale-quote.md) describes a price the engine held for 22 seconds after it stopped existing, because the coinbase channel only speaks when a trade happens.
 - [`bestiary/slow-venue-resting-order.md`](./bestiary/slow-venue-resting-order.md) describes the one honest class of the third run, a real kraken order that did not move for 28 seconds, and why it still is not free money.
 - [`bestiary/withdrawn-side.md`](./bestiary/withdrawn-side.md) describes a book that loses a whole side, and the feed that drops that message without telling the engine.
+- [`bestiary/edge-at-the-touch.md`](./bestiary/edge-at-the-touch.md) describes the reading that treats the best level as infinitely deep, and the ladder walk that measures the region both books were paying for, with worked examples.
 
 ## Implemented
 

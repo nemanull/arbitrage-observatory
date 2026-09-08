@@ -142,7 +142,26 @@ export const ArbitrageOpportunityScalarFieldEnum = {
   sampleTsMs: 'sampleTsMs',
   netPpmSeries: 'netPpmSeries',
   highestBidSeries: 'highestBidSeries',
-  lowestAskSeries: 'lowestAskSeries'
+  lowestAskSeries: 'lowestAskSeries',
+  edgeAvgPpmSeries: 'edgeAvgPpmSeries',
+  edgeNotionalSeries: 'edgeNotionalSeries',
+  edgeAvgPpmAtOpen: 'edgeAvgPpmAtOpen',
+  edgeSizeAtOpen: 'edgeSizeAtOpen',
+  edgeNotionalAtOpen: 'edgeNotionalAtOpen',
+  edgeExhaustedAtOpen: 'edgeExhaustedAtOpen',
+  edgeBuyLevelsAtOpen: 'edgeBuyLevelsAtOpen',
+  edgeSellLevelsAtOpen: 'edgeSellLevelsAtOpen',
+  peakEdgeAvgPpm: 'peakEdgeAvgPpm',
+  peakEdgeSize: 'peakEdgeSize',
+  peakEdgeNotional: 'peakEdgeNotional',
+  peakEdgeExhausted: 'peakEdgeExhausted',
+  peakEdgeAt: 'peakEdgeAt',
+  edgeAvgPpmAtClose: 'edgeAvgPpmAtClose',
+  edgeSizeAtClose: 'edgeSizeAtClose',
+  edgeNotionalAtClose: 'edgeNotionalAtClose',
+  edgeExhaustedAtClose: 'edgeExhaustedAtClose',
+  maxEdgeNotional: 'maxEdgeNotional',
+  edgeSamples: 'edgeSamples'
 } as const
 
 export type ArbitrageOpportunityScalarFieldEnum = (typeof ArbitrageOpportunityScalarFieldEnum)[keyof typeof ArbitrageOpportunityScalarFieldEnum]
@@ -162,4 +181,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

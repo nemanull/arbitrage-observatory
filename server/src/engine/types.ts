@@ -36,6 +36,15 @@ export type ClusterDepth = {
   readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses depth older than the episode it judges
 };
 
+export type EdgeSample = {
+  avgPpm: number; // average edge over the whole region after fees. 0 when the region is empty
+  size: number; // coins in the region, the same quantity bought and sold
+  notional: number; // what buying the region costs after fees, in the quote asset
+  exhausted: boolean; // the region ended because a book ran out of held levels, so size and notional are lower bounds
+  buyLevels: number; // ask levels the region reaches into on the buy venue
+  sellLevels: number; // bid levels on the sell venue
+};
+
 export type Cluster = {
   readonly pair: PairKey; // 'BTC|USDT'
   readonly markets: (Market | null)[];
@@ -101,11 +110,19 @@ export type Opportunity = {
   highestBidSeries: number[];
   lowestAskSeries: number[];
   sampleTs: number[]; // ms since openedAt, one per sample
+  edgeAvgPpmSeries: number[]; // the walk per sample, aligned with sampleTs, -1 where a leg held no depth
+  edgeNotionalSeries: number[];
+
+  edgeAtOpen: EdgeSample | null;
+  peakEdge: EdgeSample | null;
+  peakEdgeAt: number;
+  maxEdgeNotional: number; // the largest region seen on any sample, in the quote asset
+  lastEdge: EdgeSample | null;
+  edgeSamples: number; // samples where both legs held depth
 
   closedAt: number | null;
   closeReason: CloseReason | null;
 };
-
 
 export type Observation = {
   cluster: Cluster;

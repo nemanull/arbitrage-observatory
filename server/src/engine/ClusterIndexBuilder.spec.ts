@@ -9,6 +9,22 @@ import type { Market, Venue } from './types';
 
 // Covers what clusterOverrides, quoteFamily, the size multiplier and the depth block add. Everything else about the builder is untested for now.
 
+// The production lists change with every audit, so the spec pins its own denial set and price scale.
+jest.mock('./clusterOverrides', () => {
+  const PRICE_SCALE = [
+    { venueId: 'okx', rawMarketId: 'ANTHROPIC-USDT-SWAP', scale: 10 },
+  ];
+
+  return {
+    DENIED_PAIRS: new Set(['BB|USDT', 'ON|USDT', 'QNT|USDT']),
+    PRICE_SCALE,
+    getPriceScale: (venueId: string, rawMarketId: string): number =>
+      PRICE_SCALE.find(
+        (s) => s.venueId === venueId && s.rawMarketId === rawMarketId,
+      )?.scale ?? 1,
+  };
+});
+
 const TAKER_PPM: Record<string, number> = {
   binance: 500,
   bybit: 550,

@@ -45,6 +45,21 @@ export type ArbitrageOpportunityAvgAggregateOutputType = {
   netPpmSeries: number | null
   highestBidSeries: number | null
   lowestAskSeries: number | null
+  edgeAvgPpmSeries: number | null
+  edgeNotionalSeries: number | null
+  edgeAvgPpmAtOpen: number | null
+  edgeSizeAtOpen: number | null
+  edgeNotionalAtOpen: number | null
+  edgeBuyLevelsAtOpen: number | null
+  edgeSellLevelsAtOpen: number | null
+  peakEdgeAvgPpm: number | null
+  peakEdgeSize: number | null
+  peakEdgeNotional: number | null
+  edgeAvgPpmAtClose: number | null
+  edgeSizeAtClose: number | null
+  edgeNotionalAtClose: number | null
+  maxEdgeNotional: number | null
+  edgeSamples: number | null
 }
 
 export type ArbitrageOpportunitySumAggregateOutputType = {
@@ -66,6 +81,21 @@ export type ArbitrageOpportunitySumAggregateOutputType = {
   netPpmSeries: number[]
   highestBidSeries: number[]
   lowestAskSeries: number[]
+  edgeAvgPpmSeries: number[]
+  edgeNotionalSeries: number[]
+  edgeAvgPpmAtOpen: number | null
+  edgeSizeAtOpen: number | null
+  edgeNotionalAtOpen: number | null
+  edgeBuyLevelsAtOpen: number | null
+  edgeSellLevelsAtOpen: number | null
+  peakEdgeAvgPpm: number | null
+  peakEdgeSize: number | null
+  peakEdgeNotional: number | null
+  edgeAvgPpmAtClose: number | null
+  edgeSizeAtClose: number | null
+  edgeNotionalAtClose: number | null
+  maxEdgeNotional: number | null
+  edgeSamples: number | null
 }
 
 export type ArbitrageOpportunityMinAggregateOutputType = {
@@ -95,6 +125,23 @@ export type ArbitrageOpportunityMinAggregateOutputType = {
   peakHighestBid: number | null
   peakLowestAsk: number | null
   minNetPpm: number | null
+  edgeAvgPpmAtOpen: number | null
+  edgeSizeAtOpen: number | null
+  edgeNotionalAtOpen: number | null
+  edgeExhaustedAtOpen: boolean | null
+  edgeBuyLevelsAtOpen: number | null
+  edgeSellLevelsAtOpen: number | null
+  peakEdgeAvgPpm: number | null
+  peakEdgeSize: number | null
+  peakEdgeNotional: number | null
+  peakEdgeExhausted: boolean | null
+  peakEdgeAt: Date | null
+  edgeAvgPpmAtClose: number | null
+  edgeSizeAtClose: number | null
+  edgeNotionalAtClose: number | null
+  edgeExhaustedAtClose: boolean | null
+  maxEdgeNotional: number | null
+  edgeSamples: number | null
 }
 
 export type ArbitrageOpportunityMaxAggregateOutputType = {
@@ -124,6 +171,23 @@ export type ArbitrageOpportunityMaxAggregateOutputType = {
   peakHighestBid: number | null
   peakLowestAsk: number | null
   minNetPpm: number | null
+  edgeAvgPpmAtOpen: number | null
+  edgeSizeAtOpen: number | null
+  edgeNotionalAtOpen: number | null
+  edgeExhaustedAtOpen: boolean | null
+  edgeBuyLevelsAtOpen: number | null
+  edgeSellLevelsAtOpen: number | null
+  peakEdgeAvgPpm: number | null
+  peakEdgeSize: number | null
+  peakEdgeNotional: number | null
+  peakEdgeExhausted: boolean | null
+  peakEdgeAt: Date | null
+  edgeAvgPpmAtClose: number | null
+  edgeSizeAtClose: number | null
+  edgeNotionalAtClose: number | null
+  edgeExhaustedAtClose: boolean | null
+  maxEdgeNotional: number | null
+  edgeSamples: number | null
 }
 
 export type ArbitrageOpportunityCountAggregateOutputType = {
@@ -157,6 +221,25 @@ export type ArbitrageOpportunityCountAggregateOutputType = {
   netPpmSeries: number
   highestBidSeries: number
   lowestAskSeries: number
+  edgeAvgPpmSeries: number
+  edgeNotionalSeries: number
+  edgeAvgPpmAtOpen: number
+  edgeSizeAtOpen: number
+  edgeNotionalAtOpen: number
+  edgeExhaustedAtOpen: number
+  edgeBuyLevelsAtOpen: number
+  edgeSellLevelsAtOpen: number
+  peakEdgeAvgPpm: number
+  peakEdgeSize: number
+  peakEdgeNotional: number
+  peakEdgeExhausted: number
+  peakEdgeAt: number
+  edgeAvgPpmAtClose: number
+  edgeSizeAtClose: number
+  edgeNotionalAtClose: number
+  edgeExhaustedAtClose: number
+  maxEdgeNotional: number
+  edgeSamples: number
   _all: number
 }
 
@@ -180,6 +263,21 @@ export type ArbitrageOpportunityAvgAggregateInputType = {
   netPpmSeries?: true
   highestBidSeries?: true
   lowestAskSeries?: true
+  edgeAvgPpmSeries?: true
+  edgeNotionalSeries?: true
+  edgeAvgPpmAtOpen?: true
+  edgeSizeAtOpen?: true
+  edgeNotionalAtOpen?: true
+  edgeBuyLevelsAtOpen?: true
+  edgeSellLevelsAtOpen?: true
+  peakEdgeAvgPpm?: true
+  peakEdgeSize?: true
+  peakEdgeNotional?: true
+  edgeAvgPpmAtClose?: true
+  edgeSizeAtClose?: true
+  edgeNotionalAtClose?: true
+  maxEdgeNotional?: true
+  edgeSamples?: true
 }
 
 export type ArbitrageOpportunitySumAggregateInputType = {
@@ -201,6 +299,21 @@ export type ArbitrageOpportunitySumAggregateInputType = {
   netPpmSeries?: true
   highestBidSeries?: true
   lowestAskSeries?: true
+  edgeAvgPpmSeries?: true
+  edgeNotionalSeries?: true
+  edgeAvgPpmAtOpen?: true
+  edgeSizeAtOpen?: true
+  edgeNotionalAtOpen?: true
+  edgeBuyLevelsAtOpen?: true
+  edgeSellLevelsAtOpen?: true
+  peakEdgeAvgPpm?: true
+  peakEdgeSize?: true
+  peakEdgeNotional?: true
+  edgeAvgPpmAtClose?: true
+  edgeSizeAtClose?: true
+  edgeNotionalAtClose?: true
+  maxEdgeNotional?: true
+  edgeSamples?: true
 }
 
 export type ArbitrageOpportunityMinAggregateInputType = {
@@ -230,6 +343,23 @@ export type ArbitrageOpportunityMinAggregateInputType = {
   peakHighestBid?: true
   peakLowestAsk?: true
   minNetPpm?: true
+  edgeAvgPpmAtOpen?: true
+  edgeSizeAtOpen?: true
+  edgeNotionalAtOpen?: true
+  edgeExhaustedAtOpen?: true
+  edgeBuyLevelsAtOpen?: true
+  edgeSellLevelsAtOpen?: true
+  peakEdgeAvgPpm?: true
+  peakEdgeSize?: true
+  peakEdgeNotional?: true
+  peakEdgeExhausted?: true
+  peakEdgeAt?: true
+  edgeAvgPpmAtClose?: true
+  edgeSizeAtClose?: true
+  edgeNotionalAtClose?: true
+  edgeExhaustedAtClose?: true
+  maxEdgeNotional?: true
+  edgeSamples?: true
 }
 
 export type ArbitrageOpportunityMaxAggregateInputType = {
@@ -259,6 +389,23 @@ export type ArbitrageOpportunityMaxAggregateInputType = {
   peakHighestBid?: true
   peakLowestAsk?: true
   minNetPpm?: true
+  edgeAvgPpmAtOpen?: true
+  edgeSizeAtOpen?: true
+  edgeNotionalAtOpen?: true
+  edgeExhaustedAtOpen?: true
+  edgeBuyLevelsAtOpen?: true
+  edgeSellLevelsAtOpen?: true
+  peakEdgeAvgPpm?: true
+  peakEdgeSize?: true
+  peakEdgeNotional?: true
+  peakEdgeExhausted?: true
+  peakEdgeAt?: true
+  edgeAvgPpmAtClose?: true
+  edgeSizeAtClose?: true
+  edgeNotionalAtClose?: true
+  edgeExhaustedAtClose?: true
+  maxEdgeNotional?: true
+  edgeSamples?: true
 }
 
 export type ArbitrageOpportunityCountAggregateInputType = {
@@ -292,6 +439,25 @@ export type ArbitrageOpportunityCountAggregateInputType = {
   netPpmSeries?: true
   highestBidSeries?: true
   lowestAskSeries?: true
+  edgeAvgPpmSeries?: true
+  edgeNotionalSeries?: true
+  edgeAvgPpmAtOpen?: true
+  edgeSizeAtOpen?: true
+  edgeNotionalAtOpen?: true
+  edgeExhaustedAtOpen?: true
+  edgeBuyLevelsAtOpen?: true
+  edgeSellLevelsAtOpen?: true
+  peakEdgeAvgPpm?: true
+  peakEdgeSize?: true
+  peakEdgeNotional?: true
+  peakEdgeExhausted?: true
+  peakEdgeAt?: true
+  edgeAvgPpmAtClose?: true
+  edgeSizeAtClose?: true
+  edgeNotionalAtClose?: true
+  edgeExhaustedAtClose?: true
+  maxEdgeNotional?: true
+  edgeSamples?: true
   _all?: true
 }
 
@@ -412,6 +578,25 @@ export type ArbitrageOpportunityGroupByOutputType = {
   netPpmSeries: number[]
   highestBidSeries: number[]
   lowestAskSeries: number[]
+  edgeAvgPpmSeries: number[]
+  edgeNotionalSeries: number[]
+  edgeAvgPpmAtOpen: number | null
+  edgeSizeAtOpen: number | null
+  edgeNotionalAtOpen: number | null
+  edgeExhaustedAtOpen: boolean | null
+  edgeBuyLevelsAtOpen: number | null
+  edgeSellLevelsAtOpen: number | null
+  peakEdgeAvgPpm: number | null
+  peakEdgeSize: number | null
+  peakEdgeNotional: number | null
+  peakEdgeExhausted: boolean | null
+  peakEdgeAt: Date | null
+  edgeAvgPpmAtClose: number | null
+  edgeSizeAtClose: number | null
+  edgeNotionalAtClose: number | null
+  edgeExhaustedAtClose: boolean | null
+  maxEdgeNotional: number
+  edgeSamples: number
   _count: ArbitrageOpportunityCountAggregateOutputType | null
   _avg: ArbitrageOpportunityAvgAggregateOutputType | null
   _sum: ArbitrageOpportunitySumAggregateOutputType | null
@@ -468,6 +653,25 @@ export type ArbitrageOpportunityWhereInput = {
   netPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   highestBidSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   lowestAskSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeAvgPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeNotionalSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeAvgPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeSizeAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeNotionalAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeExhaustedAtOpen?: Prisma.BoolNullableFilter<"ArbitrageOpportunity"> | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.IntNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeSellLevelsAtOpen?: Prisma.IntNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeAvgPpm?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeSize?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeNotional?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeExhausted?: Prisma.BoolNullableFilter<"ArbitrageOpportunity"> | boolean | null
+  peakEdgeAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeSizeAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeNotionalAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeExhaustedAtClose?: Prisma.BoolNullableFilter<"ArbitrageOpportunity"> | boolean | null
+  maxEdgeNotional?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  edgeSamples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
 }
 
 export type ArbitrageOpportunityOrderByWithRelationInput = {
@@ -501,6 +705,25 @@ export type ArbitrageOpportunityOrderByWithRelationInput = {
   netPpmSeries?: Prisma.SortOrder
   highestBidSeries?: Prisma.SortOrder
   lowestAskSeries?: Prisma.SortOrder
+  edgeAvgPpmSeries?: Prisma.SortOrder
+  edgeNotionalSeries?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeExhaustedAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeExhausted?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeExhaustedAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
@@ -537,6 +760,25 @@ export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
   netPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   highestBidSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   lowestAskSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeAvgPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeNotionalSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeAvgPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeSizeAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeNotionalAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeExhaustedAtOpen?: Prisma.BoolNullableFilter<"ArbitrageOpportunity"> | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.IntNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeSellLevelsAtOpen?: Prisma.IntNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeAvgPpm?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeSize?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeNotional?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeExhausted?: Prisma.BoolNullableFilter<"ArbitrageOpportunity"> | boolean | null
+  peakEdgeAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeSizeAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeNotionalAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  edgeExhaustedAtClose?: Prisma.BoolNullableFilter<"ArbitrageOpportunity"> | boolean | null
+  maxEdgeNotional?: Prisma.FloatFilter<"ArbitrageOpportunity"> | number
+  edgeSamples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
 }, "id">
 
 export type ArbitrageOpportunityOrderByWithAggregationInput = {
@@ -570,6 +812,25 @@ export type ArbitrageOpportunityOrderByWithAggregationInput = {
   netPpmSeries?: Prisma.SortOrder
   highestBidSeries?: Prisma.SortOrder
   lowestAskSeries?: Prisma.SortOrder
+  edgeAvgPpmSeries?: Prisma.SortOrder
+  edgeNotionalSeries?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeExhaustedAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeExhausted?: Prisma.SortOrderInput | Prisma.SortOrder
+  peakEdgeAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  edgeExhaustedAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
   _count?: Prisma.ArbitrageOpportunityCountOrderByAggregateInput
   _avg?: Prisma.ArbitrageOpportunityAvgOrderByAggregateInput
   _max?: Prisma.ArbitrageOpportunityMaxOrderByAggregateInput
@@ -611,6 +872,25 @@ export type ArbitrageOpportunityScalarWhereWithAggregatesInput = {
   netPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   highestBidSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   lowestAskSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeAvgPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeNotionalSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
+  edgeAvgPpmAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeSizeAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeNotionalAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeExhaustedAtOpen?: Prisma.BoolNullableWithAggregatesFilter<"ArbitrageOpportunity"> | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.IntNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeSellLevelsAtOpen?: Prisma.IntNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeAvgPpm?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeSize?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeNotional?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  peakEdgeExhausted?: Prisma.BoolNullableWithAggregatesFilter<"ArbitrageOpportunity"> | boolean | null
+  peakEdgeAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeSizeAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeNotionalAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  edgeExhaustedAtClose?: Prisma.BoolNullableWithAggregatesFilter<"ArbitrageOpportunity"> | boolean | null
+  maxEdgeNotional?: Prisma.FloatWithAggregatesFilter<"ArbitrageOpportunity"> | number
+  edgeSamples?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
 }
 
 export type ArbitrageOpportunityCreateInput = {
@@ -644,6 +924,25 @@ export type ArbitrageOpportunityCreateInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityCreatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityCreatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityCreatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityCreateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityCreateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: number | null
+  edgeSizeAtOpen?: number | null
+  edgeNotionalAtOpen?: number | null
+  edgeExhaustedAtOpen?: boolean | null
+  edgeBuyLevelsAtOpen?: number | null
+  edgeSellLevelsAtOpen?: number | null
+  peakEdgeAvgPpm?: number | null
+  peakEdgeSize?: number | null
+  peakEdgeNotional?: number | null
+  peakEdgeExhausted?: boolean | null
+  peakEdgeAt?: Date | string | null
+  edgeAvgPpmAtClose?: number | null
+  edgeSizeAtClose?: number | null
+  edgeNotionalAtClose?: number | null
+  edgeExhaustedAtClose?: boolean | null
+  maxEdgeNotional?: number
+  edgeSamples?: number
 }
 
 export type ArbitrageOpportunityUncheckedCreateInput = {
@@ -677,6 +976,25 @@ export type ArbitrageOpportunityUncheckedCreateInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityCreatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityCreatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityCreatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityCreateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityCreateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: number | null
+  edgeSizeAtOpen?: number | null
+  edgeNotionalAtOpen?: number | null
+  edgeExhaustedAtOpen?: boolean | null
+  edgeBuyLevelsAtOpen?: number | null
+  edgeSellLevelsAtOpen?: number | null
+  peakEdgeAvgPpm?: number | null
+  peakEdgeSize?: number | null
+  peakEdgeNotional?: number | null
+  peakEdgeExhausted?: boolean | null
+  peakEdgeAt?: Date | string | null
+  edgeAvgPpmAtClose?: number | null
+  edgeSizeAtClose?: number | null
+  edgeNotionalAtClose?: number | null
+  edgeExhaustedAtClose?: boolean | null
+  maxEdgeNotional?: number
+  edgeSamples?: number
 }
 
 export type ArbitrageOpportunityUpdateInput = {
@@ -710,6 +1028,25 @@ export type ArbitrageOpportunityUpdateInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityUpdateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityUpdateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtOpen?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  edgeSellLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  peakEdgeAvgPpm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeSize?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeNotional?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeExhausted?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  peakEdgeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtClose?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  maxEdgeNotional?: Prisma.FloatFieldUpdateOperationsInput | number
+  edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ArbitrageOpportunityUncheckedUpdateInput = {
@@ -743,6 +1080,25 @@ export type ArbitrageOpportunityUncheckedUpdateInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityUpdateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityUpdateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtOpen?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  edgeSellLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  peakEdgeAvgPpm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeSize?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeNotional?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeExhausted?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  peakEdgeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtClose?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  maxEdgeNotional?: Prisma.FloatFieldUpdateOperationsInput | number
+  edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ArbitrageOpportunityCreateManyInput = {
@@ -776,6 +1132,25 @@ export type ArbitrageOpportunityCreateManyInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityCreatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityCreatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityCreatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityCreateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityCreateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: number | null
+  edgeSizeAtOpen?: number | null
+  edgeNotionalAtOpen?: number | null
+  edgeExhaustedAtOpen?: boolean | null
+  edgeBuyLevelsAtOpen?: number | null
+  edgeSellLevelsAtOpen?: number | null
+  peakEdgeAvgPpm?: number | null
+  peakEdgeSize?: number | null
+  peakEdgeNotional?: number | null
+  peakEdgeExhausted?: boolean | null
+  peakEdgeAt?: Date | string | null
+  edgeAvgPpmAtClose?: number | null
+  edgeSizeAtClose?: number | null
+  edgeNotionalAtClose?: number | null
+  edgeExhaustedAtClose?: boolean | null
+  maxEdgeNotional?: number
+  edgeSamples?: number
 }
 
 export type ArbitrageOpportunityUpdateManyMutationInput = {
@@ -809,6 +1184,25 @@ export type ArbitrageOpportunityUpdateManyMutationInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityUpdateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityUpdateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtOpen?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  edgeSellLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  peakEdgeAvgPpm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeSize?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeNotional?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeExhausted?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  peakEdgeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtClose?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  maxEdgeNotional?: Prisma.FloatFieldUpdateOperationsInput | number
+  edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ArbitrageOpportunityUncheckedUpdateManyInput = {
@@ -842,6 +1236,25 @@ export type ArbitrageOpportunityUncheckedUpdateManyInput = {
   netPpmSeries?: Prisma.ArbitrageOpportunityUpdatenetPpmSeriesInput | number[]
   highestBidSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidSeriesInput | number[]
   lowestAskSeries?: Prisma.ArbitrageOpportunityUpdatelowestAskSeriesInput | number[]
+  edgeAvgPpmSeries?: Prisma.ArbitrageOpportunityUpdateedgeAvgPpmSeriesInput | number[]
+  edgeNotionalSeries?: Prisma.ArbitrageOpportunityUpdateedgeNotionalSeriesInput | number[]
+  edgeAvgPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtOpen?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  edgeBuyLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  edgeSellLevelsAtOpen?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  peakEdgeAvgPpm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeSize?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeNotional?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  peakEdgeExhausted?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  peakEdgeAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  edgeAvgPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeSizeAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeNotionalAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  edgeExhaustedAtClose?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  maxEdgeNotional?: Prisma.FloatFieldUpdateOperationsInput | number
+  edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type IntNullableListFilter<$PrismaModel = never> = {
@@ -891,6 +1304,25 @@ export type ArbitrageOpportunityCountOrderByAggregateInput = {
   netPpmSeries?: Prisma.SortOrder
   highestBidSeries?: Prisma.SortOrder
   lowestAskSeries?: Prisma.SortOrder
+  edgeAvgPpmSeries?: Prisma.SortOrder
+  edgeNotionalSeries?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrder
+  edgeExhaustedAtOpen?: Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrder
+  peakEdgeExhausted?: Prisma.SortOrder
+  peakEdgeAt?: Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrder
+  edgeExhaustedAtClose?: Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityAvgOrderByAggregateInput = {
@@ -912,6 +1344,21 @@ export type ArbitrageOpportunityAvgOrderByAggregateInput = {
   netPpmSeries?: Prisma.SortOrder
   highestBidSeries?: Prisma.SortOrder
   lowestAskSeries?: Prisma.SortOrder
+  edgeAvgPpmSeries?: Prisma.SortOrder
+  edgeNotionalSeries?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityMaxOrderByAggregateInput = {
@@ -941,6 +1388,23 @@ export type ArbitrageOpportunityMaxOrderByAggregateInput = {
   peakHighestBid?: Prisma.SortOrder
   peakLowestAsk?: Prisma.SortOrder
   minNetPpm?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrder
+  edgeExhaustedAtOpen?: Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrder
+  peakEdgeExhausted?: Prisma.SortOrder
+  peakEdgeAt?: Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrder
+  edgeExhaustedAtClose?: Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityMinOrderByAggregateInput = {
@@ -970,6 +1434,23 @@ export type ArbitrageOpportunityMinOrderByAggregateInput = {
   peakHighestBid?: Prisma.SortOrder
   peakLowestAsk?: Prisma.SortOrder
   minNetPpm?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrder
+  edgeExhaustedAtOpen?: Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrder
+  peakEdgeExhausted?: Prisma.SortOrder
+  peakEdgeAt?: Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrder
+  edgeExhaustedAtClose?: Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunitySumOrderByAggregateInput = {
@@ -991,6 +1472,21 @@ export type ArbitrageOpportunitySumOrderByAggregateInput = {
   netPpmSeries?: Prisma.SortOrder
   highestBidSeries?: Prisma.SortOrder
   lowestAskSeries?: Prisma.SortOrder
+  edgeAvgPpmSeries?: Prisma.SortOrder
+  edgeNotionalSeries?: Prisma.SortOrder
+  edgeAvgPpmAtOpen?: Prisma.SortOrder
+  edgeSizeAtOpen?: Prisma.SortOrder
+  edgeNotionalAtOpen?: Prisma.SortOrder
+  edgeBuyLevelsAtOpen?: Prisma.SortOrder
+  edgeSellLevelsAtOpen?: Prisma.SortOrder
+  peakEdgeAvgPpm?: Prisma.SortOrder
+  peakEdgeSize?: Prisma.SortOrder
+  peakEdgeNotional?: Prisma.SortOrder
+  edgeAvgPpmAtClose?: Prisma.SortOrder
+  edgeSizeAtClose?: Prisma.SortOrder
+  edgeNotionalAtClose?: Prisma.SortOrder
+  maxEdgeNotional?: Prisma.SortOrder
+  edgeSamples?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityCreatesampleTsMsInput = {
@@ -1006,6 +1502,14 @@ export type ArbitrageOpportunityCreatehighestBidSeriesInput = {
 }
 
 export type ArbitrageOpportunityCreatelowestAskSeriesInput = {
+  set: number[]
+}
+
+export type ArbitrageOpportunityCreateedgeAvgPpmSeriesInput = {
+  set: number[]
+}
+
+export type ArbitrageOpportunityCreateedgeNotionalSeriesInput = {
   set: number[]
 }
 
@@ -1049,6 +1553,40 @@ export type ArbitrageOpportunityUpdatelowestAskSeriesInput = {
   push?: number | number[]
 }
 
+export type ArbitrageOpportunityUpdateedgeAvgPpmSeriesInput = {
+  set?: number[]
+  push?: number | number[]
+}
+
+export type ArbitrageOpportunityUpdateedgeNotionalSeriesInput = {
+  set?: number[]
+  push?: number | number[]
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableBoolFieldUpdateOperationsInput = {
+  set?: boolean | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 
 
 export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1082,6 +1620,25 @@ export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.
   netPpmSeries?: boolean
   highestBidSeries?: boolean
   lowestAskSeries?: boolean
+  edgeAvgPpmSeries?: boolean
+  edgeNotionalSeries?: boolean
+  edgeAvgPpmAtOpen?: boolean
+  edgeSizeAtOpen?: boolean
+  edgeNotionalAtOpen?: boolean
+  edgeExhaustedAtOpen?: boolean
+  edgeBuyLevelsAtOpen?: boolean
+  edgeSellLevelsAtOpen?: boolean
+  peakEdgeAvgPpm?: boolean
+  peakEdgeSize?: boolean
+  peakEdgeNotional?: boolean
+  peakEdgeExhausted?: boolean
+  peakEdgeAt?: boolean
+  edgeAvgPpmAtClose?: boolean
+  edgeSizeAtClose?: boolean
+  edgeNotionalAtClose?: boolean
+  edgeExhaustedAtClose?: boolean
+  maxEdgeNotional?: boolean
+  edgeSamples?: boolean
 }, ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1115,6 +1672,25 @@ export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtim
   netPpmSeries?: boolean
   highestBidSeries?: boolean
   lowestAskSeries?: boolean
+  edgeAvgPpmSeries?: boolean
+  edgeNotionalSeries?: boolean
+  edgeAvgPpmAtOpen?: boolean
+  edgeSizeAtOpen?: boolean
+  edgeNotionalAtOpen?: boolean
+  edgeExhaustedAtOpen?: boolean
+  edgeBuyLevelsAtOpen?: boolean
+  edgeSellLevelsAtOpen?: boolean
+  peakEdgeAvgPpm?: boolean
+  peakEdgeSize?: boolean
+  peakEdgeNotional?: boolean
+  peakEdgeExhausted?: boolean
+  peakEdgeAt?: boolean
+  edgeAvgPpmAtClose?: boolean
+  edgeSizeAtClose?: boolean
+  edgeNotionalAtClose?: boolean
+  edgeExhaustedAtClose?: boolean
+  maxEdgeNotional?: boolean
+  edgeSamples?: boolean
 }, ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1148,6 +1724,25 @@ export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtim
   netPpmSeries?: boolean
   highestBidSeries?: boolean
   lowestAskSeries?: boolean
+  edgeAvgPpmSeries?: boolean
+  edgeNotionalSeries?: boolean
+  edgeAvgPpmAtOpen?: boolean
+  edgeSizeAtOpen?: boolean
+  edgeNotionalAtOpen?: boolean
+  edgeExhaustedAtOpen?: boolean
+  edgeBuyLevelsAtOpen?: boolean
+  edgeSellLevelsAtOpen?: boolean
+  peakEdgeAvgPpm?: boolean
+  peakEdgeSize?: boolean
+  peakEdgeNotional?: boolean
+  peakEdgeExhausted?: boolean
+  peakEdgeAt?: boolean
+  edgeAvgPpmAtClose?: boolean
+  edgeSizeAtClose?: boolean
+  edgeNotionalAtClose?: boolean
+  edgeExhaustedAtClose?: boolean
+  maxEdgeNotional?: boolean
+  edgeSamples?: boolean
 }, ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type ArbitrageOpportunitySelectScalar = {
@@ -1181,9 +1776,28 @@ export type ArbitrageOpportunitySelectScalar = {
   netPpmSeries?: boolean
   highestBidSeries?: boolean
   lowestAskSeries?: boolean
+  edgeAvgPpmSeries?: boolean
+  edgeNotionalSeries?: boolean
+  edgeAvgPpmAtOpen?: boolean
+  edgeSizeAtOpen?: boolean
+  edgeNotionalAtOpen?: boolean
+  edgeExhaustedAtOpen?: boolean
+  edgeBuyLevelsAtOpen?: boolean
+  edgeSellLevelsAtOpen?: boolean
+  peakEdgeAvgPpm?: boolean
+  peakEdgeSize?: boolean
+  peakEdgeNotional?: boolean
+  peakEdgeExhausted?: boolean
+  peakEdgeAt?: boolean
+  edgeAvgPpmAtClose?: boolean
+  edgeSizeAtClose?: boolean
+  edgeNotionalAtClose?: boolean
+  edgeExhaustedAtClose?: boolean
+  maxEdgeNotional?: boolean
+  edgeSamples?: boolean
 }
 
-export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "netPpmAtClose" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries", ExtArgs["result"]["arbitrageOpportunity"]>
+export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "netPpmAtClose" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries" | "edgeAvgPpmSeries" | "edgeNotionalSeries" | "edgeAvgPpmAtOpen" | "edgeSizeAtOpen" | "edgeNotionalAtOpen" | "edgeExhaustedAtOpen" | "edgeBuyLevelsAtOpen" | "edgeSellLevelsAtOpen" | "peakEdgeAvgPpm" | "peakEdgeSize" | "peakEdgeNotional" | "peakEdgeExhausted" | "peakEdgeAt" | "edgeAvgPpmAtClose" | "edgeSizeAtClose" | "edgeNotionalAtClose" | "edgeExhaustedAtClose" | "maxEdgeNotional" | "edgeSamples", ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ArbitrageOpportunity"
@@ -1246,6 +1860,37 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
     netPpmSeries: number[]
     highestBidSeries: number[]
     lowestAskSeries: number[]
+    /**
+     * The ladder walk per tick, -1 where a leg held no depth, since a real average edge is never negative
+     */
+    edgeAvgPpmSeries: number[]
+    edgeNotionalSeries: number[]
+    edgeAvgPpmAtOpen: number | null
+    edgeSizeAtOpen: number | null
+    edgeNotionalAtOpen: number | null
+    edgeExhaustedAtOpen: boolean | null
+    edgeBuyLevelsAtOpen: number | null
+    edgeSellLevelsAtOpen: number | null
+    /**
+     * The sample with the best average edge, not the one where netPpm peaked
+     */
+    peakEdgeAvgPpm: number | null
+    peakEdgeSize: number | null
+    peakEdgeNotional: number | null
+    peakEdgeExhausted: boolean | null
+    peakEdgeAt: Date | null
+    edgeAvgPpmAtClose: number | null
+    edgeSizeAtClose: number | null
+    edgeNotionalAtClose: number | null
+    edgeExhaustedAtClose: boolean | null
+    /**
+     * The largest region any sample reached, in the quote asset
+     */
+    maxEdgeNotional: number
+    /**
+     * Samples where both legs held depth, against ticks for coverage
+     */
+    edgeSamples: number
   }, ExtArgs["result"]["arbitrageOpportunity"]>
   composites: {}
 }
@@ -1699,6 +2344,25 @@ export interface ArbitrageOpportunityFieldRefs {
   readonly netPpmSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
   readonly highestBidSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
   readonly lowestAskSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
+  readonly edgeAvgPpmSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
+  readonly edgeNotionalSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
+  readonly edgeAvgPpmAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeSizeAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeNotionalAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeExhaustedAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Boolean'>
+  readonly edgeBuyLevelsAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly edgeSellLevelsAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
+  readonly peakEdgeAvgPpm: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly peakEdgeSize: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly peakEdgeNotional: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly peakEdgeExhausted: Prisma.FieldRef<"ArbitrageOpportunity", 'Boolean'>
+  readonly peakEdgeAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
+  readonly edgeAvgPpmAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeSizeAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeNotionalAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeExhaustedAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Boolean'>
+  readonly maxEdgeNotional: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly edgeSamples: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
 }
     
 

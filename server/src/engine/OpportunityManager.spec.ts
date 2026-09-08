@@ -52,7 +52,7 @@ function makeCluster(): Cluster {
     bidSize: new Float64Array(width),
     askSize: new Float64Array(width),
     recvTs: new Float64Array(width),
-    depth: createClusterDepth(width, 4), // the manager never reads the block
+    depth: createClusterDepth(width, 4), // four levels a slot, filled by the ladder walk tests only
   };
 }
 
@@ -708,5 +708,169 @@ describe('OpportunityManager book sizes and far sides', () => {
 
     expect(opened.highestBidSizeAtOpen).toBe(20);
     expect(opened.lowestAskSizeAtOpen).toBe(5); // binance stays at one coin per contract
+  });
+});
+
+// The walk reads the depth block on every sample. The block is filled here the way Engine.updateBook fills it.
+describe('OpportunityManager ladder walk', () => {
+  const LEVELS = 4;
+
+  function setSide(
+    cluster: Cluster,
+    slot: number,
+    side: 'bid' | 'ask',
+    levels: [number, number][],
+  ): void {
+    const base = slot * LEVELS;
+    const price =
+      side === 'bid' ? cluster.depth.bidPrice : cluster.depth.askPrice;
+    const size = side === 'bid' ? cluster.depth.bidSize : cluster.depth.askSize;
+    levels.forEach(([p, q], l) => {
+      price[base + l] = p;
+      size[base + l] = q;
+    });
+    (side === 'bid'
+      ? cluster.depth.bidLevelCount
+      : cluster.depth.askLevelCount)[slot] = levels.length;
+  }
+
+  it('records the region behind the opening cross, from the buy asks and the sell bids', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    // We buy binance asks and sell into bybit bids. Two coins cross at 100 against 101, then one at 100.2 against 100.9, then 100.9 against 100.9 does not once both fees are on.
+    setSide(cluster, BINANCE, 'ask', [
+      [100, 2],
+      [100.2, 1],
+      [100.9, 3],
+    ]);
+    setSide(cluster, BYBIT, 'bid', [
+      [101, 2],
+      [100.9, 4],
+    ]);
+
+    const opened = openOn(manager, cluster, 1_000)!;
+
+    expect(opened.edgeAtOpen).not.toBeNull();
+    expect(opened.edgeAtOpen!.size).toBeCloseTo(3, 9);
+    expect(opened.edgeAtOpen!.notional).toBeCloseTo(
+      (100 * 2 + 100.2) * (1 + TAKER_PPM / 1_000_000),
+      6,
+    );
+    expect(opened.edgeAtOpen!.exhausted).toBe(false);
+    expect(opened.edgeAtOpen!.buyLevels).toBe(2);
+    expect(opened.edgeAtOpen!.sellLevels).toBe(2);
+    expect(opened.peakEdge).toBe(opened.edgeAtOpen);
+    expect(opened.peakEdgeAt).toBe(1_000);
+    expect(opened.lastEdge).toBe(opened.edgeAtOpen);
+    expect(opened.maxEdgeNotional).toBeCloseTo(opened.edgeAtOpen!.notional, 9);
+    expect(opened.edgeSamples).toBe(1);
+  });
+
+  it('moves the peak with a better average edge and keeps the largest region on its own', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    setSide(cluster, BINANCE, 'ask', [[100, 1]]);
+    setSide(cluster, BYBIT, 'bid', [[101, 1]]);
+    const opened = openOn(manager, cluster, 1_000)!;
+    const openEdge = opened.edgeAtOpen!;
+
+    // A deeper but thinner edge on the next bybit tick: more notional, a lower average.
+    setSide(cluster, BINANCE, 'ask', [
+      [100, 1],
+      [100.4, 5],
+    ]);
+    setSide(cluster, BYBIT, 'bid', [
+      [101, 1],
+      [100.9, 5],
+    ]);
+    tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
+
+    expect(opened.peakEdge).toBe(openEdge);
+    expect(opened.peakEdgeAt).toBe(1_000);
+    expect(opened.lastEdge!.size).toBeCloseTo(6, 9);
+    expect(opened.maxEdgeNotional).toBeCloseTo(opened.lastEdge!.notional, 9);
+    expect(opened.edgeSamples).toBe(2);
+
+    // A better average on the tick after, with the same top of book.
+    setSide(cluster, BYBIT, 'bid', [[101.4, 1]]);
+    tick(manager, cluster, BYBIT, 101.4, 101.5, 3_000);
+
+    expect(opened.peakEdgeAt).toBe(3_000);
+    expect(opened.peakEdge!.avgPpm).toBeGreaterThan(openEdge.avgPpm);
+    expect(opened.edgeSamples).toBe(3);
+  });
+
+  it('records no edge while a leg holds no depth, and counts only the samples that had one', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const opened = openOn(manager, cluster, 1_000)!;
+
+    expect(opened.edgeAtOpen).toBeNull();
+    expect(opened.peakEdge).toBeNull();
+    expect(opened.lastEdge).toBeNull();
+    expect(opened.maxEdgeNotional).toBe(0);
+    expect(opened.edgeSamples).toBe(0);
+
+    setSide(cluster, BINANCE, 'ask', [[100, 1]]);
+    setSide(cluster, BYBIT, 'bid', [[101, 1]]);
+    tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
+
+    expect(opened.edgeAtOpen).toBeNull();
+    expect(opened.peakEdge).not.toBeNull();
+    expect(opened.peakEdgeAt).toBe(2_000);
+    expect(opened.edgeSamples).toBe(1);
+  });
+});
+
+describe('OpportunityManager edge on the row', () => {
+  it('carries the walk at open, peak and close and the two series onto the row', () => {
+    const queue = createOpportunityQueueMock();
+    const add = jest.spyOn(queue, 'add');
+    const manager = new OpportunityManager(queue);
+    const cluster = makeCluster();
+    const LEVELS = 4;
+    const set = (
+      slot: number,
+      side: 'bid' | 'ask',
+      levels: [number, number][],
+    ) => {
+      const base = slot * LEVELS;
+      const price =
+        side === 'bid' ? cluster.depth.bidPrice : cluster.depth.askPrice;
+      const size =
+        side === 'bid' ? cluster.depth.bidSize : cluster.depth.askSize;
+      levels.forEach(([p, q], l) => {
+        price[base + l] = p;
+        size[base + l] = q;
+      });
+      (side === 'bid'
+        ? cluster.depth.bidLevelCount
+        : cluster.depth.askLevelCount)[slot] = levels.length;
+    };
+
+    // No depth on the opening tick, depth on the second, and a collapse on the third.
+    const opened = openOn(manager, cluster, 1_000)!;
+    set(BINANCE, 'ask', [[100, 1]]);
+    set(BYBIT, 'bid', [[101, 1]]);
+    tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
+    // The walk reads the block, so the collapse has to land there too, as updateBook would have it.
+    set(BYBIT, 'bid', [[100.05, 1]]);
+    tick(manager, cluster, BYBIT, 100.05, 100.1, 3_000);
+
+    expect(opened.closeReason).toBe('spread_collapsed');
+    const row = add.mock.calls[0][1].rows[0];
+    expect(row.edgeAvgPpmAtOpen).toBeNull();
+    expect(row.edgeSamples).toBe(2);
+    expect(row.peakEdgeAt).toBe(new Date(2_000).toISOString());
+    expect(row.peakEdgeSize).toBe(1);
+    expect(row.peakEdgeExhausted).toBe(true);
+    expect(row.maxEdgeNotional).toBeCloseTo(
+      100 * (1 + TAKER_PPM / 1_000_000),
+      9,
+    );
+    expect(row.edgeSizeAtClose).toBe(0); // the tops no longer cross, so the region is empty
+    expect(row.edgeAvgPpmSeries).toEqual([-1, expect.any(Number), 0]);
+    expect(row.edgeNotionalSeries).toEqual([-1, expect.any(Number), 0]);
   });
 });

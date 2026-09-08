@@ -123,14 +123,45 @@ model ArbitrageOpportunity {
   /// The worst reading of the episode, taken from netPpmSeries when the row is built
   minNetPpm      Float
 
-  // One entry per tick, index aligned across all four.
-  sampleTsMs       Int[]
-  netPpmSeries     Float[]
-  highestBidSeries Float[]
-  lowestAskSeries  Float[]
+  // One entry per tick, index aligned across all six.
+  sampleTsMs         Int[]
+  netPpmSeries       Float[]
+  highestBidSeries   Float[]
+  lowestAskSeries    Float[]
+  /// The ladder walk per tick, -1 where a leg held no depth, since a real average edge is never negative
+  edgeAvgPpmSeries   Float[]
+  edgeNotionalSeries Float[]
+
+  // The ladder walk, docs/bestiary/edge-at-the-touch.md: the average edge over every level pair that still crossed after fees, and the size of that region.
+  // Null where a leg held no depth at that moment. Exhausted means a book ran out of held levels first, so size and notional are lower bounds.
+  edgeAvgPpmAtOpen     Float?
+  edgeSizeAtOpen       Float?
+  edgeNotionalAtOpen   Float?
+  edgeExhaustedAtOpen  Boolean?
+  edgeBuyLevelsAtOpen  Int?
+  edgeSellLevelsAtOpen Int?
+
+  /// The sample with the best average edge, not the one where netPpm peaked
+  peakEdgeAvgPpm    Float?
+  peakEdgeSize      Float?
+  peakEdgeNotional  Float?
+  peakEdgeExhausted Boolean?
+  peakEdgeAt        DateTime?
+
+  edgeAvgPpmAtClose    Float?
+  edgeSizeAtClose      Float?
+  edgeNotionalAtClose  Float?
+  edgeExhaustedAtClose Boolean?
+
+  /// The largest region any sample reached, in the quote asset
+  maxEdgeNotional Float @default(0)
+  /// Samples where both legs held depth, against ticks for coverage
+  edgeSamples     Int   @default(0)
 
   @@index([openedAt])
   @@index([pair, openedAt])
   @@index([route, openedAt])
   @@index([peakNetPpm])
+  @@index([peakEdgeAvgPpm])
+  @@index([maxEdgeNotional])
 }

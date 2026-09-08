@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import { toOpportunityRow } from '../db/conversion';
+import { walkLadders } from './ladderWalk';
 import {
   OPPORTUNITY_CLOSED_JOB,
   type OpportunityClosedJob,
@@ -9,6 +10,7 @@ import type {
   ActiveOpportunityMap,
   CloseReason,
   Cluster,
+  EdgeSample,
   Market,
   Observation,
   Opportunity,
@@ -21,6 +23,8 @@ const CLOSURE_NET_PPM = 1_000; // after fees
 const MAX_OPPORTUNITY_AGE_MS = 5 * 60_000;
 // A route that never collapses runs to MAX_OPPORTUNITY_AGE_MS, which at the 436 samples/s seen on OPENAI is 130k samples. The counters keep going past this, only the series stop.
 export const MAX_SERIES_LENGTH = 10_000;
+// A real average edge or notional is never negative, so this marks a sample where a leg held no depth in the edge series.
+export const NO_EDGE = -1;
 
 const IMPLAUSIBLE_NET_PPM_WARN_WINDOW_MS = 10_000;
 
@@ -116,8 +120,10 @@ export class OpportunityManager {
     const highestBidLegAsk = cluster.ask[b] * cluster.askMul[b];
     const lowestAskLegBid = cluster.bid[a] * cluster.bidMul[a];
 
+    const edge = walkLadders(cluster, a, b);
+
     this.logger.log(
-      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask`,
+      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask, ${edge === null ? 'no depth held' : `${Math.round(edge.avgPpm)}ppm over ${edge.notional.toFixed(0)} of notional${edge.exhausted ? ' with a book exhausted' : ''}`}`,
     );
 
     return this.trackOpportunity({
@@ -159,6 +165,7 @@ export class OpportunityManager {
         O.lowestAskLegBid,
         O.netPpm,
         O.now,
+        walkLadders(O.cluster, O.lowestAskVenueIndex, O.highestBidVenueIndex),
       );
       return existing;
     }
@@ -185,6 +192,12 @@ export class OpportunityManager {
   }
 
   createNewOpportunity(O: Observation): Opportunity {
+    const edge = walkLadders(
+      O.cluster,
+      O.lowestAskVenueIndex,
+      O.highestBidVenueIndex,
+    );
+
     return {
       highestBidMarket: O.highestBidMarket,
       lowestAskMarket: O.lowestAskMarket,
@@ -223,6 +236,15 @@ export class OpportunityManager {
       highestBidSeries: [O.highestBid],
       lowestAskSeries: [O.lowestAsk],
       sampleTs: [0],
+      edgeAvgPpmSeries: [edge?.avgPpm ?? NO_EDGE],
+      edgeNotionalSeries: [edge?.notional ?? NO_EDGE],
+
+      edgeAtOpen: edge,
+      peakEdge: edge,
+      peakEdgeAt: O.now,
+      maxEdgeNotional: edge?.notional ?? 0,
+      lastEdge: edge,
+      edgeSamples: edge === null ? 0 : 1,
 
       closedAt: null,
       closeReason: null,
@@ -255,6 +277,7 @@ export class OpportunityManager {
       lowestAskLegBid,
       netPpm,
       now,
+      walkLadders(cluster, a, b),
     );
 
     // Recorded first, so a collapsing tick ends the series and the close log sees it
@@ -321,6 +344,7 @@ export class OpportunityManager {
     lowestAskLegBid: number,
     netPpm: number,
     now: number,
+    edge: EdgeSample | null,
   ): void {
     opportunity.ticksSinceStart += 1;
     opportunity.netPpmSum += netPpm;
@@ -330,6 +354,23 @@ export class OpportunityManager {
     opportunity.lastLowestAskSize = lowestAskSize;
     opportunity.lastHighestBidLegAsk = highestBidLegAsk;
     opportunity.lastLowestAskLegBid = lowestAskLegBid;
+    opportunity.lastEdge = edge;
+
+    if (edge !== null) {
+      opportunity.edgeSamples += 1;
+
+      if (edge.notional > opportunity.maxEdgeNotional) {
+        opportunity.maxEdgeNotional = edge.notional;
+      }
+
+      if (
+        opportunity.peakEdge === null ||
+        edge.avgPpm > opportunity.peakEdge.avgPpm
+      ) {
+        opportunity.peakEdge = edge;
+        opportunity.peakEdgeAt = now;
+      }
+    }
 
     if (netPpm > opportunity.peakNetPpm) {
       opportunity.peakNetPpm = netPpm;
@@ -354,6 +395,8 @@ export class OpportunityManager {
     opportunity.highestBidSeries.push(highestBid);
     opportunity.lowestAskSeries.push(lowestAsk);
     opportunity.sampleTs.push(now - opportunity.openedAt);
+    opportunity.edgeAvgPpmSeries.push(edge?.avgPpm ?? NO_EDGE);
+    opportunity.edgeNotionalSeries.push(edge?.notional ?? NO_EDGE);
   }
 
   // Silence is not on this list. Every feed is change-driven, so a quiet leg is an unchanged leg, and a dead one is reported by markStale.
@@ -494,6 +537,12 @@ export class OpportunityManager {
       peakNetPpm: opportunity.peakNetPpm,
       peakAt: opportunity.peakAt,
       minNetPpm: opportunity.minNetPpm,
+      edgeAvgPpmAtOpen: opportunity.edgeAtOpen?.avgPpm ?? null,
+      edgeNotionalAtOpen: opportunity.edgeAtOpen?.notional ?? null,
+      peakEdgeAvgPpm: opportunity.peakEdge?.avgPpm ?? null,
+      peakEdgeNotional: opportunity.peakEdge?.notional ?? null,
+      maxEdgeNotional: opportunity.maxEdgeNotional,
+      edgeSamples: opportunity.edgeSamples,
     });
 
     this.enqueueClosed(opportunity, pair, routeKey);

@@ -903,7 +903,7 @@ describe('Engine.updateBook', () => {
     expect(cluster.recvTs[BYBIT]).toBe(2_000);
   });
 
-  it('opens a route from the tops of two books', () => {
+  it('opens a route from the tops of two books and walks their ladders at the open', () => {
     const { engine } = makeEngine();
 
     engine.updateBook(
@@ -919,6 +919,15 @@ describe('Engine.updateBook', () => {
     engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
 
     expect([...openRoutes(engine).keys()]).toEqual(['bybit-binance']);
+
+    // Buying binance's six asks against bybit's bids never stops crossing, so the region is the whole held ask side.
+    const opportunity = openRoutes(engine).get('bybit-binance') as Opportunity;
+    expect(opportunity.edgeAtOpen).not.toBeNull();
+    expect(opportunity.edgeAtOpen!.size).toBeCloseTo(6, 9);
+    expect(opportunity.edgeAtOpen!.exhausted).toBe(true);
+    expect(opportunity.edgeAtOpen!.buyLevels).toBe(2);
+    expect(opportunity.edgeAtOpen!.avgPpm).toBeGreaterThan(5_000);
+    expect(opportunity.edgeSamples).toBe(1);
   });
 
   it('keeps the one side of a one-sided book and drops the quote, closing its routes', () => {
