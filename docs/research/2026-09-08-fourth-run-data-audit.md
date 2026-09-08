@@ -305,6 +305,7 @@ Run them in this order and record the numbers next to the third and fourth run v
 ## 8. Order of repair, proposed
 
 Sizes are estimates from a read only code map and are not commitments.
+Every item below and every gap of section 5 is a GitHub issue, numbers 3 to 16, listed in [`../backlog/2026-09-08-judgment-inputs.md`](../backlog/2026-09-08-judgment-inputs.md) and in the repository's issue tracker.
 
 1. Drain the queue at shutdown by polling the waiting and active counts after `engine.shutdown`, run the redis flush before every start, and add a run id to the row.
    Size S.
