@@ -6,7 +6,7 @@ It cannot record that the price was worth eleven dollars.
 
 ## The row
 
-Row 16 of the third run, from [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+Row 16 of the third run, from [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 
 | field | value |
 |---|---|
@@ -157,7 +157,7 @@ Only the size behind them is missing.
 
 ## Evidence
 
-- The row and its class: section 3a of [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+- The row and its class: section 3a of [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 - The live book read at 15:28 UTC: section 5 of the same document.
 - Depth levels observed on other venues the same day: section 1a of [`../research/2026-09-06-venue-depth-endpoints-probe.md`](../research/2026-09-06-venue-depth-endpoints-probe.md).
 - The stored row: `ArbitrageOpportunity` id 16, third run, local database.

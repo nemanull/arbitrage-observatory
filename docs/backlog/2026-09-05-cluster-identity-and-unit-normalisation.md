@@ -196,5 +196,5 @@ limit. A collision that appears mid-run is invisible until a restart.
 
 ## Full evidence
 
-[`../research/2026-09-05-arbitrage-opportunity-data-audit.md`](../research/2026-09-05-arbitrage-opportunity-data-audit.md)
+[`../audits/2026-09-05-first-run-data-audit.md`](../audits/2026-09-05-first-run-data-audit.md)
 sections 2 through 2f carry the queries, the raw API payloads and the adversarial review of each claim.

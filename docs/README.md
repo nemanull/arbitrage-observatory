@@ -14,13 +14,19 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-07-26-exchange-websocket-comparison.md`](./research/2026-07-26-exchange-websocket-comparison.md) compares market data, subscriptions, recovery, and execution feeds.
 - [`research/2026-07-30-ccxt-ws-ingest-feasibility.md`](./research/2026-07-30-ccxt-ws-ingest-feasibility.md) audits CCXT 4.5.68 internals against the cost of streaming every perpetual swap.
 - [`research/2026-07-30-venue-ws-protocol-differences.md`](./research/2026-07-30-venue-ws-protocol-differences.md) maps the sixteen axes on which the five venue sockets differ.
-- [`research/2026-09-05-arbitrage-opportunity-data-audit.md`](./research/2026-09-05-arbitrage-opportunity-data-audit.md) audits the first engine run and finds that 67% of its rows compare different assets or different contract units.
-- [`research/2026-09-06-second-run-data-audit.md`](./research/2026-09-06-second-run-data-audit.md) audits the run with the cluster overrides in place and finds the remaining rows are dominated by non-converging and fragmented spreads.
-- [`research/2026-09-06-third-run-data-audit.md`](./research/2026-09-06-third-run-data-audit.md) audits the first run with the quote family and finds that roundTripPpm measures a thin book's width, that duration alone cannot separate stale quotes from slow-venue orders, and that no row proves a capturable spread.
 - [`research/2026-09-06-venue-depth-endpoints-probe.md`](./research/2026-09-06-venue-depth-endpoints-probe.md) measures each venue's REST book endpoint and depth channel and records the shapes, the latency, kraken's ascending bids and coinbase's one second edge cache.
 - [`research/2026-09-07-depth-stream-scaling.md`](./research/2026-09-07-depth-stream-scaling.md) measures the whole pipeline for streamed depth on five venues, sizes the fifty venue universe at about 15,000 markets, and finds the single event loop is the one structural blocker, with pair sharding as the path.
 - [`research/2026-09-07-depth-sequence-gaps.md`](./research/2026-09-07-depth-sequence-gaps.md) measures zero sequence gaps in 12.48 million deltas on the four delta depth venues, confirms the maintained book against the venues' own top of book and REST, and records how far each ticker channel lags the book.
-- [`research/2026-09-08-fourth-run-data-audit.md`](./research/2026-09-08-fourth-run-data-audit.md) audits the first run with the book feeds and the ladder walk, finds five standing basis and equity pairs behind 389 of 597 rows and a ten dollar coinbase bot behind every coinbase peak, and lists what to verify on the next run.
+
+## Audits
+
+One file per audited run of the engine, oldest first.
+The newest audit is the one that describes current behaviour.
+
+- [`audits/2026-09-05-first-run-data-audit.md`](./audits/2026-09-05-first-run-data-audit.md) audits the first engine run and finds that 67% of its rows compare different assets or different contract units.
+- [`audits/2026-09-06-second-run-data-audit.md`](./audits/2026-09-06-second-run-data-audit.md) audits the run with the cluster overrides in place and finds the remaining rows are dominated by non-converging and fragmented spreads.
+- [`audits/2026-09-06-third-run-data-audit.md`](./audits/2026-09-06-third-run-data-audit.md) audits the first run with the quote family and finds that roundTripPpm measures a thin book's width, that duration alone cannot separate stale quotes from slow-venue orders, and that no row proves a capturable spread.
+- [`audits/2026-09-08-fourth-run-data-audit.md`](./audits/2026-09-08-fourth-run-data-audit.md) audits the first run with the book feeds and the ladder walk, finds five standing basis and equity pairs behind 389 of 597 rows and a ten dollar coinbase bot behind every coinbase peak, and lists what to verify on the next run.
 
 ## Bestiary
 
@@ -30,6 +36,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`bestiary/slow-venue-resting-order.md`](./bestiary/slow-venue-resting-order.md) describes the one honest class of the third run, a real kraken order that did not move for 28 seconds, and why it still is not free money.
 - [`bestiary/withdrawn-side.md`](./bestiary/withdrawn-side.md) describes a book that loses a whole side, and the feed that drops that message without telling the engine.
 - [`bestiary/edge-at-the-touch.md`](./bestiary/edge-at-the-touch.md) describes the reading that treats the best level as infinitely deep, and the ladder walk that measures the region both books were paying for, with worked examples.
+- [`bestiary/standing-basis.md`](./bestiary/standing-basis.md) describes a gap between two perps that the market holds open on purpose, because each perp is chained to its own venue's index and nothing chains the two perps to each other, which is 352 of the fourth run's 597 rows.
 
 ## Implemented
 

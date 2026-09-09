@@ -54,3 +54,9 @@ This is a strong recommendation, not a 100% rule.
 The system will be complicated, so we keep each part as simple as possible while still covering all cases.
 If a plain for loop solves the problem, do not build a separate service that does the same thing.
 Prefer the boring solution unless there is a concrete reason not to.
+
+## 6. Privacy of sessions
+
+Never write a Claude session link, a session id, or a "Generated with Claude Code" line anywhere that leaves this machine.
+That covers commit messages and trailers, pull request descriptions, GitHub issues and comments, and every doc in this repository.
+The sessions behind this work are private, and a link to one is a leak.

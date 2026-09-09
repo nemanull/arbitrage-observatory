@@ -8,6 +8,11 @@ The prose style rules from the root [AGENTS.md](../AGENTS.md) apply to every doc
 - [`plans/`](./plans/) holds active design docs and implementation plans.
 - [`research/`](./research/) holds investigation dumps and feasibility studies that inform a plan but are not a plan.
   Research stays here permanently, even after the work ships.
+- [`audits/`](./audits/) holds one file per audited run of the engine.
+  A run audit judges the rows that one process run produced, and it hands the next run a checklist.
+  A probe that answers a design question stays in [`research/`](./research/), even when it measures our own code.
+  Audits chain, so each one names the audit before it, and the newest audit is the one that describes current behaviour.
+  An audit stays here permanently, like research.
 - [`implemented/`](./implemented/) is the archive of shipped work.
   Reconciled designs and plans move here when their work is done.
 - [`backlog/`](./backlog/) holds one file per piece of identified work that has no stage yet.
@@ -41,9 +46,15 @@ Work flows through stages: research, design, plan, execute, reconcile.
    The reconciled design and plan then move to `implemented/`, and [`README.md`](./README.md) is updated.
    Research does not move, only plans do.
 
+Audits are a loop around these stages rather than a stage in them.
+A run of the engine is audited in [`audits/`](./audits/), and that audit is where the next piece of work usually comes from.
+A finding that needs a decision becomes an entry in [`backlog/`](./backlog/).
+A finding that names a new way an arbitrage reading can be wrong becomes an entry in [`bestiary/`](./bestiary/).
+
 ## Naming and linking
 
 - Filenames are kebab-case and date-prefixed: `YYYY-MM-DD-<topic>-design.md` for designs, `YYYY-MM-DD-<topic>-plan.md` for plans.
+  A run audit is `YYYY-MM-DD-<ordinal>-run-data-audit.md`, where the ordinal counts audited runs, as in `2026-09-08-fourth-run-data-audit.md`.
 - No `v2`, `final`, or similar suffixes.
   Git history covers versions.
 - Links between docs are relative and clickable, and the target always starts with `./` or `../`.

@@ -2,7 +2,7 @@
 
 Date: 2026-09-06.
 Status: Done.
-Research: [`../research/2026-09-06-second-run-data-audit.md`](../research/2026-09-06-second-run-data-audit.md) section 6, and [`../research/2026-09-05-arbitrage-opportunity-data-audit.md`](../research/2026-09-05-arbitrage-opportunity-data-audit.md) sections 3, 5 and 10.
+Research: [`../audits/2026-09-06-second-run-data-audit.md`](../audits/2026-09-06-second-run-data-audit.md) section 6, and [`../audits/2026-09-05-first-run-data-audit.md`](../audits/2026-09-05-first-run-data-audit.md) sections 3, 5 and 10.
 Plan: [`2026-09-06-close-reasons-plan.md`](./2026-09-06-close-reasons-plan.md).
 
 ## Purpose

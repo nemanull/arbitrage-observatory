@@ -3,7 +3,7 @@
 Status: Done.
 Recorded: 2026-09-06.
 Indexed in [`README.md`](../README.md).
-Decides item 6 of [`2026-09-06-second-run-data-audit.md`](../research/2026-09-06-second-run-data-audit.md).
+Decides item 6 of [`2026-09-06-second-run-data-audit.md`](../audits/2026-09-06-second-run-data-audit.md).
 The work was small enough that the implementation plan is folded into the last section of this doc.
 
 ## Problem

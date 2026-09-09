@@ -5,7 +5,7 @@ Recorded: 2026-09-06.
 Reconciled: 2026-09-06, the same day, against the shipped code.
 Indexed in [`README.md`](../README.md).
 Implements the second line of Phase 4 in [`ROADMAP.md`](../ROADMAP.md).
-Research: section 6 and item 3 of section 8 in [`2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+Research: section 6 and item 3 of section 8 in [`2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 The implementation plan is [`2026-09-06-book-sizes-and-far-sides-plan.md`](./2026-09-06-book-sizes-and-far-sides-plan.md).
 
 ## Problem

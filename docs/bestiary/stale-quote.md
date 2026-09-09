@@ -5,7 +5,7 @@ The venue never sent an update, because its channel only speaks when a trade hap
 
 ## The row
 
-Row 39 of the third run, from [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+Row 39 of the third run, from [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 
 | field | value |
 |---|---|
@@ -167,7 +167,7 @@ They are also entirely fictional.
 
 ## Evidence
 
-- The row and its class: section 3c of [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+- The row and its class: section 3c of [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 - The trade gap measurements at 18:13 UTC: the same section.
 - The frozen leg table and the route table: section 4 of the same document.
 - The channel behaviour: [`../profiles/coinbase/websocket.md`](../profiles/coinbase/websocket.md).

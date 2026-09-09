@@ -1,7 +1,7 @@
 # ArbitrageOpportunity: second-run data audit
 
 Date: 2026-09-06 in UTC, which is the evening of 2026-09-05 in PDT.
-This follows [`2026-09-05-arbitrage-opportunity-data-audit.md`](./2026-09-05-arbitrage-opportunity-data-audit.md), called "the first audit" below.
+This follows [`2026-09-05-first-run-data-audit.md`](./2026-09-05-first-run-data-audit.md), called "the first audit" below.
 Reproduction commands are the same:
 
 ```

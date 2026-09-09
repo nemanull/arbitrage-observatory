@@ -12,7 +12,7 @@ That test was true on every one of the fourth run's 597 rows, and it could not t
 The reason is not a bug in the test.
 The inputs that separate those five cases are not read anywhere in the system, so no rule could use them.
 This entry explains each missing input, what it would have said on the fourth run, where it comes from, and what carrying it means.
-The evidence is in [`../research/2026-09-08-fourth-run-data-audit.md`](../research/2026-09-08-fourth-run-data-audit.md).
+The evidence is in [`../audits/2026-09-08-fourth-run-data-audit.md`](../audits/2026-09-08-fourth-run-data-audit.md).
 
 ## 1. Index, mark and funding per leg
 

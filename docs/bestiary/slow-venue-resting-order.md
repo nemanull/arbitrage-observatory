@@ -6,7 +6,7 @@ It is here because on a row it is indistinguishable from [`stale-quote.md`](./st
 
 ## The row
 
-Row 326 of the third run, from [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+Row 326 of the third run, from [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 
 | field | value |
 |---|---|
@@ -152,7 +152,7 @@ Each leg's own width shipped on 2026-09-06 in [`../implemented/2026-09-06-book-s
 
 ## Evidence
 
-- The row and its class: section 3d of [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+- The row and its class: section 3d of [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 - The live read at 18:13 UTC: the same section.
 - The frozen leg table and the survivor counts: section 4 of the same document.
 - The throttle: [`../profiles/kraken/websocket.md`](../profiles/kraken/websocket.md).

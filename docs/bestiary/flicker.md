@@ -5,7 +5,7 @@ One venue printed a price far from its own next level, and the price was gone be
 
 ## The row
 
-Row 113 of the third run, from [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+Row 113 of the third run, from [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 
 | field | value |
 |---|---|
@@ -170,7 +170,7 @@ It is also the reason the level 0 to level 1 gap is the better long term test, b
 
 ## Evidence
 
-- The row and its class: section 3b of [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md).
+- The row and its class: section 3b of [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
 - The live book read at 15:45 UTC: section 5 of the same document.
 - The survivor counts: section 4 of the same document.
 - The stored row: `ArbitrageOpportunity` id 113, third run, local database.

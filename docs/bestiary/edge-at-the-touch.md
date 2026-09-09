@@ -10,7 +10,7 @@ A cross of 5,000 ppm on a level that holds eleven dollars and a cross of 5,000 p
 ## The row that produced it
 
 The clearest case is in [`thin-book.md`](./thin-book.md): a best price that was real, held eleven dollars, and moved 7 percent when its one maker cancelled.
-The third run audit in [`../research/2026-09-06-third-run-data-audit.md`](../research/2026-09-06-third-run-data-audit.md) found that no row of the 745 could prove a capturable spread, because every row carried a price and not a quantity.
+The third run audit in [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md) found that no row of the 745 could prove a capturable spread, because every row carried a price and not a quantity.
 
 ## The books behind it
 

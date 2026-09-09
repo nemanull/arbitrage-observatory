@@ -1,7 +1,7 @@
 # ArbitrageOpportunity: third-run data audit
 
 Date: 2026-09-06 in UTC.
-This follows [`2026-09-06-second-run-data-audit.md`](./2026-09-06-second-run-data-audit.md), called "the second audit" below, and [`2026-09-05-arbitrage-opportunity-data-audit.md`](./2026-09-05-arbitrage-opportunity-data-audit.md), called "the first audit".
+This follows [`2026-09-06-second-run-data-audit.md`](./2026-09-06-second-run-data-audit.md), called "the second audit" below, and [`2026-09-05-first-run-data-audit.md`](./2026-09-05-first-run-data-audit.md), called "the first audit".
 It is the first run with the quote family from [`2026-09-06-quote-family-design.md`](../implemented/2026-09-06-quote-family-design.md), so kraken and coinbase pair with the USDT venues for the first time.
 Reproduction commands are the same as in the second audit.
 
