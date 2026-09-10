@@ -133,6 +133,12 @@ export class OpportunityManager {
         highestBidMarket,
         lowestAskMarket,
         now,
+        {
+          netPpm,
+          maxPlausibleNetPpm: MAX_PLAUSIBLE_NET_PPM,
+          highestBid,
+          lowestAsk,
+        },
       );
       return null;
     }
