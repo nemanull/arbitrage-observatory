@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
 import type { Market, Venue } from '../../engine/types';
-import type { EndpointPlan, SingleSocketConnection } from '../../ws/types';
+import type {
+  EndpointPlan,
+  SingleSocketConnection,
+} from '../../feeds/book/types';
 import { KrakenFuturesFeed } from './krakenfutures';
 
 const VENUE_ID = 'krakenfutures';

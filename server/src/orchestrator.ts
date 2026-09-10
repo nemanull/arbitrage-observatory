@@ -15,8 +15,9 @@ import {
 } from './engine/OpportunityWorker';
 import { createVenueIndexMap } from './engine/shared';
 import type { ClusterIndex, Venue } from './engine/types';
+import type { AnchorPoller } from './feeds/anchor/AnchorPoller';
+import type { VenueFeed } from './feeds/book/VenueFeed';
 import { VENUE_REGISTRY } from './venues/registry';
-import type { VenueFeed } from './ws/VenueFeed';
 
 const SWEEP_INTERVAL_MS = 1_000;
 
@@ -25,6 +26,7 @@ type Run = {
   clusterIndex: ClusterIndex;
   engine: Engine;
   feeds: VenueFeed[];
+  pollers: AnchorPoller[];
   sweepTimer: NodeJS.Timeout;
   startedAt: number;
 };
@@ -93,7 +95,8 @@ export class Orchestrator
       };
 
       const engine = new Engine(clusterIndex, venueIndexMap, this.queue);
-      const feeds = this.createFeeds(venues, engine);
+      const tracked = this.trackedVenues(venues, engine);
+      const feeds = this.createFeeds(tracked, engine);
 
       if (feeds.length < 2) {
         throw new Error(
@@ -101,8 +104,14 @@ export class Orchestrator
         );
       }
 
+      const pollers = this.createPollers(tracked, engine);
+
       for (const feed of feeds) {
         feed.start();
+      }
+
+      for (const poller of pollers) {
+        poller.start();
       }
 
       const sweepTimer = setInterval(
@@ -115,6 +124,7 @@ export class Orchestrator
         clusterIndex,
         engine,
         feeds,
+        pollers,
         sweepTimer,
         startedAt: Date.now(),
       };
@@ -145,6 +155,10 @@ export class Orchestrator
     // Feeds first, so nothing opens behind the flush. Their close events land later and find nothing open.
     for (const feed of run.feeds) {
       feed.stop();
+    }
+
+    for (const poller of run.pollers) {
+      poller.stop();
     }
 
     const closed = await run.engine.shutdown(Date.now());
@@ -197,19 +211,10 @@ export class Orchestrator
     ).loadVenue();
   }
 
-  private createFeeds(venues: Venue[], engine: Engine): VenueFeed[] {
-    const feeds: VenueFeed[] = [];
+  private trackedVenues(venues: Venue[], engine: Engine): Venue[] {
+    const tracked: Venue[] = [];
 
     for (const venue of venues) {
-      const registration = VENUE_REGISTRY[venue.id];
-
-      if (registration === undefined) {
-        this.logger.error(
-          `${venue.id} has no feed implementation; skipping it`,
-        );
-        continue;
-      }
-
       const markets = venue.markets.filter((market) =>
         engine.tracks(venue.id, market.rawMarketId),
       );
@@ -223,10 +228,45 @@ export class Orchestrator
         `${venue.id}: streaming ${markets.length} of ${venue.markets.length} markets`,
       );
 
-      feeds.push(registration.createFeed({ ...venue, markets }, engine));
+      tracked.push({ ...venue, markets });
+    }
+
+    return tracked;
+  }
+
+  private createFeeds(venues: Venue[], engine: Engine): VenueFeed[] {
+    const feeds: VenueFeed[] = [];
+
+    for (const venue of venues) {
+      const registration = VENUE_REGISTRY[venue.id];
+
+      if (registration === undefined) {
+        this.logger.error(
+          `${venue.id} has no feed implementation; skipping it`,
+        );
+        continue;
+      }
+
+      feeds.push(registration.createFeed(venue, engine));
     }
 
     return feeds;
+  }
+
+  private createPollers(venues: Venue[], engine: Engine): AnchorPoller[] {
+    const pollers: AnchorPoller[] = [];
+
+    for (const venue of venues) {
+      const registration = VENUE_REGISTRY[venue.id];
+
+      if (registration === undefined) {
+        continue; // createFeeds logged it
+      }
+
+      pollers.push(registration.createAnchorPoller(venue, engine));
+    }
+
+    return pollers;
   }
 
   private sweep(engine: Engine): void {

@@ -843,7 +843,32 @@ export const ArbitrageOpportunityScalarFieldEnum = {
   edgeNotionalAtClose: 'edgeNotionalAtClose',
   edgeExhaustedAtClose: 'edgeExhaustedAtClose',
   maxEdgeNotional: 'maxEdgeNotional',
-  edgeSamples: 'edgeSamples'
+  edgeSamples: 'edgeSamples',
+  highestBidIndexAtOpen: 'highestBidIndexAtOpen',
+  highestBidMarkAtOpen: 'highestBidMarkAtOpen',
+  highestBidFundingRateAtOpen: 'highestBidFundingRateAtOpen',
+  highestBidFundingIntervalHours: 'highestBidFundingIntervalHours',
+  highestBidNextFundingAt: 'highestBidNextFundingAt',
+  highestBidAnchorAt: 'highestBidAnchorAt',
+  lowestAskIndexAtOpen: 'lowestAskIndexAtOpen',
+  lowestAskMarkAtOpen: 'lowestAskMarkAtOpen',
+  lowestAskFundingRateAtOpen: 'lowestAskFundingRateAtOpen',
+  lowestAskFundingIntervalHours: 'lowestAskFundingIntervalHours',
+  lowestAskNextFundingAt: 'lowestAskNextFundingAt',
+  lowestAskAnchorAt: 'lowestAskAnchorAt',
+  anchorIssueAtOpen: 'anchorIssueAtOpen',
+  freshNetPpmAtOpen: 'freshNetPpmAtOpen',
+  standingPpmAtOpen: 'standingPpmAtOpen',
+  freshNetPpmAtPeak: 'freshNetPpmAtPeak',
+  standingPpmAtPeak: 'standingPpmAtPeak',
+  freshNetPpmAtClose: 'freshNetPpmAtClose',
+  standingPpmAtClose: 'standingPpmAtClose',
+  freshNetPpmSeries: 'freshNetPpmSeries',
+  anchorTsMs: 'anchorTsMs',
+  highestBidIndexSeries: 'highestBidIndexSeries',
+  highestBidMarkSeries: 'highestBidMarkSeries',
+  lowestAskIndexSeries: 'lowestAskIndexSeries',
+  lowestAskMarkSeries: 'lowestAskMarkSeries'
 } as const
 
 export type ArbitrageOpportunityScalarFieldEnum = (typeof ArbitrageOpportunityScalarFieldEnum)[keyof typeof ArbitrageOpportunityScalarFieldEnum]
@@ -967,6 +992,20 @@ export type EnumOpportunityCloseReasonFieldRefInput<$PrismaModel> = FieldRefInpu
  * Reference to a field of type 'OpportunityCloseReason[]'
  */
 export type ListEnumOpportunityCloseReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OpportunityCloseReason[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AnchorIssue'
+ */
+export type EnumAnchorIssueFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnchorIssue'>
+    
+
+
+/**
+ * Reference to a field of type 'AnchorIssue[]'
+ */
+export type ListEnumAnchorIssueFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AnchorIssue[]'>
     
 
 /**

@@ -26,3 +26,24 @@ export type CoinbaseFrame = {
   type?: string; // 'error', which is the only frame shape that carries no channel
   message?: string;
 };
+
+// One product of GET /api/v3/brokerage/market/products for the perpetuals, only the fields the anchor reads.
+export type CoinbaseFutureDetails = {
+  index_price: string;
+  funding_rate: string; // as a fraction, per interval
+  funding_time: string; // RFC 3339, the last settlement
+  funding_interval: string; // '3600s'
+  open_interest: string;
+  venue: string;
+};
+
+export type CoinbaseProduct = {
+  product_id: string; // 'BTC-PERP-INTX'
+  status: string;
+  future_product_details?: CoinbaseFutureDetails | null;
+};
+
+export type CoinbaseProductsReply = {
+  products: CoinbaseProduct[];
+  num_products: number;
+};

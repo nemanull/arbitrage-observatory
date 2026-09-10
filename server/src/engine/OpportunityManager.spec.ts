@@ -1,6 +1,10 @@
 import { Logger } from '@nestjs/common';
-import { createClusterDepth } from './ClusterIndexBuilder';
-import { MAX_SERIES_LENGTH, OpportunityManager } from './OpportunityManager';
+import { createClusterAnchor, createClusterDepth } from './ClusterIndexBuilder';
+import {
+  MAX_SERIES_LENGTH,
+  NO_ANCHOR,
+  OpportunityManager,
+} from './OpportunityManager';
 import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
 import type { ActiveOpportunityMap, Cluster, Market } from './types';
 import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
@@ -53,6 +57,7 @@ function makeCluster(): Cluster {
     askSize: new Float64Array(width),
     recvTs: new Float64Array(width),
     depth: createClusterDepth(width, 4), // four levels a slot, filled by the ladder walk tests only
+    anchor: createClusterAnchor(width),
   };
 }
 
@@ -418,6 +423,8 @@ describe('OpportunityManager series cap', () => {
       highestBidLegAsk: 101.5,
       lowestAskLegBid: 99.9,
       netPpm: 8_000,
+      anchor: null,
+      anchorIssue: null,
       now: 1_000,
     };
 
@@ -466,6 +473,8 @@ describe('OpportunityManager.trackOpportunity', () => {
       highestBidLegAsk: 100.02,
       lowestAskLegBid: 99.99,
       netPpm: 100,
+      anchor: null,
+      anchorIssue: null,
       now: 1_000,
     });
 
@@ -490,6 +499,8 @@ describe('OpportunityManager.trackOpportunity', () => {
       highestBidLegAsk: 101.5,
       lowestAskLegBid: 99.9,
       netPpm: 8_000,
+      anchor: null,
+      anchorIssue: null,
       now: 1_000,
     };
 
@@ -872,5 +883,449 @@ describe('OpportunityManager edge on the row', () => {
     expect(row.edgeSizeAtClose).toBe(0); // the tops no longer cross, so the region is empty
     expect(row.edgeAvgPpmSeries).toEqual([-1, expect.any(Number), 0]);
     expect(row.edgeNotionalSeries).toEqual([-1, expect.any(Number), 0]);
+  });
+});
+
+describe('OpportunityManager anchor filter', () => {
+  const NOW = 10_000;
+
+  function anchorLeg(
+    cluster: Cluster,
+    i: number,
+    index: number,
+    mark: number,
+    writtenAt: number,
+    fundingRate = 0.0001,
+  ) {
+    cluster.anchor.index[i] = index;
+    cluster.anchor.mark[i] = mark;
+    cluster.anchor.fundingRate[i] = fundingRate;
+    cluster.anchor.fundingIntervalHours[i] = 8;
+    cluster.anchor.nextFundingAt[i] = NOW + 3_600_000;
+    cluster.anchor.writtenAt[i] = writtenAt;
+  }
+
+  it('opens unjudged when no anchor has been written yet', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+
+    const opened = openOn(manager, cluster, NOW);
+
+    expect(opened).not.toBeNull();
+    expect(opened?.anchorAtOpen).toBeNull();
+  });
+
+  // bybit's anchor sits one percent over binance's, which is the whole cross: the market already holds these two perps apart.
+  it('rejects a cross the two anchors already explain', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+    anchorLeg(cluster, BINANCE, 100.2, 100.2, NOW - 100);
+    anchorLeg(cluster, BYBIT, 101.2, 101.2, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW);
+
+    expect(opened).toBeNull();
+    expect(routes(manager)).toBeUndefined();
+    expect(warn).toHaveBeenCalledTimes(1);
+    const payload = warn.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.event).toBe('opportunity_rejected');
+    expect(payload.reason).toBe('standing_basis');
+    expect(payload.route).toBe('bybit-binance');
+    expect(payload.freshNetPpm as number).toBeLessThan(0);
+    expect(payload.standingPpm as number).toBeGreaterThan(9_000);
+    expect(payload.occurrenceCount).toBe(1);
+  });
+
+  it('opens when the anchors agree and records both legs on the route', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100, 0.0001);
+    anchorLeg(cluster, BYBIT, 100.5, 100.6, NOW - 300, -0.0038);
+
+    const opened = openOn(manager, cluster, NOW);
+
+    expect(opened).not.toBeNull();
+    const anchor = opened!.anchorAtOpen!;
+    expect(anchor.sell.index).toBe(100.5);
+    expect(anchor.sell.mark).toBe(100.6);
+    expect(anchor.sell.fundingRate).toBe(-0.0038);
+    expect(anchor.sell.writtenAt).toBe(NOW - 300);
+    expect(anchor.buy.premium).toBe(0);
+    // bybit's mark sits ten basis points over its index, so that much of the cross is standing and the rest is fresh.
+    const net = opened!.netPpmAtOpen;
+    const fresh = ((1 + net / 1_000_000) / (100.6 / 100.5) - 1) * 1_000_000;
+    expect(anchor.freshNetPpm).toBeCloseTo(fresh, 6);
+    expect(anchor.standingPpm).toBeCloseTo(net - fresh, 6);
+    expect(Math.round(anchor.standingPpm)).toBe(1_003);
+  });
+
+  it('reads a venue without a mark at its index', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 0, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW);
+
+    expect(opened).not.toBeNull();
+    expect(opened!.anchorAtOpen!.buy.premium).toBeNull();
+    expect(opened!.anchorAtOpen!.freshNetPpm).toBeCloseTo(
+      opened!.netPpmAtOpen,
+      6,
+    );
+  });
+
+  it('opens unjudged when the two anchors are too far apart in time or too old', () => {
+    const skewed = new OpportunityManager(createOpportunityQueueMock());
+    const skewedCluster = makeCluster();
+    anchorLeg(skewedCluster, BINANCE, 100.2, 100.2, NOW - 100);
+    anchorLeg(skewedCluster, BYBIT, 101.2, 101.2, NOW - 3_000);
+
+    const stale = new OpportunityManager(createOpportunityQueueMock());
+    const staleCluster = makeCluster();
+    anchorLeg(staleCluster, BINANCE, 100.2, 100.2, NOW - 20_000);
+    anchorLeg(staleCluster, BYBIT, 101.2, 101.2, NOW - 20_000);
+
+    expect(openOn(skewed, skewedCluster, NOW)?.anchorAtOpen).toBeNull();
+    expect(openOn(stale, staleCluster, NOW)?.anchorAtOpen).toBeNull();
+  });
+
+  it('warns once per window while a standing basis keeps coming back', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+    anchorLeg(cluster, BINANCE, 100.2, 100.2, NOW - 100);
+    anchorLeg(cluster, BYBIT, 101.2, 101.2, NOW - 100);
+
+    openOn(manager, cluster, NOW);
+    tick(manager, cluster, BYBIT, 101.01, 101.5, NOW + 1_000);
+    // The pollers keep writing while the basis stands, so the anchors are fresh again for the tick past the window.
+    anchorLeg(cluster, BINANCE, 100.2, 100.2, NOW + 10_900);
+    anchorLeg(cluster, BYBIT, 101.2, 101.2, NOW + 10_900);
+    tick(manager, cluster, BYBIT, 101.02, 101.5, NOW + 11_000);
+
+    expect(warn).toHaveBeenCalledTimes(2);
+    const second = warn.mock.calls[1][0] as Record<string, unknown>;
+    expect(second.occurrenceCount).toBe(4); // the open attempt, the okx tick behind it, and two bybit ticks
+    expect(second.suppressedCount).toBe(2);
+  });
+
+  it('carries the anchor into the close log', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const logger = Reflect.get(manager, 'logger') as Logger;
+    const log = jest.spyOn(logger, 'log').mockImplementation(() => undefined);
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
+
+    openOn(manager, cluster, NOW);
+    tick(manager, cluster, BYBIT, 100, 100.5, NOW + 50); // collapses
+
+    const closed = log.mock.calls
+      .map((c) => c[0] as Record<string, unknown>)
+      .find((entry) => entry.event === 'opportunity_closed')!;
+    expect(closed.freshNetPpmAtOpen as number).toBeCloseTo(
+      closed.netPpmAtOpen as number,
+      6,
+    );
+    expect(closed.standingPpmAtOpen as number).toBeCloseTo(0, 6);
+  });
+});
+
+describe('OpportunityManager anchor on the row', () => {
+  const NOW = 10_000;
+
+  function anchorLeg(
+    cluster: Cluster,
+    i: number,
+    index: number,
+    mark: number,
+    writtenAt: number,
+  ) {
+    cluster.anchor.index[i] = index;
+    cluster.anchor.mark[i] = mark;
+    cluster.anchor.fundingRate[i] = i === BYBIT ? -0.0038 : 0.0001;
+    cluster.anchor.fundingIntervalHours[i] = i === BYBIT ? 4 : 8;
+    cluster.anchor.nextFundingAt[i] = NOW + 3_600_000;
+    cluster.anchor.writtenAt[i] = writtenAt;
+  }
+
+  // The queue mock's add is already a jest.fn, so the spy is the same function and carries the calls made before this line.
+  function enqueuedRow(queue: ReturnType<typeof createOpportunityQueueMock>) {
+    const calls = jest.spyOn(queue, 'add').mock.calls as unknown as [
+      string,
+      { rows: Record<string, unknown>[] },
+    ][];
+    return calls[0][1].rows[0];
+  }
+
+  it('records the anchor series only when a leg moved, and the fresh series on every sample', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW)!;
+    tick(manager, cluster, BYBIT, 101.1, 101.5, NOW + 100); // same anchors
+    anchorLeg(cluster, BYBIT, 100.5, 100.7, NOW + 900); // the poller moved bybit's mark
+    tick(manager, cluster, BYBIT, 101.2, 101.5, NOW + 1_000);
+    tick(manager, cluster, BINANCE, 99.9, 100.1, NOW + 1_100); // same anchors again
+
+    expect(opened.anchorTsMs).toEqual([0, 1_000]);
+    expect(opened.highestBidMarkSeries).toEqual([100.5, 100.7]);
+    expect(opened.highestBidIndexSeries).toEqual([100.5, 100.5]);
+    expect(opened.lowestAskIndexSeries).toEqual([100.5, 100.5]);
+    expect(opened.lowestAskMarkSeries).toEqual([100.5, 100.5]);
+    expect(opened.freshNetPpmSeries).toHaveLength(opened.sampleTs.length);
+    expect(opened.freshNetPpmSeries[0]).toBeCloseTo(opened.netPpmAtOpen, 6);
+    // From the third sample on, ten basis points of bybit's premium are standing and the fresh series sits under the net series.
+    expect(opened.freshNetPpmSeries[2]).toBeLessThan(
+      opened.netPpmSeries[2] - 900,
+    );
+    expect(opened.lastAnchor?.sell.mark).toBe(100.7);
+  });
+
+  it('marks the samples where the anchor could not be read and leaves the anchor series alone', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW)!;
+    tick(manager, cluster, BYBIT, 101.1, 101.5, NOW + 20_000); // both anchors are now stale
+
+    expect(opened.freshNetPpmSeries).toEqual([expect.any(Number), NO_ANCHOR]);
+    expect(opened.anchorTsMs).toEqual([0]);
+    expect(opened.lastAnchor).toBeNull();
+  });
+
+  it('keeps the anchors at the peak sample', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW)!;
+    anchorLeg(cluster, BYBIT, 100.5, 100.6, NOW + 400);
+    tick(manager, cluster, BYBIT, 102, 102.5, NOW + 500); // the peak, with bybit's mark moved
+
+    expect(opened.peakAt).toBe(NOW + 500);
+    expect(opened.peakAnchor?.sell.mark).toBe(100.6);
+    expect(opened.anchorAtOpen?.sell.mark).toBe(100.5);
+  });
+
+  it('writes the anchors, the derived edges and the series onto the row', () => {
+    const queue = createOpportunityQueueMock();
+    const manager = new OpportunityManager(queue);
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 0, NOW - 300); // a venue without a mark
+    anchorLeg(cluster, BYBIT, 100.5, 100.6, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW)!;
+    tick(manager, cluster, BYBIT, 100.1, 101.5, NOW + 50); // collapses
+    const row = enqueuedRow(queue);
+
+    expect(row.highestBidIndexAtOpen).toBe(100.5);
+    expect(row.highestBidMarkAtOpen).toBe(100.6);
+    expect(row.highestBidFundingRateAtOpen).toBe(-0.0038);
+    expect(row.highestBidFundingIntervalHours).toBe(4);
+    expect(row.highestBidNextFundingAt).toBe(
+      new Date(NOW + 3_600_000).toISOString(),
+    );
+    expect(row.highestBidAnchorAt).toBe(new Date(NOW - 100).toISOString());
+    expect(row.lowestAskMarkAtOpen).toBeNull();
+    expect(row.lowestAskFundingIntervalHours).toBe(8);
+    expect(row.lowestAskAnchorAt).toBe(new Date(NOW - 300).toISOString());
+    expect(row.anchorIssueAtOpen).toBeNull();
+    expect(row.freshNetPpmAtOpen).toBe(opened.anchorAtOpen?.freshNetPpm);
+    expect(row.standingPpmAtOpen).toBe(opened.anchorAtOpen?.standingPpm);
+    expect(row.freshNetPpmAtPeak).toBe(opened.peakAnchor?.freshNetPpm);
+    expect(row.freshNetPpmAtClose).toBe(opened.lastAnchor?.freshNetPpm);
+    expect(row.standingPpmAtClose).toBe(opened.lastAnchor?.standingPpm);
+    expect(row.freshNetPpmSeries).toEqual(opened.freshNetPpmSeries);
+    expect(row.anchorTsMs).toEqual([0]);
+    expect(row.highestBidMarkSeries).toEqual([100.6]);
+    expect(row.lowestAskMarkSeries).toEqual([0]);
+  });
+
+  it('writes nulls, the issue and empty series for a route that opened unjudged', () => {
+    const queue = createOpportunityQueueMock();
+    const manager = new OpportunityManager(queue);
+    const cluster = makeCluster();
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 5_000); // skewed
+
+    openOn(manager, cluster, NOW);
+    tick(manager, cluster, BYBIT, 100.1, 101.5, NOW + 50);
+    const row = enqueuedRow(queue);
+
+    expect(row.anchorIssueAtOpen).toBe('anchor_skewed');
+    expect(row.highestBidIndexAtOpen).toBeNull();
+    expect(row.lowestAskNextFundingAt).toBeNull();
+    expect(row.freshNetPpmAtOpen).toBeNull();
+    expect(row.freshNetPpmAtClose).toBeNull();
+    expect(row.freshNetPpmSeries).toEqual([NO_ANCHOR, NO_ANCHOR]);
+    expect(row.anchorTsMs).toEqual([]);
+    expect(row.highestBidIndexSeries).toEqual([]);
+  });
+});
+
+describe('OpportunityManager index quarantine', () => {
+  const NOW = 100_000;
+  const SECOND = 1_000;
+
+  // Both legs read fresh at the tick, mark equal to index so the premiums explain nothing.
+  function anchors(
+    cluster: Cluster,
+    binanceIndex: number,
+    bybitIndex: number,
+    now: number,
+  ) {
+    for (const [i, index] of [
+      [BINANCE, binanceIndex],
+      [BYBIT, bybitIndex],
+    ]) {
+      cluster.anchor.index[i] = index;
+      cluster.anchor.mark[i] = index;
+      cluster.anchor.fundingRate[i] = 0.0001;
+      cluster.anchor.fundingIntervalHours[i] = 8;
+      cluster.anchor.nextFundingAt[i] = now + 3_600_000;
+      cluster.anchor.writtenAt[i] = now - 100;
+    }
+  }
+
+  // bybit bids 106 against a binance ask of 100, the shape of a pair chained to two different indices.
+  // Either tick can be the one that discovers the route, so whichever opened it is returned.
+  function cross(manager: OpportunityManager, cluster: Cluster, now: number) {
+    return (
+      tick(manager, cluster, BINANCE, 99.9, 100, now) ??
+      tick(manager, cluster, BYBIT, 106, 106.5, now)
+    );
+  }
+
+  function events(spy: jest.SpyInstance): string[] {
+    return (spy.mock.calls as unknown[][]).map(
+      (c) => (c[0] as { event?: string }).event ?? 'text',
+    );
+  }
+
+  it('sets a route aside once its indices have been apart for a minute, and stops reading it', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    for (let t = 0; t <= 70; t += 10) {
+      anchors(cluster, 100, 106, NOW + t * SECOND);
+      expect(cross(manager, cluster, NOW + t * SECOND)).toBeNull();
+    }
+
+    const seen = events(warn);
+    const quarantined = seen.indexOf('route_quarantined');
+    expect(quarantined).toBeGreaterThan(0);
+    expect(seen.slice(0, quarantined)).toEqual(
+      Array<string>(quarantined).fill('opportunity_rejected'),
+    );
+    expect(seen.slice(quarantined + 1)).toEqual([]); // the ticks after it reach no anchor read and no log
+    const payload = warn.mock.calls[quarantined][0] as Record<string, unknown>;
+    expect(payload.route).toBe('bybit-binance');
+    expect(Math.round(payload.gapPpm as number)).toBe(60_000); // the sell leg's index over the buy leg's
+    expect(payload.apartMs).toBe(60_000);
+    expect(routes(manager)).toBeUndefined();
+  });
+
+  it('does not set a route aside on a gap that closes inside the minute', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    for (let t = 0; t <= 40; t += 10) {
+      anchors(cluster, 100, 106, NOW + t * SECOND);
+      expect(cross(manager, cluster, NOW + t * SECOND)).toBeNull();
+    }
+    anchors(cluster, 100, 100, NOW + 50 * SECOND);
+    const opened = cross(manager, cluster, NOW + 50 * SECOND);
+
+    expect(opened).not.toBeNull();
+    expect(events(warn)).not.toContain('route_quarantined');
+  });
+
+  it('releases the route once the indices have agreed for five minutes of rechecks', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+    const logger = Reflect.get(manager, 'logger') as Logger;
+    const log = jest.spyOn(logger, 'log').mockImplementation(() => undefined);
+
+    for (let t = 0; t <= 60; t += 10) {
+      anchors(cluster, 100, 106, NOW + t * SECOND);
+      cross(manager, cluster, NOW + t * SECOND);
+    }
+    expect(events(warn)).toContain('route_quarantined');
+
+    const rechecks = [120, 180, 240, 300, 360].map((t) => {
+      anchors(cluster, 100, 100, NOW + t * SECOND);
+      return cross(manager, cluster, NOW + t * SECOND);
+    });
+    anchors(cluster, 100, 100, NOW + 420 * SECOND);
+    const opened = cross(manager, cluster, NOW + 420 * SECOND);
+
+    expect(rechecks).toEqual([null, null, null, null, null]);
+    expect(events(log)).toContain('route_released');
+    expect(opened).not.toBeNull();
+    expect(opened?.openedAt).toBe(NOW + 420 * SECOND);
+  });
+
+  it('keeps a route aside while the rechecks still see the gap', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const logger = Reflect.get(manager, 'logger') as Logger;
+    const log = jest.spyOn(logger, 'log').mockImplementation(() => undefined);
+    warnings(manager);
+
+    for (let t = 0; t <= 60; t += 10) {
+      anchors(cluster, 100, 106, NOW + t * SECOND);
+      cross(manager, cluster, NOW + t * SECOND);
+    }
+    for (const t of [120, 180, 240, 300, 360, 420, 480]) {
+      anchors(cluster, 100, 106, NOW + t * SECOND);
+      expect(cross(manager, cluster, NOW + t * SECOND)).toBeNull();
+    }
+
+    expect(events(log)).not.toContain('route_released');
+  });
+
+  it('neither convicts nor releases on anchors it cannot read', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    for (let t = 0; t <= 120; t += 10) {
+      anchors(cluster, 100, 106, NOW); // written once, stale after ten seconds
+      cross(manager, cluster, NOW + t * SECOND);
+    }
+
+    expect(events(warn)).not.toContain('route_quarantined');
+    expect(routes(manager)?.get('bybit-binance')?.anchorAtOpen).toBeNull(); // it opened unjudged instead
+  });
+
+  it('compares the indices in the same unit as the books', () => {
+    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+    // bybit quotes a tenth of binance's unit, and the cluster builder gave it a price scale of ten.
+    cluster.bidMul[BYBIT] *= 10;
+    cluster.askMul[BYBIT] *= 10;
+    cluster.sizeMul[BYBIT] /= 10;
+
+    let opened = null;
+    for (let t = 0; t <= 70; t += 10) {
+      anchors(cluster, 100.5, 10.05, NOW + t * SECOND);
+      tick(manager, cluster, BINANCE, 99.9, 100, NOW + t * SECOND);
+      opened ??= tick(manager, cluster, BYBIT, 10.1, 10.15, NOW + t * SECOND);
+    }
+
+    expect(opened).not.toBeNull();
+    expect(events(warn)).not.toContain('route_quarantined');
   });
 });

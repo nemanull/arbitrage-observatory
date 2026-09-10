@@ -37,6 +37,8 @@ The newest audit is the one that describes current behaviour.
 - [`bestiary/withdrawn-side.md`](./bestiary/withdrawn-side.md) describes a book that loses a whole side, and the feed that drops that message without telling the engine.
 - [`bestiary/edge-at-the-touch.md`](./bestiary/edge-at-the-touch.md) describes the reading that treats the best level as infinitely deep, and the ladder walk that measures the region both books were paying for, with worked examples.
 - [`bestiary/standing-basis.md`](./bestiary/standing-basis.md) describes a gap between two perps that the market holds open on purpose, because each perp is chained to its own venue's index and nothing chains the two perps to each other, which is 352 of the fourth run's 597 rows.
+- [`bestiary/index-mark-and-premium.md`](./bestiary/index-mark-and-premium.md) is the vocabulary behind the basis entries: what a perp's index, mark, premium and funding are, how each is built and how fast it moves, with live recipes and a worked settlement.
+- [`bestiary/settlement-dip.md`](./bestiary/settlement-dip.md) describes a perp moving against the side paying funding in the minutes around its settlement instant, why leaving before the bill is self defeating, and the IOST capture across the 19:00 instant that shows the shape on two venues and its absence under the fee.
 
 ## Implemented
 

@@ -21,3 +21,24 @@ export type BinanceStreamFrame = Partial<BinanceDepthUpdate> & {
   result?: null;
   error?: { code: number; msg: string };
 };
+
+// One row of GET /fapi/v1/premiumIndex without a symbol, which is every contract on the host including the dated ones.
+export type BinancePremiumIndex = {
+  symbol: string;
+  markPrice: string;
+  indexPrice: string;
+  estimatedSettlePrice: string;
+  lastFundingRate: string; // the rate for the upcoming settlement despite the name, as a fraction
+  interestRate: string;
+  nextFundingTime: number; // Unix ms
+  time: number; // Unix ms, whole seconds
+};
+
+// One row of GET /fapi/v1/fundingInfo, which listed every trading perpetual on 2026-09-10 and none of the settling ones.
+export type BinanceFundingInfo = {
+  symbol: string;
+  adjustedFundingRateCap: string;
+  adjustedFundingRateFloor: string;
+  fundingIntervalHours: number;
+  disclaimer: boolean;
+};

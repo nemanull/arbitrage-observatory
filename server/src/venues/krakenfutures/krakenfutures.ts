@@ -1,7 +1,10 @@
 import type { BookLevel, Market } from '../../engine/types';
-import type { EndpointPlan, SingleSocketConnection } from '../../ws/types';
-import { chunk } from '../../ws/shared';
-import { VenueFeed } from '../../ws/VenueFeed';
+import type {
+  EndpointPlan,
+  SingleSocketConnection,
+} from '../../feeds/book/types';
+import { chunk } from '../../feeds/book/shared';
+import { VenueFeed } from '../../feeds/book/VenueFeed';
 import type {
   KrakenBookDelta,
   KrakenBookLevel,

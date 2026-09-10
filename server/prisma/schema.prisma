@@ -79,6 +79,13 @@ enum OpportunityCloseReason {
   shutdown
 }
 
+/// Why a route opened without an anchor reading, see src/engine/anchorReading.ts
+enum AnchorIssue {
+  anchor_missing
+  anchor_stale
+  anchor_skewed
+}
+
 model ArbitrageOpportunity {
   createdAt DateTime @default(now())
 
@@ -158,8 +165,47 @@ model ArbitrageOpportunity {
   /// Samples where both legs held depth, against ticks for coverage
   edgeSamples     Int   @default(0)
 
+  // The anchors, docs/bestiary/index-mark-and-premium.md: each leg's index, mark and funding as the venue published them, raw and unscaled, read when the route opened.
+  // Null on every column when the route opened unjudged, and anchorIssueAtOpen says why.
+  highestBidIndexAtOpen          Float?
+  /// Null where the venue publishes no mark, which is coinbase
+  highestBidMarkAtOpen           Float?
+  /// The rate for the coming settlement as a fraction, -0.0038 = shorts pay longs 0.38%
+  highestBidFundingRateAtOpen    Float?
+  highestBidFundingIntervalHours Float?
+  highestBidNextFundingAt        DateTime?
+  /// When the poller wrote the reading
+  highestBidAnchorAt             DateTime?
+  lowestAskIndexAtOpen           Float?
+  lowestAskMarkAtOpen            Float?
+  lowestAskFundingRateAtOpen     Float?
+  lowestAskFundingIntervalHours  Float?
+  lowestAskNextFundingAt         DateTime?
+  lowestAskAnchorAt              DateTime?
+  anchorIssueAtOpen              AnchorIssue?
+
+  /// The net edge once each book is divided by its own anchor, the part a taker cross can capture, and the part the anchors explain
+  freshNetPpmAtOpen  Float?
+  standingPpmAtOpen  Float?
+  /// At the sample where netPpm peaked
+  freshNetPpmAtPeak  Float?
+  standingPpmAtPeak  Float?
+  freshNetPpmAtClose Float?
+  standingPpmAtClose Float?
+
+  /// One entry per sample, aligned with sampleTsMs, -2000000 where no anchor could be read at that sample
+  freshNetPpmSeries Float[]
+
+  // The anchors over the episode, one entry whenever either leg's index or mark changed, index aligned across the five.
+  anchorTsMs            Int[]
+  highestBidIndexSeries Float[]
+  highestBidMarkSeries  Float[]
+  lowestAskIndexSeries  Float[]
+  lowestAskMarkSeries   Float[]
+
   @@index([openedAt])
   @@index([pair, openedAt])
+  @@index([freshNetPpmAtOpen])
   @@index([route, openedAt])
   @@index([peakNetPpm])
   @@index([peakEdgeAvgPpm])

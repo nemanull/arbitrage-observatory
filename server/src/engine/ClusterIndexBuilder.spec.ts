@@ -7,7 +7,7 @@ import type { ClusterIndexBuilderOptions } from './ClusterIndexBuilder';
 import { createVenueIndexMap } from './shared';
 import type { Market, Venue } from './types';
 
-// Covers what clusterOverrides, quoteFamily, the size multiplier and the depth block add. Everything else about the builder is untested for now.
+// Covers what clusterOverrides, quoteFamily, the size multiplier, the depth block and the anchor block add. Everything else about the builder is untested for now.
 
 // The production lists change with every audit, so the spec pins its own denial set and price scale.
 jest.mock('./clusterOverrides', () => {
@@ -333,5 +333,27 @@ describe('ClusterIndexBuilder depth block', () => {
     expect(() => createClusterDepth(3, levels)).toThrow(
       'depth levels must be an integer from 1 to 255',
     );
+  });
+});
+
+describe('ClusterIndexBuilder anchor block', () => {
+  it('reserves one zero-filled slot per venue in every column', () => {
+    const { anchor } = build([
+      venue('binance', [market('binance', 'BTCUSDT', 'BTC')]),
+      venue('bybit', [market('bybit', 'BTCUSDT', 'BTC')]),
+      venue('okx', [market('okx', 'BTC-USDT-SWAP', 'BTC')]),
+    ]).clusters[0];
+
+    for (const column of [
+      anchor.index,
+      anchor.mark,
+      anchor.fundingRate,
+      anchor.fundingIntervalHours,
+      anchor.nextFundingAt,
+      anchor.writtenAt,
+    ]) {
+      expect(column).toBeInstanceOf(Float64Array);
+      expect(Array.from(column)).toEqual([0, 0, 0]);
+    }
   });
 });

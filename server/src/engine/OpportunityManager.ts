@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import { toOpportunityRow } from '../db/conversion';
+import { readAnchorPair } from './anchorReading';
 import { walkLadders } from './ladderWalk';
 import {
   OPPORTUNITY_CLOSED_JOB,
@@ -8,6 +9,7 @@ import {
 } from './OpportunityWorker';
 import type {
   ActiveOpportunityMap,
+  AnchorPair,
   CloseReason,
   Cluster,
   EdgeSample,
@@ -25,11 +27,31 @@ const MAX_OPPORTUNITY_AGE_MS = 5 * 60_000;
 export const MAX_SERIES_LENGTH = 10_000;
 // A real average edge or notional is never negative, so this marks a sample where a leg held no depth in the edge series.
 export const NO_EDGE = -1;
+// A fresh edge is never under minus one million ppm, since a price ratio cannot be negative, so this marks a sample where no anchor could be read.
+export const NO_ANCHOR = -2_000_000;
 
-const IMPLAUSIBLE_NET_PPM_WARN_WINDOW_MS = 10_000;
+const REJECTION_WARN_WINDOW_MS = 10_000;
 
-type ImplausibleNetPpmWarnState = {
-  occurrenceCount: number; // rejections seen for this route since the engine started
+// A route whose two venues chain their perps to different numbers never closes, docs/bestiary/standing-basis.md.
+// Once the index gap has held past the tolerance for a minute of readable samples the route is set aside, and discovery skips it apart from one read a minute that can release it.
+const INDEX_GAP_QUARANTINE_PPM = 20_000;
+const INDEX_GAP_RELEASE_PPM = 10_000; // under the quarantine gap, so a route does not flap on the boundary
+const QUARANTINE_AFTER_MS = 60_000;
+const RELEASE_AFTER_MS = 5 * 60_000;
+const QUARANTINE_RECHECK_MS = 60_000;
+
+type IndexWatch = {
+  apartSince: number; // first of the current run of readable samples over the quarantine gap, 0 when the last one was under
+  togetherSince: number; // first of the current run under the release gap, 0 when the last one was over
+  quarantinedAt: number; // 0 while the route is live
+  checkedAt: number; // the last readable sample
+  gapPpm: number;
+};
+
+type RejectionReason = 'implausible_net_ppm' | 'standing_basis';
+
+type RejectionWarnState = {
+  occurrenceCount: number; // rejections seen for this route and reason since the engine started
   suppressedCount: number; // rejections swallowed since the last warning
   lastWarnedAt: number;
 };
@@ -37,10 +59,8 @@ type ImplausibleNetPpmWarnState = {
 export class OpportunityManager {
   private logger = new Logger(OpportunityManager.name);
   private activeOpportunityMap: ActiveOpportunityMap = new Map();
-  private readonly implausibleNetPpmWarnStates = new Map<
-    string,
-    ImplausibleNetPpmWarnState
-  >();
+  private readonly rejectionWarnStates = new Map<string, RejectionWarnState>();
+  private readonly indexWatches = new Map<string, IndexWatch>(); // keyed by pair and route
   private readonly pendingWrites = new Set<Promise<void>>(); // queue writes in flight, so shutdown can wait for them
 
   constructor(private readonly queue: Queue<OpportunityClosedJob>) {}
@@ -94,6 +114,12 @@ export class OpportunityManager {
       return null;
     }
 
+    const watchKey = `${cluster.pair}|${this.getRouteKey(highestBidMarket, lowestAskMarket)}`;
+
+    if (this.skipsQuarantined(watchKey, now)) {
+      return null;
+    }
+
     const netPpm = (highestBid / lowestAsk - 1) * 1_000_000;
 
     if (netPpm < MIN_NET_PPM) {
@@ -101,13 +127,11 @@ export class OpportunityManager {
     }
 
     if (netPpm > MAX_PLAUSIBLE_NET_PPM) {
-      this.reportImplausibleNetPpm(
+      this.reportRejection(
+        'implausible_net_ppm',
         cluster,
         highestBidMarket,
         lowestAskMarket,
-        highestBid,
-        lowestAsk,
-        netPpm,
         now,
       );
       return null;
@@ -115,6 +139,57 @@ export class OpportunityManager {
 
     const b = highestBidIndex;
     const a = lowestAskIndex;
+
+    // A cross the two venues' own anchors already explain is a basis, docs/bestiary/standing-basis.md, and no taker cross captures it.
+    // A route whose anchors cannot be read opens anyway and carries null, so a poller outage loses no episode and the row still says it was unjudged.
+    const anchorRead = readAnchorPair(
+      cluster,
+      b,
+      a,
+      highestBidMarket,
+      lowestAskMarket,
+      netPpm,
+      now,
+    );
+    const anchor = typeof anchorRead === 'string' ? null : anchorRead;
+    const anchorIssue = typeof anchorRead === 'string' ? anchorRead : null;
+
+    if (
+      anchor !== null &&
+      this.watchIndexGap(
+        watchKey,
+        cluster,
+        anchor,
+        b,
+        a,
+        highestBidMarket,
+        lowestAskMarket,
+        now,
+      )
+    ) {
+      return null;
+    }
+
+    if (anchor !== null && anchor.freshNetPpm < MIN_NET_PPM) {
+      this.reportRejection(
+        'standing_basis',
+        cluster,
+        highestBidMarket,
+        lowestAskMarket,
+        now,
+        {
+          netPpm,
+          freshNetPpm: anchor.freshNetPpm,
+          standingPpm: anchor.standingPpm,
+          sellPremium: anchor.sell.premium,
+          buyPremium: anchor.buy.premium,
+          sellIndex: anchor.sell.index,
+          buyIndex: anchor.buy.index,
+        },
+      );
+      return null;
+    }
+
     const highestBidSize = cluster.bidSize[b] * cluster.sizeMul[b];
     const lowestAskSize = cluster.askSize[a] * cluster.sizeMul[a];
     const highestBidLegAsk = cluster.ask[b] * cluster.askMul[b];
@@ -123,7 +198,7 @@ export class OpportunityManager {
     const edge = walkLadders(cluster, a, b);
 
     this.logger.log(
-      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask, ${edge === null ? 'no depth held' : `${Math.round(edge.avgPpm)}ppm over ${edge.notional.toFixed(0)} of notional${edge.exhausted ? ' with a book exhausted' : ''}`}`,
+      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask, ${edge === null ? 'no depth held' : `${Math.round(edge.avgPpm)}ppm over ${edge.notional.toFixed(0)} of notional${edge.exhausted ? ' with a book exhausted' : ''}`}, ${anchor === null ? `anchors ${anchorIssue}` : `${Math.round(anchor.freshNetPpm)}ppm fresh against the anchors`}`,
     );
 
     return this.trackOpportunity({
@@ -135,6 +210,8 @@ export class OpportunityManager {
       highestBidLegAsk,
       lowestAskLegBid,
       netPpm,
+      anchor,
+      anchorIssue,
       highestBidMarket,
       lowestAskMarket,
       highestBidVenueIndex: highestBidIndex,
@@ -166,6 +243,7 @@ export class OpportunityManager {
         O.netPpm,
         O.now,
         walkLadders(O.cluster, O.lowestAskVenueIndex, O.highestBidVenueIndex),
+        O.anchor,
       );
       return existing;
     }
@@ -239,6 +317,17 @@ export class OpportunityManager {
       edgeAvgPpmSeries: [edge?.avgPpm ?? NO_EDGE],
       edgeNotionalSeries: [edge?.notional ?? NO_EDGE],
 
+      anchorAtOpen: O.anchor,
+      anchorIssueAtOpen: O.anchorIssue,
+      peakAnchor: O.anchor,
+      lastAnchor: O.anchor,
+      freshNetPpmSeries: [O.anchor?.freshNetPpm ?? NO_ANCHOR],
+      anchorTsMs: O.anchor === null ? [] : [0],
+      highestBidIndexSeries: O.anchor === null ? [] : [O.anchor.sell.index],
+      highestBidMarkSeries: O.anchor === null ? [] : [O.anchor.sell.mark],
+      lowestAskIndexSeries: O.anchor === null ? [] : [O.anchor.buy.index],
+      lowestAskMarkSeries: O.anchor === null ? [] : [O.anchor.buy.mark],
+
       edgeAtOpen: edge,
       peakEdge: edge,
       peakEdgeAt: O.now,
@@ -266,6 +355,15 @@ export class OpportunityManager {
     const highestBidLegAsk = cluster.ask[b] * cluster.askMul[b];
     const lowestAskLegBid = cluster.bid[a] * cluster.bidMul[a];
     const netPpm = (highestBid / lowestAsk - 1) * 1_000_000;
+    const anchorRead = readAnchorPair(
+      cluster,
+      b,
+      a,
+      opportunity.highestBidMarket,
+      opportunity.lowestAskMarket,
+      netPpm,
+      now,
+    );
 
     this.recordSample(
       opportunity,
@@ -278,6 +376,7 @@ export class OpportunityManager {
       netPpm,
       now,
       walkLadders(cluster, a, b),
+      typeof anchorRead === 'string' ? null : anchorRead,
     );
 
     // Recorded first, so a collapsing tick ends the series and the close log sees it
@@ -288,18 +387,110 @@ export class OpportunityManager {
     }
   }
 
-  private reportImplausibleNetPpm(
+  // While a route is set aside, one sample a minute gets through to the anchor read, so the watch can release it.
+  private skipsQuarantined(key: string, now: number): boolean {
+    const watch = this.indexWatches.get(key);
+
+    return (
+      watch !== undefined &&
+      watch.quarantinedAt > 0 &&
+      now - watch.checkedAt < QUARANTINE_RECHECK_MS
+    );
+  }
+
+  // Returns true when the route is set aside after this sample, so discovery stops here and stays quiet.
+  private watchIndexGap(
+    key: string,
+    cluster: Cluster,
+    anchor: AnchorPair,
+    b: number,
+    a: number,
+    highestBidMarket: Market,
+    lowestAskMarket: Market,
+    now: number,
+  ): boolean {
+    const gapPpm = scaledIndexGapPpm(
+      cluster,
+      anchor,
+      b,
+      a,
+      highestBidMarket,
+      lowestAskMarket,
+    );
+    let watch = this.indexWatches.get(key);
+
+    if (watch === undefined) {
+      watch = {
+        apartSince: 0,
+        togetherSince: 0,
+        quarantinedAt: 0,
+        checkedAt: 0,
+        gapPpm,
+      };
+      this.indexWatches.set(key, watch);
+    }
+
+    watch.checkedAt = now;
+    watch.gapPpm = gapPpm;
+
+    const apart = Math.abs(gapPpm) > INDEX_GAP_QUARANTINE_PPM;
+    const together = Math.abs(gapPpm) < INDEX_GAP_RELEASE_PPM;
+    watch.apartSince = apart ? watch.apartSince || now : 0;
+    watch.togetherSince = together ? watch.togetherSince || now : 0;
+
+    const detail = {
+      pair: cluster.pair,
+      route: this.getRouteKey(highestBidMarket, lowestAskMarket),
+      gapPpm,
+      sellIndex: anchor.sell.index,
+      buyIndex: anchor.buy.index,
+    };
+
+    if (watch.quarantinedAt === 0) {
+      if (
+        watch.apartSince > 0 &&
+        now - watch.apartSince >= QUARANTINE_AFTER_MS
+      ) {
+        watch.quarantinedAt = now;
+        this.logger.warn({
+          event: 'route_quarantined',
+          ...detail,
+          apartMs: now - watch.apartSince,
+        });
+        return true;
+      }
+
+      return false;
+    }
+
+    if (
+      watch.togetherSince > 0 &&
+      now - watch.togetherSince >= RELEASE_AFTER_MS
+    ) {
+      this.logger.log({
+        event: 'route_released',
+        ...detail,
+        quarantinedMs: now - watch.quarantinedAt,
+      });
+      watch.quarantinedAt = 0;
+      return false;
+    }
+
+    return true;
+  }
+
+  // A rejected cross comes back on every tick while it lasts, so each route and reason warns once per window and counts the rest.
+  private reportRejection(
+    reason: RejectionReason,
     cluster: Cluster,
     highestBidMarket: Market,
     lowestAskMarket: Market,
-    highestBid: number,
-    lowestAsk: number,
-    netPpm: number,
     now: number,
+    detail: Record<string, number | null>,
   ): void {
     const route = this.getRouteKey(highestBidMarket, lowestAskMarket);
-    const key = `${cluster.pair}|${route}`;
-    let state = this.implausibleNetPpmWarnStates.get(key);
+    const key = `${cluster.pair}|${route}|${reason}`;
+    let state = this.rejectionWarnStates.get(key);
 
     if (state === undefined) {
       state = {
@@ -307,25 +498,22 @@ export class OpportunityManager {
         suppressedCount: 0,
         lastWarnedAt: Number.NEGATIVE_INFINITY,
       };
-      this.implausibleNetPpmWarnStates.set(key, state);
+      this.rejectionWarnStates.set(key, state);
     }
 
     state.occurrenceCount += 1;
 
-    if (now - state.lastWarnedAt < IMPLAUSIBLE_NET_PPM_WARN_WINDOW_MS) {
+    if (now - state.lastWarnedAt < REJECTION_WARN_WINDOW_MS) {
       state.suppressedCount += 1;
       return;
     }
 
     this.logger.warn({
       event: 'opportunity_rejected',
-      reason: 'implausible_net_ppm',
+      reason,
       pair: cluster.pair,
       route,
-      netPpm,
-      maxPlausibleNetPpm: MAX_PLAUSIBLE_NET_PPM,
-      highestBid,
-      lowestAsk,
+      ...detail,
       occurrenceCount: state.occurrenceCount,
       suppressedCount: state.suppressedCount,
     });
@@ -345,6 +533,7 @@ export class OpportunityManager {
     netPpm: number,
     now: number,
     edge: EdgeSample | null,
+    anchor: AnchorPair | null,
   ): void {
     opportunity.ticksSinceStart += 1;
     opportunity.netPpmSum += netPpm;
@@ -355,6 +544,11 @@ export class OpportunityManager {
     opportunity.lastHighestBidLegAsk = highestBidLegAsk;
     opportunity.lastLowestAskLegBid = lowestAskLegBid;
     opportunity.lastEdge = edge;
+    opportunity.lastAnchor = anchor;
+
+    if (anchor !== null) {
+      recordAnchorChange(opportunity, anchor, now);
+    }
 
     if (edge !== null) {
       opportunity.edgeSamples += 1;
@@ -381,6 +575,7 @@ export class OpportunityManager {
       opportunity.peakLowestAskSize = lowestAskSize;
       opportunity.peakHighestBidLegAsk = highestBidLegAsk;
       opportunity.peakLowestAskLegBid = lowestAskLegBid;
+      opportunity.peakAnchor = anchor;
     }
 
     if (netPpm < opportunity.minNetPpm) {
@@ -397,6 +592,7 @@ export class OpportunityManager {
     opportunity.sampleTs.push(now - opportunity.openedAt);
     opportunity.edgeAvgPpmSeries.push(edge?.avgPpm ?? NO_EDGE);
     opportunity.edgeNotionalSeries.push(edge?.notional ?? NO_EDGE);
+    opportunity.freshNetPpmSeries.push(anchor?.freshNetPpm ?? NO_ANCHOR);
   }
 
   // Silence is not on this list. Every feed is change-driven, so a quiet leg is an unchanged leg, and a dead one is reported by markStale.
@@ -543,6 +739,9 @@ export class OpportunityManager {
       peakEdgeNotional: opportunity.peakEdge?.notional ?? null,
       maxEdgeNotional: opportunity.maxEdgeNotional,
       edgeSamples: opportunity.edgeSamples,
+      freshNetPpmAtOpen: opportunity.anchorAtOpen?.freshNetPpm ?? null,
+      standingPpmAtOpen: opportunity.anchorAtOpen?.standingPpm ?? null,
+      freshNetPpmAtClose: opportunity.lastAnchor?.freshNetPpm ?? null,
     });
 
     this.enqueueClosed(opportunity, pair, routeKey);
@@ -636,4 +835,49 @@ export class OpportunityManager {
 
     return { index, value: lowest };
   }
+}
+
+// The two indices are raw venue prices, so each venue's price scale goes back on before they are compared, the same way the books are.
+function scaledIndexGapPpm(
+  cluster: Cluster,
+  anchor: AnchorPair,
+  b: number,
+  a: number,
+  highestBidMarket: Market,
+  lowestAskMarket: Market,
+): number {
+  const sellScale =
+    cluster.bidMul[b] / (1 - highestBidMarket.takerPpm / 1_000_000);
+  const buyScale =
+    cluster.askMul[a] / (1 + lowestAskMarket.takerPpm / 1_000_000);
+
+  return (
+    ((anchor.sell.index * sellScale) / (anchor.buy.index * buyScale) - 1) *
+    1_000_000
+  );
+}
+
+// The anchors change at most once a second, so the series takes an entry only when a value moved, and a poll that rewrote the same numbers adds nothing.
+function recordAnchorChange(
+  opportunity: Opportunity,
+  anchor: AnchorPair,
+  now: number,
+): void {
+  const last = opportunity.anchorTsMs.length - 1;
+
+  if (
+    last >= 0 &&
+    opportunity.highestBidIndexSeries[last] === anchor.sell.index &&
+    opportunity.highestBidMarkSeries[last] === anchor.sell.mark &&
+    opportunity.lowestAskIndexSeries[last] === anchor.buy.index &&
+    opportunity.lowestAskMarkSeries[last] === anchor.buy.mark
+  ) {
+    return;
+  }
+
+  opportunity.anchorTsMs.push(now - opportunity.openedAt);
+  opportunity.highestBidIndexSeries.push(anchor.sell.index);
+  opportunity.highestBidMarkSeries.push(anchor.sell.mark);
+  opportunity.lowestAskIndexSeries.push(anchor.buy.index);
+  opportunity.lowestAskMarkSeries.push(anchor.buy.mark);
 }

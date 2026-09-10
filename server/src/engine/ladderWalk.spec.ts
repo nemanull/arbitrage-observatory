@@ -1,4 +1,4 @@
-import { createClusterDepth } from './ClusterIndexBuilder';
+import { createClusterAnchor, createClusterDepth } from './ClusterIndexBuilder';
 import { walkLadders } from './ladderWalk';
 import type { BookLevel, Cluster, Market } from './types';
 
@@ -41,6 +41,7 @@ function makeCluster(
     askSize: new Float64Array(width),
     recvTs: new Float64Array(width),
     depth: createClusterDepth(width, LEVELS),
+    anchor: createClusterAnchor(width),
   };
 }
 

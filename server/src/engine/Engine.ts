@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import type {
+  AnchorReading,
   BookLevel,
   Cluster,
   ClusterIndex,
@@ -369,6 +370,53 @@ export class Engine {
     return true;
   }
 
+  // An anchor write is not a tick. It labels a route the next time one opens, peaks or closes, and opens nothing itself.
+  updateAnchor(
+    venueId: string,
+    rawMarketId: string,
+    reading: AnchorReading,
+  ): boolean {
+    if (this.stopping) {
+      return false;
+    }
+
+    const slot = this.resolveSlot(venueId, rawMarketId);
+    if (slot === null) {
+      this.logger.warn({
+        event: 'anchor_update_rejected',
+        venueId,
+        rawMarketId,
+        issue: 'unknown_market',
+      });
+      return false;
+    }
+
+    const issue = anchorIssue(reading);
+    if (issue !== null) {
+      this.logger.warn({
+        event: 'anchor_update_rejected',
+        venueId,
+        rawMarketId,
+        pair: slot.cluster.pair,
+        issue,
+        ...reading,
+      });
+      return false;
+    }
+
+    const { anchor } = slot.cluster;
+    const i = slot.venueIndex;
+
+    anchor.index[i] = reading.index;
+    anchor.mark[i] = reading.mark;
+    anchor.fundingRate[i] = reading.fundingRate;
+    anchor.fundingIntervalHours[i] = reading.fundingIntervalHours;
+    anchor.nextFundingAt[i] = reading.nextFundingAt;
+    anchor.writtenAt[i] = reading.ts;
+
+    return true;
+  }
+
   validateQuote(
     quote: SingleMarketClusterQuote,
     venueId: string,
@@ -494,6 +542,36 @@ type DepthIssue =
   | 'ask_size_invalid'
   | 'asks_out_of_order'
   | 'ts_not_positive';
+
+type AnchorIssue =
+  | 'index_invalid' // finite and positive
+  | 'mark_invalid' // finite and not negative, zero means the venue publishes none
+  | 'funding_rate_invalid' // finite, either sign, zero is a real rate
+  | 'funding_interval_invalid' // finite and positive hours
+  | 'next_funding_at_invalid' // finite and not negative, zero means unknown
+  | 'ts_not_positive';
+
+function anchorIssue(r: AnchorReading): AnchorIssue | null {
+  if (!Number.isFinite(r.index) || r.index <= 0) {
+    return 'index_invalid';
+  }
+  if (!Number.isFinite(r.mark) || r.mark < 0) {
+    return 'mark_invalid';
+  }
+  if (!Number.isFinite(r.fundingRate)) {
+    return 'funding_rate_invalid';
+  }
+  if (!Number.isFinite(r.fundingIntervalHours) || r.fundingIntervalHours <= 0) {
+    return 'funding_interval_invalid';
+  }
+  if (!Number.isFinite(r.nextFundingAt) || r.nextFundingAt < 0) {
+    return 'next_funding_at_invalid';
+  }
+  if (!Number.isFinite(r.ts) || r.ts <= 0) {
+    return 'ts_not_positive';
+  }
+  return null;
+}
 
 function depthIssue(
   levels: readonly BookLevel[],

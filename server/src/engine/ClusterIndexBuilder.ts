@@ -1,6 +1,7 @@
 import {
   Market,
   Cluster,
+  ClusterAnchor,
   ClusterDepth,
   ClusterIndex,
   ClusterByRawMarketId,
@@ -37,6 +38,17 @@ export function createClusterDepth(
     askSize: new Float64Array(width * levels),
     bidLevelCount: new Uint8Array(width),
     askLevelCount: new Uint8Array(width),
+    writtenAt: new Float64Array(width),
+  };
+}
+
+export function createClusterAnchor(width: number): ClusterAnchor {
+  return {
+    index: new Float64Array(width),
+    mark: new Float64Array(width),
+    fundingRate: new Float64Array(width),
+    fundingIntervalHours: new Float64Array(width),
+    nextFundingAt: new Float64Array(width),
     writtenAt: new Float64Array(width),
   };
 }
@@ -146,6 +158,7 @@ export class ClusterIndexBuilder {
       askSize: new Float64Array(width),
       recvTs: new Float64Array(width),
       depth: createClusterDepth(width, this.depthLevels),
+      anchor: createClusterAnchor(width),
     };
 
     return c;

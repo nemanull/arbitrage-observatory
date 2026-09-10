@@ -47,6 +47,7 @@ The word that matters is *own*.
 Binance's SOPH perp is pulled toward Binance's SOPH index.
 OKX's SOPH perp is pulled toward OKX's SOPH index.
 Nothing pulls the two perps toward each other.
+The four numbers, how each is built, and how fast each moves are described in full in [`index-mark-and-premium.md`](./index-mark-and-premium.md).
 
 So when two perps on the same asset trade apart there are two explanations.
 The anchors agree and the gap is a dislocation that closes within seconds, which is an arbitrage.
@@ -177,8 +178,8 @@ Read each leg's anchor when the episode opens.
 Three numbers classify the row.
 
 1. The index gap between the legs, in ppm.
-   Above a tolerance of 1 to 2 percent the anchors differ and the cluster is denied at build.
-   ONE at 5.15 percent and SIREN at 1.7 percent fall out here.
+   Above a tolerance of 2 percent the anchors differ, and once the gap has held for a minute of readable samples the route is set aside in `OpportunityManager`, skipped by discovery apart from one read a minute, and released after the indices have agreed for five minutes.
+   ONE at 5.15 percent falls out here, and so does SIREN on the days its indices sit 1.7 percent apart only if they drift past the tolerance.
    HEMI at 0.14 percent stays in.
 2. Each leg's premium, which is mark over index minus one.
    When the premiums explain the cross, the row is tagged as a basis.
@@ -237,6 +238,7 @@ The class does not shrink, because the list names pairs and the cause is a mecha
 
 ## Related
 
+- [`index-mark-and-premium.md`](./index-mark-and-premium.md) is the vocabulary this entry rests on.
 - [`slow-venue-resting-order.md`](./slow-venue-resting-order.md) is the other honest row that is not free money, for a different reason.
 - [`edge-at-the-touch.md`](./edge-at-the-touch.md) is the walk that makes a deep basis look like the most capturable row in the table.
 - [`thin-book.md`](./thin-book.md) is the opposite shape, one order rather than a market.

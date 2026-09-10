@@ -2,17 +2,23 @@ import * as ccxt from 'ccxt';
 import type { VenueConnectorOptions } from '../ccxt/types';
 import type { Engine } from '../engine/Engine';
 import type { Venue } from '../engine/types';
-import type { VenueFeed } from '../ws/VenueFeed';
+import type { AnchorPoller } from '../feeds/anchor/AnchorPoller';
+import type { VenueFeed } from '../feeds/book/VenueFeed';
+import { BinanceAnchorPoller } from './binance/anchor';
 import { BinanceFeed } from './binance/binance';
+import { BybitAnchorPoller } from './bybit/anchor';
 import { BybitFeed } from './bybit/bybit';
+import { CoinbaseAnchorPoller } from './coinbase/anchor';
 import { CoinbaseFeed } from './coinbase/coinbase';
+import { KrakenFuturesAnchorPoller } from './krakenfutures/anchor';
 import { KrakenFuturesFeed } from './krakenfutures/krakenfutures';
+import { OkxAnchorPoller } from './okx/anchor';
 import { OkxFeed } from './okx/okx';
-
 
 export type VenueRegistration = VenueConnectorOptions & {
   createExchange: () => ccxt.Exchange;
-  createFeed: (venue: Venue, engine: Engine) => VenueFeed;
+  createFeed: (venue: Venue, engine: Engine) => VenueFeed; // the book socket, the only writer of quotes and depth
+  createAnchorPoller: (venue: Venue, engine: Engine) => AnchorPoller; // the index, mark and funding poll, the only writer of the anchor block
 };
 
 export const VENUE_REGISTRY: Record<string, VenueRegistration> = {
@@ -23,6 +29,8 @@ export const VENUE_REGISTRY: Record<string, VenueRegistration> = {
     ccxtTakerPpm: 500,
     createExchange: () => new ccxt.binance(),
     createFeed: (venue, engine) => new BinanceFeed(venue, engine),
+    createAnchorPoller: (venue, engine) =>
+      new BinanceAnchorPoller(venue, engine),
   },
   bybit: {
     takerPpm: 550,
@@ -31,11 +39,13 @@ export const VENUE_REGISTRY: Record<string, VenueRegistration> = {
     ccxtTakerPpm: 600,
     createExchange: () => new ccxt.bybit(),
     createFeed: (venue, engine) => new BybitFeed(venue, engine),
+    createAnchorPoller: (venue, engine) => new BybitAnchorPoller(venue, engine),
   },
   okx: {
-    takerPpm: 500, 
+    takerPpm: 500,
     createExchange: () => new ccxt.okx(),
     createFeed: (venue, engine) => new OkxFeed(venue, engine),
+    createAnchorPoller: (venue, engine) => new OkxAnchorPoller(venue, engine),
   },
   krakenfutures: {
     takerPpm: 500,
@@ -44,6 +54,8 @@ export const VENUE_REGISTRY: Record<string, VenueRegistration> = {
     marketFilter: (market) => market.linear === true,
     createExchange: () => new ccxt.krakenfutures(),
     createFeed: (venue, engine) => new KrakenFuturesFeed(venue, engine),
+    createAnchorPoller: (venue, engine) =>
+      new KrakenFuturesAnchorPoller(venue, engine),
   },
   // Coinbase Advanced, whose market ids carry the -INTX suffix, is the only Coinbase platform serving perpetuals publicly.
   // CCXT reports has.swap false here and still lists 131 active swap markets, so the catalog is read rather than the flag.
@@ -54,5 +66,7 @@ export const VENUE_REGISTRY: Record<string, VenueRegistration> = {
     ccxtTakerPpm: 60000,
     createExchange: () => new ccxt.coinbase(),
     createFeed: (venue, engine) => new CoinbaseFeed(venue, engine),
+    createAnchorPoller: (venue, engine) =>
+      new CoinbaseAnchorPoller(venue, engine),
   },
 };

@@ -1,10 +1,12 @@
 import { Logger } from '@nestjs/common';
 import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
-import { createClusterDepth } from './ClusterIndexBuilder';
+import { createClusterAnchor, createClusterDepth } from './ClusterIndexBuilder';
 import { Engine } from './Engine';
 import type {
+  AnchorReading,
   BookLevel,
   Cluster,
+  ClusterAnchor,
   ClusterDepth,
   ClusterIndex,
   Market,
@@ -59,6 +61,7 @@ function makeCluster(): Cluster {
     askSize: new Float64Array(VENUES.length),
     recvTs: new Float64Array(VENUES.length),
     depth: createClusterDepth(VENUES.length, LEVELS),
+    anchor: createClusterAnchor(VENUES.length),
   };
 }
 
@@ -818,6 +821,260 @@ describe('Engine depth block', () => {
       ),
     ).toBe(false);
     expect(snapshotDepth(depth)).toEqual(before);
+  });
+});
+
+describe('Engine anchor block', () => {
+  // bybit's SOPH anchor on 2026-09-08 at 06:36 UTC: the perp half a percent under its index, shorts paying longs every four hours.
+  const READING: AnchorReading = {
+    index: 0.01,
+    mark: 0.00995,
+    fundingRate: -0.00156,
+    fundingIntervalHours: 4,
+    nextFundingAt: 1_757_318_400_000,
+    ts: 1_000,
+  };
+  const BYBIT = 1;
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  function makeEngine(): {
+    engine: Engine;
+    cluster: Cluster;
+    anchor: ClusterAnchor;
+  } {
+    const index = makeIndex();
+    const engine = new Engine(
+      index,
+      index.venueIndexMap,
+      createOpportunityQueueMock(),
+    );
+
+    return {
+      engine,
+      cluster: index.clusters[0],
+      anchor: index.clusters[0].anchor,
+    };
+  }
+
+  function columns(anchor: ClusterAnchor): Float64Array[] {
+    return [
+      anchor.index,
+      anchor.mark,
+      anchor.fundingRate,
+      anchor.fundingIntervalHours,
+      anchor.nextFundingAt,
+      anchor.writtenAt,
+    ];
+  }
+
+  function snapshotAnchor(anchor: ClusterAnchor): number[][] {
+    return columns(anchor).map((column) => [...column]);
+  }
+
+  function expectSlotUntouched(anchor: ClusterAnchor, slot: number): void {
+    for (const column of columns(anchor)) {
+      expect(column[slot]).toBe(0);
+    }
+  }
+
+  it('writes the reading into the slot and stamps it', () => {
+    const { engine, anchor } = makeEngine();
+
+    expect(engine.updateAnchor('bybit', RAW_MARKET_ID, READING)).toBe(true);
+
+    expect(anchor.index[BYBIT]).toBe(0.01);
+    expect(anchor.mark[BYBIT]).toBe(0.00995);
+    expect(anchor.fundingRate[BYBIT]).toBe(-0.00156);
+    expect(anchor.fundingIntervalHours[BYBIT]).toBe(4);
+    expect(anchor.nextFundingAt[BYBIT]).toBe(1_757_318_400_000);
+    expect(anchor.writtenAt[BYBIT]).toBe(1_000);
+    expectSlotUntouched(anchor, 0);
+  });
+
+  it('overwrites the slot on the next poll', () => {
+    const { engine, anchor } = makeEngine();
+    engine.updateAnchor('bybit', RAW_MARKET_ID, READING);
+
+    engine.updateAnchor('bybit', RAW_MARKET_ID, {
+      ...READING,
+      mark: 0.0099,
+      fundingRate: -0.02,
+      fundingIntervalHours: 1,
+      ts: 2_000,
+    });
+
+    expect(anchor.mark[BYBIT]).toBe(0.0099);
+    expect(anchor.fundingRate[BYBIT]).toBe(-0.02);
+    expect(anchor.fundingIntervalHours[BYBIT]).toBe(1);
+    expect(anchor.writtenAt[BYBIT]).toBe(2_000);
+  });
+
+  // coinbase publishes an index and a rate but no mark, and a venue can leave the next settlement unknown
+  it('takes a zero mark and a zero next funding time as not published', () => {
+    const { engine, anchor } = makeEngine();
+
+    expect(
+      engine.updateAnchor('bybit', RAW_MARKET_ID, {
+        ...READING,
+        mark: 0,
+        nextFundingAt: 0,
+      }),
+    ).toBe(true);
+
+    expect(anchor.index[BYBIT]).toBe(0.01);
+    expect(anchor.mark[BYBIT]).toBe(0);
+    expect(anchor.nextFundingAt[BYBIT]).toBe(0);
+    expect(anchor.writtenAt[BYBIT]).toBe(1_000);
+  });
+
+  it.each([0.0001, 0, -0.02])('takes a funding rate of %p', (fundingRate) => {
+    const { engine, anchor } = makeEngine();
+
+    expect(
+      engine.updateAnchor('bybit', RAW_MARKET_ID, { ...READING, fundingRate }),
+    ).toBe(true);
+
+    expect(anchor.fundingRate[BYBIT]).toBe(fundingRate);
+  });
+
+  it.each<{ name: string; reading: AnchorReading; issue: string }>([
+    {
+      name: 'a non-finite index',
+      reading: { ...READING, index: Number.NaN },
+      issue: 'index_invalid',
+    },
+    {
+      name: 'a zero index',
+      reading: { ...READING, index: 0 },
+      issue: 'index_invalid',
+    },
+    {
+      name: 'a negative mark',
+      reading: { ...READING, mark: -0.01 },
+      issue: 'mark_invalid',
+    },
+    {
+      name: 'a non-finite funding rate',
+      reading: { ...READING, fundingRate: Number.POSITIVE_INFINITY },
+      issue: 'funding_rate_invalid',
+    },
+    {
+      name: 'a zero funding interval',
+      reading: { ...READING, fundingIntervalHours: 0 },
+      issue: 'funding_interval_invalid',
+    },
+    {
+      name: 'a negative next funding time',
+      reading: { ...READING, nextFundingAt: -1 },
+      issue: 'next_funding_at_invalid',
+    },
+    {
+      name: 'a timestamp of zero',
+      reading: { ...READING, ts: 0 },
+      issue: 'ts_not_positive',
+    },
+  ])('rejects $name and leaves the slot as it was', ({ reading, issue }) => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { engine, anchor } = makeEngine();
+    engine.updateAnchor('bybit', RAW_MARKET_ID, READING);
+    const before = snapshotAnchor(anchor);
+
+    expect(engine.updateAnchor('bybit', RAW_MARKET_ID, reading)).toBe(false);
+
+    expect(snapshotAnchor(anchor)).toEqual(before);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'anchor_update_rejected',
+        venueId: 'bybit',
+        rawMarketId: RAW_MARKET_ID,
+        pair: 'BTC|USDT',
+        issue,
+      }),
+    );
+  });
+
+  it.each([
+    { name: 'market', venueId: 'binance', rawMarketId: 'ETHUSDT' },
+    { name: 'venue', venueId: 'okx', rawMarketId: RAW_MARKET_ID },
+  ])('rejects a write for an unknown $name', ({ venueId, rawMarketId }) => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { engine, anchor } = makeEngine();
+
+    expect(engine.updateAnchor(venueId, rawMarketId, READING)).toBe(false);
+
+    expectSlotUntouched(anchor, 0);
+    expectSlotUntouched(anchor, BYBIT);
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'anchor_update_rejected',
+        venueId,
+        rawMarketId,
+        issue: 'unknown_market',
+      }),
+    );
+  });
+
+  // An anchor write is not a tick.
+  it('runs no discovery and leaves layer 1 alone', () => {
+    const { engine, cluster } = makeEngine();
+    const validate = spyOnValidate(engine);
+
+    engine.updateQuote('binance', RAW_MARKET_ID, {
+      bid: 99.9,
+      ask: 100,
+      bidSize: 4,
+      askSize: 5,
+      recvTs: 1_000,
+    });
+    engine.updateQuote('bybit', RAW_MARKET_ID, {
+      bid: 99.95,
+      ask: 100.05,
+      bidSize: 2,
+      askSize: 3,
+      recvTs: 1_000,
+    });
+    expect(validate).toHaveBeenCalledTimes(2);
+
+    expect(
+      engine.updateAnchor('bybit', RAW_MARKET_ID, { ...READING, ts: 2_000 }),
+    ).toBe(true);
+
+    expect(validate).toHaveBeenCalledTimes(2);
+    expect(openRoutes(engine).size).toBe(0);
+    expect(cluster.bid[BYBIT]).toBe(99.95);
+    expect(cluster.ask[BYBIT]).toBe(100.05);
+    expect(cluster.recvTs[BYBIT]).toBe(1_000);
+  });
+
+  it('drops a write after shutdown and changes nothing', async () => {
+    const { engine, anchor } = makeEngine();
+    engine.updateAnchor('bybit', RAW_MARKET_ID, READING);
+    const before = snapshotAnchor(anchor);
+
+    await engine.shutdown(9_000);
+
+    expect(
+      engine.updateAnchor('bybit', RAW_MARKET_ID, { ...READING, ts: 10_000 }),
+    ).toBe(false);
+    expect(snapshotAnchor(anchor)).toEqual(before);
+  });
+
+  // The socket that died never wrote the anchor, so a dead socket says nothing about it.
+  it('survives markStale, which clears the quote and the depth', () => {
+    const { engine, cluster, anchor } = makeEngine();
+    engine.updateBook('bybit', RAW_MARKET_ID, [[101, 2]], [[101.5, 3]], 1_000);
+    engine.updateAnchor('bybit', RAW_MARKET_ID, READING);
+
+    engine.markStale('bybit', [RAW_MARKET_ID]);
+
+    expect(cluster.recvTs[BYBIT]).toBe(0);
+    expect(cluster.depth.writtenAt[BYBIT]).toBe(0);
+    expect(anchor.index[BYBIT]).toBe(0.01);
+    expect(anchor.writtenAt[BYBIT]).toBe(1_000);
   });
 });
 

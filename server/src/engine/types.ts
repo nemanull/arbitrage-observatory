@@ -36,6 +36,44 @@ export type ClusterDepth = {
   readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses depth older than the episode it judges
 };
 
+export type ClusterAnchor = {
+  readonly index: Float64Array; // the venue's index price, 0 = never read
+  readonly mark: Float64Array; // 0 = the venue publishes none (coinbase)
+  readonly fundingRate: Float64Array; // the rate for the upcoming settlement, as a fraction: -0.0038 = shorts pay longs 0.38%
+  readonly fundingIntervalHours: Float64Array; // 1, 4 or 8
+  readonly nextFundingAt: Float64Array; // Unix ms, 0 = unknown
+  readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses two legs further apart than anchorReading.ts allows
+};
+
+export type AnchorReading = {
+  index: number;
+  mark: number;
+  fundingRate: number;
+  fundingIntervalHours: number;
+  nextFundingAt: number;
+  ts: number; // Unix ms when the venue published it, or when the poll returned
+};
+
+// One leg's anchor as read at open, see anchorReading.ts
+export type AnchorLeg = {
+  index: number;
+  mark: number; // 0 = the venue publishes none
+  premium: number | null; // mark over index minus one, null without a mark
+  fundingRate: number;
+  fundingIntervalHours: number;
+  nextFundingAt: number;
+  writtenAt: number;
+};
+
+export type AnchorPair = {
+  sell: AnchorLeg; // the venue of the highest bid
+  buy: AnchorLeg; // the venue of the lowest ask
+  freshNetPpm: number; // the net edge after fees once each book is divided by its own anchor, the part a taker cross can capture
+  standingPpm: number; // netPpm minus freshNetPpm, the part the two anchors already explain
+};
+
+export type AnchorIssue = 'anchor_missing' | 'anchor_stale' | 'anchor_skewed'; // why a route has no AnchorPair, see anchorReading.ts
+
 export type EdgeSample = {
   avgPpm: number; // average edge over the whole region after fees. 0 when the region is empty
   size: number; // coins in the region, the same quantity bought and sold
@@ -57,6 +95,7 @@ export type Cluster = {
   readonly askSize: Float64Array;
   readonly recvTs: Float64Array; // Unix ms. 0 = never spoke, venue does not list this pair, or its socket is down (Engine.markStale)
   readonly depth: ClusterDepth;
+  readonly anchor: ClusterAnchor; // written by a poller, not by the book socket, so markStale leaves it alone
 };
 
 export type ClusterIndex = {
@@ -113,6 +152,17 @@ export type Opportunity = {
   edgeAvgPpmSeries: number[]; // the walk per sample, aligned with sampleTs, -1 where a leg held no depth
   edgeNotionalSeries: number[];
 
+  anchorAtOpen: AnchorPair | null; // null when a leg's anchor was missing, stale or skewed, so the route opened unjudged
+  anchorIssueAtOpen: AnchorIssue | null; // why anchorAtOpen is null
+  peakAnchor: AnchorPair | null; // the anchors at the sample where netPpm peaked
+  lastAnchor: AnchorPair | null;
+  freshNetPpmSeries: number[]; // aligned with sampleTs, NO_ANCHOR where no anchor could be read at that sample
+  anchorTsMs: number[]; // ms since openedAt, one entry whenever either leg's index or mark changed, not capped since anchors change at most once a second
+  highestBidIndexSeries: number[]; // aligned with anchorTsMs, raw venue prices
+  highestBidMarkSeries: number[];
+  lowestAskIndexSeries: number[];
+  lowestAskMarkSeries: number[];
+
   edgeAtOpen: EdgeSample | null;
   peakEdge: EdgeSample | null;
   peakEdgeAt: number;
@@ -137,6 +187,8 @@ export type Observation = {
   highestBidLegAsk: number; // the other side of the venue we sell on, fee adjusted like highestBid. Its distance to highestBid is that book's width
   lowestAskLegBid: number; // the other side of the venue we buy on
   netPpm: number;
+  anchor: AnchorPair | null;
+  anchorIssue: AnchorIssue | null;
   now: number;
 };
 

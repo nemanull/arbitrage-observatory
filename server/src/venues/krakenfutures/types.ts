@@ -28,3 +28,23 @@ export type KrakenFuturesFrame = {
   product_ids?: string[]; // echoed back on a subscribe acknowledgement
   version?: number;
 };
+
+// One row of GET /derivatives/api/v3/tickers, only the fields the anchor reads. Numbers arrive as JSON numbers.
+export type KrakenTicker = {
+  symbol: string; // 'PF_XBTUSD'
+  tag?: string; // 'perpetual', 'month', 'quarter' or 'week'
+  markPrice?: number;
+  indexPrice?: number;
+  fundingRate?: number; // absolute, in quote currency per contract, for the running hour
+  fundingRatePrediction?: number; // absolute, the estimate for the next settlement
+  suspended?: boolean;
+  postOnly?: boolean;
+  isUnderlyingMarketClosed?: boolean; // tradfi contracts only
+};
+
+export type KrakenTickersReply = {
+  result: string; // 'success' or 'error'
+  error?: string;
+  serverTime: string; // RFC 3339
+  tickers: KrakenTicker[];
+};

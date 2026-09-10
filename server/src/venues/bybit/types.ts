@@ -20,3 +20,21 @@ export type BybitStreamFrame = {
   req_id?: string;
   op?: string; // the operation the control frame answers: 'subscribe' or 'ping'
 };
+
+// One row of GET /v5/market/tickers, only the fields the anchor reads. Every number is a decimal string.
+export type BybitTicker = {
+  symbol: string;
+  indexPrice: string;
+  markPrice: string;
+  fundingRate: string; // '' on a dated future
+  nextFundingTime: string; // Unix ms as a string, '0' on a dated future
+  fundingIntervalHour: string; // '1', '4' or '8', '' on a dated future
+  fundingCap: string;
+};
+
+export type BybitTickersReply = {
+  retCode: number; // 0 on success
+  retMsg: string;
+  result: { category: string; list: BybitTicker[] };
+  time: number; // Unix ms
+};

@@ -17,3 +17,12 @@ export const OpportunityCloseReason = {
 } as const
 
 export type OpportunityCloseReason = (typeof OpportunityCloseReason)[keyof typeof OpportunityCloseReason]
+
+
+export const AnchorIssue = {
+  anchor_missing: 'anchor_missing',
+  anchor_stale: 'anchor_stale',
+  anchor_skewed: 'anchor_skewed'
+} as const
+
+export type AnchorIssue = (typeof AnchorIssue)[keyof typeof AnchorIssue]

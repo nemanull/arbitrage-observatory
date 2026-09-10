@@ -1,4 +1,4 @@
-import type { Opportunity, PairKey } from '../engine/types';
+import type { AnchorLeg, Opportunity, PairKey } from '../engine/types';
 import type { ArbitrageOpportunityRow } from './writes';
 
 // Turns a closed Opportunity into the row the worker inserts.
@@ -15,6 +15,10 @@ export function toOpportunityRow(
   if (closedAt === null || closeReason === null) {
     throw new Error(`Opportunity for ${pair} on route ${route} is still open`);
   }
+
+  const anchor = opportunity.anchorAtOpen;
+  const sell = anchor?.sell;
+  const buy = anchor?.buy;
 
   return {
     pair,
@@ -77,5 +81,42 @@ export function toOpportunityRow(
 
     maxEdgeNotional: opportunity.maxEdgeNotional,
     edgeSamples: opportunity.edgeSamples,
+
+    highestBidIndexAtOpen: sell?.index ?? null,
+    highestBidMarkAtOpen: markOrNull(sell),
+    highestBidFundingRateAtOpen: sell?.fundingRate ?? null,
+    highestBidFundingIntervalHours: sell?.fundingIntervalHours ?? null,
+    highestBidNextFundingAt: timeOrNull(sell?.nextFundingAt),
+    highestBidAnchorAt: timeOrNull(sell?.writtenAt),
+    lowestAskIndexAtOpen: buy?.index ?? null,
+    lowestAskMarkAtOpen: markOrNull(buy),
+    lowestAskFundingRateAtOpen: buy?.fundingRate ?? null,
+    lowestAskFundingIntervalHours: buy?.fundingIntervalHours ?? null,
+    lowestAskNextFundingAt: timeOrNull(buy?.nextFundingAt),
+    lowestAskAnchorAt: timeOrNull(buy?.writtenAt),
+    anchorIssueAtOpen: opportunity.anchorIssueAtOpen,
+
+    freshNetPpmAtOpen: anchor?.freshNetPpm ?? null,
+    standingPpmAtOpen: anchor?.standingPpm ?? null,
+    freshNetPpmAtPeak: opportunity.peakAnchor?.freshNetPpm ?? null,
+    standingPpmAtPeak: opportunity.peakAnchor?.standingPpm ?? null,
+    freshNetPpmAtClose: opportunity.lastAnchor?.freshNetPpm ?? null,
+    standingPpmAtClose: opportunity.lastAnchor?.standingPpm ?? null,
+
+    freshNetPpmSeries: opportunity.freshNetPpmSeries,
+    anchorTsMs: opportunity.anchorTsMs,
+    highestBidIndexSeries: opportunity.highestBidIndexSeries,
+    highestBidMarkSeries: opportunity.highestBidMarkSeries,
+    lowestAskIndexSeries: opportunity.lowestAskIndexSeries,
+    lowestAskMarkSeries: opportunity.lowestAskMarkSeries,
   };
+}
+
+// The engine keeps 0 for a venue that publishes no mark and for an unknown settlement time, and the row says null.
+function markOrNull(leg: AnchorLeg | undefined): number | null {
+  return leg === undefined || leg.mark <= 0 ? null : leg.mark;
+}
+
+function timeOrNull(ms: number | undefined): string | null {
+  return ms === undefined || ms <= 0 ? null : new Date(ms).toISOString();
 }
