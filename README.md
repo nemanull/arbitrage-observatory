@@ -25,7 +25,7 @@ pnpm infra:logs       # follow logs
 pnpm infra:reset      # stop and delete all stored data
 ```
 
-Postgres is on `localhost:5532` and Redis is on `localhost:6479`, both bound to loopback.
+Postgres is on `localhost:5532` and Redis is on `localhost:6390`, both bound to loopback.
 The ports are non-default so they do not clash with other projects on the same machine.
 Set `POSTGRES_PORT` or `REDIS_PORT` in the environment to change them.
 

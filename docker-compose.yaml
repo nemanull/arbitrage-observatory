@@ -36,8 +36,9 @@ services:
     container_name: observatory-redis
     restart: unless-stopped
     ports:
-      # The default 6379 is already taken by another project on this host.
-      - "127.0.0.1:${REDIS_PORT:-6479}:6379"
+      # Another project on this host holds 6379, and it walks 6479 and 6579 for its worktrees.
+      # Staying off that ladder keeps this port free when those worktrees are running.
+      - "127.0.0.1:${REDIS_PORT:-6390}:6379"
     # Any eviction policy lets Redis drop job keys under memory pressure and corrupt queue state.
     # Append-only persistence keeps queued jobs across a restart.
     command:
