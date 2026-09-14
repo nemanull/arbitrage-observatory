@@ -198,7 +198,7 @@ Where each number comes from.
 | bybit | `/v5/market/tickers?category=linear` | `/v5/market/instruments-info` | `/v5/market/index-price-components?indexName=` |
 | okx | `/api/v5/market/index-tickers`, `/api/v5/public/mark-price`, `/api/v5/public/funding-rate` | `/api/v5/public/funding-rate` | `/api/v5/market/index-components?index=` |
 | krakenfutures | `/derivatives/api/v3/tickers` | | not published |
-| coinbase | `/api/v3/brokerage/market/products?product_type=FUTURE&contract_expiry_type=PERPETUAL`, index and funding for every perp in one call, no mark | the same call | not published |
+| coinbase | `https://api.international.coinbase.com/api/v1/instruments`, index, mark and the predicted rate for every perp in one call | the same call | not published |
 
 The basket is a diagnostic, not an input.
 The index gap already says whether the anchors differ, and the basket says why.

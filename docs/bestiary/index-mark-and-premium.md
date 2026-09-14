@@ -319,7 +319,7 @@ One request per venue returns every perp, and all five together took about a sec
 | bybit | `/v5/market/tickers?category=linear` | 866 | yes | yes | yes | same call |
 | okx | `/api/v5/public/funding-rate?instId=ANY`, `/api/v5/public/mark-price?instType=SWAP`, `/api/v5/market/index-tickers` | 645 | yes | yes | yes, plus the realised rate | same call |
 | krakenfutures | `/derivatives/api/v3/tickers` | 279 | yes | yes | yes, plus a prediction | |
-| coinbase | `/api/v3/brokerage/market/products?product_type=FUTURE&contract_expiry_type=PERPETUAL` | 131 | yes | no | yes | same call |
+| coinbase | `/api/v1/instruments` on Coinbase International Exchange | 131 | yes, at the tick | yes, the median of best bid, best ask and last trade clamped into a band of the index | the predicted rate, the settlement derived on the hour | same call |
 
 The baskets are separate calls and they are a diagnostic, not an input.
 Binance `/fapi/v1/constituents`, okx `/api/v5/market/index-components?index=`, and bybit `/v5/market/index-price-components?indexName=`.
@@ -336,34 +336,42 @@ The block lives on every cluster as `anchor`, one slot per venue, in [`../../ser
 | column | meaning |
 |---|---|
 | `index` | the venue's index price, 0 = never read |
-| `mark` | 0 = the venue publishes none, which is coinbase |
+| `mark` | 0 = never read, and a reader refuses a leg without one |
 | `fundingRate` | the rate for the upcoming settlement as a fraction, -0.0038 = shorts pay longs 0.38 % |
 | `fundingIntervalHours` | 1, 4 or 8 |
 | `nextFundingAt` | Unix ms, 0 = unknown |
-| `writtenAt` | Unix ms, 0 = never, and a reader refuses two legs further apart than two and a half seconds, since bybit polls every two seconds |
+| `movePpm` | how far the index or the mark moved since the previous poll, whichever moved more, in ppm, unbounded until the slot's second poll |
+| `writtenAt` | Unix ms, 0 = never, and a reader refuses two legs further apart than five seconds |
 
 Premium is not a column.
 It is computed when a reading is taken, the way the fee multipliers are applied at read and never at write, by one helper, `premium(price, reference)`, which is the price over the reference minus one.
 A leg read at open carries three of them.
-The touch premium is the book price the trade uses over the index, the mark premium is the mark over the index, and the fresh premium is that book price over the mark, or over the index where the venue publishes no mark.
+The touch premium is the book price the trade uses over the index, the mark premium is the mark over the index, and the fresh premium is that book price over the mark.
 
 `Engine.updateAnchor` in [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) writes a slot from one poll and is not a tick.
 It opens nothing, it closes nothing, and a dead book socket leaves the slot alone because the socket never wrote it.
 
-The poll is [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts), one timer per venue that fetches the venue's bulk reply and writes every tracked market with the round's start time as `ts`.
+The poll is [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts), one timer per venue that fetches the venue's bulk reply and writes every tracked market with the reply's arrival time as `ts`.
 It is the REST twin of the book feed in [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts), and each venue's `anchor.ts` beside its feed maps the venue's reply into rows.
 Once a second is the cadence, because on 2026-09-10 no venue changed its index or mark faster than that over 90 one second samples, and the published funding rate changed once or twice.
 Bybit polls every two seconds, because its 630 KB reply took up to 850 ms to download at one hertz.
+Coinbase polls every two seconds as well, since the International Exchange reply takes 0.5 to 0.7 s and up to 5 s after a reconnect.
 Kraken's absolute rate is divided by the mark, and its hourly settlement on the hour is derived, since the venue publishes no next funding time.
 
 The reader at open is [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
 It reads the three premiums on each leg and factors the cross into the three ratios of the section above, so that in fractions one plus the net edge equals one plus the index gap, times one plus the carried part, times one plus the fresh edge.
 The index gap is the sell leg's index over the buy leg's after the venue price scales, and it is the structural part that funding never closes.
 The carried part is the accepted premiums' gap, one plus the sell leg's mark premium over one plus the buy leg's, and it is what funding is pricing and closes over hours.
-A leg without a mark counts as one there, and its whole premium shows in the fresh edge instead.
+A leg without a mark is refused before the reading is taken, so both mark premiums are always present.
 The fresh edge is one plus the sell leg's fresh premium over one plus the buy leg's, with the fees applied, and it is the net edge the two venues would show if their anchors were the same number, which is the only part a taker cross can capture.
 `OpportunityManager` refuses to open a route whose fresh edge does not clear the same threshold the raw edge has to clear, and logs the refusal as a standing basis with both mark premiums and the three factors.
 A route whose anchors are missing, older than ten seconds, or read more than five seconds apart is refused, and the refusal is logged with that issue, so the table holds no unjudged row.
+Since 2026-09-14 three more refusals sit beside those.
+A leg without a mark is refused as `anchor_no_mark`, because a markless leg turns the fresh gate into the raw gate, which is how a resting order 1.7 percent under the coinbase index opened nine rows.
+A leg whose index or mark moved more than 1,000 ppm between its last two polls is refused as `anchor_moving`, because on a fast tape the fresh edge measures how far the anchor lags the book, and the next poll then flips it by the whole move, which is what cut one LSK crash into 31 rows.
+The move sits on the block as `movePpm`, and a slot's first poll reads as unbounded, so a market is judged only from its second poll.
+A route whose profitable region at open holds less than 1,000 quote units is refused as `thin_book`, which no anchor can see, because a resting order on a dead book has honest anchors and a book nobody takes, see [`./thin-book.md`](./thin-book.md).
+The sizing of the last two is in [`../research/2026-09-14-open-guard-sizing.md`](../research/2026-09-14-open-guard-sizing.md).
 Each reading is stamped when its poll reply arrives, so a slow reply does not read as skewed against a faster venue.
 An open route closes as `fresh_edge_collapsed` once its fresh edge falls under the closure threshold, even while the raw cross still clears it.
 A sample whose anchors cannot be read closes nothing.
@@ -373,7 +381,7 @@ A route whose two indices disagree is not set aside on its own.
 A cross that the index gap explains already fails the fresh edge test, and a fresh edge on top of an index gap can still close, because a perp to perp trade moves no coins.
 The index quarantine that set such routes aside from 2026-09-13 was removed on 2026-09-14, see [`../implemented/2026-09-14-fresh-edge-verdict-design.md`](../implemented/2026-09-14-fresh-edge-verdict-design.md).
 
-Status: the block, the write path, the poller, the reader at open, the anchor columns on the row, the three factors, the refusal of unreadable anchors and the fresh edge close are Done.
+Status: the block, the write path, the poller, the reader at open, the anchor columns on the row, the three factors, the refusal of unreadable anchors and the fresh edge close are Done, and so are the markless leg and moving anchor refusals, the coinbase mark and the region floor of 2026-09-14, see [`../implemented/2026-09-14-open-guards-design.md`](../implemented/2026-09-14-open-guards-design.md).
 The readings at open, peak and close are on the row as the fresh and standing edge and as the index gap and carried factors, each leg's fresh premium at open says which book sits off its anchor, and the raw anchors over the episode are the anchor series.
 
 ## Related

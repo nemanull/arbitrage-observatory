@@ -291,37 +291,28 @@ describe('Engine.updateQuote', () => {
 });
 
 // Both venues publish the same index and mark, so the anchors explain nothing and a route opens on its raw edge.
+// Each slot is polled twice, because a slot's first poll reads as an unbounded move and refuses the route.
 function writeAgreedAnchors(engine: Engine): void {
   for (const venueId of VENUES) {
-    engine.updateAnchor(venueId, RAW_MARKET_ID, {
-      index: 100,
-      mark: 100,
-      fundingRate: 0.0001,
-      fundingIntervalHours: 8,
-      nextFundingAt: 0,
-      ts: 1_000,
-    });
+    for (let poll = 0; poll < 2; poll++) {
+      engine.updateAnchor(venueId, RAW_MARKET_ID, {
+        index: 100,
+        mark: 100,
+        fundingRate: 0.0001,
+        fundingIntervalHours: 8,
+        nextFundingAt: 0,
+        ts: 1_000,
+      });
+    }
   }
 }
 
 // bybit bids 101 against a binance ask of 100: ~8890ppm after 55bp taker each side.
-// binance rests 4 at its bid and 5 at its ask, bybit 2 and 3.
+// binance rests 40 at its bid and 50 at its ask, bybit 20 and 30, so the region behind the cross clears MIN_EDGE_NOTIONAL.
 function openRoute(engine: Engine): void {
   writeAgreedAnchors(engine);
-  engine.updateQuote('binance', RAW_MARKET_ID, {
-    bid: 99.9,
-    ask: 100,
-    bidSize: 4,
-    askSize: 5,
-    recvTs: 1_000,
-  });
-  engine.updateQuote('bybit', RAW_MARKET_ID, {
-    bid: 101,
-    ask: 101.5,
-    bidSize: 2,
-    askSize: 3,
-    recvTs: 1_000,
-  });
+  engine.updateBook('binance', RAW_MARKET_ID, [[99.9, 40]], [[100, 50]], 1_000);
+  engine.updateBook('bybit', RAW_MARKET_ID, [[101, 20]], [[101.5, 30]], 1_000);
 }
 
 function openRoutes(engine: Engine): Map<string, unknown> {
@@ -467,7 +458,7 @@ describe('Engine book sizes', () => {
     expect(index.clusters[0].askSize[1]).toBe(7);
     expect(index.clusters[0].recvTs[1]).toBe(2_000);
     expect(opened.ticksSinceStart).toBe(1);
-    expect(opened.lastHighestBidSize).toBe(2);
+    expect(opened.lastHighestBidSize).toBe(20);
 
     // the next price tick reads the stored size
     engine.updateQuote('bybit', RAW_MARKET_ID, {
@@ -881,6 +872,7 @@ describe('Engine anchor block', () => {
     return [
       anchor.index,
       anchor.mark,
+      anchor.movePpm,
       anchor.fundingRate,
       anchor.fundingIntervalHours,
       anchor.nextFundingAt,
@@ -946,6 +938,50 @@ describe('Engine anchor block', () => {
     expect(anchor.mark[BYBIT]).toBe(0);
     expect(anchor.nextFundingAt[BYBIT]).toBe(0);
     expect(anchor.writtenAt[BYBIT]).toBe(1_000);
+  });
+
+  // The move is what the reader refuses on a fast tape, see MAX_ANCHOR_MOVE_PPM in anchorReading.ts.
+  it('reads the first poll as an unbounded move', () => {
+    const { engine, anchor } = makeEngine();
+
+    engine.updateAnchor('bybit', RAW_MARKET_ID, READING);
+
+    expect(anchor.movePpm[BYBIT]).toBe(Infinity);
+    expectSlotUntouched(anchor, 0);
+  });
+
+  it.each([
+    { name: 'index', index: 101, mark: 100.5 },
+    { name: 'mark', index: 100.5, mark: 101 },
+  ])(
+    'records the larger of the two moves when the $name moved more',
+    ({ index, mark }) => {
+      const { engine, anchor } = makeEngine();
+      engine.updateAnchor('bybit', RAW_MARKET_ID, {
+        ...READING,
+        index: 100,
+        mark: 100,
+      });
+
+      engine.updateAnchor('bybit', RAW_MARKET_ID, {
+        ...READING,
+        index,
+        mark,
+        ts: 2_000,
+      });
+
+      expect(anchor.movePpm[BYBIT]).toBe(10_000); // one percent on one, half a percent on the other
+      expectSlotUntouched(anchor, 0);
+    },
+  );
+
+  it('records no move when a poll repeats the numbers', () => {
+    const { engine, anchor } = makeEngine();
+    engine.updateAnchor('bybit', RAW_MARKET_ID, READING);
+
+    engine.updateAnchor('bybit', RAW_MARKET_ID, { ...READING, ts: 2_000 });
+
+    expect(anchor.movePpm[BYBIT]).toBe(0);
   });
 
   it.each([0.0001, 0, -0.02])('takes a funding rate of %p', (fundingRate) => {
@@ -1187,8 +1223,8 @@ describe('Engine.updateBook', () => {
       RAW_MARKET_ID,
       [[99.9, 4]],
       [
-        [100, 5],
-        [100.1, 1],
+        [100, 10],
+        [100.1, 2],
       ],
       1_000,
     );
@@ -1196,10 +1232,10 @@ describe('Engine.updateBook', () => {
 
     expect([...openRoutes(engine).keys()]).toEqual(['bybit-binance']);
 
-    // Buying binance's six asks against bybit's bids never stops crossing, so the region is the whole held ask side.
+    // Buying binance's twelve asks against bybit's fifteen bids never stops crossing, so the region is the whole held ask side.
     const opportunity = openRoutes(engine).get('bybit-binance') as Opportunity;
     expect(opportunity.edgeAtOpen).not.toBeNull();
-    expect(opportunity.edgeAtOpen!.size).toBeCloseTo(6, 9);
+    expect(opportunity.edgeAtOpen!.size).toBeCloseTo(12, 9);
     expect(opportunity.edgeAtOpen!.exhausted).toBe(true);
     expect(opportunity.edgeAtOpen!.buyLevels).toBe(2);
     expect(opportunity.edgeAtOpen!.avgPpm).toBeGreaterThan(5_000);

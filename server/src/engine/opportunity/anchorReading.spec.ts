@@ -1,6 +1,7 @@
 import {
   ANCHOR_MAX_AGE_MS,
   ANCHOR_SKEW_MS,
+  MAX_ANCHOR_MOVE_PPM,
   premium,
   readAnchorPair,
 } from './anchorReading';
@@ -111,6 +112,34 @@ describe('readAnchorPair freshness', () => {
   });
 });
 
+describe('readAnchorPair marks and moves', () => {
+  it('refuses a leg without a mark', () => {
+    const cluster = makeCluster(101, 100);
+    writeAnchor(cluster, SELL, 100.5, 100.5);
+    writeAnchor(cluster, BUY, 100.5, 0);
+
+    expect(read(cluster, netPpm(101, 100))).toBe('anchor_no_mark');
+  });
+
+  it('refuses a leg that moved more than MAX_ANCHOR_MOVE_PPM since its previous poll', () => {
+    const cluster = makeCluster(101, 100);
+    writeAnchor(cluster, SELL, 100.5, 100.5);
+    writeAnchor(cluster, BUY, 100.5, 100.5);
+    cluster.anchor.movePpm[BUY] = MAX_ANCHOR_MOVE_PPM + 1;
+
+    expect(read(cluster, netPpm(101, 100))).toBe('anchor_moving');
+  });
+
+  it('accepts a leg that moved exactly the threshold', () => {
+    const cluster = makeCluster(101, 100);
+    writeAnchor(cluster, SELL, 100.5, 100.5);
+    writeAnchor(cluster, BUY, 100.5, 100.5);
+    cluster.anchor.movePpm[BUY] = MAX_ANCHOR_MOVE_PPM;
+
+    expect(typeof read(cluster, netPpm(101, 100))).toBe('object');
+  });
+});
+
 describe('readAnchorPair fresh edge', () => {
   it('equals the net edge when the two anchors agree', () => {
     const cluster = makeCluster(101, 100);
@@ -148,19 +177,6 @@ describe('readAnchorPair fresh edge', () => {
 
     expect(pair.sell.markPremium).toBeCloseTo(0.01, 12);
     expect(pair.freshNetPpm).toBeCloseTo(netPpm(1, 1), 6);
-  });
-
-  it('falls back to the index for a venue that publishes no mark', () => {
-    const cluster = makeCluster(101, 100);
-    writeAnchor(cluster, SELL, 100.5, 100.5);
-    writeAnchor(cluster, BUY, 100.5, 0);
-    const net = netPpm(101, 100);
-
-    const pair = read(cluster, net) as AnchorPair;
-
-    expect(pair.buy.markPremium).toBeNull();
-    expect(pair.buy.mark).toBe(0);
-    expect(pair.freshNetPpm).toBeCloseTo(net, 6);
   });
 
   it('cancels a venue price scale by dividing each book by its own anchor', () => {
@@ -202,7 +218,7 @@ describe('readAnchorPair premiums and factors', () => {
   it('reads the touch, mark and fresh premium on each leg', () => {
     const cluster = makeCluster(102, 100.5);
     writeAnchor(cluster, SELL, 100, 101); // the venue has accepted one percent, and the bid sits another percent over that
-    writeAnchor(cluster, BUY, 100, 0); // no mark, so the fresh premium is read over the index
+    writeAnchor(cluster, BUY, 100, 100.5); // the venue has accepted the half percent its ask sits at, so nothing there is fresh
 
     const pair = read(cluster, netPpm(102, 100.5)) as AnchorPair;
 
@@ -212,8 +228,8 @@ describe('readAnchorPair premiums and factors', () => {
     expect(pair.sell.freshPremium).toBeCloseTo(102 / 101 - 1, 12);
     expect(pair.buy.touch).toBe(100.5);
     expect(pair.buy.touchPremium).toBeCloseTo(0.005, 12);
-    expect(pair.buy.markPremium).toBeNull();
-    expect(pair.buy.freshPremium).toBeCloseTo(0.005, 12);
+    expect(pair.buy.markPremium).toBeCloseTo(0.005, 12);
+    expect(pair.buy.freshPremium).toBe(0);
   });
 
   // The sell venue quotes ten times the buy venue's unit, its mark sits one percent over its index and its bid 0.9 percent over the mark.
@@ -236,19 +252,6 @@ describe('readAnchorPair premiums and factors', () => {
       (((1070 / 1060.5) * 0.99945) / ((100 / 99) * 1.0005) - 1) * 1_000_000;
     expect(pair.freshNetPpm).toBeCloseTo(fresh, 6);
     expect(pair.standingPpm).toBeCloseTo(net - fresh, 6);
-    expect(factorsProduct(pair)).toBeCloseTo(1 + net / 1_000_000, 9);
-  });
-
-  it('carries nothing on a leg without a mark, and the factors still multiply back', () => {
-    const cluster = makeCluster(101, 100);
-    writeAnchor(cluster, SELL, 100, 101); // one percent accepted on the sell leg
-    writeAnchor(cluster, BUY, 100, 0);
-    const net = netPpm(101, 100);
-
-    const pair = read(cluster, net) as AnchorPair;
-
-    expect(pair.indexGapPpm).toBeCloseTo(0, 6);
-    expect(pair.carriedPpm).toBeCloseTo(10_000, 6);
     expect(factorsProduct(pair)).toBeCloseTo(1 + net / 1_000_000, 9);
   });
 });

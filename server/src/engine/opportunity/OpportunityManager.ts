@@ -6,11 +6,13 @@ import type { Cluster, Market } from '../cluster/types';
 import type { AnchorIssue, Opportunity } from './types';
 
 const MIN_NET_PPM = 5_000; // after fees
+const MIN_EDGE_NOTIONAL = 1_000; // quote units the profitable region must hold at open, the first checkpoint of docs/bestiary/thin-book.md
 const MAX_PLAUSIBLE_NET_PPM = 100_000;
 
 const REJECTION_WARN_WINDOW_MS = 10_000;
 
-type RejectionReason = 'implausible_net_ppm' | 'standing_basis' | AnchorIssue;
+type RejectionReason =
+  'implausible_net_ppm' | 'standing_basis' | 'thin_book' | AnchorIssue;
 
 type RejectionWarnState = {
   occurrenceCount: number; // rejections seen for this route and reason since the engine started
@@ -107,7 +109,11 @@ export class OpportunityManager {
         highestBidMarket,
         lowestAskMarket,
         now,
-        { netPpm },
+        {
+          netPpm,
+          sellMovePpm: cluster.anchor.movePpm[b],
+          buyMovePpm: cluster.anchor.movePpm[a],
+        },
       );
       return null;
     }
@@ -136,15 +142,34 @@ export class OpportunityManager {
       return null;
     }
 
+    const edge = walkLadders(cluster, a, b);
+
+    // A region this small is dust or a resting order nobody takes, and the anchors cannot see either.
+    if (edge === null || edge.notional < MIN_EDGE_NOTIONAL) {
+      this.reportRejection(
+        'thin_book',
+        cluster,
+        highestBidMarket,
+        lowestAskMarket,
+        now,
+        {
+          netPpm,
+          freshNetPpm: anchor.freshNetPpm,
+          edgeNotional: edge?.notional ?? null,
+          edgeAvgPpm: edge?.avgPpm ?? null,
+          edgeSize: edge?.size ?? null,
+        },
+      );
+      return null;
+    }
+
     const highestBidSize = cluster.bidSize[b] * cluster.sizeMul[b];
     const lowestAskSize = cluster.askSize[a] * cluster.sizeMul[a];
     const highestBidLegAsk = cluster.ask[b] * cluster.askMul[b];
     const lowestAskLegBid = cluster.bid[a] * cluster.bidMul[a];
 
-    const edge = walkLadders(cluster, a, b);
-
     this.logger.log(
-      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask, ${edge === null ? 'no depth held' : `${Math.round(edge.avgPpm)}ppm over ${edge.notional.toFixed(0)} of notional${edge.exhausted ? ' with a book exhausted' : ''}`}, ${Math.round(anchor.freshNetPpm)}ppm fresh against the anchors`,
+      `Opportunity found between venues ${highestBidMarket.venueId} and ${lowestAskMarket.venueId} for ${lowestAskMarket.base} / ${lowestAskMarket.quote}: ${netPpm}ppm at ${new Date(now).toISOString()}, ${highestBidSize} coins at the bid and ${lowestAskSize} at the ask, ${Math.round(edge.avgPpm)}ppm over ${edge.notional.toFixed(0)} of notional${edge.exhausted ? ' with a book exhausted' : ''}, ${Math.round(anchor.freshNetPpm)}ppm fresh against the anchors`,
     );
 
     return this.lifecycle.trackOpportunity({

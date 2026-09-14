@@ -410,6 +410,7 @@ export class Engine {
     const { anchor } = slot.cluster;
     const i = slot.venueIndex;
 
+    anchor.movePpm[i] = anchorMovePpm(anchor.index[i], anchor.mark[i], reading);
     anchor.index[i] = reading.index;
     anchor.mark[i] = reading.mark;
     anchor.fundingRate[i] = reading.fundingRate;
@@ -574,6 +575,30 @@ function anchorIssue(r: AnchorReading): AnchorIssue | null {
     return 'ts_not_positive';
   }
   return null;
+}
+
+// A slot polled once has nothing to compare against, so its move is unbounded until the second poll lands, and the reader refuses the route until then.
+// That costs one cadence after boot or after a market appears, and it keeps a row from opening on the first write of a tape already in motion.
+function anchorMovePpm(
+  previousIndex: number,
+  previousMark: number,
+  reading: AnchorReading,
+): number {
+  if (previousIndex <= 0) {
+    return Infinity;
+  }
+
+  const indexMove = relativeMovePpm(previousIndex, reading.index);
+  const markMove =
+    previousMark > 0 && reading.mark > 0
+      ? relativeMovePpm(previousMark, reading.mark)
+      : 0;
+
+  return Math.max(indexMove, markMove);
+}
+
+function relativeMovePpm(previous: number, next: number): number {
+  return (Math.abs(next - previous) / previous) * 1_000_000;
 }
 
 function depthIssue(

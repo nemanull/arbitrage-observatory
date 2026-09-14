@@ -12,11 +12,11 @@ export type CloseReason =
 // One leg's anchor as read at open, see anchorReading.ts. Prices are raw venue prices, premiums are fractions: 0.01 = one percent above.
 export type AnchorLeg = {
   index: number;
-  mark: number; // 0 = the venue publishes none
+  mark: number; // a route opens only on a positive mark
   touch: number; // the price at the top of the book that your trade would actually hit on that leg
   touchPremium: number; // touch over index minus one, what the book says
-  markPremium: number | null; // mark over index minus one, what the venue has accepted, null without a mark
-  freshPremium: number; // touch over mark minus one, what the book says that the venue has not absorbed. Over the index without a mark
+  markPremium: number; // mark over index minus one, what the venue has accepted
+  freshPremium: number; // touch over mark minus one, what the book says that the venue has not absorbed
   fundingRate: number;
   fundingIntervalHours: number;
   nextFundingAt: number;
@@ -28,12 +28,19 @@ export type AnchorPair = {
   sell: AnchorLeg; // the venue of the highest bid
   buy: AnchorLeg; // the venue of the lowest ask
   indexGapPpm: number; // sell index over buy index minus one, after the venue price scales: the structural part, which funding never closes
-  carriedPpm: number; // the accepted premiums' gap, the part funding is pricing and closes over hours. A leg without a mark counts as 0 here and shows in freshNetPpm instead
+  carriedPpm: number; // the accepted premiums' gap, the part funding is pricing and closes over hours
   freshNetPpm: number; // the net edge after fees once each book is divided by its own anchor, the part a taker cross can capture
   standingPpm: number; // netPpm minus freshNetPpm, the part the two anchors already explain
 };
 
-export type AnchorIssue = 'anchor_missing' | 'anchor_stale' | 'anchor_skewed'; // why readAnchorPair could not judge a route, which refuses it, see anchorReading.ts
+// Why readAnchorPair could not judge a route, which refuses it, see anchorReading.ts.
+// A refused route writes no row, so the AnchorIssue enum in schema.prisma keeps only the three that could open a route unjudged before 2026-09-14.
+export type AnchorIssue =
+  | 'anchor_missing'
+  | 'anchor_stale'
+  | 'anchor_skewed'
+  | 'anchor_no_mark'
+  | 'anchor_moving';
 
 export type EdgeSample = {
   avgPpm: number; // average edge over the whole region after fees. 0 when the region is empty

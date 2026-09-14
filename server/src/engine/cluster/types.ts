@@ -31,7 +31,8 @@ export type ClusterDepth = {
 
 export type ClusterAnchor = {
   readonly index: Float64Array; // the venue's index price, 0 = never read
-  readonly mark: Float64Array; // 0 = the venue publishes none (coinbase)
+  readonly mark: Float64Array; // 0 = the venue publishes none, which refuses the route at open
+  readonly movePpm: Float64Array; // how far the index or the mark moved since the previous poll, whichever moved more, in ppm. Infinity until the slot's second poll, written by Engine.updateAnchor
   readonly fundingRate: Float64Array; // the rate for the upcoming settlement, as a fraction: -0.0038 = shorts pay longs 0.38%
   readonly fundingIntervalHours: Float64Array; // 1, 4 or 8
   readonly nextFundingAt: Float64Array; // Unix ms, 0 = unknown

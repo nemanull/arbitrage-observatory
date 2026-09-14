@@ -1,5 +1,5 @@
 import type { PairKey } from '../engine/cluster/types';
-import type { AnchorLeg, Opportunity } from '../engine/opportunity/types';
+import type { Opportunity } from '../engine/opportunity/types';
 import type { ArbitrageOpportunityRow } from './writes';
 
 // Turns a closed Opportunity into the row the worker inserts.
@@ -83,14 +83,14 @@ export function toOpportunityRow(
     edgeSamples: opportunity.edgeSamples,
 
     highestBidIndexAtOpen: sell.index,
-    highestBidMarkAtOpen: markOrNull(sell),
+    highestBidMarkAtOpen: sell.mark,
     highestBidFreshPremiumAtOpen: sell.freshPremium,
     highestBidFundingRateAtOpen: sell.fundingRate,
     highestBidFundingIntervalHours: sell.fundingIntervalHours,
     highestBidNextFundingAt: timeOrNull(sell.nextFundingAt),
     highestBidAnchorAt: timeOrNull(sell.writtenAt),
     lowestAskIndexAtOpen: buy.index,
-    lowestAskMarkAtOpen: markOrNull(buy),
+    lowestAskMarkAtOpen: buy.mark,
     lowestAskFreshPremiumAtOpen: buy.freshPremium,
     lowestAskFundingRateAtOpen: buy.fundingRate,
     lowestAskFundingIntervalHours: buy.fundingIntervalHours,
@@ -120,11 +120,7 @@ export function toOpportunityRow(
   };
 }
 
-// The engine keeps 0 for a venue that publishes no mark and for an unknown settlement time, and the row says null.
-function markOrNull(leg: AnchorLeg): number | null {
-  return leg.mark <= 0 ? null : leg.mark;
-}
-
+// The engine keeps 0 for an unknown settlement time, and the row says null.
 function timeOrNull(ms: number): string | null {
   return ms <= 0 ? null : new Date(ms).toISOString();
 }

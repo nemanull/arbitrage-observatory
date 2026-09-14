@@ -18,6 +18,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-07-depth-stream-scaling.md`](./research/2026-09-07-depth-stream-scaling.md) measures the whole pipeline for streamed depth on five venues, sizes the fifty venue universe at about 15,000 markets, and finds the single event loop is the one structural blocker, with pair sharding as the path.
 - [`research/2026-09-07-depth-sequence-gaps.md`](./research/2026-09-07-depth-sequence-gaps.md) measures zero sequence gaps in 12.48 million deltas on the four delta depth venues, confirms the maintained book against the venues' own top of book and REST, and records how far each ticker channel lags the book.
 - [`research/2026-09-14-fresh-gate-markless-leg.md`](./research/2026-09-14-fresh-gate-markless-leg.md) explains how a 1.5 percent TOWNS cross passed the fresh gate because coinbase supplies no mark, measures the INTX mark as the last trade clamped into the spread, and classifies the sixth run's 74 rows with the kraken band ride.
+- [`research/2026-09-14-open-guard-sizing.md`](./research/2026-09-14-open-guard-sizing.md) measures the INTX instruments call as the coinbase anchor source, the one-poll anchor moves that size the moving anchor guard at 1,000 ppm, and the region floor's cost at each threshold across two runs.
 
 ## Audits
 
@@ -54,6 +55,8 @@ The newest audit is the one that describes current behaviour.
 - [`implemented/2026-09-06-depth-block-plan.md`](./implemented/2026-09-06-depth-block-plan.md) records the reconciled plan that shipped the depth block.
 - [`implemented/2026-09-14-fresh-edge-verdict-design.md`](./implemented/2026-09-14-fresh-edge-verdict-design.md) records the reconciled design that makes the fresh edge the verdict at open and at close, refuses routes whose anchors cannot be read, and removes the index quarantine.
 - [`implemented/2026-09-14-fresh-edge-verdict-plan.md`](./implemented/2026-09-14-fresh-edge-verdict-plan.md) records the reconciled plan that shipped the fresh edge verdict.
+- [`implemented/2026-09-14-open-guards-design.md`](./implemented/2026-09-14-open-guards-design.md) records the reconciled design for the three refusals at open, a moving anchor, a markless leg and a thin book, and the mark coinbase reads from Coinbase International Exchange.
+- [`implemented/2026-09-14-open-guards-plan.md`](./implemented/2026-09-14-open-guards-plan.md) records the reconciled plan that shipped the open guards.
 
 ## Reference
 

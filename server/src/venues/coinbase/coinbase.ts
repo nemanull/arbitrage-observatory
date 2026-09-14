@@ -7,7 +7,7 @@ import { chunk } from '../../feeds/book/shared';
 import { VenueFeed } from '../../feeds/book/VenueFeed';
 import type { CoinbaseEvent, CoinbaseFrame, CoinbaseL2Update } from './types';
 
-// Coinbase Advanced is the only Coinbase platform that serves perpetual market data without credentials.
+// Coinbase Advanced serves the perpetual books without credentials, and the anchor poller reads the International Exchange REST list for the index and the mark, see anchor.ts.
 // The International Exchange socket closes every connection from this host with code 3003 before it reads a subscribe frame.
 const PUBLIC_URL = 'wss://advanced-trade-ws.coinbase.com';
 

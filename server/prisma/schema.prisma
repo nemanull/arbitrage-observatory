@@ -170,9 +170,11 @@ model ArbitrageOpportunity {
   // The anchors, docs/bestiary/index-mark-and-premium.md: each leg's index, mark and funding as the venue published them, raw and unscaled, read when the route opened.
   // Null on every column only on rows from before 2026-09-14, when a route could open unjudged and anchorIssueAtOpen says why.
   highestBidIndexAtOpen          Float?
-  /// Null where the venue publishes no mark, which is coinbase
+  /// Null where the venue published no mark, as coinbase did until 2026-09-14.
+  /// A route opens only on a positive mark since then, see src/engine/opportunity/anchorReading.ts
   highestBidMarkAtOpen           Float?
-  /// The bid over the mark minus one as a fraction, over the index without a mark: what the sell book says that its venue has not absorbed
+  /// The bid over the mark minus one as a fraction: what the sell book says that its venue has not absorbed.
+  /// Over the index on the rows written without a mark
   highestBidFreshPremiumAtOpen   Float?
   /// The rate for the coming settlement as a fraction, -0.0038 = shorts pay longs 0.38%
   highestBidFundingRateAtOpen    Float?

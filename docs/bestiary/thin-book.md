@@ -109,6 +109,10 @@ Fetch twenty levels for both legs when the episode opens, then walk them.
 4. Measure the gap from level 0 to level 2.
    A wide gap says what happens the moment the touch is consumed.
 
+Since 2026-09-14 the open gate applies the first checkpoint of step 2 at the moment of the print.
+A route whose profitable region at open holds less than 1,000 quote units is refused as `thin_book` and writes no row, and a region that grows past the floor on a later tick opens then.
+The sizing across two runs is in [`../research/2026-09-14-open-guard-sizing.md`](../research/2026-09-14-open-guard-sizing.md).
+
 The write path that receives these levels is `Engine.updateDepth` in [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts).
 The block it writes into is described in [`../implemented/2026-09-06-depth-block-design.md`](../implemented/2026-09-06-depth-block-design.md).
 Since 2026-09-07 the WebSocket book feeds fill it, one maintained book per market, verified in [`../research/2026-09-07-depth-sequence-gaps.md`](../research/2026-09-07-depth-sequence-gaps.md).

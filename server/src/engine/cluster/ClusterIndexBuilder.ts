@@ -46,6 +46,7 @@ export function createClusterAnchor(width: number): ClusterAnchor {
   return {
     index: new Float64Array(width),
     mark: new Float64Array(width),
+    movePpm: new Float64Array(width),
     fundingRate: new Float64Array(width),
     fundingIntervalHours: new Float64Array(width),
     nextFundingAt: new Float64Array(width),

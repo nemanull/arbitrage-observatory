@@ -3,6 +3,7 @@ import type { AnchorIssue, AnchorLeg, AnchorPair } from './types';
 
 export const ANCHOR_SKEW_MS = 5_000;
 export const ANCHOR_MAX_AGE_MS = 10_000;
+export const MAX_ANCHOR_MOVE_PPM = 1_000; // per poll, on the index or the mark, whichever moved more, see docs/research/2026-09-14-open-guard-sizing.md
 
 export function premium(price: number, reference: number): number {
   return price / reference - 1;
@@ -33,6 +34,18 @@ export function readAnchorPair(
     return 'anchor_stale';
   }
 
+  if (anchor.mark[sellIndex] <= 0 || anchor.mark[buyIndex] <= 0) {
+    return 'anchor_no_mark';
+  }
+
+  // On a fast tape the fresh edge measures one anchor's lag behind the other rather than the book.
+  if (
+    anchor.movePpm[sellIndex] > MAX_ANCHOR_MOVE_PPM ||
+    anchor.movePpm[buyIndex] > MAX_ANCHOR_MOVE_PPM
+  ) {
+    return 'anchor_moving';
+  }
+
   const sell = readLeg(cluster, sellIndex, cluster.bid[sellIndex]);
   const buy = readLeg(cluster, buyIndex, cluster.ask[buyIndex]);
 
@@ -43,7 +56,7 @@ export function readAnchorPair(
   const buyScale = cluster.askMul[buyIndex] / buyPays;
 
   const indexGap = (sell.index * sellScale) / (buy.index * buyScale);
-  const carried = (1 + (sell.markPremium ?? 0)) / (1 + (buy.markPremium ?? 0));
+  const carried = (1 + sell.markPremium) / (1 + buy.markPremium);
   const fresh = (1 + sell.freshPremium) / (1 + buy.freshPremium);
   const freshNetPpm = ((fresh * sellKeeps) / buyPays - 1) * 1_000_000;
 
@@ -67,20 +80,11 @@ function readLeg(cluster: Cluster, i: number, touch: number): AnchorLeg {
     mark,
     touch,
     touchPremium: premium(touch, index),
-    markPremium: mark > 0 ? premium(mark, index) : null,
-    freshPremium: premium(touch, referencePrice(index, mark)),
+    markPremium: premium(mark, index),
+    freshPremium: premium(touch, mark),
     fundingRate: anchor.fundingRate[i],
     fundingIntervalHours: anchor.fundingIntervalHours[i],
     nextFundingAt: anchor.nextFundingAt[i],
     writtenAt: anchor.writtenAt[i],
   };
-}
-
-// The reference a fresh premium is measured over: the mark where the venue publishes one, else the index.
-function referencePrice(index: number, mark: number): number {
-  if (mark > 0) {
-    return mark;
-  } else {
-    return index;
-  }
 }

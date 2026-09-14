@@ -27,23 +27,15 @@ export type CoinbaseFrame = {
   message?: string;
 };
 
-// One product of GET /api/v3/brokerage/market/products for the perpetuals, only the fields the anchor reads.
-export type CoinbaseFutureDetails = {
-  index_price: string;
-  funding_rate: string; // as a fraction, per interval
-  funding_time: string; // RFC 3339, the last settlement
-  funding_interval: string; // '3600s'
-  open_interest: string;
-  venue: string;
-};
-
-export type CoinbaseProduct = {
-  product_id: string; // 'BTC-PERP-INTX'
-  status: string;
-  future_product_details?: CoinbaseFutureDetails | null;
-};
-
-export type CoinbaseProductsReply = {
-  products: CoinbaseProduct[];
-  num_products: number;
+// One entry of GET /api/v1/instruments on Coinbase International Exchange, only the fields the anchor reads.
+export type CoinbaseIntxInstrument = {
+  symbol: string; // 'TOWNS-PERP', the Advanced product id without -INTX
+  type: string; // 'PERP' or 'SPOT'
+  trading_state: string; // 'TRADING', 'DELISTED', and a dozen halt and auction states
+  funding_interval: string; // nanoseconds, '3600000000000' on every perpetual and '0' on spot
+  quote?: {
+    index_price: string;
+    mark_price: string;
+    predicted_funding: string; // the upcoming rate as a fraction per interval, positive means longs pay
+  };
 };
