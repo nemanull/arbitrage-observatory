@@ -2941,11 +2941,13 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
     edgeSamples: number
     highestBidIndexAtOpen: number | null
     /**
-     * Null where the venue publishes no mark, which is coinbase
+     * Null where the venue published no mark, as coinbase did until 2026-09-14.
+     * A route opens only on a positive mark since then, see src/engine/opportunity/anchorReading.ts
      */
     highestBidMarkAtOpen: number | null
     /**
-     * The bid over the mark minus one as a fraction, over the index without a mark: what the sell book says that its venue has not absorbed
+     * The bid over the mark minus one as a fraction: what the sell book says that its venue has not absorbed.
+     * Over the index on the rows written without a mark
      */
     highestBidFreshPremiumAtOpen: number | null
     /**
