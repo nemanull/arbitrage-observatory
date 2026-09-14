@@ -1,5 +1,5 @@
 import type { Queue } from 'bullmq';
-import type { OpportunityClosedJob } from '../../src/engine/OpportunityWorker';
+import type { OpportunityClosedJob } from '../../src/engine/opportunity/OpportunityWorker';
 
 export type OpportunityQueueMock = jest.Mocked<Queue<OpportunityClosedJob>>;
 

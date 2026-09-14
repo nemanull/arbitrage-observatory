@@ -4,14 +4,14 @@ Status: Not started. A temporary hardcoded patch is in place.
 Recorded: 2026-09-05.
 Indexed in [BACKLOG.md](../BACKLOG.md).
 
-Replace the two hardcoded tables in `server/src/engine/clusterOverrides.ts` with a gate that decides,
+Replace the two hardcoded tables in `server/src/engine/cluster/clusterOverrides.ts` with a gate that decides,
 from the venues' own published references, whether two markets are the same asset and whether they are
 quoted in the same unit.
 
 ## Finding
 
 A cluster is keyed on `${base}|${quote}` and nothing else.
-`ClusterIndexBuilder.getPairFromRaw` in `server/src/engine/ClusterIndexBuilder.ts:183` builds the key,
+`ClusterIndexBuilder.getPairFromRaw` in `server/src/engine/cluster/ClusterIndexBuilder.ts:183` builds the key,
 and `getPairMarkets` at `:133` groups by it.
 The guards along that path check venue id consistency at `:138`, empty or `|`-containing symbols at `:144`,
 and one market per venue at `:163` and `:68`.
@@ -19,7 +19,7 @@ None of them is about identity or denomination.
 
 `VenueConnector.toMarket` at `server/src/ccxt/connector.ts:114` has already discarded `contractSize`,
 `settle` and `info` before the engine sees a market, so no unit information reaches the cluster builder.
-`OpportunityManager.validate` at `server/src/engine/OpportunityManager.ts:79` applies a floor on `netPpm`
+`OpportunityManager.validate` at `server/src/engine/opportunity/OpportunityManager.ts:79` applies a floor on `netPpm`
 and no ceiling.
 
 Two venues that list different assets under the same ticker therefore form a cluster,
@@ -101,7 +101,7 @@ All 61 `ANTHROPIC` and 50 `OPENAI` rows name the losing leg as the winning one.
 
 ## The temporary patch
 
-`server/src/engine/clusterOverrides.ts` holds two hardcoded tables and
+`server/src/engine/cluster/clusterOverrides.ts` holds two hardcoded tables and
 `OpportunityManager` holds a plausibility ceiling.
 `DENIED_PAIRS` drops the three collisions, and since 2026-09-06 the `ONE|USDT` index-dispersion pair, before a cluster is built.
 `PRICE_SCALE` multiplies okx's `ANTHROPIC-USDT-SWAP` and `OPENAI-USDT-SWAP` by 10 so the cluster is

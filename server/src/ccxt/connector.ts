@@ -6,7 +6,7 @@ import {
   VenueConnectorOptions,
 } from './types';
 import { Logger } from '@nestjs/common';
-import type { Market, Venue } from '../engine/types';
+import type { Market, Venue } from '../engine/cluster/types';
 
 export class VenueConnector {
   public logger: Logger;

@@ -123,7 +123,7 @@ SOPH after 2026-09-08 08:00 settled hourly on bybit and binance and every four h
 At every bybit instant the bybit perp dips against a perp on okx that has no reason to move, and a cross opens for a minute or two with a known cause and a known end.
 Even on the same clock the instant itself is a flicker: bybit IOST touched 2 basis points over its index in the same two seconds that binance IOST touched 197 under.
 
-The fresh edge test in [`../../server/src/engine/anchorReading.ts`](../../server/src/engine/anchorReading.ts) reads the dip as fresh, and it is fresh, in that it closes on its own.
+The fresh edge test in [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) reads the dip as fresh, and it is fresh, in that it closes on its own.
 The mark lags the dip by construction, so nothing in the anchors says the move was timetabled.
 What the test cannot see is that the dip is a price for the coming bill.
 Buying the dip on the settling venue and holding through the instant earns the dip and pays the rate it was compensating for, and the two net to about the fees.

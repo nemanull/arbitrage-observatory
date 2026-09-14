@@ -7,14 +7,14 @@ import {
 } from '@nestjs/common';
 import type { Queue } from 'bullmq';
 import { VenueConnector } from './ccxt/connector';
-import { ClusterIndexBuilder } from './engine/ClusterIndexBuilder';
+import { ClusterIndexBuilder } from './engine/cluster/ClusterIndexBuilder';
 import { Engine } from './engine/Engine';
 import {
   OPPORTUNITY_CLOSED_QUEUE,
   type OpportunityClosedJob,
-} from './engine/OpportunityWorker';
-import { createVenueIndexMap } from './engine/shared';
-import type { ClusterIndex, Venue } from './engine/types';
+} from './engine/opportunity/OpportunityWorker';
+import { createVenueIndexMap } from './engine/cluster/venueIndexMap';
+import type { ClusterIndex, Venue } from './engine/cluster/types';
 import type { AnchorPoller } from './feeds/anchor/AnchorPoller';
 import type { VenueFeed } from './feeds/book/VenueFeed';
 import { VENUE_REGISTRY } from './venues/registry';

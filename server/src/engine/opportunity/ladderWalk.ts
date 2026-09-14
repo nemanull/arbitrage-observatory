@@ -1,4 +1,5 @@
-import type { Cluster, EdgeSample } from './types';
+import type { Cluster } from '../cluster/types';
+import type { EdgeSample } from './types';
 
 export function walkLadders(
   cluster: Cluster,

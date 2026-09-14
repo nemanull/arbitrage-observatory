@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import WebSocket, { type RawData } from 'ws';
 import type { Engine } from '../../engine/Engine';
-import type { BookLevel, Market, Venue } from '../../engine/types';
+import type { BookLevel, Market, Venue } from '../../engine/cluster/types';
 import { OrderBook } from './OrderBook';
 import type { EndpointPlan, SingleSocketConnection } from './types';
 

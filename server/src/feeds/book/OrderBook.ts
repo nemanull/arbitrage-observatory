@@ -1,4 +1,4 @@
-import type { BookLevel } from '../../engine/types';
+import type { BookLevel } from '../../engine/cluster/types';
 
 export class OrderBook {
   private bidPrices: number[] = [];

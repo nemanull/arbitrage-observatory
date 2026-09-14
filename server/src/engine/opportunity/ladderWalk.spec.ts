@@ -1,6 +1,9 @@
-import { createClusterAnchor, createClusterDepth } from './ClusterIndexBuilder';
+import {
+  createClusterAnchor,
+  createClusterDepth,
+} from '../cluster/ClusterIndexBuilder';
 import { walkLadders } from './ladderWalk';
-import type { BookLevel, Cluster, Market } from './types';
+import type { BookLevel, Cluster, Market } from '../cluster/types';
 
 const LEVELS = 5;
 const BUY = 0; // binance, we buy its asks

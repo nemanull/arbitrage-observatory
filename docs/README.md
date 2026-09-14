@@ -17,6 +17,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-06-venue-depth-endpoints-probe.md`](./research/2026-09-06-venue-depth-endpoints-probe.md) measures each venue's REST book endpoint and depth channel and records the shapes, the latency, kraken's ascending bids and coinbase's one second edge cache.
 - [`research/2026-09-07-depth-stream-scaling.md`](./research/2026-09-07-depth-stream-scaling.md) measures the whole pipeline for streamed depth on five venues, sizes the fifty venue universe at about 15,000 markets, and finds the single event loop is the one structural blocker, with pair sharding as the path.
 - [`research/2026-09-07-depth-sequence-gaps.md`](./research/2026-09-07-depth-sequence-gaps.md) measures zero sequence gaps in 12.48 million deltas on the four delta depth venues, confirms the maintained book against the venues' own top of book and REST, and records how far each ticker channel lags the book.
+- [`research/2026-09-14-fresh-gate-markless-leg.md`](./research/2026-09-14-fresh-gate-markless-leg.md) explains how a 1.5 percent TOWNS cross passed the fresh gate because coinbase supplies no mark, measures the INTX mark as the last trade clamped into the spread, and classifies the sixth run's 74 rows with the kraken band ride.
 
 ## Audits
 
@@ -51,6 +52,8 @@ The newest audit is the one that describes current behaviour.
 - [`implemented/2026-09-06-book-sizes-and-far-sides-plan.md`](./implemented/2026-09-06-book-sizes-and-far-sides-plan.md) records the reconciled plan that shipped it across the connector, builder, engine, manager and feeds.
 - [`implemented/2026-09-06-depth-block-design.md`](./implemented/2026-09-06-depth-block-design.md) records the reconciled design for the flat depth block in the cluster and the engine's write path into it.
 - [`implemented/2026-09-06-depth-block-plan.md`](./implemented/2026-09-06-depth-block-plan.md) records the reconciled plan that shipped the depth block.
+- [`implemented/2026-09-14-fresh-edge-verdict-design.md`](./implemented/2026-09-14-fresh-edge-verdict-design.md) records the reconciled design that makes the fresh edge the verdict at open and at close, refuses routes whose anchors cannot be read, and removes the index quarantine.
+- [`implemented/2026-09-14-fresh-edge-verdict-plan.md`](./implemented/2026-09-14-fresh-edge-verdict-plan.md) records the reconciled plan that shipped the fresh edge verdict.
 
 ## Reference
 

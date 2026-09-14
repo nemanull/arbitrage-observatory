@@ -51,7 +51,7 @@ export type Venue = Prisma.VenueModel
 export type Pair = Prisma.PairModel
 /**
  * Model Market
- * One venue's listing of one pair, and the row Market in src/engine/types.ts is built from
+ * One venue's listing of one pair, and the row Market in src/engine/cluster/types.ts is built from
  */
 export type Market = Prisma.MarketModel
 /**

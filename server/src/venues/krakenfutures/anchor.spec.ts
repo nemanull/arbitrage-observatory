@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { Market, Venue } from '../../engine/types';
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { Market, Venue } from '../../engine/cluster/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { KrakenFuturesAnchorPoller } from './anchor';
 
 const VENUE_ID = 'krakenfutures';
@@ -9,7 +9,7 @@ const T0 = Date.parse('2026-09-10T04:52:40.047Z');
 const NEXT_HOUR = Date.parse('2026-09-10T05:00:00.000Z');
 
 type Probe = {
-  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorRows>;
+  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorMap>;
 };
 
 function market(rawMarketId: string): Market {

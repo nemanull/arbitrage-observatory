@@ -1,9 +1,10 @@
-import type { AnchorLeg, Opportunity, PairKey } from '../engine/types';
+import type { PairKey } from '../engine/cluster/types';
+import type { AnchorLeg, Opportunity } from '../engine/opportunity/types';
 import type { ArbitrageOpportunityRow } from './writes';
 
 // Turns a closed Opportunity into the row the worker inserts.
 // This is the only place that knows both shapes, which keeps writes.ts free of engine types and the queue payload plain JSON.
-// The caller passes pair and route because an Opportunity carries neither: pair is the key of the map it lived in, and route is OpportunityManager.getRouteKey.
+// The caller passes pair and route because an Opportunity carries neither: pair is the key of the map it lived in, and route is getRouteKey in OpportunityLifecycle.ts.
 export function toOpportunityRow(
   opportunity: Opportunity,
   pair: PairKey,
@@ -17,8 +18,7 @@ export function toOpportunityRow(
   }
 
   const anchor = opportunity.anchorAtOpen;
-  const sell = anchor?.sell;
-  const buy = anchor?.buy;
+  const { sell, buy } = anchor;
 
   return {
     pair,
@@ -82,26 +82,34 @@ export function toOpportunityRow(
     maxEdgeNotional: opportunity.maxEdgeNotional,
     edgeSamples: opportunity.edgeSamples,
 
-    highestBidIndexAtOpen: sell?.index ?? null,
+    highestBidIndexAtOpen: sell.index,
     highestBidMarkAtOpen: markOrNull(sell),
-    highestBidFundingRateAtOpen: sell?.fundingRate ?? null,
-    highestBidFundingIntervalHours: sell?.fundingIntervalHours ?? null,
-    highestBidNextFundingAt: timeOrNull(sell?.nextFundingAt),
-    highestBidAnchorAt: timeOrNull(sell?.writtenAt),
-    lowestAskIndexAtOpen: buy?.index ?? null,
+    highestBidFreshPremiumAtOpen: sell.freshPremium,
+    highestBidFundingRateAtOpen: sell.fundingRate,
+    highestBidFundingIntervalHours: sell.fundingIntervalHours,
+    highestBidNextFundingAt: timeOrNull(sell.nextFundingAt),
+    highestBidAnchorAt: timeOrNull(sell.writtenAt),
+    lowestAskIndexAtOpen: buy.index,
     lowestAskMarkAtOpen: markOrNull(buy),
-    lowestAskFundingRateAtOpen: buy?.fundingRate ?? null,
-    lowestAskFundingIntervalHours: buy?.fundingIntervalHours ?? null,
-    lowestAskNextFundingAt: timeOrNull(buy?.nextFundingAt),
-    lowestAskAnchorAt: timeOrNull(buy?.writtenAt),
-    anchorIssueAtOpen: opportunity.anchorIssueAtOpen,
+    lowestAskFreshPremiumAtOpen: buy.freshPremium,
+    lowestAskFundingRateAtOpen: buy.fundingRate,
+    lowestAskFundingIntervalHours: buy.fundingIntervalHours,
+    lowestAskNextFundingAt: timeOrNull(buy.nextFundingAt),
+    lowestAskAnchorAt: timeOrNull(buy.writtenAt),
+    anchorIssueAtOpen: null, // only rows from before 2026-09-14 opened unjudged
 
-    freshNetPpmAtOpen: anchor?.freshNetPpm ?? null,
-    standingPpmAtOpen: anchor?.standingPpm ?? null,
+    freshNetPpmAtOpen: anchor.freshNetPpm,
+    standingPpmAtOpen: anchor.standingPpm,
+    indexGapPpmAtOpen: anchor.indexGapPpm,
+    carriedPpmAtOpen: anchor.carriedPpm,
     freshNetPpmAtPeak: opportunity.peakAnchor?.freshNetPpm ?? null,
     standingPpmAtPeak: opportunity.peakAnchor?.standingPpm ?? null,
+    indexGapPpmAtPeak: opportunity.peakAnchor?.indexGapPpm ?? null,
+    carriedPpmAtPeak: opportunity.peakAnchor?.carriedPpm ?? null,
     freshNetPpmAtClose: opportunity.lastAnchor?.freshNetPpm ?? null,
     standingPpmAtClose: opportunity.lastAnchor?.standingPpm ?? null,
+    indexGapPpmAtClose: opportunity.lastAnchor?.indexGapPpm ?? null,
+    carriedPpmAtClose: opportunity.lastAnchor?.carriedPpm ?? null,
 
     freshNetPpmSeries: opportunity.freshNetPpmSeries,
     anchorTsMs: opportunity.anchorTsMs,
@@ -113,10 +121,10 @@ export function toOpportunityRow(
 }
 
 // The engine keeps 0 for a venue that publishes no mark and for an unknown settlement time, and the row says null.
-function markOrNull(leg: AnchorLeg | undefined): number | null {
-  return leg === undefined || leg.mark <= 0 ? null : leg.mark;
+function markOrNull(leg: AnchorLeg): number | null {
+  return leg.mark <= 0 ? null : leg.mark;
 }
 
-function timeOrNull(ms: number | undefined): string | null {
-  return ms === undefined || ms <= 0 ? null : new Date(ms).toISOString();
+function timeOrNull(ms: number): string | null {
+  return ms <= 0 ? null : new Date(ms).toISOString();
 }

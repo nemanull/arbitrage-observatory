@@ -155,8 +155,8 @@ The 86 CP rows have a mean peak of 8,467 ppm, and every one of them describes a 
 
 ## Why the engine cannot see it
 
-The engine decides from two numbers: the fee adjusted best bid on one venue and the fee adjusted best ask on another, at [`../../server/src/engine/OpportunityManager.ts`](../../server/src/engine/OpportunityManager.ts) line 97.
-No index, mark or funding field exists on `Market`, `Cluster` or `Opportunity` in [`../../server/src/engine/types.ts`](../../server/src/engine/types.ts), and the cluster builder reads only the market list from ccxt.
+The engine decides from two numbers: the fee adjusted best bid on one venue and the fee adjusted best ask on another, at [`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts) line 97.
+No index, mark or funding field exists on `Market`, `Cluster` or `Opportunity` in [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) and [`../../server/src/engine/opportunity/types.ts`](../../server/src/engine/opportunity/types.ts), and the cluster builder reads only the market list from ccxt.
 The inputs that separate a basis from an arbitrage are not read anywhere in the process, so no rule could use them.
 
 A basis never collapses, so the row runs to `MAX_OPPORTUNITY_AGE_MS`, closes as `age_cap`, and reopens on the next tick.
@@ -169,7 +169,7 @@ Depth makes it worse, not better.
 The ladder walk in [`edge-at-the-touch.md`](./edge-at-the-touch.md) finds thousands of dollars on both sides of a basis, because both books are honest.
 A row that reports the largest region in the table is the row this class produces.
 
-The current answer is the hand kept `DENIED_PAIRS` list in [`../../server/src/engine/clusterOverrides.ts`](../../server/src/engine/clusterOverrides.ts).
+The current answer is the hand kept `DENIED_PAIRS` list in [`../../server/src/engine/cluster/clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts).
 It holds eight pairs and grows by a few every run, because denial is by name and the cause is a mechanism.
 
 ## How to detect it
@@ -183,6 +183,7 @@ Three numbers classify the row.
    HEMI at 0.14 percent stays in.
 2. Each leg's premium, which is mark over index minus one.
    When the premiums explain the cross, the row is tagged as a basis.
+   The row carries that part as the carried ppm, next to the index gap and the fresh edge.
    SOPH at -1.31 percent against -0.5 percent is this case.
 3. The net funding per day in the trade's direction.
    The short leg receives its venue's rate and the long leg pays its venue's rate, scaled to the venue's interval.

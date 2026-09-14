@@ -1,5 +1,5 @@
 import type WebSocket from 'ws';
-import type { Market } from '../../engine/types';
+import type { Market } from '../../engine/cluster/types';
 
 export type EndpointPlan = {
   id: string; // 'bybit#linear#0'

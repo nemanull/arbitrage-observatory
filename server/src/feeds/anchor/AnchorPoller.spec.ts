@@ -1,8 +1,9 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { AnchorReading, Market, Venue } from '../../engine/types';
-import { AnchorPoller, HttpStatusError } from './AnchorPoller';
-import type { AnchorRow, AnchorRows } from './types';
+import type { AnchorReading, Market, Venue } from '../../engine/cluster/types';
+import { HttpStatusError } from '../../shared/errors';
+import { AnchorPoller } from './AnchorPoller';
+import type { AnchorRow, AnchorMap } from './types';
 
 const VENUE_ID = 'testvenue';
 const INTERVAL_MS = 1_000;
@@ -33,12 +34,12 @@ function row(index: number, overrides: Partial<AnchorRow> = {}): AnchorRow {
 
 // The venue side of the poller is one method returning rows, so the test subclass returns whatever the test queues up.
 class TestPoller extends AnchorPoller {
-  rounds: AnchorRows[] = [];
+  rounds: AnchorMap[] = [];
   errors: Error[] = [];
-  pending: Promise<AnchorRows> | null = null; // returned instead of the queue while set, for a round that must stay open
+  pending: Promise<AnchorMap> | null = null; // returned instead of the queue while set, for a round that must stay open
   signals: AbortSignal[] = [];
 
-  protected fetchRound(_ts: number, signal: AbortSignal): Promise<AnchorRows> {
+  protected fetchRound(_ts: number, signal: AbortSignal): Promise<AnchorMap> {
     this.signals.push(signal);
     if (this.pending !== null) {
       const open = this.pending;
@@ -64,7 +65,7 @@ function makePoller(markets: Market[]) {
   return { poller, updateAnchor };
 }
 
-function rows(entries: [string, AnchorRow][]): AnchorRows {
+function rows(entries: [string, AnchorRow][]): AnchorMap {
   return new Map(entries);
 }
 
@@ -124,30 +125,35 @@ describe('AnchorPoller.start', () => {
 });
 
 describe('AnchorPoller round', () => {
-  it('writes every tracked market with the same ts, the round start', async () => {
+  it('writes every tracked market with the same ts, the time the reply arrived', async () => {
     const { poller, updateAnchor } = makePoller([
       market('AAAUSDT'),
       market('BBBUSDT'),
     ]);
-    poller.rounds.push(
+    let reply: (map: AnchorMap) => void = () => undefined;
+    poller.pending = new Promise((resolve) => {
+      reply = resolve;
+    });
+
+    poller.start();
+    jest.setSystemTime(T0 + 700); // the venue took 700 ms to answer
+    reply(
       rows([
         ['AAAUSDT', row(1)],
         ['BBBUSDT', row(2)],
         ['ZZZUSDT', row(3)],
       ]),
     );
-
-    poller.start();
     await flush();
 
     expect(updateAnchor).toHaveBeenCalledTimes(2);
     expect(updateAnchor).toHaveBeenCalledWith(VENUE_ID, 'AAAUSDT', {
       ...row(1),
-      ts: T0,
+      ts: T0 + 700,
     });
     expect(updateAnchor).toHaveBeenCalledWith(VENUE_ID, 'BBBUSDT', {
       ...row(2),
-      ts: T0,
+      ts: T0 + 700,
     });
     poller.stop();
   });
@@ -201,8 +207,8 @@ describe('AnchorPoller round', () => {
 
   it('skips a tick while the previous round is still in flight', async () => {
     const { poller, updateAnchor } = makePoller([market('AAAUSDT')]);
-    let release: (rows: AnchorRows) => void = () => undefined;
-    poller.pending = new Promise<AnchorRows>((resolve) => (release = resolve));
+    let release: (rows: AnchorMap) => void = () => undefined;
+    poller.pending = new Promise<AnchorMap>((resolve) => (release = resolve));
     poller.rounds.push(rows([['AAAUSDT', row(2)]]));
 
     poller.start();
@@ -279,7 +285,7 @@ describe('AnchorPoller round', () => {
 describe('AnchorPoller.stop', () => {
   it('aborts the round in flight and polls no more', async () => {
     const { poller, updateAnchor } = makePoller([market('AAAUSDT')]);
-    poller.pending = new Promise<AnchorRows>(() => undefined);
+    poller.pending = new Promise<AnchorMap>(() => undefined);
     poller.rounds.push(rows([['AAAUSDT', row(1)]]));
 
     poller.start();

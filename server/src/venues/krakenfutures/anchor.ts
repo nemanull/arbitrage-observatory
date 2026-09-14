@@ -1,4 +1,4 @@
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { AnchorPoller } from '../../feeds/anchor/AnchorPoller';
 import type { KrakenTicker, KrakenTickersReply } from './types';
 
@@ -13,7 +13,7 @@ export class KrakenFuturesAnchorPoller extends AnchorPoller {
   protected async fetchRound(
     ts: number,
     signal: AbortSignal,
-  ): Promise<AnchorRows> {
+  ): Promise<AnchorMap> {
     const reply = await this.getJson<KrakenTickersReply>(TICKERS_URL, signal);
 
     if (reply.result !== 'success') {
@@ -21,7 +21,7 @@ export class KrakenFuturesAnchorPoller extends AnchorPoller {
     }
 
     const nextFundingAt = Math.ceil(ts / HOUR_MS) * HOUR_MS;
-    const rows: AnchorRows = new Map();
+    const rows: AnchorMap = new Map();
 
     for (const ticker of reply.tickers) {
       if (!isPerpetual(ticker)) {

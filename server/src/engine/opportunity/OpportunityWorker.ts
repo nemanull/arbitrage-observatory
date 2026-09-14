@@ -1,11 +1,11 @@
 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { PrismaService } from '../db/prisma';
+import { PrismaService } from '../../db/prisma';
 import {
   writeOpportunities,
   type ArbitrageOpportunityRow,
-} from '../db/writes';
+} from '../../db/writes';
 
 export const OPPORTUNITY_CLOSED_QUEUE = 'opportunity-closed';
 
@@ -19,13 +19,11 @@ const CONCURRENCY = 4;
 const KEEP_COMPLETED_SECONDS = 3_600;
 const KEEP_FAILED_SECONDS = 86_400;
 
-
 @Processor(OPPORTUNITY_CLOSED_QUEUE, {
   concurrency: CONCURRENCY,
   removeOnComplete: { age: KEEP_COMPLETED_SECONDS, count: 1_000 },
   removeOnFail: { age: KEEP_FAILED_SECONDS },
 })
-  
 export class OpportunityWorker extends WorkerHost {
   private readonly logger = new Logger(OpportunityWorker.name);
 
@@ -49,7 +47,10 @@ export class OpportunityWorker extends WorkerHost {
   }
 
   @OnWorkerEvent('failed')
-  onFailed(job: Job<OpportunityClosedJob, number> | undefined, error: Error): void {
+  onFailed(
+    job: Job<OpportunityClosedJob, number> | undefined,
+    error: Error,
+  ): void {
     this.logger.error({
       event: 'opportunity_write_failed',
       jobId: job?.id,
@@ -62,6 +63,9 @@ export class OpportunityWorker extends WorkerHost {
   // Connection level problems arrive here rather than on a job.
   @OnWorkerEvent('error')
   onError(error: Error): void {
-    this.logger.error({ event: 'opportunity_worker_error', error: error.message });
+    this.logger.error({
+      event: 'opportunity_worker_error',
+      error: error.message,
+    });
   }
 }

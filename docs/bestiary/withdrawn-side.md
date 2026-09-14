@@ -75,7 +75,7 @@ So the last good two sided quote stays sitting in `bid[v]` and `ask[v]`, with a 
 ```
 
 The buy side has genuinely left the market.
-The engine keeps quoting a price that no longer exists, and the episode runs until `MAX_OPPORTUNITY_AGE_MS`, which is five minutes, in [`../../server/src/engine/OpportunityManager.ts`](../../server/src/engine/OpportunityManager.ts).
+The engine keeps quoting a price that no longer exists, and the episode runs until `MAX_OPPORTUNITY_AGE_MS`, which is five minutes, in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts).
 
 This is a third way to hold a dead price, alongside the trade driven channel in [`stale-quote.md`](./stale-quote.md) and the throttled channel it mentions.
 It is worse than both in one respect.

@@ -83,5 +83,5 @@ On the row: 24 h notional and open interest per leg, and a participation tag.
 
 ## What finishing means
 
-Each input is its own GitHub issue above, and together they replace the hand kept lists in `server/src/engine/clusterOverrides.ts` with a classification the row carries.
+Each input is its own GitHub issue above, and together they replace the hand kept lists in `server/src/engine/cluster/clusterOverrides.ts` with a classification the row carries.
 The order of value on the fourth run's evidence is index and funding first (352 rows), then session (37 rows), then a minimum region and participation (83 rows), then per leg age and tradability, which sharpen every class.

@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { Market, Venue } from '../../engine/types';
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { Market, Venue } from '../../engine/cluster/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { BybitAnchorPoller } from './anchor';
 
 const VENUE_ID = 'bybit';
@@ -10,7 +10,7 @@ const T0 = 1_789_015_942_967;
 type Probe = {
   intervalMs: number;
   rateLimitPauseMs: number;
-  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorRows>;
+  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorMap>;
 };
 
 function market(rawMarketId: string, linear = true): Market {

@@ -1,4 +1,4 @@
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { AnchorPoller } from '../../feeds/anchor/AnchorPoller';
 import type { BybitTicker, BybitTickersReply } from './types';
 
@@ -19,14 +19,14 @@ export class BybitAnchorPoller extends AnchorPoller {
   protected async fetchRound(
     _ts: number,
     signal: AbortSignal,
-  ): Promise<AnchorRows> {
+  ): Promise<AnchorMap> {
     const replies = await Promise.all(
       this.families().map((url) =>
         this.getJson<BybitTickersReply>(url, signal),
       ),
     );
 
-    const rows: AnchorRows = new Map();
+    const rows: AnchorMap = new Map();
     for (const reply of replies) {
       if (reply.retCode !== 0) {
         throw new Error(`retCode ${reply.retCode}: ${reply.retMsg}`);

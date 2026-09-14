@@ -1,78 +1,39 @@
-export type PairKey = string; // "BTC|USDT". USD and USDC markets sit under the USDT key, see quoteFamily.ts
+import type { Cluster, Market, PairKey } from '../cluster/types';
+
 type RouteKey = string; // "bybit-binance": the venue we sell on, then the venue we buy on
 
 export type CloseReason =
   | 'spread_collapsed' // fell below CLOSURE_NET_PPM
+  | 'fresh_edge_collapsed' // the fresh edge fell below CLOSURE_NET_PPM while the raw cross still cleared it
   | 'feed_down' // the socket carrying one leg closed
   | 'age_cap' // MAX_OPPORTUNITY_AGE_MS
   | 'shutdown';
 
-export type Venue = {
-  id: string; // 'binance',
-  name: string; // 'Binance'
-  markets: Market[];
-};
-
-export type Market = {
-  venueId: string; // 'bybit'
-  rawMarketId: string; // 'BTCUSDT': the symbol exactly as the venue's socket spells it
-  base: string; // 'BTC'
-  quote: string; // 'USDT'
-  takerPpm: number; // taker fee in parts per million: 550 = 0.055%
-  linear: boolean;
-  contractSize: number;
-};
-
-export type BookLevel = [price: number, size: number];
-
-export type ClusterDepth = {
-  readonly maxLevels: number; // default at 20
-  readonly bidPrice: Float64Array; // width × maxLevels, descending inside a slot
-  readonly bidSize: Float64Array; // raw contracts
-  readonly askPrice: Float64Array; // ascending inside a slot
-  readonly askSize: Float64Array;
-  readonly bidLevelCount: Uint8Array; // filled entries per slot, 0 = nothing held
-  readonly askLevelCount: Uint8Array;
-  readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses depth older than the episode it judges
-};
-
-export type ClusterAnchor = {
-  readonly index: Float64Array; // the venue's index price, 0 = never read
-  readonly mark: Float64Array; // 0 = the venue publishes none (coinbase)
-  readonly fundingRate: Float64Array; // the rate for the upcoming settlement, as a fraction: -0.0038 = shorts pay longs 0.38%
-  readonly fundingIntervalHours: Float64Array; // 1, 4 or 8
-  readonly nextFundingAt: Float64Array; // Unix ms, 0 = unknown
-  readonly writtenAt: Float64Array; // Unix ms per slot, 0 = never. A reader refuses two legs further apart than anchorReading.ts allows
-};
-
-export type AnchorReading = {
-  index: number;
-  mark: number;
-  fundingRate: number;
-  fundingIntervalHours: number;
-  nextFundingAt: number;
-  ts: number; // Unix ms when the venue published it, or when the poll returned
-};
-
-// One leg's anchor as read at open, see anchorReading.ts
+// One leg's anchor as read at open, see anchorReading.ts. Prices are raw venue prices, premiums are fractions: 0.01 = one percent above.
 export type AnchorLeg = {
   index: number;
   mark: number; // 0 = the venue publishes none
-  premium: number | null; // mark over index minus one, null without a mark
+  touch: number; // the price at the top of the book that your trade would actually hit on that leg
+  touchPremium: number; // touch over index minus one, what the book says
+  markPremium: number | null; // mark over index minus one, what the venue has accepted, null without a mark
+  freshPremium: number; // touch over mark minus one, what the book says that the venue has not absorbed. Over the index without a mark
   fundingRate: number;
   fundingIntervalHours: number;
   nextFundingAt: number;
   writtenAt: number;
 };
 
+// The cross factors into three parts, docs/bestiary/index-mark-and-premium.md. In fractions, 1 + netPpm = (1 + indexGapPpm) × (1 + carriedPpm) × (1 + freshNetPpm).
 export type AnchorPair = {
   sell: AnchorLeg; // the venue of the highest bid
   buy: AnchorLeg; // the venue of the lowest ask
+  indexGapPpm: number; // sell index over buy index minus one, after the venue price scales: the structural part, which funding never closes
+  carriedPpm: number; // the accepted premiums' gap, the part funding is pricing and closes over hours. A leg without a mark counts as 0 here and shows in freshNetPpm instead
   freshNetPpm: number; // the net edge after fees once each book is divided by its own anchor, the part a taker cross can capture
   standingPpm: number; // netPpm minus freshNetPpm, the part the two anchors already explain
 };
 
-export type AnchorIssue = 'anchor_missing' | 'anchor_stale' | 'anchor_skewed'; // why a route has no AnchorPair, see anchorReading.ts
+export type AnchorIssue = 'anchor_missing' | 'anchor_stale' | 'anchor_skewed'; // why readAnchorPair could not judge a route, which refuses it, see anchorReading.ts
 
 export type EdgeSample = {
   avgPpm: number; // average edge over the whole region after fees. 0 when the region is empty
@@ -82,30 +43,6 @@ export type EdgeSample = {
   buyLevels: number; // ask levels the region reaches into on the buy venue
   sellLevels: number; // bid levels on the sell venue
 };
-
-export type Cluster = {
-  readonly pair: PairKey; // 'BTC|USDT'
-  readonly markets: (Market | null)[];
-  readonly bidMul: Float64Array; // Bid multiplier: (1 - taker fee) × price scale, applied when a reading is taken, never at write
-  readonly askMul: Float64Array; // Ask multiplier: (1 + taker fee) × price scale
-  readonly sizeMul: Float64Array; // contractSize / price scale, so price × size keeps the raw notional on a scaled market
-  readonly bid: Float64Array; // raw, as the venue quotes it
-  readonly ask: Float64Array;
-  readonly bidSize: Float64Array; // raw contracts resting at the bid. Written on every message, but a size-only change is not a tick
-  readonly askSize: Float64Array;
-  readonly recvTs: Float64Array; // Unix ms. 0 = never spoke, venue does not list this pair, or its socket is down (Engine.markStale)
-  readonly depth: ClusterDepth;
-  readonly anchor: ClusterAnchor; // written by a poller, not by the book socket, so markStale leaves it alone
-};
-
-export type ClusterIndex = {
-  clusters: Cluster[];
-  clusterByRawMarketId: ClusterByRawMarketId;
-  venueIndexMap: VenueIndexMap;
-};
-
-export type ClusterByRawMarketId = Map<string, Map<string, Cluster>>; // <binance, <BTCUSDT, Cluster>> We use it to understand which cluster a market belongs to
-export type VenueIndexMap = Map<string, number>; // <"binance", 0> index
 
 // netPpm, highestBid, lowestAsk are all after fee adjustments. An output of a runtime validation
 export type Opportunity = {
@@ -152,8 +89,7 @@ export type Opportunity = {
   edgeAvgPpmSeries: number[]; // the walk per sample, aligned with sampleTs, -1 where a leg held no depth
   edgeNotionalSeries: number[];
 
-  anchorAtOpen: AnchorPair | null; // null when a leg's anchor was missing, stale or skewed, so the route opened unjudged
-  anchorIssueAtOpen: AnchorIssue | null; // why anchorAtOpen is null
+  anchorAtOpen: AnchorPair; // a route opens only on readable anchors
   peakAnchor: AnchorPair | null; // the anchors at the sample where netPpm peaked
   lastAnchor: AnchorPair | null;
   freshNetPpmSeries: number[]; // aligned with sampleTs, NO_ANCHOR where no anchor could be read at that sample
@@ -187,8 +123,7 @@ export type Observation = {
   highestBidLegAsk: number; // the other side of the venue we sell on, fee adjusted like highestBid. Its distance to highestBid is that book's width
   lowestAskLegBid: number; // the other side of the venue we buy on
   netPpm: number;
-  anchor: AnchorPair | null;
-  anchorIssue: AnchorIssue | null;
+  anchor: AnchorPair;
   now: number;
 };
 

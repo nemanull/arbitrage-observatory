@@ -1,5 +1,5 @@
-import type { Market } from '../../engine/types';
-import type { AnchorRow, AnchorRows } from '../../feeds/anchor/types';
+import type { Market } from '../../engine/cluster/types';
+import type { AnchorRow, AnchorMap } from '../../feeds/anchor/types';
 import { AnchorPoller } from '../../feeds/anchor/AnchorPoller';
 import type {
   OkxFundingRate,
@@ -30,7 +30,7 @@ export class OkxAnchorPoller extends AnchorPoller {
   protected async fetchRound(
     ts: number,
     signal: AbortSignal,
-  ): Promise<AnchorRows> {
+  ): Promise<AnchorMap> {
     if (ts - this.instrumentsReadAt >= INSTRUMENTS_REFRESH_MS) {
       await this.readInstruments(signal);
       this.instrumentsReadAt = ts;
@@ -59,7 +59,7 @@ export class OkxAnchorPoller extends AnchorPoller {
       markPx.set(row.instId, Number(row.markPx));
     }
 
-    const rows: AnchorRows = new Map();
+    const rows: AnchorMap = new Map();
     for (const f of funding.data) {
       const row = toRow(f, markPx, indexPx, this.indexIdOf);
       if (row !== null) {

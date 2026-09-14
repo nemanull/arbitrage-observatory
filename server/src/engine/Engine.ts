@@ -7,10 +7,11 @@ import type {
   ClusterIndex,
   PairKey,
   VenueIndexMap,
-} from './types';
-import { DEPTH_LEVELS } from './ClusterIndexBuilder';
-import { OpportunityManager } from './OpportunityManager';
-import type { OpportunityClosedJob } from './OpportunityWorker';
+} from './cluster/types';
+import { DEPTH_LEVELS } from './cluster/ClusterIndexBuilder';
+import { OpportunityLifecycle } from './opportunity/OpportunityLifecycle';
+import { OpportunityManager } from './opportunity/OpportunityManager';
+import type { OpportunityClosedJob } from './opportunity/OpportunityWorker';
 
 type SingleMarketClusterQuote = {
   bid: number;
@@ -50,6 +51,7 @@ export class Engine {
 
   private readonly ClusterIndex: ClusterIndex;
   private readonly venueIndexMap: VenueIndexMap;
+  private readonly opportunityLifecycle: OpportunityLifecycle;
   private readonly opportunityManager: OpportunityManager;
   private readonly invalidQuoteWarnStates = new Map<
     string,
@@ -65,7 +67,8 @@ export class Engine {
   ) {
     this.ClusterIndex = clusterIndex;
     this.venueIndexMap = venueIndexMap;
-    this.opportunityManager = new OpportunityManager(queue);
+    this.opportunityLifecycle = new OpportunityLifecycle(queue);
+    this.opportunityManager = new OpportunityManager(this.opportunityLifecycle);
     this.depthLevels =
       clusterIndex.clusters[0]?.depth.maxLevels ?? DEPTH_LEVELS;
   }
@@ -210,7 +213,7 @@ export class Engine {
     const wasLive = cluster.recvTs[venueIndex] > 0;
 
     cluster.recvTs[venueIndex] = 0;
-    const closed = this.opportunityManager.closeOpportunitiesOnVenue(
+    const closed = this.opportunityLifecycle.closeOpportunitiesOnVenue(
       cluster.pair,
       venueIndex,
       now,
@@ -230,7 +233,7 @@ export class Engine {
 
   // The age cap needs a timer. A route whose legs stop changing has no tick left to reach it.
   sweep(now: number): number {
-    return this.opportunityManager.sweep(now).length;
+    return this.opportunityLifecycle.sweep(now).length;
   }
 
   tracks(venueId: string, rawMarketId: string): boolean {
@@ -258,7 +261,7 @@ export class Engine {
       cluster.depth.bidLevelCount[venueIndex] = 0;
       cluster.depth.askLevelCount[venueIndex] = 0;
       cluster.depth.writtenAt[venueIndex] = 0;
-      closed += this.opportunityManager.closeOpportunitiesOnVenue(
+      closed += this.opportunityLifecycle.closeOpportunitiesOnVenue(
         cluster.pair,
         venueIndex,
         now,
@@ -278,7 +281,7 @@ export class Engine {
   // Closes every open route and waits for the queue. Quotes arriving after this are dropped.
   shutdown(now: number): Promise<number> {
     this.stopping = true;
-    return this.opportunityManager.shutdown(now);
+    return this.opportunityLifecycle.shutdown(now);
   }
 
   private resolveSlot(venueId: string, rawMarketId: string): Slot | null {

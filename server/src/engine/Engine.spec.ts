@@ -1,6 +1,9 @@
 import { Logger } from '@nestjs/common';
 import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
-import { createClusterAnchor, createClusterDepth } from './ClusterIndexBuilder';
+import {
+  createClusterAnchor,
+  createClusterDepth,
+} from './cluster/ClusterIndexBuilder';
 import { Engine } from './Engine';
 import type {
   AnchorReading,
@@ -10,8 +13,8 @@ import type {
   ClusterDepth,
   ClusterIndex,
   Market,
-  Opportunity,
-} from './types';
+} from './cluster/types';
+import type { Opportunity } from './opportunity/types';
 
 const VENUES = ['binance', 'bybit'] as const;
 const RAW_MARKET_ID = 'BTCUSDT';
@@ -287,9 +290,24 @@ describe('Engine.updateQuote', () => {
   });
 });
 
+// Both venues publish the same index and mark, so the anchors explain nothing and a route opens on its raw edge.
+function writeAgreedAnchors(engine: Engine): void {
+  for (const venueId of VENUES) {
+    engine.updateAnchor(venueId, RAW_MARKET_ID, {
+      index: 100,
+      mark: 100,
+      fundingRate: 0.0001,
+      fundingIntervalHours: 8,
+      nextFundingAt: 0,
+      ts: 1_000,
+    });
+  }
+}
+
 // bybit bids 101 against a binance ask of 100: ~8890ppm after 55bp taker each side.
 // binance rests 4 at its bid and 5 at its ask, bybit 2 and 3.
 function openRoute(engine: Engine): void {
+  writeAgreedAnchors(engine);
   engine.updateQuote('binance', RAW_MARKET_ID, {
     bid: 99.9,
     ask: 100,
@@ -307,8 +325,8 @@ function openRoute(engine: Engine): void {
 }
 
 function openRoutes(engine: Engine): Map<string, unknown> {
-  const manager = Reflect.get(engine, 'opportunityManager') as object;
-  const active = Reflect.get(manager, 'activeOpportunityMap') as Map<
+  const lifecycle = Reflect.get(engine, 'opportunityLifecycle') as object;
+  const active = Reflect.get(lifecycle, 'activeOpportunityMap') as Map<
     string,
     Map<string, unknown>
   >;
@@ -1162,6 +1180,7 @@ describe('Engine.updateBook', () => {
 
   it('opens a route from the tops of two books and walks their ladders at the open', () => {
     const { engine } = makeEngine();
+    writeAgreedAnchors(engine);
 
     engine.updateBook(
       'binance',

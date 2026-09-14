@@ -8,7 +8,7 @@ import { PrismaService } from './db/prisma';
 import {
   OpportunityWorker,
   OPPORTUNITY_CLOSED_QUEUE,
-} from './engine/OpportunityWorker';
+} from './engine/opportunity/OpportunityWorker';
 import { Orchestrator } from './orchestrator';
 
 @Module({

@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { Market, Venue } from '../../engine/types';
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { Market, Venue } from '../../engine/cluster/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { CoinbaseAnchorPoller } from './anchor';
 
 const VENUE_ID = 'coinbase';
 const T0 = Date.parse('2026-09-10T04:52:40.000Z');
 
 type Probe = {
-  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorRows>;
+  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorMap>;
 };
 
 function market(rawMarketId: string): Market {

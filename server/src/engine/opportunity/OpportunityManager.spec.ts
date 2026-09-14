@@ -1,13 +1,21 @@
 import { Logger } from '@nestjs/common';
-import { createClusterAnchor, createClusterDepth } from './ClusterIndexBuilder';
+import {
+  createClusterAnchor,
+  createClusterDepth,
+} from '../cluster/ClusterIndexBuilder';
 import {
   MAX_SERIES_LENGTH,
   NO_ANCHOR,
-  OpportunityManager,
-} from './OpportunityManager';
+  OpportunityLifecycle,
+} from './OpportunityLifecycle';
+import { OpportunityManager } from './OpportunityManager';
 import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
-import type { ActiveOpportunityMap, Cluster, Market } from './types';
-import { createOpportunityQueueMock } from '../../test/fixtures/opportunity-queue';
+import type { Cluster, Market } from '../cluster/types';
+import type { ActiveOpportunityMap, AnchorPair } from './types';
+import {
+  createOpportunityQueueMock,
+  type OpportunityQueueMock,
+} from '../../../test/fixtures/opportunity-queue';
 
 const TAKER_PPM = 550;
 const AGE_CAP_MS = 5 * 60_000;
@@ -32,7 +40,13 @@ const BINANCE = 0;
 const BYBIT = 1;
 const OKX = 2;
 
-function makeCluster(): Cluster {
+// Every venue's index and mark in a polled cluster, so the anchors explain nothing and the fresh edge equals the raw edge.
+const AGREED_INDEX = 100;
+
+// Clusters whose pollers keep writing, so every tick finds both anchors fresh. The anchor specs build theirs unpolled and write each reading by hand.
+const polled = new WeakSet<Cluster>();
+
+function makeCluster(polling = true): Cluster {
   const markets = [binanceMarket, bybitMarket, okxMarket];
   const width = markets.length;
   const bidMul = new Float64Array(width);
@@ -45,7 +59,7 @@ function makeCluster(): Cluster {
     sizeMul[i] = m.contractSize;
   });
 
-  return {
+  const cluster: Cluster = {
     pair: 'BTC|USDT',
     markets,
     bidMul,
@@ -59,7 +73,40 @@ function makeCluster(): Cluster {
     depth: createClusterDepth(width, 4), // four levels a slot, filled by the ladder walk tests only
     anchor: createClusterAnchor(width),
   };
+
+  if (polling) {
+    cluster.anchor.index.fill(AGREED_INDEX);
+    cluster.anchor.mark.fill(AGREED_INDEX);
+    cluster.anchor.fundingIntervalHours.fill(8);
+    polled.add(cluster);
+  }
+
+  return cluster;
 }
+
+// What trackOpportunity is handed for a route whose anchors agree. It records whatever it is given.
+const AGREED_ANCHOR: AnchorPair = (() => {
+  const leg = {
+    index: AGREED_INDEX,
+    mark: AGREED_INDEX,
+    touch: AGREED_INDEX,
+    touchPremium: 0,
+    markPremium: 0,
+    freshPremium: 0,
+    fundingRate: 0,
+    fundingIntervalHours: 8,
+    nextFundingAt: 0,
+    writtenAt: 1_000,
+  };
+  return {
+    sell: leg,
+    buy: { ...leg },
+    indexGapPpm: 0,
+    carriedPpm: 0,
+    freshNetPpm: 8_000,
+    standingPpm: 0,
+  };
+})();
 
 // One tick, exactly as Engine.updateQuote delivers it: one venue's quote lands in its slot,
 // then validate runs for that venue.
@@ -79,11 +126,28 @@ function tick(
   cluster.askSize[index] = askSize;
   cluster.recvTs[index] = now;
 
+  if (polled.has(cluster)) {
+    cluster.anchor.writtenAt.fill(now);
+  }
+
   return manager.validate(cluster, index, now);
 }
 
+function createManager(
+  queue: OpportunityQueueMock = createOpportunityQueueMock(),
+): OpportunityManager {
+  return new OpportunityManager(new OpportunityLifecycle(queue));
+}
+
+function lifecycleOf(manager: OpportunityManager): OpportunityLifecycle {
+  return Reflect.get(manager, 'lifecycle') as OpportunityLifecycle;
+}
+
 function activeMap(manager: OpportunityManager): ActiveOpportunityMap {
-  return Reflect.get(manager, 'activeOpportunityMap') as ActiveOpportunityMap;
+  return Reflect.get(
+    lifecycleOf(manager),
+    'activeOpportunityMap',
+  ) as ActiveOpportunityMap;
 }
 
 function routes(manager: OpportunityManager) {
@@ -107,7 +171,7 @@ function openOn(manager: OpportunityManager, cluster: Cluster, now: number) {
 
 describe('OpportunityManager.validate', () => {
   it('opens the best route once it clears MIN_NET_PPM', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000);
@@ -123,7 +187,7 @@ describe('OpportunityManager.validate', () => {
   });
 
   it('does not open a route below MIN_NET_PPM', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
@@ -136,7 +200,7 @@ describe('OpportunityManager.validate', () => {
   // The open threshold gates opening only. An episode that dips below it is still the
   // same episode and has to keep receiving data, or the 5000/1000 band cannot work.
   it('keeps feeding an open route that has fallen below MIN_NET_PPM', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -155,7 +219,7 @@ describe('OpportunityManager.validate', () => {
   });
 
   it('closes an open route once it falls below CLOSE_NET_PPM', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -171,7 +235,7 @@ describe('OpportunityManager.validate', () => {
   });
 
   it('tracks the peak instant, including the two prices behind it', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -193,7 +257,7 @@ describe('OpportunityManager.validate', () => {
 
 describe('OpportunityManager concurrent routes on one pair', () => {
   it('holds a second route open alongside the first', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000); // best ask is binance -> bybit-binance
@@ -212,7 +276,7 @@ describe('OpportunityManager concurrent routes on one pair', () => {
   // Once okx undercuts it, bybit-binance is never the cluster's best route again, so
   // only the per-route update path can still see it.
   it('keeps updating a route the cluster scan no longer reports', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const overtaken = openOn(manager, cluster, 1_000)!;
@@ -238,7 +302,7 @@ describe('OpportunityManager concurrent routes on one pair', () => {
 // that has not changed, and only the age cap, a collapse, a dead socket or a shutdown ends an episode.
 describe('OpportunityManager silence and the age cap', () => {
   it('keeps a route open while one leg stays quiet for minutes', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -248,20 +312,20 @@ describe('OpportunityManager silence and the age cap', () => {
 
     expect(opened.closedAt).toBeNull();
     expect(opened.lastSeenAt).toBe(120_000);
-    expect(manager.sweep(120_000)).toEqual([]);
+    expect(lifecycleOf(manager).sweep(120_000)).toEqual([]);
     expect(routes(manager)!.get('bybit-binance')).toBe(opened);
   });
 
   it('sweeps a route that reached MAX_OPPORTUNITY_AGE_MS', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
 
-    expect(manager.sweep(1_000 + AGE_CAP_MS - 1)).toEqual([]);
+    expect(lifecycleOf(manager).sweep(1_000 + AGE_CAP_MS - 1)).toEqual([]);
     expect(opened.closedAt).toBeNull();
 
-    const closed = manager.sweep(1_000 + AGE_CAP_MS);
+    const closed = lifecycleOf(manager).sweep(1_000 + AGE_CAP_MS);
 
     expect(closed).toEqual([opened]);
     expect(opened.closedAt).toBe(1_000 + AGE_CAP_MS);
@@ -271,7 +335,7 @@ describe('OpportunityManager silence and the age cap', () => {
 
   // The cap is a chunk boundary, not the end of the basis: the tick that closes the old episode opens the next one.
   it('closes at the cap on the tick path and lets the same tick reopen the route', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const first = openOn(manager, cluster, 1_000)!;
@@ -295,9 +359,9 @@ describe('OpportunityManager silence and the age cap', () => {
   });
 });
 
-describe('OpportunityManager feed down', () => {
+describe('OpportunityLifecycle feed down', () => {
   it('closes every route with a leg in the dead slot, and only those', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000);
@@ -308,11 +372,15 @@ describe('OpportunityManager feed down', () => {
     expect(routes(manager)!.size).toBe(2);
 
     expect(
-      manager.closeOpportunitiesOnVenue('BTC|USDT', OKX, 3_000),
+      lifecycleOf(manager).closeOpportunitiesOnVenue('BTC|USDT', OKX, 3_000),
     ).toHaveLength(1);
     expect([...routes(manager)!.keys()]).toEqual(['bybit-binance']);
 
-    const closed = manager.closeOpportunitiesOnVenue('BTC|USDT', BYBIT, 4_000);
+    const closed = lifecycleOf(manager).closeOpportunitiesOnVenue(
+      'BTC|USDT',
+      BYBIT,
+      4_000,
+    );
 
     expect(closed).toHaveLength(1);
     expect(closed[0].closedAt).toBe(4_000);
@@ -321,7 +389,7 @@ describe('OpportunityManager feed down', () => {
   });
 
   it('ignores a leg whose socket is down when discovering', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
@@ -335,15 +403,15 @@ describe('OpportunityManager feed down', () => {
   });
 
   it('returns nothing for a pair with no open routes', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
 
-    expect(manager.closeOpportunitiesOnVenue('BTC|USDT', BYBIT, 1_000)).toEqual(
-      [],
-    );
+    expect(
+      lifecycleOf(manager).closeOpportunitiesOnVenue('BTC|USDT', BYBIT, 1_000),
+    ).toEqual([]);
   });
 });
 
-describe('OpportunityManager.shutdown', () => {
+describe('OpportunityLifecycle.shutdown', () => {
   it('closes every open route with shutdown and waits for the queue', async () => {
     const queue = createOpportunityQueueMock();
     let settle: () => void = () => undefined;
@@ -353,16 +421,18 @@ describe('OpportunityManager.shutdown', () => {
           settle = () => resolve({});
         }) as never,
     );
-    const manager = new OpportunityManager(queue);
+    const manager = createManager(queue);
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
 
     let done = false;
-    const closing = manager.shutdown(5_000).then((count) => {
-      done = true;
-      return count;
-    });
+    const closing = lifecycleOf(manager)
+      .shutdown(5_000)
+      .then((count) => {
+        done = true;
+        return count;
+      });
 
     expect(opened.closedAt).toBe(5_000);
     expect(opened.closeReason).toBe('shutdown');
@@ -385,16 +455,18 @@ describe('OpportunityManager.shutdown', () => {
           settle = () => resolve({});
         }) as never,
     );
-    const manager = new OpportunityManager(queue);
+    const manager = createManager(queue);
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000);
     tick(manager, cluster, BYBIT, 100.1, 101.5, 2_000); // collapses, write in flight
 
     let done = false;
-    const closing = manager.shutdown(3_000).then(() => {
-      done = true;
-    });
+    const closing = lifecycleOf(manager)
+      .shutdown(3_000)
+      .then(() => {
+        done = true;
+      });
 
     await Promise.resolve();
     expect(done).toBe(false);
@@ -405,9 +477,9 @@ describe('OpportunityManager.shutdown', () => {
   });
 });
 
-describe('OpportunityManager series cap', () => {
+describe('OpportunityLifecycle series cap', () => {
   it('stops the series at MAX_SERIES_LENGTH while the counters keep going', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const observation = {
@@ -423,15 +495,14 @@ describe('OpportunityManager series cap', () => {
       highestBidLegAsk: 101.5,
       lowestAskLegBid: 99.9,
       netPpm: 8_000,
-      anchor: null,
-      anchorIssue: null,
+      anchor: AGREED_ANCHOR,
       now: 1_000,
     };
 
-    const opportunity = manager.trackOpportunity(observation);
+    const opportunity = lifecycleOf(manager).trackOpportunity(observation);
 
     for (let i = 1; i < MAX_SERIES_LENGTH + 5; i++) {
-      manager.trackOpportunity({
+      lifecycleOf(manager).trackOpportunity({
         ...observation,
         netPpm: 8_000 + i,
         now: 1_000 + i,
@@ -439,8 +510,16 @@ describe('OpportunityManager series cap', () => {
     }
 
     // past the cap: a new peak and a new minimum, neither of which the series can hold
-    manager.trackOpportunity({ ...observation, netPpm: 20_000, now: 20_000 });
-    manager.trackOpportunity({ ...observation, netPpm: 500, now: 20_001 });
+    lifecycleOf(manager).trackOpportunity({
+      ...observation,
+      netPpm: 20_000,
+      now: 20_000,
+    });
+    lifecycleOf(manager).trackOpportunity({
+      ...observation,
+      netPpm: 500,
+      now: 20_001,
+    });
 
     expect(opportunity.netPpmSeries).toHaveLength(MAX_SERIES_LENGTH);
     expect(opportunity.highestBidSeries).toHaveLength(MAX_SERIES_LENGTH);
@@ -454,13 +533,13 @@ describe('OpportunityManager series cap', () => {
   });
 });
 
-describe('OpportunityManager.trackOpportunity', () => {
+describe('OpportunityLifecycle.trackOpportunity', () => {
   // It is the caller that owns MIN_NET_PPM and CLOSE_NET_PPM; this records whatever it is given.
   it('records a reading regardless of how small the edge is', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
-    const opportunity = manager.trackOpportunity({
+    const opportunity = lifecycleOf(manager).trackOpportunity({
       cluster,
       highestBidMarket: bybitMarket,
       lowestAskMarket: binanceMarket,
@@ -473,8 +552,7 @@ describe('OpportunityManager.trackOpportunity', () => {
       highestBidLegAsk: 100.02,
       lowestAskLegBid: 99.99,
       netPpm: 100,
-      anchor: null,
-      anchorIssue: null,
+      anchor: AGREED_ANCHOR,
       now: 1_000,
     });
 
@@ -483,7 +561,7 @@ describe('OpportunityManager.trackOpportunity', () => {
   });
 
   it('updates the existing route instead of replacing it', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const observation = {
@@ -499,13 +577,12 @@ describe('OpportunityManager.trackOpportunity', () => {
       highestBidLegAsk: 101.5,
       lowestAskLegBid: 99.9,
       netPpm: 8_000,
-      anchor: null,
-      anchorIssue: null,
+      anchor: AGREED_ANCHOR,
       now: 1_000,
     };
 
-    const first = manager.trackOpportunity(observation);
-    const second = manager.trackOpportunity({
+    const first = lifecycleOf(manager).trackOpportunity(observation);
+    const second = lifecycleOf(manager).trackOpportunity({
       ...observation,
       netPpm: 9_000,
       now: 1_500,
@@ -526,7 +603,7 @@ describe('OpportunityManager persistence', () => {
   it('enqueues the closed opportunity with its reason', () => {
     const queue = createOpportunityQueueMock();
     const add = jest.spyOn(queue, 'add');
-    const manager = new OpportunityManager(queue);
+    const manager = createManager(queue);
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000);
@@ -557,7 +634,7 @@ describe('OpportunityManager persistence', () => {
 // binance ask of 100 is ~8.99M ppm: the two legs are not the same asset, whatever the ticker says.
 describe('OpportunityManager plausibility ceiling', () => {
   it('rejects a reading above MAX_PLAUSIBLE_NET_PPM, and says so', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
     const warn = warnings(manager);
 
@@ -578,7 +655,7 @@ describe('OpportunityManager plausibility ceiling', () => {
   });
 
   it('still opens a large but plausible edge', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
     const warn = warnings(manager);
 
@@ -592,7 +669,7 @@ describe('OpportunityManager plausibility ceiling', () => {
   // A cluster like this is broken on every tick for the life of the process. The bursts are 4s apart
   // while the warning window is 10s.
   it('warns once per window and carries the suppressed count', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
     const warn = warnings(manager);
 
@@ -631,7 +708,7 @@ describe('OpportunityManager book sizes and far sides', () => {
   }
 
   it('snapshots the sizes and far sides of the tick that opened the route', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openWithSizes(manager, cluster);
@@ -653,7 +730,7 @@ describe('OpportunityManager book sizes and far sides', () => {
   });
 
   it('moves the peak reading with a new peak and keeps the open one', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openWithSizes(manager, cluster);
@@ -679,7 +756,7 @@ describe('OpportunityManager book sizes and far sides', () => {
   });
 
   it('carries the last reading of either leg through to the close', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openWithSizes(manager, cluster);
@@ -711,7 +788,7 @@ describe('OpportunityManager book sizes and far sides', () => {
   });
 
   it('reads a raw size through the slot multiplier', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
     cluster.sizeMul[BYBIT] = 10; // ten coins per contract
 
@@ -746,7 +823,7 @@ describe('OpportunityManager ladder walk', () => {
   }
 
   it('records the region behind the opening cross, from the buy asks and the sell bids', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
     // We buy binance asks and sell into bybit bids. Two coins cross at 100 against 101, then one at 100.2 against 100.9, then 100.9 against 100.9 does not once both fees are on.
     setSide(cluster, BINANCE, 'ask', [
@@ -778,7 +855,7 @@ describe('OpportunityManager ladder walk', () => {
   });
 
   it('moves the peak with a better average edge and keeps the largest region on its own', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
     setSide(cluster, BINANCE, 'ask', [[100, 1]]);
     setSide(cluster, BYBIT, 'bid', [[101, 1]]);
@@ -812,7 +889,7 @@ describe('OpportunityManager ladder walk', () => {
   });
 
   it('records no edge while a leg holds no depth, and counts only the samples that had one', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
+    const manager = createManager();
     const cluster = makeCluster();
 
     const opened = openOn(manager, cluster, 1_000)!;
@@ -838,7 +915,7 @@ describe('OpportunityManager edge on the row', () => {
   it('carries the walk at open, peak and close and the two series onto the row', () => {
     const queue = createOpportunityQueueMock();
     const add = jest.spyOn(queue, 'add');
-    const manager = new OpportunityManager(queue);
+    const manager = createManager(queue);
     const cluster = makeCluster();
     const LEVELS = 4;
     const set = (
@@ -905,20 +982,27 @@ describe('OpportunityManager anchor filter', () => {
     cluster.anchor.writtenAt[i] = writtenAt;
   }
 
-  it('opens unjudged when no anchor has been written yet', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+  it('refuses a cross whose anchors were never written', () => {
+    const manager = createManager();
+    const cluster = makeCluster(false);
+    const warn = warnings(manager);
 
     const opened = openOn(manager, cluster, NOW);
 
-    expect(opened).not.toBeNull();
-    expect(opened?.anchorAtOpen).toBeNull();
+    expect(opened).toBeNull();
+    expect(routes(manager)).toBeUndefined();
+    expect(warn).toHaveBeenCalledTimes(1); // the okx tick behind it is the same route inside the window
+    const payload = warn.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.event).toBe('opportunity_rejected');
+    expect(payload.reason).toBe('anchor_missing');
+    expect(payload.route).toBe('bybit-binance');
+    expect(payload.netPpm as number).toBeGreaterThan(5_000);
   });
 
   // bybit's anchor sits one percent over binance's, which is the whole cross: the market already holds these two perps apart.
   it('rejects a cross the two anchors already explain', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     const warn = warnings(manager);
     anchorLeg(cluster, BINANCE, 100.2, 100.2, NOW - 100);
     anchorLeg(cluster, BYBIT, 101.2, 101.2, NOW - 100);
@@ -934,24 +1018,26 @@ describe('OpportunityManager anchor filter', () => {
     expect(payload.route).toBe('bybit-binance');
     expect(payload.freshNetPpm as number).toBeLessThan(0);
     expect(payload.standingPpm as number).toBeGreaterThan(9_000);
+    expect(Math.round(payload.indexGapPpm as number)).toBe(9_980); // all of it is the index gap, the marks sit on their indices
+    expect(payload.carriedPpm as number).toBeCloseTo(0, 6);
     expect(payload.occurrenceCount).toBe(1);
   });
 
   it('opens when the anchors agree and records both legs on the route', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100, 0.0001);
     anchorLeg(cluster, BYBIT, 100.5, 100.6, NOW - 300, -0.0038);
 
     const opened = openOn(manager, cluster, NOW);
 
     expect(opened).not.toBeNull();
-    const anchor = opened!.anchorAtOpen!;
+    const anchor = opened!.anchorAtOpen;
     expect(anchor.sell.index).toBe(100.5);
     expect(anchor.sell.mark).toBe(100.6);
     expect(anchor.sell.fundingRate).toBe(-0.0038);
     expect(anchor.sell.writtenAt).toBe(NOW - 300);
-    expect(anchor.buy.premium).toBe(0);
+    expect(anchor.buy.markPremium).toBe(0);
     // bybit's mark sits ten basis points over its index, so that much of the cross is standing and the rest is fresh.
     const net = opened!.netPpmAtOpen;
     const fresh = ((1 + net / 1_000_000) / (100.6 / 100.5) - 1) * 1_000_000;
@@ -961,39 +1047,56 @@ describe('OpportunityManager anchor filter', () => {
   });
 
   it('reads a venue without a mark at its index', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     anchorLeg(cluster, BINANCE, 100.5, 0, NOW - 100);
     anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
 
     const opened = openOn(manager, cluster, NOW);
 
     expect(opened).not.toBeNull();
-    expect(opened!.anchorAtOpen!.buy.premium).toBeNull();
-    expect(opened!.anchorAtOpen!.freshNetPpm).toBeCloseTo(
+    expect(opened!.anchorAtOpen.buy.markPremium).toBeNull();
+    expect(opened!.anchorAtOpen.freshNetPpm).toBeCloseTo(
       opened!.netPpmAtOpen,
       6,
     );
   });
 
-  it('opens unjudged when the two anchors are too far apart in time or too old', () => {
-    const skewed = new OpportunityManager(createOpportunityQueueMock());
-    const skewedCluster = makeCluster();
-    anchorLeg(skewedCluster, BINANCE, 100.2, 100.2, NOW - 100);
-    anchorLeg(skewedCluster, BYBIT, 101.2, 101.2, NOW - 3_000);
+  it('refuses a cross whose two anchors are too far apart in time or too old', () => {
+    const skewed = createManager();
+    const skewedWarn = warnings(skewed);
+    const skewedCluster = makeCluster(false);
+    anchorLeg(skewedCluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(skewedCluster, BYBIT, 100.5, 100.5, NOW - 6_000);
 
-    const stale = new OpportunityManager(createOpportunityQueueMock());
-    const staleCluster = makeCluster();
-    anchorLeg(staleCluster, BINANCE, 100.2, 100.2, NOW - 20_000);
-    anchorLeg(staleCluster, BYBIT, 101.2, 101.2, NOW - 20_000);
+    const stale = createManager();
+    const staleWarn = warnings(stale);
+    const staleCluster = makeCluster(false);
+    anchorLeg(staleCluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(staleCluster, BYBIT, 100.5, 100.5, NOW - 100);
 
-    expect(openOn(skewed, skewedCluster, NOW)?.anchorAtOpen).toBeNull();
-    expect(openOn(stale, staleCluster, NOW)?.anchorAtOpen).toBeNull();
+    expect(openOn(skewed, skewedCluster, NOW)).toBeNull();
+    expect(openOn(stale, staleCluster, NOW + 20_000)).toBeNull(); // both read twenty seconds before the cross
+    const reason = (spy: jest.SpyInstance) =>
+      ((spy.mock.calls as unknown[][])[0][0] as Record<string, unknown>).reason;
+    expect(reason(skewedWarn)).toBe('anchor_skewed');
+    expect(reason(staleWarn)).toBe('anchor_stale');
+  });
+
+  it('opens on two anchors read within the skew', () => {
+    const manager = createManager();
+    const cluster = makeCluster(false);
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 4_000); // a slow bybit round, stamped when its reply arrived
+
+    expect(openOn(manager, cluster, NOW)?.anchorAtOpen.buy.writtenAt).toBe(
+      NOW - 100,
+    );
   });
 
   it('warns once per window while a standing basis keeps coming back', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     const warn = warnings(manager);
     anchorLeg(cluster, BINANCE, 100.2, 100.2, NOW - 100);
     anchorLeg(cluster, BYBIT, 101.2, 101.2, NOW - 100);
@@ -1012,9 +1115,9 @@ describe('OpportunityManager anchor filter', () => {
   });
 
   it('carries the anchor into the close log', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const logger = Reflect.get(manager, 'logger') as Logger;
+    const manager = createManager();
+    const cluster = makeCluster(false);
+    const logger = Reflect.get(lifecycleOf(manager), 'logger') as Logger;
     const log = jest.spyOn(logger, 'log').mockImplementation(() => undefined);
     anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
     anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
@@ -1061,8 +1164,8 @@ describe('OpportunityManager anchor on the row', () => {
   }
 
   it('records the anchor series only when a leg moved, and the fresh series on every sample', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
     anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
 
@@ -1087,8 +1190,8 @@ describe('OpportunityManager anchor on the row', () => {
   });
 
   it('marks the samples where the anchor could not be read and leaves the anchor series alone', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
     anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
 
@@ -1098,11 +1201,32 @@ describe('OpportunityManager anchor on the row', () => {
     expect(opened.freshNetPpmSeries).toEqual([expect.any(Number), NO_ANCHOR]);
     expect(opened.anchorTsMs).toEqual([0]);
     expect(opened.lastAnchor).toBeNull();
+    expect(opened.closedAt).toBeNull(); // a sample with no verdict closes nothing
+  });
+
+  it('closes as fresh_edge_collapsed once the anchors explain a cross that still clears', () => {
+    const queue = createOpportunityQueueMock();
+    const manager = createManager(queue);
+    const cluster = makeCluster(false);
+    warnings(manager);
+    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
+    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
+
+    const opened = openOn(manager, cluster, NOW)!;
+    // bybit's index and mark climb to its book, so the same raw cross is now almost all standing.
+    anchorLeg(cluster, BYBIT, 101.4, 101.4, NOW + 900);
+    tick(manager, cluster, BYBIT, 101, 101.5, NOW + 1_000);
+
+    expect(opened.closeReason).toBe('fresh_edge_collapsed');
+    expect(opened.lastNetPpm).toBeGreaterThan(5_000);
+    expect(opened.lastAnchor!.freshNetPpm).toBeLessThan(1_000);
+    expect(routes(manager)!.has('bybit-binance')).toBe(false); // and discovery refuses it as a standing basis on the same tick
+    expect(enqueuedRow(queue).closeReason).toBe('fresh_edge_collapsed');
   });
 
   it('keeps the anchors at the peak sample', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
+    const manager = createManager();
+    const cluster = makeCluster(false);
     anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
     anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 100);
 
@@ -1117,8 +1241,8 @@ describe('OpportunityManager anchor on the row', () => {
 
   it('writes the anchors, the derived edges and the series onto the row', () => {
     const queue = createOpportunityQueueMock();
-    const manager = new OpportunityManager(queue);
-    const cluster = makeCluster();
+    const manager = createManager(queue);
+    const cluster = makeCluster(false);
     anchorLeg(cluster, BINANCE, 100.5, 0, NOW - 300); // a venue without a mark
     anchorLeg(cluster, BYBIT, 100.5, 100.6, NOW - 100);
 
@@ -1143,189 +1267,19 @@ describe('OpportunityManager anchor on the row', () => {
     expect(row.freshNetPpmAtPeak).toBe(opened.peakAnchor?.freshNetPpm);
     expect(row.freshNetPpmAtClose).toBe(opened.lastAnchor?.freshNetPpm);
     expect(row.standingPpmAtClose).toBe(opened.lastAnchor?.standingPpm);
+    expect(row.indexGapPpmAtOpen).toBeCloseTo(0, 6);
+    expect(Math.round(row.carriedPpmAtOpen as number)).toBe(995); // bybit's ten basis points over its index, binance has no mark to carry
+    expect(row.carriedPpmAtPeak).toBe(opened.peakAnchor?.carriedPpm);
+    expect(row.carriedPpmAtClose).toBe(opened.lastAnchor?.carriedPpm);
+    expect(row.highestBidFreshPremiumAtOpen).toBe(
+      opened.anchorAtOpen?.sell.freshPremium,
+    );
+    expect(row.lowestAskFreshPremiumAtOpen).toBe(
+      opened.anchorAtOpen?.buy.freshPremium,
+    );
     expect(row.freshNetPpmSeries).toEqual(opened.freshNetPpmSeries);
     expect(row.anchorTsMs).toEqual([0]);
     expect(row.highestBidMarkSeries).toEqual([100.6]);
     expect(row.lowestAskMarkSeries).toEqual([0]);
-  });
-
-  it('writes nulls, the issue and empty series for a route that opened unjudged', () => {
-    const queue = createOpportunityQueueMock();
-    const manager = new OpportunityManager(queue);
-    const cluster = makeCluster();
-    anchorLeg(cluster, BINANCE, 100.5, 100.5, NOW - 100);
-    anchorLeg(cluster, BYBIT, 100.5, 100.5, NOW - 5_000); // skewed
-
-    openOn(manager, cluster, NOW);
-    tick(manager, cluster, BYBIT, 100.1, 101.5, NOW + 50);
-    const row = enqueuedRow(queue);
-
-    expect(row.anchorIssueAtOpen).toBe('anchor_skewed');
-    expect(row.highestBidIndexAtOpen).toBeNull();
-    expect(row.lowestAskNextFundingAt).toBeNull();
-    expect(row.freshNetPpmAtOpen).toBeNull();
-    expect(row.freshNetPpmAtClose).toBeNull();
-    expect(row.freshNetPpmSeries).toEqual([NO_ANCHOR, NO_ANCHOR]);
-    expect(row.anchorTsMs).toEqual([]);
-    expect(row.highestBidIndexSeries).toEqual([]);
-  });
-});
-
-describe('OpportunityManager index quarantine', () => {
-  const NOW = 100_000;
-  const SECOND = 1_000;
-
-  // Both legs read fresh at the tick, mark equal to index so the premiums explain nothing.
-  function anchors(
-    cluster: Cluster,
-    binanceIndex: number,
-    bybitIndex: number,
-    now: number,
-  ) {
-    for (const [i, index] of [
-      [BINANCE, binanceIndex],
-      [BYBIT, bybitIndex],
-    ]) {
-      cluster.anchor.index[i] = index;
-      cluster.anchor.mark[i] = index;
-      cluster.anchor.fundingRate[i] = 0.0001;
-      cluster.anchor.fundingIntervalHours[i] = 8;
-      cluster.anchor.nextFundingAt[i] = now + 3_600_000;
-      cluster.anchor.writtenAt[i] = now - 100;
-    }
-  }
-
-  // bybit bids 106 against a binance ask of 100, the shape of a pair chained to two different indices.
-  // Either tick can be the one that discovers the route, so whichever opened it is returned.
-  function cross(manager: OpportunityManager, cluster: Cluster, now: number) {
-    return (
-      tick(manager, cluster, BINANCE, 99.9, 100, now) ??
-      tick(manager, cluster, BYBIT, 106, 106.5, now)
-    );
-  }
-
-  function events(spy: jest.SpyInstance): string[] {
-    return (spy.mock.calls as unknown[][]).map(
-      (c) => (c[0] as { event?: string }).event ?? 'text',
-    );
-  }
-
-  it('sets a route aside once its indices have been apart for a minute, and stops reading it', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const warn = warnings(manager);
-
-    for (let t = 0; t <= 70; t += 10) {
-      anchors(cluster, 100, 106, NOW + t * SECOND);
-      expect(cross(manager, cluster, NOW + t * SECOND)).toBeNull();
-    }
-
-    const seen = events(warn);
-    const quarantined = seen.indexOf('route_quarantined');
-    expect(quarantined).toBeGreaterThan(0);
-    expect(seen.slice(0, quarantined)).toEqual(
-      Array<string>(quarantined).fill('opportunity_rejected'),
-    );
-    expect(seen.slice(quarantined + 1)).toEqual([]); // the ticks after it reach no anchor read and no log
-    const payload = warn.mock.calls[quarantined][0] as Record<string, unknown>;
-    expect(payload.route).toBe('bybit-binance');
-    expect(Math.round(payload.gapPpm as number)).toBe(60_000); // the sell leg's index over the buy leg's
-    expect(payload.apartMs).toBe(60_000);
-    expect(routes(manager)).toBeUndefined();
-  });
-
-  it('does not set a route aside on a gap that closes inside the minute', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const warn = warnings(manager);
-
-    for (let t = 0; t <= 40; t += 10) {
-      anchors(cluster, 100, 106, NOW + t * SECOND);
-      expect(cross(manager, cluster, NOW + t * SECOND)).toBeNull();
-    }
-    anchors(cluster, 100, 100, NOW + 50 * SECOND);
-    const opened = cross(manager, cluster, NOW + 50 * SECOND);
-
-    expect(opened).not.toBeNull();
-    expect(events(warn)).not.toContain('route_quarantined');
-  });
-
-  it('releases the route once the indices have agreed for five minutes of rechecks', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const warn = warnings(manager);
-    const logger = Reflect.get(manager, 'logger') as Logger;
-    const log = jest.spyOn(logger, 'log').mockImplementation(() => undefined);
-
-    for (let t = 0; t <= 60; t += 10) {
-      anchors(cluster, 100, 106, NOW + t * SECOND);
-      cross(manager, cluster, NOW + t * SECOND);
-    }
-    expect(events(warn)).toContain('route_quarantined');
-
-    const rechecks = [120, 180, 240, 300, 360].map((t) => {
-      anchors(cluster, 100, 100, NOW + t * SECOND);
-      return cross(manager, cluster, NOW + t * SECOND);
-    });
-    anchors(cluster, 100, 100, NOW + 420 * SECOND);
-    const opened = cross(manager, cluster, NOW + 420 * SECOND);
-
-    expect(rechecks).toEqual([null, null, null, null, null]);
-    expect(events(log)).toContain('route_released');
-    expect(opened).not.toBeNull();
-    expect(opened?.openedAt).toBe(NOW + 420 * SECOND);
-  });
-
-  it('keeps a route aside while the rechecks still see the gap', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const logger = Reflect.get(manager, 'logger') as Logger;
-    const log = jest.spyOn(logger, 'log').mockImplementation(() => undefined);
-    warnings(manager);
-
-    for (let t = 0; t <= 60; t += 10) {
-      anchors(cluster, 100, 106, NOW + t * SECOND);
-      cross(manager, cluster, NOW + t * SECOND);
-    }
-    for (const t of [120, 180, 240, 300, 360, 420, 480]) {
-      anchors(cluster, 100, 106, NOW + t * SECOND);
-      expect(cross(manager, cluster, NOW + t * SECOND)).toBeNull();
-    }
-
-    expect(events(log)).not.toContain('route_released');
-  });
-
-  it('neither convicts nor releases on anchors it cannot read', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const warn = warnings(manager);
-
-    for (let t = 0; t <= 120; t += 10) {
-      anchors(cluster, 100, 106, NOW); // written once, stale after ten seconds
-      cross(manager, cluster, NOW + t * SECOND);
-    }
-
-    expect(events(warn)).not.toContain('route_quarantined');
-    expect(routes(manager)?.get('bybit-binance')?.anchorAtOpen).toBeNull(); // it opened unjudged instead
-  });
-
-  it('compares the indices in the same unit as the books', () => {
-    const manager = new OpportunityManager(createOpportunityQueueMock());
-    const cluster = makeCluster();
-    const warn = warnings(manager);
-    // bybit quotes a tenth of binance's unit, and the cluster builder gave it a price scale of ten.
-    cluster.bidMul[BYBIT] *= 10;
-    cluster.askMul[BYBIT] *= 10;
-    cluster.sizeMul[BYBIT] /= 10;
-
-    let opened = null;
-    for (let t = 0; t <= 70; t += 10) {
-      anchors(cluster, 100.5, 10.05, NOW + t * SECOND);
-      tick(manager, cluster, BINANCE, 99.9, 100, NOW + t * SECOND);
-      opened ??= tick(manager, cluster, BYBIT, 10.1, 10.15, NOW + t * SECOND);
-    }
-
-    expect(opened).not.toBeNull();
-    expect(events(warn)).not.toContain('route_quarantined');
   });
 });

@@ -91,7 +91,7 @@ There are two answers, and the cheap one is not the right one.
 
 ### The cheap answer, which is what will ship first
 
-A minimum episode age, `MIN_EPISODE_MS`, checked in `closeOpportunity` in [`../../server/src/engine/OpportunityManager.ts`](../../server/src/engine/OpportunityManager.ts) before the row is queued.
+A minimum episode age, `MIN_EPISODE_MS`, checked in `closeOpportunity` in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) before the row is queued.
 An episode shorter than the threshold is closed and not written.
 At 1,000 ms it removes 438 of the 745 rows and touches nothing else.
 

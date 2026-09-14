@@ -132,7 +132,7 @@ Without that step the walk would match 300 against 5 and report a region sixty t
 
 ## What the engine records
 
-The walk runs on every sample of an open route and at the tick that opens it, in [`../../server/src/engine/ladderWalk.ts`](../../server/src/engine/ladderWalk.ts), called from `OpportunityManager`.
+The walk runs on every sample of an open route and at the tick that opens it, in [`../../server/src/engine/opportunity/ladderWalk.ts`](../../server/src/engine/opportunity/ladderWalk.ts), called from `OpportunityManager`.
 It reads the two legs' slots of the depth block, which the book feeds keep at most 100 ms old.
 Each result is an `EdgeSample`: average ppm, size in coins, notional in the quote asset, an exhausted flag, and how many levels each side reached into.
 

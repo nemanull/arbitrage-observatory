@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { Market, Venue } from '../../engine/types';
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { Market, Venue } from '../../engine/cluster/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { OkxAnchorPoller } from './anchor';
 
 const VENUE_ID = 'okx';
 const T0 = 1_789_015_953_991;
 
 type Probe = {
-  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorRows>;
+  fetchRound(ts: number, signal: AbortSignal): Promise<AnchorMap>;
 };
 
 function market(rawMarketId: string, quote = 'USDT'): Market {

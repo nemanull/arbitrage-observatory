@@ -62,18 +62,26 @@ export type ArbitrageOpportunityAvgAggregateOutputType = {
   edgeSamples: number | null
   highestBidIndexAtOpen: number | null
   highestBidMarkAtOpen: number | null
+  highestBidFreshPremiumAtOpen: number | null
   highestBidFundingRateAtOpen: number | null
   highestBidFundingIntervalHours: number | null
   lowestAskIndexAtOpen: number | null
   lowestAskMarkAtOpen: number | null
+  lowestAskFreshPremiumAtOpen: number | null
   lowestAskFundingRateAtOpen: number | null
   lowestAskFundingIntervalHours: number | null
   freshNetPpmAtOpen: number | null
   standingPpmAtOpen: number | null
+  indexGapPpmAtOpen: number | null
+  carriedPpmAtOpen: number | null
   freshNetPpmAtPeak: number | null
   standingPpmAtPeak: number | null
+  indexGapPpmAtPeak: number | null
+  carriedPpmAtPeak: number | null
   freshNetPpmAtClose: number | null
   standingPpmAtClose: number | null
+  indexGapPpmAtClose: number | null
+  carriedPpmAtClose: number | null
   freshNetPpmSeries: number | null
   anchorTsMs: number | null
   highestBidIndexSeries: number | null
@@ -118,18 +126,26 @@ export type ArbitrageOpportunitySumAggregateOutputType = {
   edgeSamples: number | null
   highestBidIndexAtOpen: number | null
   highestBidMarkAtOpen: number | null
+  highestBidFreshPremiumAtOpen: number | null
   highestBidFundingRateAtOpen: number | null
   highestBidFundingIntervalHours: number | null
   lowestAskIndexAtOpen: number | null
   lowestAskMarkAtOpen: number | null
+  lowestAskFreshPremiumAtOpen: number | null
   lowestAskFundingRateAtOpen: number | null
   lowestAskFundingIntervalHours: number | null
   freshNetPpmAtOpen: number | null
   standingPpmAtOpen: number | null
+  indexGapPpmAtOpen: number | null
+  carriedPpmAtOpen: number | null
   freshNetPpmAtPeak: number | null
   standingPpmAtPeak: number | null
+  indexGapPpmAtPeak: number | null
+  carriedPpmAtPeak: number | null
   freshNetPpmAtClose: number | null
   standingPpmAtClose: number | null
+  indexGapPpmAtClose: number | null
+  carriedPpmAtClose: number | null
   freshNetPpmSeries: number[]
   anchorTsMs: number[]
   highestBidIndexSeries: number[]
@@ -184,12 +200,14 @@ export type ArbitrageOpportunityMinAggregateOutputType = {
   edgeSamples: number | null
   highestBidIndexAtOpen: number | null
   highestBidMarkAtOpen: number | null
+  highestBidFreshPremiumAtOpen: number | null
   highestBidFundingRateAtOpen: number | null
   highestBidFundingIntervalHours: number | null
   highestBidNextFundingAt: Date | null
   highestBidAnchorAt: Date | null
   lowestAskIndexAtOpen: number | null
   lowestAskMarkAtOpen: number | null
+  lowestAskFreshPremiumAtOpen: number | null
   lowestAskFundingRateAtOpen: number | null
   lowestAskFundingIntervalHours: number | null
   lowestAskNextFundingAt: Date | null
@@ -197,10 +215,16 @@ export type ArbitrageOpportunityMinAggregateOutputType = {
   anchorIssueAtOpen: $Enums.AnchorIssue | null
   freshNetPpmAtOpen: number | null
   standingPpmAtOpen: number | null
+  indexGapPpmAtOpen: number | null
+  carriedPpmAtOpen: number | null
   freshNetPpmAtPeak: number | null
   standingPpmAtPeak: number | null
+  indexGapPpmAtPeak: number | null
+  carriedPpmAtPeak: number | null
   freshNetPpmAtClose: number | null
   standingPpmAtClose: number | null
+  indexGapPpmAtClose: number | null
+  carriedPpmAtClose: number | null
 }
 
 export type ArbitrageOpportunityMaxAggregateOutputType = {
@@ -249,12 +273,14 @@ export type ArbitrageOpportunityMaxAggregateOutputType = {
   edgeSamples: number | null
   highestBidIndexAtOpen: number | null
   highestBidMarkAtOpen: number | null
+  highestBidFreshPremiumAtOpen: number | null
   highestBidFundingRateAtOpen: number | null
   highestBidFundingIntervalHours: number | null
   highestBidNextFundingAt: Date | null
   highestBidAnchorAt: Date | null
   lowestAskIndexAtOpen: number | null
   lowestAskMarkAtOpen: number | null
+  lowestAskFreshPremiumAtOpen: number | null
   lowestAskFundingRateAtOpen: number | null
   lowestAskFundingIntervalHours: number | null
   lowestAskNextFundingAt: Date | null
@@ -262,10 +288,16 @@ export type ArbitrageOpportunityMaxAggregateOutputType = {
   anchorIssueAtOpen: $Enums.AnchorIssue | null
   freshNetPpmAtOpen: number | null
   standingPpmAtOpen: number | null
+  indexGapPpmAtOpen: number | null
+  carriedPpmAtOpen: number | null
   freshNetPpmAtPeak: number | null
   standingPpmAtPeak: number | null
+  indexGapPpmAtPeak: number | null
+  carriedPpmAtPeak: number | null
   freshNetPpmAtClose: number | null
   standingPpmAtClose: number | null
+  indexGapPpmAtClose: number | null
+  carriedPpmAtClose: number | null
 }
 
 export type ArbitrageOpportunityCountAggregateOutputType = {
@@ -320,12 +352,14 @@ export type ArbitrageOpportunityCountAggregateOutputType = {
   edgeSamples: number
   highestBidIndexAtOpen: number
   highestBidMarkAtOpen: number
+  highestBidFreshPremiumAtOpen: number
   highestBidFundingRateAtOpen: number
   highestBidFundingIntervalHours: number
   highestBidNextFundingAt: number
   highestBidAnchorAt: number
   lowestAskIndexAtOpen: number
   lowestAskMarkAtOpen: number
+  lowestAskFreshPremiumAtOpen: number
   lowestAskFundingRateAtOpen: number
   lowestAskFundingIntervalHours: number
   lowestAskNextFundingAt: number
@@ -333,10 +367,16 @@ export type ArbitrageOpportunityCountAggregateOutputType = {
   anchorIssueAtOpen: number
   freshNetPpmAtOpen: number
   standingPpmAtOpen: number
+  indexGapPpmAtOpen: number
+  carriedPpmAtOpen: number
   freshNetPpmAtPeak: number
   standingPpmAtPeak: number
+  indexGapPpmAtPeak: number
+  carriedPpmAtPeak: number
   freshNetPpmAtClose: number
   standingPpmAtClose: number
+  indexGapPpmAtClose: number
+  carriedPpmAtClose: number
   freshNetPpmSeries: number
   anchorTsMs: number
   highestBidIndexSeries: number
@@ -383,18 +423,26 @@ export type ArbitrageOpportunityAvgAggregateInputType = {
   edgeSamples?: true
   highestBidIndexAtOpen?: true
   highestBidMarkAtOpen?: true
+  highestBidFreshPremiumAtOpen?: true
   highestBidFundingRateAtOpen?: true
   highestBidFundingIntervalHours?: true
   lowestAskIndexAtOpen?: true
   lowestAskMarkAtOpen?: true
+  lowestAskFreshPremiumAtOpen?: true
   lowestAskFundingRateAtOpen?: true
   lowestAskFundingIntervalHours?: true
   freshNetPpmAtOpen?: true
   standingPpmAtOpen?: true
+  indexGapPpmAtOpen?: true
+  carriedPpmAtOpen?: true
   freshNetPpmAtPeak?: true
   standingPpmAtPeak?: true
+  indexGapPpmAtPeak?: true
+  carriedPpmAtPeak?: true
   freshNetPpmAtClose?: true
   standingPpmAtClose?: true
+  indexGapPpmAtClose?: true
+  carriedPpmAtClose?: true
   freshNetPpmSeries?: true
   anchorTsMs?: true
   highestBidIndexSeries?: true
@@ -439,18 +487,26 @@ export type ArbitrageOpportunitySumAggregateInputType = {
   edgeSamples?: true
   highestBidIndexAtOpen?: true
   highestBidMarkAtOpen?: true
+  highestBidFreshPremiumAtOpen?: true
   highestBidFundingRateAtOpen?: true
   highestBidFundingIntervalHours?: true
   lowestAskIndexAtOpen?: true
   lowestAskMarkAtOpen?: true
+  lowestAskFreshPremiumAtOpen?: true
   lowestAskFundingRateAtOpen?: true
   lowestAskFundingIntervalHours?: true
   freshNetPpmAtOpen?: true
   standingPpmAtOpen?: true
+  indexGapPpmAtOpen?: true
+  carriedPpmAtOpen?: true
   freshNetPpmAtPeak?: true
   standingPpmAtPeak?: true
+  indexGapPpmAtPeak?: true
+  carriedPpmAtPeak?: true
   freshNetPpmAtClose?: true
   standingPpmAtClose?: true
+  indexGapPpmAtClose?: true
+  carriedPpmAtClose?: true
   freshNetPpmSeries?: true
   anchorTsMs?: true
   highestBidIndexSeries?: true
@@ -505,12 +561,14 @@ export type ArbitrageOpportunityMinAggregateInputType = {
   edgeSamples?: true
   highestBidIndexAtOpen?: true
   highestBidMarkAtOpen?: true
+  highestBidFreshPremiumAtOpen?: true
   highestBidFundingRateAtOpen?: true
   highestBidFundingIntervalHours?: true
   highestBidNextFundingAt?: true
   highestBidAnchorAt?: true
   lowestAskIndexAtOpen?: true
   lowestAskMarkAtOpen?: true
+  lowestAskFreshPremiumAtOpen?: true
   lowestAskFundingRateAtOpen?: true
   lowestAskFundingIntervalHours?: true
   lowestAskNextFundingAt?: true
@@ -518,10 +576,16 @@ export type ArbitrageOpportunityMinAggregateInputType = {
   anchorIssueAtOpen?: true
   freshNetPpmAtOpen?: true
   standingPpmAtOpen?: true
+  indexGapPpmAtOpen?: true
+  carriedPpmAtOpen?: true
   freshNetPpmAtPeak?: true
   standingPpmAtPeak?: true
+  indexGapPpmAtPeak?: true
+  carriedPpmAtPeak?: true
   freshNetPpmAtClose?: true
   standingPpmAtClose?: true
+  indexGapPpmAtClose?: true
+  carriedPpmAtClose?: true
 }
 
 export type ArbitrageOpportunityMaxAggregateInputType = {
@@ -570,12 +634,14 @@ export type ArbitrageOpportunityMaxAggregateInputType = {
   edgeSamples?: true
   highestBidIndexAtOpen?: true
   highestBidMarkAtOpen?: true
+  highestBidFreshPremiumAtOpen?: true
   highestBidFundingRateAtOpen?: true
   highestBidFundingIntervalHours?: true
   highestBidNextFundingAt?: true
   highestBidAnchorAt?: true
   lowestAskIndexAtOpen?: true
   lowestAskMarkAtOpen?: true
+  lowestAskFreshPremiumAtOpen?: true
   lowestAskFundingRateAtOpen?: true
   lowestAskFundingIntervalHours?: true
   lowestAskNextFundingAt?: true
@@ -583,10 +649,16 @@ export type ArbitrageOpportunityMaxAggregateInputType = {
   anchorIssueAtOpen?: true
   freshNetPpmAtOpen?: true
   standingPpmAtOpen?: true
+  indexGapPpmAtOpen?: true
+  carriedPpmAtOpen?: true
   freshNetPpmAtPeak?: true
   standingPpmAtPeak?: true
+  indexGapPpmAtPeak?: true
+  carriedPpmAtPeak?: true
   freshNetPpmAtClose?: true
   standingPpmAtClose?: true
+  indexGapPpmAtClose?: true
+  carriedPpmAtClose?: true
 }
 
 export type ArbitrageOpportunityCountAggregateInputType = {
@@ -641,12 +713,14 @@ export type ArbitrageOpportunityCountAggregateInputType = {
   edgeSamples?: true
   highestBidIndexAtOpen?: true
   highestBidMarkAtOpen?: true
+  highestBidFreshPremiumAtOpen?: true
   highestBidFundingRateAtOpen?: true
   highestBidFundingIntervalHours?: true
   highestBidNextFundingAt?: true
   highestBidAnchorAt?: true
   lowestAskIndexAtOpen?: true
   lowestAskMarkAtOpen?: true
+  lowestAskFreshPremiumAtOpen?: true
   lowestAskFundingRateAtOpen?: true
   lowestAskFundingIntervalHours?: true
   lowestAskNextFundingAt?: true
@@ -654,10 +728,16 @@ export type ArbitrageOpportunityCountAggregateInputType = {
   anchorIssueAtOpen?: true
   freshNetPpmAtOpen?: true
   standingPpmAtOpen?: true
+  indexGapPpmAtOpen?: true
+  carriedPpmAtOpen?: true
   freshNetPpmAtPeak?: true
   standingPpmAtPeak?: true
+  indexGapPpmAtPeak?: true
+  carriedPpmAtPeak?: true
   freshNetPpmAtClose?: true
   standingPpmAtClose?: true
+  indexGapPpmAtClose?: true
+  carriedPpmAtClose?: true
   freshNetPpmSeries?: true
   anchorTsMs?: true
   highestBidIndexSeries?: true
@@ -805,12 +885,14 @@ export type ArbitrageOpportunityGroupByOutputType = {
   edgeSamples: number
   highestBidIndexAtOpen: number | null
   highestBidMarkAtOpen: number | null
+  highestBidFreshPremiumAtOpen: number | null
   highestBidFundingRateAtOpen: number | null
   highestBidFundingIntervalHours: number | null
   highestBidNextFundingAt: Date | null
   highestBidAnchorAt: Date | null
   lowestAskIndexAtOpen: number | null
   lowestAskMarkAtOpen: number | null
+  lowestAskFreshPremiumAtOpen: number | null
   lowestAskFundingRateAtOpen: number | null
   lowestAskFundingIntervalHours: number | null
   lowestAskNextFundingAt: Date | null
@@ -818,10 +900,16 @@ export type ArbitrageOpportunityGroupByOutputType = {
   anchorIssueAtOpen: $Enums.AnchorIssue | null
   freshNetPpmAtOpen: number | null
   standingPpmAtOpen: number | null
+  indexGapPpmAtOpen: number | null
+  carriedPpmAtOpen: number | null
   freshNetPpmAtPeak: number | null
   standingPpmAtPeak: number | null
+  indexGapPpmAtPeak: number | null
+  carriedPpmAtPeak: number | null
   freshNetPpmAtClose: number | null
   standingPpmAtClose: number | null
+  indexGapPpmAtClose: number | null
+  carriedPpmAtClose: number | null
   freshNetPpmSeries: number[]
   anchorTsMs: number[]
   highestBidIndexSeries: number[]
@@ -905,12 +993,14 @@ export type ArbitrageOpportunityWhereInput = {
   edgeSamples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   highestBidIndexAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidMarkAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidFundingRateAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidFundingIntervalHours?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidNextFundingAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
   highestBidAnchorAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
   lowestAskIndexAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskMarkAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskFundingRateAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskFundingIntervalHours?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskNextFundingAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
@@ -918,10 +1008,16 @@ export type ArbitrageOpportunityWhereInput = {
   anchorIssueAtOpen?: Prisma.EnumAnchorIssueNullableFilter<"ArbitrageOpportunity"> | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   anchorTsMs?: Prisma.IntNullableListFilter<"ArbitrageOpportunity">
   highestBidIndexSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
@@ -982,12 +1078,14 @@ export type ArbitrageOpportunityOrderByWithRelationInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidNextFundingAt?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidAnchorAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskNextFundingAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -995,10 +1093,16 @@ export type ArbitrageOpportunityOrderByWithRelationInput = {
   anchorIssueAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmSeries?: Prisma.SortOrder
   anchorTsMs?: Prisma.SortOrder
   highestBidIndexSeries?: Prisma.SortOrder
@@ -1062,12 +1166,14 @@ export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
   edgeSamples?: Prisma.IntFilter<"ArbitrageOpportunity"> | number
   highestBidIndexAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidMarkAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidFundingRateAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidFundingIntervalHours?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   highestBidNextFundingAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
   highestBidAnchorAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
   lowestAskIndexAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskMarkAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskFundingRateAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskFundingIntervalHours?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   lowestAskNextFundingAt?: Prisma.DateTimeNullableFilter<"ArbitrageOpportunity"> | Date | string | null
@@ -1075,10 +1181,16 @@ export type ArbitrageOpportunityWhereUniqueInput = Prisma.AtLeast<{
   anchorIssueAtOpen?: Prisma.EnumAnchorIssueNullableFilter<"ArbitrageOpportunity"> | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtOpen?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtPeak?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtClose?: Prisma.FloatNullableFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   anchorTsMs?: Prisma.IntNullableListFilter<"ArbitrageOpportunity">
   highestBidIndexSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
@@ -1139,12 +1251,14 @@ export type ArbitrageOpportunityOrderByWithAggregationInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidNextFundingAt?: Prisma.SortOrderInput | Prisma.SortOrder
   highestBidAnchorAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrderInput | Prisma.SortOrder
   lowestAskNextFundingAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -1152,10 +1266,16 @@ export type ArbitrageOpportunityOrderByWithAggregationInput = {
   anchorIssueAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrderInput | Prisma.SortOrder
   freshNetPpmSeries?: Prisma.SortOrder
   anchorTsMs?: Prisma.SortOrder
   highestBidIndexSeries?: Prisma.SortOrder
@@ -1224,12 +1344,14 @@ export type ArbitrageOpportunityScalarWhereWithAggregatesInput = {
   edgeSamples?: Prisma.IntWithAggregatesFilter<"ArbitrageOpportunity"> | number
   highestBidIndexAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   highestBidMarkAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   highestBidFundingRateAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   highestBidFundingIntervalHours?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   highestBidNextFundingAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string | null
   highestBidAnchorAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string | null
   lowestAskIndexAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   lowestAskMarkAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   lowestAskFundingRateAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   lowestAskFundingIntervalHours?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   lowestAskNextFundingAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ArbitrageOpportunity"> | Date | string | null
@@ -1237,10 +1359,16 @@ export type ArbitrageOpportunityScalarWhereWithAggregatesInput = {
   anchorIssueAtOpen?: Prisma.EnumAnchorIssueNullableWithAggregatesFilter<"ArbitrageOpportunity"> | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtOpen?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmAtPeak?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtPeak?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtPeak?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtPeak?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   standingPpmAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  indexGapPpmAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
+  carriedPpmAtClose?: Prisma.FloatNullableWithAggregatesFilter<"ArbitrageOpportunity"> | number | null
   freshNetPpmSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
   anchorTsMs?: Prisma.IntNullableListFilter<"ArbitrageOpportunity">
   highestBidIndexSeries?: Prisma.FloatNullableListFilter<"ArbitrageOpportunity">
@@ -1301,12 +1429,14 @@ export type ArbitrageOpportunityCreateInput = {
   edgeSamples?: number
   highestBidIndexAtOpen?: number | null
   highestBidMarkAtOpen?: number | null
+  highestBidFreshPremiumAtOpen?: number | null
   highestBidFundingRateAtOpen?: number | null
   highestBidFundingIntervalHours?: number | null
   highestBidNextFundingAt?: Date | string | null
   highestBidAnchorAt?: Date | string | null
   lowestAskIndexAtOpen?: number | null
   lowestAskMarkAtOpen?: number | null
+  lowestAskFreshPremiumAtOpen?: number | null
   lowestAskFundingRateAtOpen?: number | null
   lowestAskFundingIntervalHours?: number | null
   lowestAskNextFundingAt?: Date | string | null
@@ -1314,10 +1444,16 @@ export type ArbitrageOpportunityCreateInput = {
   anchorIssueAtOpen?: $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: number | null
   standingPpmAtOpen?: number | null
+  indexGapPpmAtOpen?: number | null
+  carriedPpmAtOpen?: number | null
   freshNetPpmAtPeak?: number | null
   standingPpmAtPeak?: number | null
+  indexGapPpmAtPeak?: number | null
+  carriedPpmAtPeak?: number | null
   freshNetPpmAtClose?: number | null
   standingPpmAtClose?: number | null
+  indexGapPpmAtClose?: number | null
+  carriedPpmAtClose?: number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityCreatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityCreateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityCreatehighestBidIndexSeriesInput | number[]
@@ -1378,12 +1514,14 @@ export type ArbitrageOpportunityUncheckedCreateInput = {
   edgeSamples?: number
   highestBidIndexAtOpen?: number | null
   highestBidMarkAtOpen?: number | null
+  highestBidFreshPremiumAtOpen?: number | null
   highestBidFundingRateAtOpen?: number | null
   highestBidFundingIntervalHours?: number | null
   highestBidNextFundingAt?: Date | string | null
   highestBidAnchorAt?: Date | string | null
   lowestAskIndexAtOpen?: number | null
   lowestAskMarkAtOpen?: number | null
+  lowestAskFreshPremiumAtOpen?: number | null
   lowestAskFundingRateAtOpen?: number | null
   lowestAskFundingIntervalHours?: number | null
   lowestAskNextFundingAt?: Date | string | null
@@ -1391,10 +1529,16 @@ export type ArbitrageOpportunityUncheckedCreateInput = {
   anchorIssueAtOpen?: $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: number | null
   standingPpmAtOpen?: number | null
+  indexGapPpmAtOpen?: number | null
+  carriedPpmAtOpen?: number | null
   freshNetPpmAtPeak?: number | null
   standingPpmAtPeak?: number | null
+  indexGapPpmAtPeak?: number | null
+  carriedPpmAtPeak?: number | null
   freshNetPpmAtClose?: number | null
   standingPpmAtClose?: number | null
+  indexGapPpmAtClose?: number | null
+  carriedPpmAtClose?: number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityCreatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityCreateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityCreatehighestBidIndexSeriesInput | number[]
@@ -1455,12 +1599,14 @@ export type ArbitrageOpportunityUpdateInput = {
   edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
   highestBidIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   highestBidAnchorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lowestAskIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1468,10 +1614,16 @@ export type ArbitrageOpportunityUpdateInput = {
   anchorIssueAtOpen?: Prisma.NullableEnumAnchorIssueFieldUpdateOperationsInput | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityUpdatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityUpdateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidIndexSeriesInput | number[]
@@ -1532,12 +1684,14 @@ export type ArbitrageOpportunityUncheckedUpdateInput = {
   edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
   highestBidIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   highestBidAnchorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lowestAskIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1545,10 +1699,16 @@ export type ArbitrageOpportunityUncheckedUpdateInput = {
   anchorIssueAtOpen?: Prisma.NullableEnumAnchorIssueFieldUpdateOperationsInput | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityUpdatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityUpdateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidIndexSeriesInput | number[]
@@ -1609,12 +1769,14 @@ export type ArbitrageOpportunityCreateManyInput = {
   edgeSamples?: number
   highestBidIndexAtOpen?: number | null
   highestBidMarkAtOpen?: number | null
+  highestBidFreshPremiumAtOpen?: number | null
   highestBidFundingRateAtOpen?: number | null
   highestBidFundingIntervalHours?: number | null
   highestBidNextFundingAt?: Date | string | null
   highestBidAnchorAt?: Date | string | null
   lowestAskIndexAtOpen?: number | null
   lowestAskMarkAtOpen?: number | null
+  lowestAskFreshPremiumAtOpen?: number | null
   lowestAskFundingRateAtOpen?: number | null
   lowestAskFundingIntervalHours?: number | null
   lowestAskNextFundingAt?: Date | string | null
@@ -1622,10 +1784,16 @@ export type ArbitrageOpportunityCreateManyInput = {
   anchorIssueAtOpen?: $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: number | null
   standingPpmAtOpen?: number | null
+  indexGapPpmAtOpen?: number | null
+  carriedPpmAtOpen?: number | null
   freshNetPpmAtPeak?: number | null
   standingPpmAtPeak?: number | null
+  indexGapPpmAtPeak?: number | null
+  carriedPpmAtPeak?: number | null
   freshNetPpmAtClose?: number | null
   standingPpmAtClose?: number | null
+  indexGapPpmAtClose?: number | null
+  carriedPpmAtClose?: number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityCreatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityCreateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityCreatehighestBidIndexSeriesInput | number[]
@@ -1686,12 +1854,14 @@ export type ArbitrageOpportunityUpdateManyMutationInput = {
   edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
   highestBidIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   highestBidAnchorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lowestAskIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1699,10 +1869,16 @@ export type ArbitrageOpportunityUpdateManyMutationInput = {
   anchorIssueAtOpen?: Prisma.NullableEnumAnchorIssueFieldUpdateOperationsInput | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityUpdatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityUpdateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidIndexSeriesInput | number[]
@@ -1763,12 +1939,14 @@ export type ArbitrageOpportunityUncheckedUpdateManyInput = {
   edgeSamples?: Prisma.IntFieldUpdateOperationsInput | number
   highestBidIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  highestBidFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   highestBidNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   highestBidAnchorAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lowestAskIndexAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskMarkAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  lowestAskFreshPremiumAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingRateAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskFundingIntervalHours?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   lowestAskNextFundingAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1776,10 +1954,16 @@ export type ArbitrageOpportunityUncheckedUpdateManyInput = {
   anchorIssueAtOpen?: Prisma.NullableEnumAnchorIssueFieldUpdateOperationsInput | $Enums.AnchorIssue | null
   freshNetPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtOpen?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtPeak?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   standingPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  indexGapPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  carriedPpmAtClose?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   freshNetPpmSeries?: Prisma.ArbitrageOpportunityUpdatefreshNetPpmSeriesInput | number[]
   anchorTsMs?: Prisma.ArbitrageOpportunityUpdateanchorTsMsInput | number[]
   highestBidIndexSeries?: Prisma.ArbitrageOpportunityUpdatehighestBidIndexSeriesInput | number[]
@@ -1856,12 +2040,14 @@ export type ArbitrageOpportunityCountOrderByAggregateInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrder
   highestBidNextFundingAt?: Prisma.SortOrder
   highestBidAnchorAt?: Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrder
   lowestAskNextFundingAt?: Prisma.SortOrder
@@ -1869,10 +2055,16 @@ export type ArbitrageOpportunityCountOrderByAggregateInput = {
   anchorIssueAtOpen?: Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrder
   freshNetPpmSeries?: Prisma.SortOrder
   anchorTsMs?: Prisma.SortOrder
   highestBidIndexSeries?: Prisma.SortOrder
@@ -1917,18 +2109,26 @@ export type ArbitrageOpportunityAvgOrderByAggregateInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrder
   freshNetPpmSeries?: Prisma.SortOrder
   anchorTsMs?: Prisma.SortOrder
   highestBidIndexSeries?: Prisma.SortOrder
@@ -1983,12 +2183,14 @@ export type ArbitrageOpportunityMaxOrderByAggregateInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrder
   highestBidNextFundingAt?: Prisma.SortOrder
   highestBidAnchorAt?: Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrder
   lowestAskNextFundingAt?: Prisma.SortOrder
@@ -1996,10 +2198,16 @@ export type ArbitrageOpportunityMaxOrderByAggregateInput = {
   anchorIssueAtOpen?: Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunityMinOrderByAggregateInput = {
@@ -2048,12 +2256,14 @@ export type ArbitrageOpportunityMinOrderByAggregateInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrder
   highestBidNextFundingAt?: Prisma.SortOrder
   highestBidAnchorAt?: Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrder
   lowestAskNextFundingAt?: Prisma.SortOrder
@@ -2061,10 +2271,16 @@ export type ArbitrageOpportunityMinOrderByAggregateInput = {
   anchorIssueAtOpen?: Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrder
 }
 
 export type ArbitrageOpportunitySumOrderByAggregateInput = {
@@ -2103,18 +2319,26 @@ export type ArbitrageOpportunitySumOrderByAggregateInput = {
   edgeSamples?: Prisma.SortOrder
   highestBidIndexAtOpen?: Prisma.SortOrder
   highestBidMarkAtOpen?: Prisma.SortOrder
+  highestBidFreshPremiumAtOpen?: Prisma.SortOrder
   highestBidFundingRateAtOpen?: Prisma.SortOrder
   highestBidFundingIntervalHours?: Prisma.SortOrder
   lowestAskIndexAtOpen?: Prisma.SortOrder
   lowestAskMarkAtOpen?: Prisma.SortOrder
+  lowestAskFreshPremiumAtOpen?: Prisma.SortOrder
   lowestAskFundingRateAtOpen?: Prisma.SortOrder
   lowestAskFundingIntervalHours?: Prisma.SortOrder
   freshNetPpmAtOpen?: Prisma.SortOrder
   standingPpmAtOpen?: Prisma.SortOrder
+  indexGapPpmAtOpen?: Prisma.SortOrder
+  carriedPpmAtOpen?: Prisma.SortOrder
   freshNetPpmAtPeak?: Prisma.SortOrder
   standingPpmAtPeak?: Prisma.SortOrder
+  indexGapPpmAtPeak?: Prisma.SortOrder
+  carriedPpmAtPeak?: Prisma.SortOrder
   freshNetPpmAtClose?: Prisma.SortOrder
   standingPpmAtClose?: Prisma.SortOrder
+  indexGapPpmAtClose?: Prisma.SortOrder
+  carriedPpmAtClose?: Prisma.SortOrder
   freshNetPpmSeries?: Prisma.SortOrder
   anchorTsMs?: Prisma.SortOrder
   highestBidIndexSeries?: Prisma.SortOrder
@@ -2333,12 +2557,14 @@ export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.
   edgeSamples?: boolean
   highestBidIndexAtOpen?: boolean
   highestBidMarkAtOpen?: boolean
+  highestBidFreshPremiumAtOpen?: boolean
   highestBidFundingRateAtOpen?: boolean
   highestBidFundingIntervalHours?: boolean
   highestBidNextFundingAt?: boolean
   highestBidAnchorAt?: boolean
   lowestAskIndexAtOpen?: boolean
   lowestAskMarkAtOpen?: boolean
+  lowestAskFreshPremiumAtOpen?: boolean
   lowestAskFundingRateAtOpen?: boolean
   lowestAskFundingIntervalHours?: boolean
   lowestAskNextFundingAt?: boolean
@@ -2346,10 +2572,16 @@ export type ArbitrageOpportunitySelect<ExtArgs extends runtime.Types.Extensions.
   anchorIssueAtOpen?: boolean
   freshNetPpmAtOpen?: boolean
   standingPpmAtOpen?: boolean
+  indexGapPpmAtOpen?: boolean
+  carriedPpmAtOpen?: boolean
   freshNetPpmAtPeak?: boolean
   standingPpmAtPeak?: boolean
+  indexGapPpmAtPeak?: boolean
+  carriedPpmAtPeak?: boolean
   freshNetPpmAtClose?: boolean
   standingPpmAtClose?: boolean
+  indexGapPpmAtClose?: boolean
+  carriedPpmAtClose?: boolean
   freshNetPpmSeries?: boolean
   anchorTsMs?: boolean
   highestBidIndexSeries?: boolean
@@ -2410,12 +2642,14 @@ export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtim
   edgeSamples?: boolean
   highestBidIndexAtOpen?: boolean
   highestBidMarkAtOpen?: boolean
+  highestBidFreshPremiumAtOpen?: boolean
   highestBidFundingRateAtOpen?: boolean
   highestBidFundingIntervalHours?: boolean
   highestBidNextFundingAt?: boolean
   highestBidAnchorAt?: boolean
   lowestAskIndexAtOpen?: boolean
   lowestAskMarkAtOpen?: boolean
+  lowestAskFreshPremiumAtOpen?: boolean
   lowestAskFundingRateAtOpen?: boolean
   lowestAskFundingIntervalHours?: boolean
   lowestAskNextFundingAt?: boolean
@@ -2423,10 +2657,16 @@ export type ArbitrageOpportunitySelectCreateManyAndReturn<ExtArgs extends runtim
   anchorIssueAtOpen?: boolean
   freshNetPpmAtOpen?: boolean
   standingPpmAtOpen?: boolean
+  indexGapPpmAtOpen?: boolean
+  carriedPpmAtOpen?: boolean
   freshNetPpmAtPeak?: boolean
   standingPpmAtPeak?: boolean
+  indexGapPpmAtPeak?: boolean
+  carriedPpmAtPeak?: boolean
   freshNetPpmAtClose?: boolean
   standingPpmAtClose?: boolean
+  indexGapPpmAtClose?: boolean
+  carriedPpmAtClose?: boolean
   freshNetPpmSeries?: boolean
   anchorTsMs?: boolean
   highestBidIndexSeries?: boolean
@@ -2487,12 +2727,14 @@ export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtim
   edgeSamples?: boolean
   highestBidIndexAtOpen?: boolean
   highestBidMarkAtOpen?: boolean
+  highestBidFreshPremiumAtOpen?: boolean
   highestBidFundingRateAtOpen?: boolean
   highestBidFundingIntervalHours?: boolean
   highestBidNextFundingAt?: boolean
   highestBidAnchorAt?: boolean
   lowestAskIndexAtOpen?: boolean
   lowestAskMarkAtOpen?: boolean
+  lowestAskFreshPremiumAtOpen?: boolean
   lowestAskFundingRateAtOpen?: boolean
   lowestAskFundingIntervalHours?: boolean
   lowestAskNextFundingAt?: boolean
@@ -2500,10 +2742,16 @@ export type ArbitrageOpportunitySelectUpdateManyAndReturn<ExtArgs extends runtim
   anchorIssueAtOpen?: boolean
   freshNetPpmAtOpen?: boolean
   standingPpmAtOpen?: boolean
+  indexGapPpmAtOpen?: boolean
+  carriedPpmAtOpen?: boolean
   freshNetPpmAtPeak?: boolean
   standingPpmAtPeak?: boolean
+  indexGapPpmAtPeak?: boolean
+  carriedPpmAtPeak?: boolean
   freshNetPpmAtClose?: boolean
   standingPpmAtClose?: boolean
+  indexGapPpmAtClose?: boolean
+  carriedPpmAtClose?: boolean
   freshNetPpmSeries?: boolean
   anchorTsMs?: boolean
   highestBidIndexSeries?: boolean
@@ -2564,12 +2812,14 @@ export type ArbitrageOpportunitySelectScalar = {
   edgeSamples?: boolean
   highestBidIndexAtOpen?: boolean
   highestBidMarkAtOpen?: boolean
+  highestBidFreshPremiumAtOpen?: boolean
   highestBidFundingRateAtOpen?: boolean
   highestBidFundingIntervalHours?: boolean
   highestBidNextFundingAt?: boolean
   highestBidAnchorAt?: boolean
   lowestAskIndexAtOpen?: boolean
   lowestAskMarkAtOpen?: boolean
+  lowestAskFreshPremiumAtOpen?: boolean
   lowestAskFundingRateAtOpen?: boolean
   lowestAskFundingIntervalHours?: boolean
   lowestAskNextFundingAt?: boolean
@@ -2577,10 +2827,16 @@ export type ArbitrageOpportunitySelectScalar = {
   anchorIssueAtOpen?: boolean
   freshNetPpmAtOpen?: boolean
   standingPpmAtOpen?: boolean
+  indexGapPpmAtOpen?: boolean
+  carriedPpmAtOpen?: boolean
   freshNetPpmAtPeak?: boolean
   standingPpmAtPeak?: boolean
+  indexGapPpmAtPeak?: boolean
+  carriedPpmAtPeak?: boolean
   freshNetPpmAtClose?: boolean
   standingPpmAtClose?: boolean
+  indexGapPpmAtClose?: boolean
+  carriedPpmAtClose?: boolean
   freshNetPpmSeries?: boolean
   anchorTsMs?: boolean
   highestBidIndexSeries?: boolean
@@ -2589,7 +2845,7 @@ export type ArbitrageOpportunitySelectScalar = {
   lowestAskMarkSeries?: boolean
 }
 
-export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "netPpmAtClose" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries" | "edgeAvgPpmSeries" | "edgeNotionalSeries" | "edgeAvgPpmAtOpen" | "edgeSizeAtOpen" | "edgeNotionalAtOpen" | "edgeExhaustedAtOpen" | "edgeBuyLevelsAtOpen" | "edgeSellLevelsAtOpen" | "peakEdgeAvgPpm" | "peakEdgeSize" | "peakEdgeNotional" | "peakEdgeExhausted" | "peakEdgeAt" | "edgeAvgPpmAtClose" | "edgeSizeAtClose" | "edgeNotionalAtClose" | "edgeExhaustedAtClose" | "maxEdgeNotional" | "edgeSamples" | "highestBidIndexAtOpen" | "highestBidMarkAtOpen" | "highestBidFundingRateAtOpen" | "highestBidFundingIntervalHours" | "highestBidNextFundingAt" | "highestBidAnchorAt" | "lowestAskIndexAtOpen" | "lowestAskMarkAtOpen" | "lowestAskFundingRateAtOpen" | "lowestAskFundingIntervalHours" | "lowestAskNextFundingAt" | "lowestAskAnchorAt" | "anchorIssueAtOpen" | "freshNetPpmAtOpen" | "standingPpmAtOpen" | "freshNetPpmAtPeak" | "standingPpmAtPeak" | "freshNetPpmAtClose" | "standingPpmAtClose" | "freshNetPpmSeries" | "anchorTsMs" | "highestBidIndexSeries" | "highestBidMarkSeries" | "lowestAskIndexSeries" | "lowestAskMarkSeries", ExtArgs["result"]["arbitrageOpportunity"]>
+export type ArbitrageOpportunityOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"createdAt" | "id" | "pair" | "route" | "highestBidVenue" | "highestBidRawMarketId" | "lowestAskVenue" | "lowestAskRawMarketId" | "highestBidTakerPpm" | "lowestAskTakerPpm" | "openedAt" | "netPpmAtOpen" | "highestBidAtOpen" | "lowestAskAtOpen" | "closedAt" | "closeReason" | "netPpmAtClose" | "lastSeenAt" | "durationMs" | "ticks" | "avgNetPpm" | "peakNetPpm" | "peakAt" | "peakHighestBid" | "peakLowestAsk" | "minNetPpm" | "sampleTsMs" | "netPpmSeries" | "highestBidSeries" | "lowestAskSeries" | "edgeAvgPpmSeries" | "edgeNotionalSeries" | "edgeAvgPpmAtOpen" | "edgeSizeAtOpen" | "edgeNotionalAtOpen" | "edgeExhaustedAtOpen" | "edgeBuyLevelsAtOpen" | "edgeSellLevelsAtOpen" | "peakEdgeAvgPpm" | "peakEdgeSize" | "peakEdgeNotional" | "peakEdgeExhausted" | "peakEdgeAt" | "edgeAvgPpmAtClose" | "edgeSizeAtClose" | "edgeNotionalAtClose" | "edgeExhaustedAtClose" | "maxEdgeNotional" | "edgeSamples" | "highestBidIndexAtOpen" | "highestBidMarkAtOpen" | "highestBidFreshPremiumAtOpen" | "highestBidFundingRateAtOpen" | "highestBidFundingIntervalHours" | "highestBidNextFundingAt" | "highestBidAnchorAt" | "lowestAskIndexAtOpen" | "lowestAskMarkAtOpen" | "lowestAskFreshPremiumAtOpen" | "lowestAskFundingRateAtOpen" | "lowestAskFundingIntervalHours" | "lowestAskNextFundingAt" | "lowestAskAnchorAt" | "anchorIssueAtOpen" | "freshNetPpmAtOpen" | "standingPpmAtOpen" | "indexGapPpmAtOpen" | "carriedPpmAtOpen" | "freshNetPpmAtPeak" | "standingPpmAtPeak" | "indexGapPpmAtPeak" | "carriedPpmAtPeak" | "freshNetPpmAtClose" | "standingPpmAtClose" | "indexGapPpmAtClose" | "carriedPpmAtClose" | "freshNetPpmSeries" | "anchorTsMs" | "highestBidIndexSeries" | "highestBidMarkSeries" | "lowestAskIndexSeries" | "lowestAskMarkSeries", ExtArgs["result"]["arbitrageOpportunity"]>
 
 export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ArbitrageOpportunity"
@@ -2689,6 +2945,10 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
      */
     highestBidMarkAtOpen: number | null
     /**
+     * The bid over the mark minus one as a fraction, over the index without a mark: what the sell book says that its venue has not absorbed
+     */
+    highestBidFreshPremiumAtOpen: number | null
+    /**
      * The rate for the coming settlement as a fraction, -0.0038 = shorts pay longs 0.38%
      */
     highestBidFundingRateAtOpen: number | null
@@ -2700,6 +2960,7 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
     highestBidAnchorAt: Date | null
     lowestAskIndexAtOpen: number | null
     lowestAskMarkAtOpen: number | null
+    lowestAskFreshPremiumAtOpen: number | null
     lowestAskFundingRateAtOpen: number | null
     lowestAskFundingIntervalHours: number | null
     lowestAskNextFundingAt: Date | null
@@ -2711,12 +2972,21 @@ export type $ArbitrageOpportunityPayload<ExtArgs extends runtime.Types.Extension
     freshNetPpmAtOpen: number | null
     standingPpmAtOpen: number | null
     /**
+     * The two factors inside the standing part: the index gap after the venue price scales, and the accepted premiums' gap. In fractions, 1 + netPpm = (1 + indexGapPpm) × (1 + carriedPpm) × (1 + freshNetPpm)
+     */
+    indexGapPpmAtOpen: number | null
+    carriedPpmAtOpen: number | null
+    /**
      * At the sample where netPpm peaked
      */
     freshNetPpmAtPeak: number | null
     standingPpmAtPeak: number | null
+    indexGapPpmAtPeak: number | null
+    carriedPpmAtPeak: number | null
     freshNetPpmAtClose: number | null
     standingPpmAtClose: number | null
+    indexGapPpmAtClose: number | null
+    carriedPpmAtClose: number | null
     /**
      * One entry per sample, aligned with sampleTsMs, -2000000 where no anchor could be read at that sample
      */
@@ -3200,12 +3470,14 @@ export interface ArbitrageOpportunityFieldRefs {
   readonly edgeSamples: Prisma.FieldRef<"ArbitrageOpportunity", 'Int'>
   readonly highestBidIndexAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly highestBidMarkAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly highestBidFreshPremiumAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly highestBidFundingRateAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly highestBidFundingIntervalHours: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly highestBidNextFundingAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly highestBidAnchorAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
   readonly lowestAskIndexAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly lowestAskMarkAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly lowestAskFreshPremiumAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly lowestAskFundingRateAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly lowestAskFundingIntervalHours: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly lowestAskNextFundingAt: Prisma.FieldRef<"ArbitrageOpportunity", 'DateTime'>
@@ -3213,10 +3485,16 @@ export interface ArbitrageOpportunityFieldRefs {
   readonly anchorIssueAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'AnchorIssue'>
   readonly freshNetPpmAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly standingPpmAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly indexGapPpmAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly carriedPpmAtOpen: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly freshNetPpmAtPeak: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly standingPpmAtPeak: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly indexGapPpmAtPeak: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly carriedPpmAtPeak: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly freshNetPpmAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly standingPpmAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly indexGapPpmAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
+  readonly carriedPpmAtClose: Prisma.FieldRef<"ArbitrageOpportunity", 'Float'>
   readonly freshNetPpmSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>
   readonly anchorTsMs: Prisma.FieldRef<"ArbitrageOpportunity", 'Int[]'>
   readonly highestBidIndexSeries: Prisma.FieldRef<"ArbitrageOpportunity", 'Float[]'>

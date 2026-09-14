@@ -1,7 +1,7 @@
 import * as ccxt from 'ccxt';
 import type { VenueConnectorOptions } from '../ccxt/types';
 import type { Engine } from '../engine/Engine';
-import type { Venue } from '../engine/types';
+import type { Venue } from '../engine/cluster/types';
 import type { AnchorPoller } from '../feeds/anchor/AnchorPoller';
 import type { VenueFeed } from '../feeds/book/VenueFeed';
 import { BinanceAnchorPoller } from './binance/anchor';

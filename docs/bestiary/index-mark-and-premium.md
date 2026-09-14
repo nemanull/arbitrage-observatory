@@ -270,6 +270,9 @@ perp A / perp B  ≈  (index A / index B)  ×  (1 + premium A) / (1 + premium B)
 The first factor is the anchor gap.
 Funding pulls each perp toward its own index, so nothing ever closes it.
 The second factor is the premium difference, and it closes when the premiums converge, at the speed funding drives them.
+That second factor is itself two once the book's own premium is split from the mark's.
+The accepted premiums' gap is what funding is pricing, and the fresh premiums' gap is what nobody has accepted yet.
+The engine carries all three factors on every route, see the section on the engine below.
 
 That gives three classes, and only the last one was the observatory built to find.
 
@@ -328,7 +331,7 @@ Treat the binance stream as unavailable until it is probed again, and poll.
 
 ## In the engine
 
-The block lives on every cluster as `anchor`, one slot per venue, in [`../../server/src/engine/types.ts`](../../server/src/engine/types.ts).
+The block lives on every cluster as `anchor`, one slot per venue, in [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts).
 
 | column | meaning |
 |---|---|
@@ -340,7 +343,9 @@ The block lives on every cluster as `anchor`, one slot per venue, in [`../../ser
 | `writtenAt` | Unix ms, 0 = never, and a reader refuses two legs further apart than two and a half seconds, since bybit polls every two seconds |
 
 Premium is not a column.
-It is mark over index minus one, computed when a reading is taken, the way the fee multipliers are applied at read and never at write.
+It is computed when a reading is taken, the way the fee multipliers are applied at read and never at write, by one helper, `premium(price, reference)`, which is the price over the reference minus one.
+A leg read at open carries three of them.
+The touch premium is the book price the trade uses over the index, the mark premium is the mark over the index, and the fresh premium is that book price over the mark, or over the index where the venue publishes no mark.
 
 `Engine.updateAnchor` in [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) writes a slot from one poll and is not a tick.
 It opens nothing, it closes nothing, and a dead book socket leaves the slot alone because the socket never wrote it.
@@ -351,18 +356,25 @@ Once a second is the cadence, because on 2026-09-10 no venue changed its index o
 Bybit polls every two seconds, because its 630 KB reply took up to 850 ms to download at one hertz.
 Kraken's absolute rate is divided by the mark, and its hourly settlement on the hour is derived, since the venue publishes no next funding time.
 
-The reader at open is [`../../server/src/engine/anchorReading.ts`](../../server/src/engine/anchorReading.ts).
-It divides each book by its own venue's anchor, the mark where the venue publishes one and the index where it does not, applies the fees to what is left, and calls that the fresh edge.
-The fresh edge is the net edge the two venues would show if their anchors were the same number, which is the only part a taker cross can capture.
-`OpportunityManager` refuses to open a route whose fresh edge does not clear the same threshold the raw edge has to clear, and logs the refusal as a standing basis with both premiums.
-A route whose anchors are missing, older than ten seconds, or further apart than the skew allows opens anyway and carries no anchor, so a poller outage loses no episode and the row can still say it was unjudged.
+The reader at open is [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
+It reads the three premiums on each leg and factors the cross into the three ratios of the section above, so that in fractions one plus the net edge equals one plus the index gap, times one plus the carried part, times one plus the fresh edge.
+The index gap is the sell leg's index over the buy leg's after the venue price scales, and it is the structural part that funding never closes.
+The carried part is the accepted premiums' gap, one plus the sell leg's mark premium over one plus the buy leg's, and it is what funding is pricing and closes over hours.
+A leg without a mark counts as one there, and its whole premium shows in the fresh edge instead.
+The fresh edge is one plus the sell leg's fresh premium over one plus the buy leg's, with the fees applied, and it is the net edge the two venues would show if their anchors were the same number, which is the only part a taker cross can capture.
+`OpportunityManager` refuses to open a route whose fresh edge does not clear the same threshold the raw edge has to clear, and logs the refusal as a standing basis with both mark premiums and the three factors.
+A route whose anchors are missing, older than ten seconds, or read more than five seconds apart is refused, and the refusal is logged with that issue, so the table holds no unjudged row.
+Each reading is stamped when its poll reply arrives, so a slow reply does not read as skewed against a faster venue.
+An open route closes as `fresh_edge_collapsed` once its fresh edge falls under the closure threshold, even while the raw cross still clears it.
+A sample whose anchors cannot be read closes nothing.
 Funding is copied onto the route and not filtered on, because the modelled trade crosses no settlement, and the premium the filter reads is what funding is already pricing.
 
-A route whose two indices sit more than two percent apart for a minute of readable samples is set aside by the manager, skipped by discovery except for one read a minute, and released once the indices have agreed for five minutes.
-That is the runtime form of the index deny, and it lets `DENIED_PAIRS` shrink to the collisions it was made for.
+A route whose two indices disagree is not set aside on its own.
+A cross that the index gap explains already fails the fresh edge test, and a fresh edge on top of an index gap can still close, because a perp to perp trade moves no coins.
+The index quarantine that set such routes aside from 2026-09-13 was removed on 2026-09-14, see [`../implemented/2026-09-14-fresh-edge-verdict-design.md`](../implemented/2026-09-14-fresh-edge-verdict-design.md).
 
-Status: the block, the write path, the poller, the reader at open, the anchor columns on the row and the index quarantine are Done.
-The readings at peak and close are on the row as the fresh and standing edge, and the raw anchors over the episode are the anchor series.
+Status: the block, the write path, the poller, the reader at open, the anchor columns on the row, the three factors, the refusal of unreadable anchors and the fresh edge close are Done.
+The readings at open, peak and close are on the row as the fresh and standing edge and as the index gap and carried factors, each leg's fresh premium at open says which book sits off its anchor, and the raw anchors over the episode are the anchor series.
 
 ## Related
 
@@ -377,5 +389,5 @@ The readings at peak and close are on the row as the fresh and standing edge, an
 - SOPH and CP premiums, predicted and realised rates, and the 08:00 regime change: sections 2a, 2b and 9 of [`../audits/2026-09-08-fourth-run-data-audit.md`](../audits/2026-09-08-fourth-run-data-audit.md).
 - The skew trap: the same audit, section 9.
 - Bulk endpoint counts, the bybit subscription test and the silent binance streams: probes on 2026-09-09 from 05:41 UTC over the following fifteen minutes.
-- The engine block: [`../../server/src/engine/types.ts`](../../server/src/engine/types.ts) and [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts).
+- The engine block: [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) and [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts).
 - The work: [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/3).

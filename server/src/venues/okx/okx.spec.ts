@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { Market, Venue } from '../../engine/types';
+import type { Market, Venue } from '../../engine/cluster/types';
 import type {
   EndpointPlan,
   SingleSocketConnection,

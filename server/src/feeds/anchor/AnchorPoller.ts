@@ -1,29 +1,14 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
-import type { Venue } from '../../engine/types';
-import type { AnchorRows } from './types';
+import type { Venue } from '../../engine/cluster/types';
+import type { AnchorMap } from './types';
+import { HttpStatusError } from '../../shared/errors';
 
 const DEFAULT_INTERVAL_MS = 1_000;
 const REQUEST_TIMEOUT_MS = 10_000;
 const RATE_LIMIT_PAUSE_MS = 60_000;
 const FAILURE_LOG_EVERY = 30;
 const SUMMARY_EVERY_ROUNDS = 60;
-
-const RATE_LIMITED_STATUSES = new Set([403, 418, 429]); // 403 for ByBit
-
-export class HttpStatusError extends Error {
-  constructor(
-    readonly url: string,
-    readonly status: number,
-    readonly retryAfterMs: number | null,
-  ) {
-    super(`${status} from ${url}`);
-  }
-
-  get rateLimited(): boolean {
-    return RATE_LIMITED_STATUSES.has(this.status);
-  }
-}
 
 type Window = {
   rounds: number;
@@ -116,8 +101,10 @@ export abstract class AnchorPoller {
 
     try {
       const rows = await this.fetchRound(ts, controller.signal);
-      this.apply(rows, ts);
-      this.succeeded(Date.now() - ts);
+      // Stamped on arrival, since a slow reply stamped at the round start reads as skewed against a faster venue.
+      const arrivedAt = Date.now();
+      this.apply(rows, arrivedAt);
+      this.succeeded(arrivedAt - ts);
     } catch (e) {
       this.failed(e as Error, ts);
     } finally {
@@ -127,7 +114,7 @@ export abstract class AnchorPoller {
     }
   }
 
-  private apply(rows: AnchorRows, ts: number): void {
+  private apply(rows: AnchorMap, ts: number): void {
     let written = 0;
     let missing = 0;
     let rejected = 0;
@@ -255,7 +242,7 @@ export abstract class AnchorPoller {
   protected abstract fetchRound(
     ts: number,
     signal: AbortSignal,
-  ): Promise<AnchorRows>;
+  ): Promise<AnchorMap>;
 }
 
 function emptyWindow(): Window {

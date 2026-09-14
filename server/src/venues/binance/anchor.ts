@@ -1,4 +1,4 @@
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { AnchorPoller } from '../../feeds/anchor/AnchorPoller';
 import type { BinanceFundingInfo, BinancePremiumIndex } from './types';
 
@@ -20,7 +20,7 @@ export class BinanceAnchorPoller extends AnchorPoller {
   protected async fetchRound(
     ts: number,
     signal: AbortSignal,
-  ): Promise<AnchorRows> {
+  ): Promise<AnchorMap> {
     if (ts - this.intervalsReadAt >= FUNDING_INFO_REFRESH_MS) {
       await this.readIntervals(signal);
       this.intervalsReadAt = ts;
@@ -31,7 +31,7 @@ export class BinanceAnchorPoller extends AnchorPoller {
       hosts.map((url) => this.getJson<BinancePremiumIndex[]>(url, signal)),
     );
 
-    const rows: AnchorRows = new Map();
+    const rows: AnchorMap = new Map();
     for (const reply of replies) {
       for (const row of reply) {
         rows.set(row.symbol, {

@@ -4,7 +4,7 @@ import {
   DEPTH_LEVELS,
 } from './ClusterIndexBuilder';
 import type { ClusterIndexBuilderOptions } from './ClusterIndexBuilder';
-import { createVenueIndexMap } from './shared';
+import { createVenueIndexMap } from './venueIndexMap';
 import type { Market, Venue } from './types';
 
 // Covers what clusterOverrides, quoteFamily, the size multiplier, the depth block and the anchor block add. Everything else about the builder is untested for now.

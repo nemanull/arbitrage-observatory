@@ -1,4 +1,4 @@
-import type { AnchorRows } from '../../feeds/anchor/types';
+import type { AnchorMap } from '../../feeds/anchor/types';
 import { AnchorPoller } from '../../feeds/anchor/AnchorPoller';
 import type { CoinbaseProductsReply } from './types';
 
@@ -14,12 +14,12 @@ export class CoinbaseAnchorPoller extends AnchorPoller {
   protected async fetchRound(
     _ts: number,
     signal: AbortSignal,
-  ): Promise<AnchorRows> {
+  ): Promise<AnchorMap> {
     const reply = await this.getJson<CoinbaseProductsReply>(
       PRODUCTS_URL,
       signal,
     );
-    const rows: AnchorRows = new Map();
+    const rows: AnchorMap = new Map();
 
     for (const product of reply.products) {
       const details = product.future_product_details;

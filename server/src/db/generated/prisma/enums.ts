@@ -11,6 +11,7 @@
 
 export const OpportunityCloseReason = {
   spread_collapsed: 'spread_collapsed',
+  fresh_edge_collapsed: 'fresh_edge_collapsed',
   feed_down: 'feed_down',
   age_cap: 'age_cap',
   shutdown: 'shutdown'

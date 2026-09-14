@@ -56,7 +56,7 @@ A rate that is too low is the dangerous direction, because the engine then surfa
 A fee resolves per market instead of per venue.
 Where credentials exist, the rate comes from the venue's authenticated account and symbol endpoint.
 The drift check separates a known offset from a new change, so silence means the rates are as expected.
-`Market.takerPpm` in `server/src/engine/types.ts:16` already lives per market, so the storage layer needs no change.
+`Market.takerPpm` in `server/src/engine/cluster/types.ts:16` already lives per market, so the storage layer needs no change.
 
 ## Known blockers
 

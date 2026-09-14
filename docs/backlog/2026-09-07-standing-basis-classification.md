@@ -13,7 +13,7 @@ Every episode runs to the five minute age cap and reopens on the next tick, so o
 The walk over the depth block will make these rows look even more capturable, because both books are deep.
 Only a comparison of the two legs' index, mark and funding tells such a basis from an arbitrage.
 
-On 2026-09-07 four pairs were added to `DENIED_PAIRS` in `server/src/engine/clusterOverrides.ts` by hand, so they stop polluting the table while the classification does not exist.
+On 2026-09-07 four pairs were added to `DENIED_PAIRS` in `server/src/engine/cluster/clusterOverrides.ts` by hand, so they stop polluting the table while the classification does not exist.
 
 ## Evidence
 
