@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
 import type { Venue } from '../../engine/cluster/types';
 import type { AnchorMap } from './types';
-import { HttpStatusError } from '../../shared/errors';
+import { HttpStatusError, RateLimitReplyError } from '../../shared/errors';
 
 const DEFAULT_INTERVAL_MS = 1_000;
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -130,7 +130,7 @@ export abstract class AnchorPoller {
 
       const ok = this.engine.updateAnchor(this.venue.id, market.rawMarketId, {
         ...row,
-        ts,
+        ts: row.ts ?? ts,
       });
 
       if (ok) {
@@ -185,7 +185,10 @@ export abstract class AnchorPoller {
     this.failures++;
     this.window.failed++;
 
-    if (e instanceof HttpStatusError && e.rateLimited) {
+    if (
+      (e instanceof HttpStatusError && e.rateLimited) ||
+      e instanceof RateLimitReplyError
+    ) {
       const pause = e.retryAfterMs ?? this.rateLimitPauseMs;
       this.pausedUntil = ts + pause;
       this.logger.error(`${e.message}, paused for ${pause}ms`);

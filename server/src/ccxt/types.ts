@@ -18,5 +18,7 @@ export type MarketFilter = (market: SwapMarket) => boolean;
 export type VenueConnectorOptions = {
   takerPpm?: number;
   ccxtTakerPpm?: number;
+  ignoreCcxtTakerPpm?: boolean; // CCXT's fee describes orders the registry rate does not, so no market is compared: MEXC's web and app rate
+  contractSize?: number; // pins every market's size, for a venue whose CCXT catalog misreads it
   marketFilter?: MarketFilter;
 };

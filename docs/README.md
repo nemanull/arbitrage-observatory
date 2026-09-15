@@ -67,6 +67,8 @@ The newest audit is the one that describes current behaviour.
 - [`implemented/2026-09-14-open-guards-plan.md`](./implemented/2026-09-14-open-guards-plan.md) records the reconciled plan that shipped the open guards.
 - [`implemented/2026-09-15-five-venue-research-design.md`](./implemented/2026-09-15-five-venue-research-design.md) records the reconciled design for researching Gate, Bitget, MEXC, Bitstamp and Gemini as the next venues, with what the engine needs from a venue.
 - [`implemented/2026-09-15-five-venue-research-plan.md`](./implemented/2026-09-15-five-venue-research-plan.md) records the reconciled plan and the profile template that produced the fifteen venue profiles.
+- [`implemented/2026-09-15-five-venue-adapters-design.md`](./implemented/2026-09-15-five-venue-adapters-design.md) records the reconciled design that builds Gate, Bitget, MEXC, Bitstamp and Gemini as registered venues that do not start, the shared feed, poller and connector changes they needed, and each adapter's live smoke numbers.
+- [`implemented/2026-09-15-five-venue-adapters-plan.md`](./implemented/2026-09-15-five-venue-adapters-plan.md) records the reconciled plan that shipped the five adapters, and the checks each venue needs before it is activated.
 
 ## Reference
 

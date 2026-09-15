@@ -83,3 +83,49 @@ describe('VenueConnector.loadVenue contractSize', () => {
     );
   });
 });
+
+describe('VenueConnector registry pins', () => {
+  it('pins every market to the registry contract size over what CCXT reports', async () => {
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const connector = new VenueConnector(
+      exchange([swap('BTC-USDC-SWAP', 0.5), swap('ETH-USDC-SWAP', undefined)]),
+      { takerPpm: TAKER_PPM, contractSize: 1 },
+    );
+
+    const venue = await connector.loadVenue();
+
+    expect(venue?.markets.map((m) => m.contractSize)).toEqual([1, 1]);
+  });
+
+  it('compares no CCXT fee when the registry ignores it', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const webRate = { ...swap('ETH-USDT-SWAP', 1), taker: 0.0002 };
+    const zeroRate = { ...swap('SOL-USDT-SWAP', 1), taker: 0 };
+    const connector = new VenueConnector(
+      exchange([webRate, zeroRate] as MarketInterface[]),
+      { takerPpm: 800, ignoreCcxtTakerPpm: true },
+    );
+
+    const venue = await connector.loadVenue();
+
+    expect(venue?.markets.map((m) => m.takerPpm)).toEqual([800, 800]);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('still warns on a CCXT fee the registry does not expect', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const webRate = { ...swap('ETH-USDT-SWAP', 1), taker: 0.0002 };
+    const connector = new VenueConnector(
+      exchange([webRate] as MarketInterface[]),
+      { takerPpm: 800 },
+    );
+
+    await connector.loadVenue();
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CCXT reports 200 ppm on 1 of 1 markets'),
+    );
+  });
+});

@@ -10,6 +10,8 @@ const MAX_RECONNECT_DELAY_MS = 30_000;
 const RECONNECT_JITTER_MS = 250;
 const CLOSE_GRACE_MS = 2_000;
 const MIN_SILENCE_CHECK_MS = 1_000;
+const FIRST_BOOK_WAIT_MS = 10_000;
+const UNSERVED_SAMPLE = 3;
 
 export abstract class VenueFeed {
   protected readonly logger: Logger;
@@ -22,6 +24,8 @@ export abstract class VenueFeed {
   protected abstract readonly maxSilenceMs: number;
   protected readonly connectStaggerMs: number = 0; // pause between opens at start, for venues that cap handshakes or client messages per IP
   protected readonly reconnectJitterMs: number = RECONNECT_JITTER_MS;
+  protected readonly subscribeGapMs: number = 0; // pause between subscribe frames on one connection, for venues that close a socket on a burst
+  protected readonly firstBookWaitMs: number = FIRST_BOOK_WAIT_MS; // after the last subscribe frame, how long a market may hold no book before the connection logs it
 
   constructor(
     protected readonly venue: Venue,
@@ -112,10 +116,11 @@ export abstract class VenueFeed {
 
   private onOpen(c: SingleSocketConnection): void {
     c.lastMessageAt = Date.now();
+    let frameCount: number;
     try {
-      for (const frame of this.getSubscribeFrames(c.plan.markets)) {
-        c.socket.send(JSON.stringify(frame));
-      }
+      const frames = this.getSubscribeFrames(c.plan.markets);
+      frameCount = frames.length;
+      this.sendSubscribeFrames(c, frames);
       this.startKeepalive(c);
     } catch (e) {
       this.logger.error(`${c.id}: open failed: ${(e as Error).message}`);
@@ -124,6 +129,72 @@ export abstract class VenueFeed {
     }
 
     this.startSilenceWatch(c);
+    this.startFirstBookWatch(c, frameCount);
+  }
+
+  private sendSubscribeFrames(
+    c: SingleSocketConnection,
+    frames: object[],
+  ): void {
+    const gap = this.subscribeGapMs;
+
+    if (gap <= 0) {
+      for (const frame of frames) {
+        c.socket.send(JSON.stringify(frame));
+      }
+      return;
+    }
+
+    if (frames.length === 0) {
+      return;
+    }
+
+    c.socket.send(JSON.stringify(frames[0]));
+
+    let next = 1;
+    const pacer = setInterval(() => {
+      if (next >= frames.length || c.socket.readyState !== WebSocket.OPEN) {
+        clearInterval(pacer);
+        return;
+      }
+
+      c.socket.send(JSON.stringify(frames[next++]));
+    }, gap);
+
+    pacer.unref();
+    c.timers.push(pacer);
+  }
+
+  // Several venues acknowledge a misspelled or wrong family stream and then send nothing, so a market with no book after the wait is logged once per open.
+  private startFirstBookWatch(
+    c: SingleSocketConnection,
+    frameCount: number,
+  ): void {
+    const lastFrameAt = Math.max(0, frameCount - 1) * this.subscribeGapMs;
+
+    const watch = setTimeout(() => {
+      const missing: string[] = [];
+      for (const market of c.plan.markets) {
+        if (!this.books.has(market.rawMarketId)) {
+          missing.push(market.rawMarketId);
+        }
+      }
+
+      if (missing.length === 0) {
+        return;
+      }
+
+      this.logger.warn({
+        event: 'book_unserved',
+        connection: c.id,
+        missing: missing.length,
+        markets: c.plan.markets.length,
+        sample: missing.slice(0, UNSERVED_SAMPLE),
+      });
+    }, lastFrameAt + this.firstBookWaitMs);
+
+    watch.unref();
+    c.timers.push(watch);
   }
 
   private onMessage(raw: RawData, c: SingleSocketConnection): void {

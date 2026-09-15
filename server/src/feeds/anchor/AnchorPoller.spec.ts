@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Engine } from '../../engine/Engine';
 import type { AnchorReading, Market, Venue } from '../../engine/cluster/types';
-import { HttpStatusError } from '../../shared/errors';
+import { HttpStatusError, RateLimitReplyError } from '../../shared/errors';
 import { AnchorPoller } from './AnchorPoller';
 import type { AnchorRow, AnchorMap } from './types';
 
@@ -260,6 +260,55 @@ describe('AnchorPoller round', () => {
     expect(updateAnchor).not.toHaveBeenCalled();
 
     jest.advanceTimersByTime(INTERVAL_MS);
+    await flush();
+    expect(updateAnchor).toHaveBeenCalledTimes(1);
+    poller.stop();
+  });
+
+  it('keeps the ts a row carries and stamps the others with the arrival', async () => {
+    const { poller, updateAnchor } = makePoller([
+      market('AAAUSDT'),
+      market('BBBUSDT'),
+    ]);
+    let reply: (map: AnchorMap) => void = () => undefined;
+    poller.pending = new Promise((resolve) => {
+      reply = resolve;
+    });
+
+    poller.start();
+    jest.setSystemTime(T0 + 2_500);
+    reply(
+      rows([
+        ['AAAUSDT', row(1, { ts: T0 + 120 })],
+        ['BBBUSDT', row(2)],
+      ]),
+    );
+    await flush();
+
+    expect(updateAnchor).toHaveBeenCalledWith(VENUE_ID, 'AAAUSDT', {
+      ...row(1),
+      ts: T0 + 120,
+    });
+    expect(updateAnchor).toHaveBeenCalledWith(VENUE_ID, 'BBBUSDT', {
+      ...row(2),
+      ts: T0 + 2_500,
+    });
+    poller.stop();
+  });
+
+  it('pauses for the default pause on a rate limit sent inside a successful reply', async () => {
+    const { poller, updateAnchor } = makePoller([market('AAAUSDT')]);
+    poller.errors.push(new RateLimitReplyError('https://x', 510));
+    poller.rounds.push(rows([['AAAUSDT', row(1)]]));
+
+    poller.start();
+    await flush();
+
+    jest.advanceTimersByTime(59_000);
+    await flush();
+    expect(updateAnchor).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(2_000);
     await flush();
     expect(updateAnchor).toHaveBeenCalledTimes(1);
     poller.stop();

@@ -13,6 +13,8 @@ export class VenueConnector {
   private venue: CCXTVenue;
   protected takerPpm: number | undefined;
   protected ccxtTakerPpm: number | undefined;
+  private ignoreCcxtTakerPpm: boolean;
+  private contractSize: number | undefined;
   private marketFilter: MarketFilter | undefined;
 
   // The options are the venue's registration, so a rate lives beside the venue it describes rather than at this call site.
@@ -20,13 +22,19 @@ export class VenueConnector {
     this.venue = venue;
     this.takerPpm = options.takerPpm;
     this.ccxtTakerPpm = options.ccxtTakerPpm;
+    this.ignoreCcxtTakerPpm = options.ignoreCcxtTakerPpm === true;
+    this.contractSize = options.contractSize;
     this.marketFilter = options.marketFilter;
     this.logger = new Logger(`CCXT ${venue.id}`);
   }
 
   // True when CCXT's number is the one the registration already accounts for, which is the case that needs no warning.
-  // A venue that serves a real per market fee, so that no single number can describe what CCXT reports, overrides this.
+  // A venue whose CCXT fee describes other orders, so that no single number can describe what CCXT reports, sets ignoreCcxtTakerPpm.
   protected isExpectedCcxtTakerPpm(ccxtPpm: number, market: Market): boolean {
+    if (this.ignoreCcxtTakerPpm) {
+      return true;
+    }
+
     return ccxtPpm === (this.ccxtTakerPpm ?? market.takerPpm);
   }
 
@@ -164,7 +172,7 @@ export class VenueConnector {
       quote: market.quote,
       takerPpm,
       linear: market.linear === true,
-      contractSize: toContractSize(market.contractSize),
+      contractSize: this.contractSize ?? toContractSize(market.contractSize),
     };
   }
 }
