@@ -153,7 +153,7 @@ The engine runs discovery about 850 times a second across the whole universe, so
 
 - A standing basis.
   Two deep books that never converge produce a large region with a steady edge, and the walk reports it faithfully.
-  Only the legs' index, mark and funding tell that spread from an arbitrage, which is why those pairs are denied by hand until that check exists.
+  Only the legs' anchors tell that spread from an arbitrage, and the open gate refuses a cross they explain, see [`standing-basis.md`](./standing-basis.md).
 - Time.
   The two books come from two sockets and may be up to 100 ms apart, and the walk has no opinion about how long the region lived.
   Duration and the minimum episode age are separate columns.

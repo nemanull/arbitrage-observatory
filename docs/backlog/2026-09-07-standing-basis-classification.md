@@ -1,6 +1,6 @@
 # Standing basis classification
 
-Status: Not started.
+Status: Done.
 Recorded: 2026-09-07.
 Indexed in [BACKLOG.md](../BACKLOG.md).
 
@@ -36,3 +36,12 @@ ICX is mixed and was left alone.
 - Each venue feed or a side channel carries the leg's index price, mark price and funding rate into the cluster.
 - The cluster builder denies or tags a pair when the venues' indices disagree beyond a threshold, replacing `DENIED_PAIRS` and `PRICE_SCALE`.
 - The row carries the index gap and the funding difference at open, so a standing basis is a tag the ranking filters on rather than a hand list.
+
+## Outcome
+
+Done on 2026-09-15 through [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/3), see [`../bestiary/index-mark-and-premium.md`](../bestiary/index-mark-and-premium.md) and [`../implemented/2026-09-14-fresh-edge-verdict-design.md`](../implemented/2026-09-14-fresh-edge-verdict-design.md).
+The anchor pollers carry each leg's index, mark and funding into the cluster, which is the first point above.
+The other two points were replaced rather than built.
+The open gate refuses a cross that the anchors explain as `standing_basis`, so no pair is denied or tagged at cluster build and no ranking needs a basis tag.
+OPENAI, ANTHROPIC, ONG and SIREN left `DENIED_PAIRS` on 2026-09-15 together with ONE, after a live probe showed the gate refusing their crosses, see [`../research/2026-09-15-denied-basis-pairs-gate-probe.md`](../research/2026-09-15-denied-basis-pairs-gate-probe.md).
+`PRICE_SCALE` stays, since the okx OPENAI and ANTHROPIC contracts still quote a tenth of the unit.

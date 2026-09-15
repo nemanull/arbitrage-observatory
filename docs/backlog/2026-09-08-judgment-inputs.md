@@ -1,6 +1,6 @@
 # Inputs the judgment does not have
 
-Status: Not started.
+Status: In progress.
 Recorded: 2026-09-08.
 Indexed in [BACKLOG.md](../BACKLOG.md).
 GitHub issues: [#3](https://github.com/nemanull/arbitrage-observatory/issues/3) index, mark and funding, [#4](https://github.com/nemanull/arbitrage-observatory/issues/4) per leg age, [#5](https://github.com/nemanull/arbitrage-observatory/issues/5) underlying session, [#6](https://github.com/nemanull/arbitrage-observatory/issues/6) tradability limits, [#15](https://github.com/nemanull/arbitrage-observatory/issues/15) venue status.
@@ -25,14 +25,16 @@ CP okx traded 0.5 to 2.4 percent under bybit while bybit's predicted funding was
 HEMI's binance wallet was closed and its index was 74 percent binance's own isolated spot, the ONE mechanism of the second audit with a 0.14 percent index gap instead of 5 percent.
 
 Where it comes from: binance `premiumIndex` and `fundingInfo`, bybit `tickers` and `instruments-info`, okx `index-tickers`, `mark-price`, `funding-rate` and `index-components`, kraken `tickers`.
-Coinbase has no public index for its perps.
+Coinbase publishes all three on its International Exchange instruments list.
 
 Traps: read both legs inside one second, since a three minute skew fabricated 0.6 to 0.9 percent gaps on IOST, CATI and HAEDAL.
 Filter on venue status first, since binance ICXUSDT is `SETTLING` and still publishes an index.
 Compare funding per interval and per day in the trade's direction, since intervals are 4 h, 8 h or hourly and caps are 2.5 percent on bybit and 1 percent on okx.
 
-On the row: each leg's index, mark, premium, funding rate and interval at open, peak and close, the index gap in ppm, and the net funding per day in the trade's direction.
-At cluster build: deny or tag when the indices disagree beyond a threshold, which replaces the hand kept `DENIED_PAIRS` list.
+Done through [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/3), closed on 2026-09-15, see [`../bestiary/index-mark-and-premium.md`](../bestiary/index-mark-and-premium.md).
+The row carries each leg's index, mark, fresh premium and funding at open, the index gap, carried and fresh parts at open, peak and close, and the anchors over the episode.
+The open gate refuses a cross that the anchors explain, which replaced both the deny or tag at cluster build and the standing basis entries in `DENIED_PAIRS`.
+Net funding per day was not built, because funding is copied onto the row and not filtered on.
 
 ## 2. Per leg age
 

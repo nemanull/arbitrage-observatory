@@ -103,7 +103,7 @@ All 61 `ANTHROPIC` and 50 `OPENAI` rows name the losing leg as the winning one.
 
 `server/src/engine/cluster/clusterOverrides.ts` holds two hardcoded tables and
 `OpportunityManager` holds a plausibility ceiling.
-`DENIED_PAIRS` drops the three collisions, and since 2026-09-06 the `ONE|USDT` index-dispersion pair, before a cluster is built.
+`DENIED_PAIRS` drops the three collisions before a cluster is built, and from 2026-09-06 to 2026-09-15 it also dropped the `ONE|USDT` index-dispersion pair, which the open gate now refuses.
 `PRICE_SCALE` multiplies okx's `ANTHROPIC-USDT-SWAP` and `OPENAI-USDT-SWAP` by 10 so the cluster is
 comparable and the real basis is recorded.
 `MAX_PLAUSIBLE_NET_PPM` rejects and logs anything above 10%, as the net for the next collision the

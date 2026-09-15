@@ -153,13 +153,13 @@ The 08:00 settlement realised -1.17 percent on bybit and -0.94 percent on okx, a
 Row 1271 ran 300 seconds to the age cap with a $3,093 region at 3,801 ppm.
 The 86 CP rows have a mean peak of 8,467 ppm, and every one of them describes a position that loses money while it waits.
 
-## Why the engine cannot see it
+## Why the engine could not see it
 
-The engine decides from two numbers: the fee adjusted best bid on one venue and the fee adjusted best ask on another, at [`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts) line 97.
-No index, mark or funding field exists on `Market`, `Cluster` or `Opportunity` in [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) and [`../../server/src/engine/opportunity/types.ts`](../../server/src/engine/opportunity/types.ts), and the cluster builder reads only the market list from ccxt.
-The inputs that separate a basis from an arbitrage are not read anywhere in the process, so no rule could use them.
+Until 2026-09-10 the engine decided from two numbers: the fee adjusted best bid on one venue and the fee adjusted best ask on another.
+No index, mark or funding field existed on `Market`, `Cluster` or `Opportunity`, and the cluster builder read only the market list from ccxt.
+The inputs that separate a basis from an arbitrage were not read anywhere in the process, so no rule could use them.
 
-A basis never collapses, so the row runs to `MAX_OPPORTUNITY_AGE_MS`, closes as `age_cap`, and reopens on the next tick.
+A basis never collapses, so the row ran to `MAX_OPPORTUNITY_AGE_MS`, closed as `age_cap`, and reopened on the next tick.
 The 1,000 ppm closure threshold sits inside the noise of a 6,000 ppm basis, so 231 SOPH rows sit in 58 sequences that close and reopen within two seconds.
 
 The age cap is a symptom, not the cause.
@@ -169,26 +169,30 @@ Depth makes it worse, not better.
 The ladder walk in [`edge-at-the-touch.md`](./edge-at-the-touch.md) finds thousands of dollars on both sides of a basis, because both books are honest.
 A row that reports the largest region in the table is the row this class produces.
 
-The current answer is the hand kept `DENIED_PAIRS` list in [`../../server/src/engine/cluster/clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts).
-It holds eight pairs and grows by a few every run, because denial is by name and the cause is a mechanism.
+The answer at the time was the hand kept `DENIED_PAIRS` list in [`../../server/src/engine/cluster/clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts).
+It reached eight pairs and grew by a few every run, because denial is by name and the cause is a mechanism.
 
 ## How to detect it
 
-Read each leg's anchor when the episode opens.
-Three numbers classify the row.
+Read each leg's anchor on every sample, and split the cross into the part the anchors explain and the part they do not.
+The vocabulary is in [`index-mark-and-premium.md`](./index-mark-and-premium.md), and the reader is [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
+In fractions, 1 + netPpm = (1 + indexGapPpm) × (1 + carriedPpm) × (1 + freshNetPpm).
 
-1. The index gap between the legs, in ppm.
-   Above a tolerance of 2 percent the anchors differ, and once the gap has held for a minute of readable samples the route is set aside in `OpportunityManager`, skipped by discovery apart from one read a minute, and released after the indices have agreed for five minutes.
-   ONE at 5.15 percent falls out here, and so does SIREN on the days its indices sit 1.7 percent apart only if they drift past the tolerance.
-   HEMI at 0.14 percent stays in.
-2. Each leg's premium, which is mark over index minus one.
-   When the premiums explain the cross, the row is tagged as a basis.
-   The row carries that part as the carried ppm, next to the index gap and the fresh edge.
-   SOPH at -1.31 percent against -0.5 percent is this case.
-3. The net funding per day in the trade's direction.
-   The short leg receives its venue's rate and the long leg pays its venue's rate, scaled to the venue's interval.
-   The sign tags the row as carry positive or carry negative.
-   CP at minus 1 percent per interval is carry negative.
+1. The index gap between the legs, in ppm, after the venue price scales.
+   ONE at 5.15 percent is this part.
+2. The carried part, the gap between the two legs' premiums, where a premium is mark over index minus one.
+   SOPH at -1.31 percent against -0.5 percent is this part.
+3. The fresh edge, each book divided by its own mark, after fees.
+   It is the part a taker cross can capture.
+
+A route opens only when its anchors can be read and both the raw cross and the fresh edge clear 5,000 ppm.
+A cross that the index gap and the premiums explain is refused as `standing_basis` and writes no row.
+An open route closes as `fresh_edge_collapsed` once its fresh edge falls under 1,000 ppm, even while the raw cross still clears it.
+A route whose indices disagree is not set aside on its own, because a fresh edge on top of an index gap can still close.
+Funding is copied onto the row and not filtered on, because the modelled trade crosses no settlement and the premium the gate removes is what funding is already pricing.
+
+On 2026-09-15 a live probe found every crossed OPENAI, ANTHROPIC and ONE route refused this way in 90 of 90 rounds, with raw crosses up to 41,139 ppm and no fresh edge above 344 ppm, see [`../research/2026-09-15-denied-basis-pairs-gate-probe.md`](../research/2026-09-15-denied-basis-pairs-gate-probe.md).
+Those three pairs, ONG and SIREN left `DENIED_PAIRS` that day.
 
 Where each number comes from.
 
@@ -223,7 +227,7 @@ Traps found while probing.
 - Predicted and realised rates diverge.
   Bybit CP predicted -2.006 percent and realised -1.17 percent.
 
-The work is [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/3).
+The work was [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/3), closed on 2026-09-15.
 
 ## How common it was
 
@@ -235,7 +239,8 @@ The work is [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/
 | fourth, 2026-09-08 | SOPH 256, CP 86, HEMI 10 | 352 | 59.0 % |
 
 After each run the pairs were denied by name, and the next run found new ones.
-The class does not shrink, because the list names pairs and the cause is a mechanism that any thin listing can produce.
+The class did not shrink, because the list named pairs and the cause is a mechanism that any thin listing can produce.
+The open gate now refuses the class by that mechanism, and on 2026-09-15 the list went back to the tickers that name two different tokens.
 
 ## Related
 
@@ -250,6 +255,7 @@ The class does not shrink, because the list names pairs and the cause is a mecha
 - ONE and the index cross check: section 2a of [`../audits/2026-09-06-second-run-data-audit.md`](../audits/2026-09-06-second-run-data-audit.md).
 - ONE's baskets and the admission gate: sections 2c(iii) and 2d of [`../audits/2026-09-05-first-run-data-audit.md`](../audits/2026-09-05-first-run-data-audit.md).
 - OPENAI, ANTHROPIC, ONG and SIREN: section 4 of [`../audits/2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md).
+- The open gate on OPENAI, ANTHROPIC, ONG, SIREN and ONE: [`../research/2026-09-15-denied-basis-pairs-gate-probe.md`](../research/2026-09-15-denied-basis-pairs-gate-probe.md).
 - The missing inputs: [`../backlog/2026-09-08-judgment-inputs.md`](../backlog/2026-09-08-judgment-inputs.md) and [`../backlog/2026-09-07-standing-basis-classification.md`](../backlog/2026-09-07-standing-basis-classification.md).
 - The baskets, the same second ONE read and the wallet status: live probes on 2026-09-09 between 04:19 and 04:24 UTC against binance `constituents` and `premiumIndex`, okx `index-components`, `index-tickers`, `mark-price` and `funding-rate`, bybit `index-price-components` and `tickers`, kucoin `currencies/ONE` and gate `wallet/currency_chains`.
 - The stored rows: `ArbitrageOpportunity` ids 791, 793, 805, 806 and 1271, fourth run, local database.

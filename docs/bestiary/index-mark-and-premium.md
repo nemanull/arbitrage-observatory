@@ -278,9 +278,9 @@ That gives three classes, and only the last one was the observatory built to fin
 
 | indices | premiums | what the gap is | what to do |
 |---|---|---|---|
-| disagree beyond 1 to 2 % | any | two perps chained to different numbers, ONE, SIREN | deny the pair at cluster build |
-| agree | explain the gap, and funding is pricing them | a carry trade with a horizon of hours, SOPH, CP | tag basis, with the carry sign |
-| agree | do not explain the gap | a perp knocked off its anchor for a moment | the arbitrage candidate |
+| disagree beyond 1 to 2 % | any | two perps chained to different numbers, ONE, SIREN | refuse the gap as `standing_basis`, and open only on a fresh edge on top of it |
+| agree | explain the gap, and funding is pricing them | a carry trade with a horizon of hours, SOPH, CP | refuse it as `standing_basis` |
+| agree | do not explain the gap | a perp knocked off its anchor for a moment | open on the fresh edge, the arbitrage candidate |
 
 The test between the last two is fresh against standing.
 Venue A trades at 1.000 with a mark of 1.000.

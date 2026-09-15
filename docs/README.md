@@ -19,6 +19,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-07-depth-sequence-gaps.md`](./research/2026-09-07-depth-sequence-gaps.md) measures zero sequence gaps in 12.48 million deltas on the four delta depth venues, confirms the maintained book against the venues' own top of book and REST, and records how far each ticker channel lags the book.
 - [`research/2026-09-14-fresh-gate-markless-leg.md`](./research/2026-09-14-fresh-gate-markless-leg.md) explains how a 1.5 percent TOWNS cross passed the fresh gate because coinbase supplies no mark, measures the INTX mark as the last trade clamped into the spread, and classifies the sixth run's 74 rows with the kraken band ride.
 - [`research/2026-09-14-open-guard-sizing.md`](./research/2026-09-14-open-guard-sizing.md) measures the INTX instruments call as the coinbase anchor source, the one-poll anchor moves that size the moving anchor guard at 1,000 ppm, and the region floor's cost at each threshold across two runs.
+- [`research/2026-09-15-denied-basis-pairs-gate-probe.md`](./research/2026-09-15-denied-basis-pairs-gate-probe.md) reads OPENAI, ANTHROPIC, ONG, SIREN and ONE live against the open gate, finds every crossed route refused as a standing basis in 90 of 90 rounds, and is the evidence for taking them off `DENIED_PAIRS`.
 
 ## Audits
 
