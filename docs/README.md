@@ -25,6 +25,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-14-open-guard-sizing.md`](./research/2026-09-14-open-guard-sizing.md) measures the INTX instruments call as the coinbase anchor source, the one-poll anchor moves that size the moving anchor guard at 1,000 ppm, and the region floor's cost at each threshold across two runs.
 - [`research/2026-09-15-denied-basis-pairs-gate-probe.md`](./research/2026-09-15-denied-basis-pairs-gate-probe.md) reads OPENAI, ANTHROPIC, ONG, SIREN and ONE live against the open gate, finds every crossed route refused as a standing basis in 90 of 90 rounds, and is the evidence for taking them off `DENIED_PAIRS`.
 - [`research/2026-09-15-binance-realtime-depth.md`](./research/2026-09-15-binance-realtime-depth.md) splits our view delay into venue batching and distance, measures `@depth@0ms` at 29 ms ahead of the snapshot channel across 571 markets, and verifies that the two channels share one update id space with 0 mismatched replays.
+- [`research/2026-09-15-one-self-index-fresh-gate.md`](./research/2026-09-15-one-self-index-fresh-gate.md) explains how row 2739, a 3.7 percent ONE binance-okx basis, passed the fresh gate after ONE left `DENIED_PAIRS`: binance's ONE index is the perp itself at weight 1.0, the only such basket among 564 USD-M perps, so its mark trails the perp by about five minutes and the leg's fresh premium is momentum.
 
 ## Audits
 

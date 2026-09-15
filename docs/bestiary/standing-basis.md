@@ -241,6 +241,8 @@ The work was [issue #3](https://github.com/nemanull/arbitrage-observatory/issues
 After each run the pairs were denied by name, and the next run found new ones.
 The class did not shrink, because the list named pairs and the cause is a mechanism that any thin listing can produce.
 The open gate now refuses the class by that mechanism, and on 2026-09-15 the list went back to the tickers that name two different tokens.
+ONE returned to the list the same day for a different reason.
+Binance's ONE index basket is the binance perp itself, so its mark trails the perp and the fresh edge on that leg reads the perp's own momentum, see [`../research/2026-09-15-one-self-index-fresh-gate.md`](../research/2026-09-15-one-self-index-fresh-gate.md).
 
 ## Related
 
