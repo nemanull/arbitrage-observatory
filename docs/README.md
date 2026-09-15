@@ -7,6 +7,10 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 ## Plans (active)
 
 - [`plans/2026-07-26-exchange-profiles-plan.md`](./plans/2026-07-26-exchange-profiles-plan.md) specifies the research tasks used to produce the exchange profiles and comparisons.
+- [`plans/2026-09-15-binance-realtime-depth-design.md`](./plans/2026-09-15-binance-realtime-depth-design.md) records the design that builds the Binance book from the real time diff channel and reseeds it from the 100 ms snapshot channel.
+- [`plans/2026-09-15-binance-realtime-depth-plan.md`](./plans/2026-09-15-binance-realtime-depth-plan.md) records the plan that ships it, and what the first run has to measure.
+- [`plans/2026-09-15-minimum-cross-age-design.md`](./plans/2026-09-15-minimum-cross-age-design.md) records the design that refuses a cross younger than `MIN_CROSS_AGE_MS`, and why a minimum episode age at close cannot exist in a trading engine.
+- [`plans/2026-09-15-minimum-cross-age-plan.md`](./plans/2026-09-15-minimum-cross-age-plan.md) records the plan that ships the age gate.
 
 ## Research
 
@@ -20,6 +24,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-14-fresh-gate-markless-leg.md`](./research/2026-09-14-fresh-gate-markless-leg.md) explains how a 1.5 percent TOWNS cross passed the fresh gate because coinbase supplies no mark, measures the INTX mark as the last trade clamped into the spread, and classifies the sixth run's 74 rows with the kraken band ride.
 - [`research/2026-09-14-open-guard-sizing.md`](./research/2026-09-14-open-guard-sizing.md) measures the INTX instruments call as the coinbase anchor source, the one-poll anchor moves that size the moving anchor guard at 1,000 ppm, and the region floor's cost at each threshold across two runs.
 - [`research/2026-09-15-denied-basis-pairs-gate-probe.md`](./research/2026-09-15-denied-basis-pairs-gate-probe.md) reads OPENAI, ANTHROPIC, ONG, SIREN and ONE live against the open gate, finds every crossed route refused as a standing basis in 90 of 90 rounds, and is the evidence for taking them off `DENIED_PAIRS`.
+- [`research/2026-09-15-binance-realtime-depth.md`](./research/2026-09-15-binance-realtime-depth.md) splits our view delay into venue batching and distance, measures `@depth@0ms` at 29 ms ahead of the snapshot channel across 571 markets, and verifies that the two channels share one update id space with 0 mismatched replays.
 
 ## Audits
 

@@ -10,7 +10,7 @@ import {
   NO_EDGE,
   OpportunityLifecycle,
 } from './OpportunityLifecycle';
-import { OpportunityManager } from './OpportunityManager';
+import { MIN_CROSS_AGE_MS, OpportunityManager } from './OpportunityManager';
 import { OPPORTUNITY_CLOSED_JOB } from './OpportunityWorker';
 import type { Cluster, Market } from '../cluster/types';
 import type { ActiveOpportunityMap, AnchorPair } from './types';
@@ -203,13 +203,15 @@ function warnings(manager: OpportunityManager) {
 }
 
 // bybit bids 101 against a binance ask of 100: ~8890ppm after 55bp taker each side.
+// A cross opens only on a tick MIN_CROSS_AGE_MS after the one that first showed it, so the three ticks below plant it and the fourth opens it.
 // Returns what the bybit tick opened.
 function openOn(manager: OpportunityManager, cluster: Cluster, now: number) {
-  tick(manager, cluster, BINANCE, 99.9, 100, now);
-  const opened = tick(manager, cluster, BYBIT, 101, 101.5, now);
-  tick(manager, cluster, OKX, 99.4, 100.5, now);
+  const seenAt = now - MIN_CROSS_AGE_MS;
+  tick(manager, cluster, BINANCE, 99.9, 100, seenAt);
+  tick(manager, cluster, BYBIT, 101, 101.5, seenAt);
+  tick(manager, cluster, OKX, 99.4, 100.5, seenAt);
 
-  return opened;
+  return tick(manager, cluster, BYBIT, 101, 101.5, now);
 }
 
 describe('OpportunityManager.validate', () => {
@@ -283,8 +285,9 @@ describe('OpportunityManager.validate', () => {
 
     const opened = openOn(manager, cluster, 1_000)!;
 
-    tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
-    tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // best ask moves to okx, ~13959ppm
+    tick(manager, cluster, BYBIT, 101, 101.5, 2_000 - MIN_CROSS_AGE_MS);
+    tick(manager, cluster, OKX, 99.4, 99.5, 2_000 - MIN_CROSS_AGE_MS); // best ask moves to okx, the cross is seen
+    tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // and it opens once it has held, ~13959ppm
 
     tick(manager, cluster, BYBIT, 100.41, 101.5, 3_000); // back down
 
@@ -298,6 +301,102 @@ describe('OpportunityManager.validate', () => {
   });
 });
 
+describe('OpportunityManager minimum cross age', () => {
+  it('does not open a cross the first time it sees it', () => {
+    const manager = createManager();
+    const cluster = makeCluster();
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+
+    expect(tick(manager, cluster, BYBIT, 101, 101.5, 1_000)).toBeNull();
+    expect(routes(manager)).toBeUndefined();
+  });
+
+  it('refuses the cross until it reaches MIN_CROSS_AGE_MS, then opens it', () => {
+    const manager = createManager();
+    const cluster = makeCluster();
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    tick(manager, cluster, BYBIT, 101, 101.5, 1_000);
+
+    expect(
+      tick(manager, cluster, BYBIT, 101, 101.5, 1_000 + MIN_CROSS_AGE_MS - 1),
+    ).toBeNull();
+
+    const opened = tick(
+      manager,
+      cluster,
+      BYBIT,
+      101,
+      101.5,
+      1_000 + MIN_CROSS_AGE_MS,
+    );
+
+    expect(opened?.openedAt).toBe(1_000 + MIN_CROSS_AGE_MS);
+    expect(Math.round(opened!.netPpmAtOpen)).toBe(8_890);
+  });
+
+  it('reports a cross that dies before it confirms, and opens nothing', () => {
+    const manager = createManager();
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    tick(manager, cluster, BYBIT, 101, 101.5, 1_000);
+    tick(manager, cluster, BYBIT, 100.1, 101.5, 1_050); // the bid falls back under MIN_NET_PPM
+
+    expect(routes(manager)).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: 'opportunity_rejected',
+        reason: 'unconfirmed_cross',
+        route: 'bybit-binance',
+        ageMs: 50,
+      }),
+    );
+  });
+
+  it('restarts the clock when a better route replaces the pending one', () => {
+    const manager = createManager();
+    const cluster = makeCluster();
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    tick(manager, cluster, BYBIT, 101, 101.5, 1_000); // bybit-binance is the pending cross
+    tick(manager, cluster, OKX, 99.4, 99.5, 1_080); // okx undercuts, so bybit-okx starts its own clock
+
+    expect(
+      tick(manager, cluster, OKX, 99.4, 99.5, 1_000 + MIN_CROSS_AGE_MS),
+    ).toBeNull();
+
+    const opened = tick(
+      manager,
+      cluster,
+      OKX,
+      99.4,
+      99.5,
+      1_080 + MIN_CROSS_AGE_MS,
+    );
+
+    expect(opened?.lowestAskMarket.venueId).toBe('okx');
+    expect([...routes(manager)!.keys()]).toEqual(['bybit-okx']);
+  });
+
+  it('refuses a thin region on the first sight of the cross, before the age gate', () => {
+    const manager = createManager();
+    const cluster = makeCluster();
+    const warn = warnings(manager);
+    setSide(cluster, BINANCE, 'ask', [[100, 0.1]]);
+    setSide(cluster, BYBIT, 'bid', [[101, 0.1]]);
+
+    tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
+    tick(manager, cluster, BYBIT, 101, 101.5, 1_000);
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: 'thin_book' }),
+    );
+  });
+});
+
 describe('OpportunityManager concurrent routes on one pair', () => {
   it('holds a second route open alongside the first', () => {
     const manager = createManager();
@@ -305,9 +404,10 @@ describe('OpportunityManager concurrent routes on one pair', () => {
 
     openOn(manager, cluster, 1_000); // best ask is binance -> bybit-binance
 
-    const second = tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // okx undercuts -> bybit-okx
-    tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
-    tick(manager, cluster, BINANCE, 99.9, 100, 2_000);
+    tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // okx undercuts, so the bybit-okx cross is seen
+    const second = tick(manager, cluster, OKX, 99.4, 99.5, 2_100); // and opens once it has held
+    tick(manager, cluster, BYBIT, 101, 101.5, 2_100);
+    tick(manager, cluster, BINANCE, 99.9, 100, 2_100);
 
     expect(second?.lowestAskMarket.venueId).toBe('okx');
     expect([...routes(manager)!.keys()]).toEqual([
@@ -377,11 +477,20 @@ describe('OpportunityManager silence and the age cap', () => {
   });
 
   // The cap is a chunk boundary, not the end of the basis: the tick that closes the old episode opens the next one.
-  it('closes at the cap on the tick path and lets the same tick reopen the route', () => {
+  it('closes at the cap on the tick path and reopens the route one cross later', () => {
     const manager = createManager();
     const cluster = makeCluster();
 
     const first = openOn(manager, cluster, 1_000)!;
+    const cappedAt = 1_000 + AGE_CAP_MS;
+
+    const closing = tick(manager, cluster, BYBIT, 101, 101.5, cappedAt);
+
+    expect(first.closedAt).toBe(cappedAt);
+    expect(first.closeReason).toBe('age_cap');
+    expect(first.netPpmSeries).toHaveLength(2);
+    // The route has no open opportunity behind it now, so its cross starts a new life and has to hold again.
+    expect(closing).toBeNull();
 
     const second = tick(
       manager,
@@ -389,15 +498,12 @@ describe('OpportunityManager silence and the age cap', () => {
       BYBIT,
       101,
       101.5,
-      1_000 + AGE_CAP_MS,
+      cappedAt + MIN_CROSS_AGE_MS,
     );
 
-    expect(first.closedAt).toBe(1_000 + AGE_CAP_MS);
-    expect(first.closeReason).toBe('age_cap');
-    expect(first.netPpmSeries).toHaveLength(2);
     expect(second).not.toBeNull();
     expect(second).not.toBe(first);
-    expect(second?.openedAt).toBe(1_000 + AGE_CAP_MS);
+    expect(second?.openedAt).toBe(cappedAt + MIN_CROSS_AGE_MS);
     expect(routes(manager)!.get('bybit-binance')).toBe(second);
   });
 });
@@ -408,9 +514,10 @@ describe('OpportunityLifecycle feed down', () => {
     const cluster = makeCluster();
 
     openOn(manager, cluster, 1_000);
-    tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // bybit-okx opens alongside bybit-binance
-    tick(manager, cluster, BYBIT, 101, 101.5, 2_000);
-    tick(manager, cluster, BINANCE, 99.9, 100, 2_000);
+    tick(manager, cluster, OKX, 99.4, 99.5, 2_000); // the bybit-okx cross is seen
+    tick(manager, cluster, OKX, 99.4, 99.5, 2_100); // bybit-okx opens alongside bybit-binance
+    tick(manager, cluster, BYBIT, 101, 101.5, 2_100);
+    tick(manager, cluster, BINANCE, 99.9, 100, 2_100);
 
     expect(routes(manager)!.size).toBe(2);
 
@@ -703,7 +810,15 @@ describe('OpportunityManager plausibility ceiling', () => {
     const warn = warnings(manager);
 
     tick(manager, cluster, BINANCE, 99.9, 100, 1_000);
-    const opened = tick(manager, cluster, OKX, 109, 110, 1_000); // ~88802ppm, under the ceiling
+    tick(manager, cluster, OKX, 109, 110, 1_000); // ~88802ppm, under the ceiling
+    const opened = tick(
+      manager,
+      cluster,
+      OKX,
+      109,
+      110,
+      1_000 + MIN_CROSS_AGE_MS,
+    );
 
     expect(Math.round(opened!.netPpmAtOpen)).toBe(88_802);
     expect(warn).not.toHaveBeenCalled();
@@ -746,7 +861,10 @@ describe('OpportunityManager book sizes and far sides', () => {
   // bybit-binance opens on the bybit tick.
   // binance rests 4 at its bid and 5 at its ask, bybit 2 and 3.
   function openWithSizes(manager: OpportunityManager, cluster: Cluster) {
-    tick(manager, cluster, BINANCE, 99.9, 100, 1_000, 4, 5);
+    const seenAt = 1_000 - MIN_CROSS_AGE_MS;
+    tick(manager, cluster, BINANCE, 99.9, 100, seenAt, 4, 5);
+    tick(manager, cluster, BYBIT, 101, 101.5, seenAt, 2, 3);
+
     return tick(manager, cluster, BYBIT, 101, 101.5, 1_000, 2, 3)!;
   }
 
@@ -1193,8 +1311,8 @@ describe('OpportunityManager anchor filter', () => {
 
     expect(warn).toHaveBeenCalledTimes(2);
     const second = warn.mock.calls[1][0] as Record<string, unknown>;
-    expect(second.occurrenceCount).toBe(4); // the open attempt, the okx tick behind it, and two bybit ticks
-    expect(second.suppressedCount).toBe(2);
+    expect(second.occurrenceCount).toBe(5); // the two ticks that plant the cross, the okx tick behind them, and two bybit ticks
+    expect(second.suppressedCount).toBe(3);
   });
 
   it('carries the anchor into the close log', () => {

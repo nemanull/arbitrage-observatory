@@ -62,23 +62,58 @@ function connection(plan: EndpointPlan): SingleSocketConnection {
   } as unknown as SingleSocketConnection;
 }
 
-// The shape captured live on 2026-09-07, with the level count cut down.
+// The shape captured live on 2026-09-15, with the level count cut down. Both channels send these fields.
+const FIRST_ID = 11493080433094;
+
+type Ids = { U?: number; u?: number; pu?: number };
+
 function depthUpdate(
   symbol: string,
   b: [string, string][],
   a: [string, string][],
+  ids: Ids = {},
 ): object {
+  const u = ids.u ?? FIRST_ID;
+
   return {
     e: 'depthUpdate',
     s: symbol,
-    U: 11493080425500,
-    u: 11493080433094,
-    pu: 11493080425283,
+    U: ids.U ?? u,
+    u,
+    pu: ids.pu ?? u - 1,
     E: 1788746280299,
     T: 1788746280297,
     b,
     a,
   };
+}
+
+function snapshotFrame(
+  symbol: string,
+  b: [string, string][],
+  a: [string, string][],
+  ids: Ids = {},
+): object {
+  return {
+    stream: `${symbol.toLowerCase()}@depth20@100ms`,
+    data: depthUpdate(symbol, b, a, ids),
+  };
+}
+
+function diffFrame(
+  symbol: string,
+  b: [string, string][],
+  a: [string, string][],
+  ids: Ids,
+): object {
+  return {
+    stream: `${symbol.toLowerCase()}@depth@0ms`,
+    data: depthUpdate(symbol, b, a, ids),
+  };
+}
+
+function send(feed: FeedProbe, c: SingleSocketConnection, frame: object): void {
+  feed.handleMessage(Buffer.from(JSON.stringify(frame)), c);
 }
 
 const BIDS: [string, string][] = [
@@ -103,10 +138,10 @@ describe('BinanceFeed.planEndpoints', () => {
     ]);
     expect(plans.map((p) => p.markets.length)).toEqual([200, 50]);
     expect(plans[0].url).toBe(
-      'wss://fstream.binance.com/public/ws/sym0usdt@depth20@100ms',
+      'wss://fstream.binance.com/public/stream?streams=sym0usdt@depth@0ms/sym0usdt@depth20@100ms',
     );
     expect(plans[1].url).toBe(
-      'wss://fstream.binance.com/public/ws/sym200usdt@depth20@100ms',
+      'wss://fstream.binance.com/public/stream?streams=sym200usdt@depth@0ms/sym200usdt@depth20@100ms',
     );
   });
 
@@ -122,7 +157,7 @@ describe('BinanceFeed.planEndpoints', () => {
       'binance#inverse#0',
     ]);
     expect(plans[1].url).toBe(
-      'wss://dstream.binance.com/ws/btcusd_perp@depth20@100ms',
+      'wss://dstream.binance.com/stream?streams=btcusd_perp@depth@0ms/btcusd_perp@depth20@100ms',
     );
   });
 
@@ -134,7 +169,7 @@ describe('BinanceFeed.planEndpoints', () => {
 });
 
 describe('BinanceFeed.getSubscribeFrames', () => {
-  it('lowercases the stream names and splits them across frames', () => {
+  it('lowercases both stream names per market and splits them across frames', () => {
     const { feed } = makeFeed([]);
     const frames = feed.getSubscribeFrames(markets(150)) as {
       method: string;
@@ -142,25 +177,25 @@ describe('BinanceFeed.getSubscribeFrames', () => {
       id: number;
     }[];
 
-    expect(frames).toHaveLength(2);
+    expect(frames).toHaveLength(3);
     expect(frames[0].method).toBe('SUBSCRIBE');
     expect(frames[0].params).toHaveLength(100);
-    expect(frames[0].params[0]).toBe('sym0usdt@depth20@100ms');
-    expect(frames[1].params).toHaveLength(50);
-    expect(frames.map((f) => f.id)).toEqual([1, 2]);
+    expect(frames[0].params.slice(0, 2)).toEqual([
+      'sym0usdt@depth@0ms',
+      'sym0usdt@depth20@100ms',
+    ]);
+    expect(frames[2].params).toHaveLength(100);
+    expect(frames.map((f) => f.id)).toEqual([1, 2, 3]);
   });
 });
 
 describe('BinanceFeed.handleMessage', () => {
-  it('hands the engine a subscribed depth update as the whole book', () => {
+  it('seeds the book from a snapshot and hands it to the engine', () => {
     jest.spyOn(Date, 'now').mockReturnValue(LOCAL_NOW);
     const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(
-      Buffer.from(JSON.stringify(depthUpdate('BTCUSDT', BIDS, ASKS))),
-      c,
-    );
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
 
     expect(updateBook).toHaveBeenCalledWith(
       VENUE_ID,
@@ -177,28 +212,283 @@ describe('BinanceFeed.handleMessage', () => {
     );
   });
 
-  it('replaces the book on every message rather than merging', () => {
+  it('merges a diff onto the seeded book instead of replacing it', () => {
     const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
     const c = connection(feed.planEndpoints()[0]);
-    feed.handleMessage(
-      Buffer.from(JSON.stringify(depthUpdate('BTCUSDT', BIDS, ASKS))),
-      c,
-    );
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
 
-    feed.handleMessage(
-      Buffer.from(
-        JSON.stringify(
-          depthUpdate('BTCUSDT', [['79909.10', '1']], [['79909.60', '1']]),
-        ),
-      ),
+    send(
+      feed,
       c,
+      diffFrame('BTCUSDT', [['79909.35', '2']], [['79909.40', '9']], {
+        u: FIRST_ID + 1,
+        pu: FIRST_ID,
+      }),
     );
 
     expect(updateBook).toHaveBeenLastCalledWith(
       VENUE_ID,
       'BTCUSDT',
-      [[79909.1, 1]],
-      [[79909.6, 1]],
+      [
+        [79909.35, 2],
+        [79909.3, 23.163],
+        [79909.2, 1.5],
+      ],
+      [
+        [79909.4, 9],
+        [79909.5, 2],
+      ],
+      expect.any(Number),
+    );
+  });
+
+  it('applies the first diff after a snapshot when it straddles the snapshot id', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', [['79909.30', '4']], [], {
+        U: FIRST_ID - 10,
+        u: FIRST_ID + 5,
+        pu: FIRST_ID - 11,
+      }),
+    );
+
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      [
+        [79909.3, 4],
+        [79909.2, 1.5],
+      ],
+      expect.any(Array),
+      expect.any(Number),
+    );
+  });
+
+  it('removes a level a diff zeroes', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', [['79909.30', '0']], [], {
+        u: FIRST_ID + 1,
+        pu: FIRST_ID,
+      }),
+    );
+
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      [[79909.2, 1.5]],
+      expect.any(Array),
+      expect.any(Number),
+    );
+  });
+
+  it('ignores a diff level outside the window the snapshot covered', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+
+    send(
+      feed,
+      c,
+      diffFrame(
+        'BTCUSDT',
+        [
+          ['79909.25', '3'],
+          ['79909.10', '7'],
+        ],
+        [
+          ['79909.45', '3'],
+          ['79909.60', '7'],
+        ],
+        { u: FIRST_ID + 1, pu: FIRST_ID },
+      ),
+    );
+
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      [
+        [79909.3, 23.163],
+        [79909.25, 3],
+        [79909.2, 1.5],
+      ],
+      [
+        [79909.4, 4.611],
+        [79909.45, 3],
+        [79909.5, 2],
+      ],
+      expect.any(Number),
+    );
+  });
+
+  it('drops a diff that arrives before any snapshot', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', BIDS, ASKS, { u: FIRST_ID, pu: FIRST_ID - 1 }),
+    );
+
+    expect(updateBook).not.toHaveBeenCalled();
+  });
+
+  it('drops a diff whose sequence skips, warns, and keeps the socket open', () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', [['79909.30', '4']], [], {
+        U: FIRST_ID + 50,
+        u: FIRST_ID + 60,
+        pu: FIRST_ID + 49,
+      }),
+    );
+
+    const socket = c.socket as unknown as { terminate: jest.Mock };
+
+    expect(updateBook).toHaveBeenCalledTimes(1);
+    expect(socket.terminate).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'book_desync', rawMarketId: 'BTCUSDT' }),
+    );
+  });
+
+  it('recovers a desynced symbol on the next snapshot', () => {
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', [['79909.30', '4']], [], {
+        U: FIRST_ID + 50,
+        u: FIRST_ID + 60,
+        pu: FIRST_ID + 49,
+      }),
+    );
+
+    send(
+      feed,
+      c,
+      snapshotFrame('BTCUSDT', [['79909.10', '5']], [['79909.70', '6']], {
+        u: FIRST_ID + 70,
+      }),
+    );
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', [['79909.15', '8']], [], {
+        u: FIRST_ID + 71,
+        pu: FIRST_ID + 70,
+      }),
+    );
+
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      [
+        [79909.15, 8],
+        [79909.1, 5],
+      ],
+      [[79909.7, 6]],
+      expect.any(Number),
+    );
+  });
+
+  it('ignores a snapshot the diffs have already passed', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+    send(
+      feed,
+      c,
+      diffFrame('BTCUSDT', [['79909.35', '2']], [], {
+        u: FIRST_ID + 1,
+        pu: FIRST_ID,
+      }),
+    );
+
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+
+    expect(updateBook).toHaveBeenCalledTimes(2);
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      [
+        [79909.35, 2],
+        [79909.3, 23.163],
+        [79909.2, 1.5],
+      ],
+      expect.any(Array),
+      expect.any(Number),
+    );
+  });
+
+  it('waits for the next snapshot when a diff empties a side of the window', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
+
+    send(
+      feed,
+      c,
+      diffFrame(
+        'BTCUSDT',
+        [
+          ['79909.30', '0'],
+          ['79909.20', '0'],
+        ],
+        [],
+        { u: FIRST_ID + 1, pu: FIRST_ID },
+      ),
+    );
+
+    // The venue still has bids under the window, so an empty side here is our window running out, not the book losing a side.
+    expect(updateBook).toHaveBeenCalledTimes(1);
+
+    send(
+      feed,
+      c,
+      snapshotFrame('BTCUSDT', [['79909.10', '5']], ASKS, { u: FIRST_ID + 2 }),
+    );
+
+    expect(updateBook).toHaveBeenLastCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      [[79909.1, 5]],
+      expect.any(Array),
+      expect.any(Number),
+    );
+  });
+
+  it('reads a frame with no stream name as a snapshot', () => {
+    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
+    const c = connection(feed.planEndpoints()[0]);
+
+    send(feed, c, depthUpdate('BTCUSDT', BIDS, ASKS));
+
+    expect(updateBook).toHaveBeenCalledWith(
+      VENUE_ID,
+      'BTCUSDT',
+      expect.any(Array),
+      expect.any(Array),
       expect.any(Number),
     );
   });
@@ -207,10 +497,7 @@ describe('BinanceFeed.handleMessage', () => {
     const { feed, updateBook } = makeFeed([market('BTCUSDT')], 1);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(
-      Buffer.from(JSON.stringify(depthUpdate('BTCUSDT', BIDS, ASKS))),
-      c,
-    );
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, ASKS));
 
     expect(updateBook).toHaveBeenCalledWith(
       VENUE_ID,
@@ -221,37 +508,11 @@ describe('BinanceFeed.handleMessage', () => {
     );
   });
 
-  it('unwraps the combined stream envelope', () => {
-    const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
-    const c = connection(feed.planEndpoints()[0]);
-
-    feed.handleMessage(
-      Buffer.from(
-        JSON.stringify({
-          stream: 'btcusdt@depth20@100ms',
-          data: depthUpdate('BTCUSDT', BIDS, ASKS),
-        }),
-      ),
-      c,
-    );
-
-    expect(updateBook).toHaveBeenCalledWith(
-      VENUE_ID,
-      'BTCUSDT',
-      expect.any(Array),
-      expect.any(Array),
-      expect.any(Number),
-    );
-  });
-
   it('passes a one sided book through with the empty side empty', () => {
     const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(
-      Buffer.from(JSON.stringify(depthUpdate('BTCUSDT', BIDS, []))),
-      c,
-    );
+    send(feed, c, snapshotFrame('BTCUSDT', BIDS, []));
 
     expect(updateBook).toHaveBeenCalledWith(
       VENUE_ID,
@@ -267,14 +528,8 @@ describe('BinanceFeed.handleMessage', () => {
     const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(
-      Buffer.from(JSON.stringify(depthUpdate('ETHUSDT', BIDS, ASKS))),
-      c,
-    );
-    feed.handleMessage(
-      Buffer.from(JSON.stringify(depthUpdate('ETHUSDT', BIDS, ASKS))),
-      c,
-    );
+    send(feed, c, snapshotFrame('ETHUSDT', BIDS, ASKS));
+    send(feed, c, snapshotFrame('ETHUSDT', BIDS, ASKS));
 
     expect(updateBook).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);
@@ -285,16 +540,8 @@ describe('BinanceFeed.handleMessage', () => {
     const { feed, updateBook } = makeFeed([market('BTCUSDT')]);
     const c = connection(feed.planEndpoints()[0]);
 
-    feed.handleMessage(
-      Buffer.from(
-        JSON.stringify({
-          error: { code: -1121, msg: 'Invalid symbol.' },
-          id: 1,
-        }),
-      ),
-      c,
-    );
-    feed.handleMessage(Buffer.from(JSON.stringify({ result: null, id: 1 })), c);
+    send(feed, c, { error: { code: -1121, msg: 'Invalid symbol.' }, id: 1 });
+    send(feed, c, { result: null, id: 1 });
 
     expect(updateBook).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledTimes(1);

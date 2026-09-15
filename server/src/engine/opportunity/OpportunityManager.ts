@@ -2,17 +2,31 @@ import { Logger } from '@nestjs/common';
 import { readAnchorPair } from './anchorReading';
 import { walkLadders } from './ladderWalk';
 import { getRouteKey, type OpportunityLifecycle } from './OpportunityLifecycle';
-import type { Cluster, Market } from '../cluster/types';
+import type { Cluster, Market, PairKey } from '../cluster/types';
 import type { AnchorIssue, Opportunity } from './types';
 
 const MIN_NET_PPM = 5_000; // after fees
 const MIN_EDGE_NOTIONAL = 1_000; // quote units the profitable region must hold at open, the first checkpoint of docs/bestiary/thin-book.md
 const MAX_PLAUSIBLE_NET_PPM = 100_000;
 
+// How long a cross must survive before it can open a route.
+// Our view of a venue is 55 to 91 ms old and an order needs about as long again, so anything shorter than this ended before we could reach it.
+export const MIN_CROSS_AGE_MS = 100;
+
 const REJECTION_WARN_WINDOW_MS = 10_000;
 
 type RejectionReason =
-  'implausible_net_ppm' | 'standing_basis' | 'thin_book' | AnchorIssue;
+  | 'implausible_net_ppm'
+  | 'standing_basis'
+  | 'thin_book'
+  | 'unconfirmed_cross'
+  | AnchorIssue;
+
+type PendingCross = {
+  route: string;
+  firstSeenAt: number;
+  netPpm: number; // the reading at first sight, for the rejection line when it never confirms
+};
 
 type RejectionWarnState = {
   occurrenceCount: number; // rejections seen for this route and reason since the engine started
@@ -23,6 +37,7 @@ type RejectionWarnState = {
 export class OpportunityManager {
   private logger = new Logger(OpportunityManager.name);
   private readonly rejectionWarnStates = new Map<string, RejectionWarnState>();
+  private readonly pendingCrosses = new Map<PairKey, PendingCross>();
 
   constructor(private readonly lifecycle: OpportunityLifecycle) {}
 
@@ -37,6 +52,7 @@ export class OpportunityManager {
     const lowestAskResult = this.getEffectiveLowestAsk(cluster);
 
     if (highestBidResult === null || lowestAskResult === null) {
+      this.forgetCross(cluster.pair, now);
       return null;
     }
 
@@ -44,6 +60,7 @@ export class OpportunityManager {
     const { index: lowestAskIndex, value: lowestAsk } = lowestAskResult;
 
     if (highestBidIndex === lowestAskIndex) {
+      this.forgetCross(cluster.pair, now);
       return null;
     }
 
@@ -51,6 +68,7 @@ export class OpportunityManager {
     const lowestAskMarket = cluster.markets[lowestAskIndex];
 
     if (highestBidMarket === null || lowestAskMarket === null) {
+      this.forgetCross(cluster.pair, now);
       return null;
     }
 
@@ -62,21 +80,22 @@ export class OpportunityManager {
       )
     ) {
       // Already tracked. The loop above fed it on this tick if one of its legs moved
+      this.pendingCrosses.delete(cluster.pair);
       return null;
     }
 
     const netPpm = (highestBid / lowestAsk - 1) * 1_000_000;
 
     if (netPpm < MIN_NET_PPM) {
+      this.forgetCross(cluster.pair, now);
       return null;
     }
 
     if (netPpm > MAX_PLAUSIBLE_NET_PPM) {
       this.reportRejection(
         'implausible_net_ppm',
-        cluster,
-        highestBidMarket,
-        lowestAskMarket,
+        cluster.pair,
+        getRouteKey(highestBidMarket, lowestAskMarket),
         now,
         {
           netPpm,
@@ -105,9 +124,8 @@ export class OpportunityManager {
     if (typeof anchor === 'string') {
       this.reportRejection(
         anchor,
-        cluster,
-        highestBidMarket,
-        lowestAskMarket,
+        cluster.pair,
+        getRouteKey(highestBidMarket, lowestAskMarket),
         now,
         {
           netPpm,
@@ -121,9 +139,8 @@ export class OpportunityManager {
     if (anchor.freshNetPpm < MIN_NET_PPM) {
       this.reportRejection(
         'standing_basis',
-        cluster,
-        highestBidMarket,
-        lowestAskMarket,
+        cluster.pair,
+        getRouteKey(highestBidMarket, lowestAskMarket),
         now,
         {
           netPpm,
@@ -148,9 +165,8 @@ export class OpportunityManager {
     if (edge === null || edge.notional < MIN_EDGE_NOTIONAL) {
       this.reportRejection(
         'thin_book',
-        cluster,
-        highestBidMarket,
-        lowestAskMarket,
+        cluster.pair,
+        getRouteKey(highestBidMarket, lowestAskMarket),
         now,
         {
           netPpm,
@@ -160,6 +176,19 @@ export class OpportunityManager {
           edgeSize: edge?.size ?? null,
         },
       );
+      return null;
+    }
+
+    // Last, because a cross that the guards refuse is still a cross, and its age keeps running while they do.
+    if (
+      !this.isCrossOldEnough(
+        cluster.pair,
+        highestBidMarket,
+        lowestAskMarket,
+        netPpm,
+        now,
+      )
+    ) {
       return null;
     }
 
@@ -190,16 +219,66 @@ export class OpportunityManager {
     });
   }
 
-  private reportRejection(
-    reason: RejectionReason,
-    cluster: Cluster,
+  // A cross opens a route only on a tick at least MIN_CROSS_AGE_MS after the tick that first showed it.
+  // The clock belongs to the cross, so a different best route restarts it.
+  private isCrossOldEnough(
+    pair: PairKey,
     highestBidMarket: Market,
     lowestAskMarket: Market,
+    netPpm: number,
+    now: number,
+  ): boolean {
+    const route = getRouteKey(highestBidMarket, lowestAskMarket);
+    const pending = this.pendingCrosses.get(pair);
+
+    if (pending === undefined || pending.route !== route) {
+      if (pending !== undefined) {
+        this.reportUnconfirmed(pair, pending, now);
+      }
+
+      this.pendingCrosses.set(pair, { route, firstSeenAt: now, netPpm });
+      return false;
+    }
+
+    if (now - pending.firstSeenAt < MIN_CROSS_AGE_MS) {
+      return false;
+    }
+
+    this.pendingCrosses.delete(pair);
+    return true;
+  }
+
+  private forgetCross(pair: PairKey, now: number): void {
+    const pending = this.pendingCrosses.get(pair);
+
+    if (pending === undefined) {
+      return;
+    }
+
+    this.pendingCrosses.delete(pair);
+    this.reportUnconfirmed(pair, pending, now);
+  }
+
+  private reportUnconfirmed(
+    pair: PairKey,
+    pending: PendingCross,
+    now: number,
+  ): void {
+    this.reportRejection('unconfirmed_cross', pair, pending.route, now, {
+      netPpm: pending.netPpm,
+      ageMs: now - pending.firstSeenAt,
+      minCrossAgeMs: MIN_CROSS_AGE_MS,
+    });
+  }
+
+  private reportRejection(
+    reason: RejectionReason,
+    pair: PairKey,
+    route: string,
     now: number,
     detail: Record<string, number | null>,
   ): void {
-    const route = getRouteKey(highestBidMarket, lowestAskMarket);
-    const key = `${cluster.pair}|${route}|${reason}`;
+    const key = `${pair}|${route}|${reason}`;
     let state = this.rejectionWarnStates.get(key);
 
     if (state === undefined) {
@@ -221,7 +300,7 @@ export class OpportunityManager {
     this.logger.warn({
       event: 'opportunity_rejected',
       reason,
-      pair: cluster.pair,
+      pair,
       route,
       ...detail,
       occurrenceCount: state.occurrenceCount,

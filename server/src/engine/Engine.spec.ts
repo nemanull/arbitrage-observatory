@@ -14,6 +14,7 @@ import type {
   ClusterIndex,
   Market,
 } from './cluster/types';
+import { MIN_CROSS_AGE_MS } from './opportunity/OpportunityManager';
 import type { Opportunity } from './opportunity/types';
 
 const VENUES = ['binance', 'bybit'] as const;
@@ -309,9 +310,24 @@ function writeAgreedAnchors(engine: Engine): void {
 
 // bybit bids 101 against a binance ask of 100: ~8890ppm after 55bp taker each side.
 // binance rests 40 at its bid and 50 at its ask, bybit 20 and 30, so the region behind the cross clears MIN_EDGE_NOTIONAL.
+// The first bybit bid only plants the cross, because a route opens on a tick at least MIN_CROSS_AGE_MS after the one that first showed it.
 function openRoute(engine: Engine): void {
   writeAgreedAnchors(engine);
-  engine.updateBook('binance', RAW_MARKET_ID, [[99.9, 40]], [[100, 50]], 1_000);
+  const seenAt = 1_000 - MIN_CROSS_AGE_MS;
+  engine.updateBook(
+    'binance',
+    RAW_MARKET_ID,
+    [[99.9, 40]],
+    [[100, 50]],
+    seenAt,
+  );
+  engine.updateBook(
+    'bybit',
+    RAW_MARKET_ID,
+    [[100.95, 20]],
+    [[101.5, 30]],
+    seenAt,
+  );
   engine.updateBook('bybit', RAW_MARKET_ID, [[101, 20]], [[101.5, 30]], 1_000);
 }
 
@@ -453,7 +469,7 @@ describe('Engine book sizes', () => {
       recvTs: 2_000,
     });
 
-    expect(validate).toHaveBeenCalledTimes(2); // the two quotes that opened the route
+    expect(validate).toHaveBeenCalledTimes(3); // the two quotes that planted the cross and the one that opened the route
     expect(index.clusters[0].bidSize[1]).toBe(6);
     expect(index.clusters[0].askSize[1]).toBe(7);
     expect(index.clusters[0].recvTs[1]).toBe(2_000);
@@ -469,7 +485,7 @@ describe('Engine book sizes', () => {
       recvTs: 3_000,
     });
 
-    expect(validate).toHaveBeenCalledTimes(3);
+    expect(validate).toHaveBeenCalledTimes(4);
     expect(opened.ticksSinceStart).toBe(2);
     expect(opened.lastHighestBidSize).toBe(6);
   });
@@ -1227,6 +1243,13 @@ describe('Engine.updateBook', () => {
         [100.1, 2],
       ],
       1_000,
+    );
+    engine.updateBook(
+      'bybit',
+      RAW_MARKET_ID,
+      [[100.95, 2], ...BIDS.slice(1)],
+      ASKS,
+      1_000 - MIN_CROSS_AGE_MS,
     );
     engine.updateBook('bybit', RAW_MARKET_ID, BIDS, ASKS, 1_000);
 
