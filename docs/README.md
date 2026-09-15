@@ -26,6 +26,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-15-denied-basis-pairs-gate-probe.md`](./research/2026-09-15-denied-basis-pairs-gate-probe.md) reads OPENAI, ANTHROPIC, ONG, SIREN and ONE live against the open gate, finds every crossed route refused as a standing basis in 90 of 90 rounds, and is the evidence for taking them off `DENIED_PAIRS`.
 - [`research/2026-09-15-binance-realtime-depth.md`](./research/2026-09-15-binance-realtime-depth.md) splits our view delay into venue batching and distance, measures `@depth@0ms` at 29 ms ahead of the snapshot channel across 571 markets, and verifies that the two channels share one update id space with 0 mismatched replays.
 - [`research/2026-09-15-one-self-index-fresh-gate.md`](./research/2026-09-15-one-self-index-fresh-gate.md) explains how row 2739, a 3.7 percent ONE binance-okx basis, passed the fresh gate after ONE left `DENIED_PAIRS`: binance's ONE index is the perp itself at weight 1.0, the only such basket among 564 USD-M perps, so its mark trails the perp by about five minutes and the leg's fresh premium is momentum.
+- [`research/2026-09-15-five-venue-integration.md`](./research/2026-09-15-five-venue-integration.md) compares Gate, Bitget, MEXC, Bitstamp and Gemini against the catalog, the fee registry, the book feed and the anchor poller, finds Gate fits as is, Bitget and MEXC fit with small changes, and Bitstamp and Gemini need an anchor other than a one second bulk poll.
 
 ## Audits
 
@@ -64,6 +65,8 @@ The newest audit is the one that describes current behaviour.
 - [`implemented/2026-09-14-fresh-edge-verdict-plan.md`](./implemented/2026-09-14-fresh-edge-verdict-plan.md) records the reconciled plan that shipped the fresh edge verdict.
 - [`implemented/2026-09-14-open-guards-design.md`](./implemented/2026-09-14-open-guards-design.md) records the reconciled design for the three refusals at open, a moving anchor, a markless leg and a thin book, and the mark coinbase reads from Coinbase International Exchange.
 - [`implemented/2026-09-14-open-guards-plan.md`](./implemented/2026-09-14-open-guards-plan.md) records the reconciled plan that shipped the open guards.
+- [`implemented/2026-09-15-five-venue-research-design.md`](./implemented/2026-09-15-five-venue-research-design.md) records the reconciled design for researching Gate, Bitget, MEXC, Bitstamp and Gemini as the next venues, with what the engine needs from a venue.
+- [`implemented/2026-09-15-five-venue-research-plan.md`](./implemented/2026-09-15-five-venue-research-plan.md) records the reconciled plan and the profile template that produced the fifteen venue profiles.
 
 ## Reference
 
@@ -80,3 +83,18 @@ The newest audit is the one that describes current behaviour.
 - [`profiles/coinbase/websocket.md`](./profiles/coinbase/websocket.md) records Coinbase WebSocket endpoints, channels, schemas, and recovery rules.
 - [`profiles/kraken/fees.md`](./profiles/kraken/fees.md) records Kraken fees by entity, product, account tier, and service.
 - [`profiles/kraken/websocket.md`](./profiles/kraken/websocket.md) records Kraken WebSocket endpoints, channels, schemas, and recovery rules.
+- [`profiles/gate/fees.md`](./profiles/gate/fees.md) records Gate perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/gate/websocket.md`](./profiles/gate/websocket.md) records Gate public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/gate/rest.md`](./profiles/gate/rest.md) records Gate catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitget/fees.md`](./profiles/bitget/fees.md) records Bitget perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitget/websocket.md`](./profiles/bitget/websocket.md) records Bitget public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitget/rest.md`](./profiles/bitget/rest.md) records Bitget catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/mexc/fees.md`](./profiles/mexc/fees.md) records MEXC perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/mexc/websocket.md`](./profiles/mexc/websocket.md) records MEXC public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/mexc/rest.md`](./profiles/mexc/rest.md) records MEXC catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitstamp/fees.md`](./profiles/bitstamp/fees.md) records Bitstamp perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitstamp/websocket.md`](./profiles/bitstamp/websocket.md) records Bitstamp public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitstamp/rest.md`](./profiles/bitstamp/rest.md) records Bitstamp catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/gemini/fees.md`](./profiles/gemini/fees.md) records Gemini perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/gemini/websocket.md`](./profiles/gemini/websocket.md) records Gemini public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/gemini/rest.md`](./profiles/gemini/rest.md) records Gemini catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
