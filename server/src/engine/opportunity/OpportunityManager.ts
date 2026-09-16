@@ -10,7 +10,8 @@ const MIN_EDGE_NOTIONAL = 1_000; // quote units the profitable region must hold 
 const MAX_PLAUSIBLE_NET_PPM = 100_000;
 
 // How long a cross must survive before it can open a route.
-// Our view of a venue is 55 to 91 ms old and an order needs about as long again, so anything shorter than this ended before we could reach it.
+// Our view of a venue is 53 to 91 ms old, measured in docs/research/2026-09-15-binance-realtime-depth.md, and an order needs about as long again.
+// Anything shorter than this ended before we could reach it.
 export const MIN_CROSS_AGE_MS = 100;
 
 const REJECTION_WARN_WINDOW_MS = 10_000;

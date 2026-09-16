@@ -201,5 +201,5 @@ They are the cost of a general-purpose unified API.
 A dedicated ingest layer for one channel type is small, because the per-venue work is a subscribe frame builder and a single parse function.
 The venue schemas are already documented in [`profiles/`](../profiles/).
 The design doc of 2026-07-30 that followed from this research was never committed.
-The storage half of the design was meant for `plans/2026-07-31-instrument-index-design.md`, which was never written, and was amended on 2026-08-01 to the per-cluster form in `server/src/engine/types.ts`.
-The feed half shipped as the venue classes under `server/src/venues/` on the base in `server/src/ws/VenueFeed.ts`.
+The storage half of the design was meant for `plans/2026-07-31-instrument-index-design.md`, which was never written, and was amended on 2026-08-01 to the per-cluster form in `server/src/engine/cluster/types.ts`.
+The feed half shipped as the venue classes under `server/src/venues/` on the base in `server/src/feeds/book/VenueFeed.ts`.

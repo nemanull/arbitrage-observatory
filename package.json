@@ -1,8 +1,18 @@
 {
   "name": "arbitrage-observatory",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A research platform for measuring whether cross-venue arbitrage in cryptocurrency perpetual futures is capturable from a retail network position",
+  "author": "nemanull",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nemanull/arbitrage-observatory.git"
+  },
   "private": true,
   "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "dev:server": "pnpm --filter server run dev",
@@ -10,6 +20,7 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm --filter server run lint:fix",
     "prisma:generate": "pnpm --filter server run prisma:generate",
     "prisma:push": "pnpm --filter server run prisma:push",
     "prisma:migrateDev": "pnpm --filter server run prisma:migrateDev",

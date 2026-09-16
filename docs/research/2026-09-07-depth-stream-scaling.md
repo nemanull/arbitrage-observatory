@@ -172,20 +172,20 @@ The five venues measured are among the most active, so per market rates on the l
 | book levels held, at 213 per market | about 3,200,000 | |
 | cluster index at width 47 | 100 to 170 MB for 3,000 to 5,000 clusters | |
 
-Per cluster memory at width 47 is about 34 KB: four depth arrays of `47 × 20` doubles from [`ClusterIndexBuilder.ts:34-37`](../../server/src/engine/ClusterIndexBuilder.ts), and eight layer 1 arrays of 47 doubles from `Cluster` in [`types.ts`](../../server/src/engine/types.ts).
+Per cluster memory at width 47 is about 34 KB: four depth arrays of `47 × 20` doubles from [`ClusterIndexBuilder.ts:34-37`](../../server/src/engine/cluster/ClusterIndexBuilder.ts), and eight layer 1 arrays of 47 doubles from `Cluster` in [`types.ts`](../../server/src/engine/cluster/types.ts).
 Most slots are empty on a 47 venue cluster.
 That waste is a hundred megabytes and not a constraint.
 
 ## 4. What the core architecture already gets right
 
 - A pair is a closed unit.
-  `validate` at [`OpportunityManager.ts:44`](../../server/src/engine/OpportunityManager.ts) reads one cluster's arrays and that pair's routes map and nothing else, and the scan at [`OpportunityManager.ts:548`](../../server/src/engine/OpportunityManager.ts) is a loop over that cluster's venue slots.
+  `validate` at [`OpportunityManager.ts:44`](../../server/src/engine/opportunity/OpportunityManager.ts) reads one cluster's arrays and that pair's routes map and nothing else, and the scan at [`OpportunityManager.ts:548`](../../server/src/engine/opportunity/OpportunityManager.ts) is a loop over that cluster's venue slots.
   Nothing in the engine reads across pairs, so the engine shards by pair with no synchronization.
 - Feeds already subscribe only what the engine tracks, at [`orchestrator.ts:214`](../../server/src/orchestrator.ts), so a shard that builds fewer clusters subscribes fewer markets without a feed change.
 - The depth block was laid out for a writer that streams.
   `updateDepth` at [`Engine.ts:199`](../../server/src/engine/Engine.ts) takes a complete top twenty per call, validates order in twenty comparisons, and runs no discovery, and the block is one flat array per side that a shard owns outright.
 - The repeat check at [`Engine.ts:116`](../../server/src/engine/Engine.ts) makes a depth derived layer 1 cheap, because 92 percent of depth messages leave the top unchanged and never reach the scan.
-- Discovery is O(width) per tick and width is the venue count, at [`OpportunityManager.ts:542-585`](../../server/src/engine/OpportunityManager.ts).
+- Discovery is O(width) per tick and width is the venue count, at [`OpportunityManager.ts:542-585`](../../server/src/engine/opportunity/OpportunityManager.ts).
   At 47 venues and 850 ticks a second across the universe that is under a millisecond a second.
 
 ## 5. Where it stops
@@ -204,7 +204,7 @@ Each shard builds its own `ClusterIndexBuilder` over its share of pairs, its own
 The `OpportunityWorker` stays single, because it reads the queue and never touches a cluster.
 What changes:
 
-- `ClusterIndexBuilder` gains a pair predicate next to the `DENIED_PAIRS` check at [`ClusterIndexBuilder.ts:158`](../../server/src/engine/ClusterIndexBuilder.ts), a hash of the pair key modulo the shard count.
+- `ClusterIndexBuilder` gains a pair predicate next to the `DENIED_PAIRS` check at [`ClusterIndexBuilder.ts:158`](../../server/src/engine/cluster/ClusterIndexBuilder.ts), a hash of the pair key modulo the shard count.
 - `Orchestrator` builds one `Run` at [`orchestrator.ts:95`](../../server/src/orchestrator.ts), and would spawn N of them as `worker_threads` or processes, each with its shard index.
 - Every shard opens at least one connection per venue and channel, so connections grow with N.
   At five venues and N of 8 that is about 80 connections from one IP, against binance's 300 attempts per five minutes, bybit's 500 per five minutes and 1,000 concurrent, okx's three handshakes a second and kraken's 150 reconnects per ten minutes, all from the profiles.
@@ -241,7 +241,7 @@ The base class and three venues landed on 2026-08-31 and two more on 2026-09-05.
 
 ### 5.6 Compression costs a core it does not need to
 
-`VenueFeed` opens every socket with `new WebSocket(plan.url)` and no options at [`VenueFeed.ts:76`](../../server/src/ws/VenueFeed.ts), so `ws` offers permessage-deflate and four venues accept it.
+`VenueFeed` opens every socket with `new WebSocket(plan.url)` and no options at [`VenueFeed.ts:76`](../../server/src/feeds/book/VenueFeed.ts), so `ws` offers permessage-deflate and four venues accept it.
 Refusing it halves process CPU per message, 53 to 26 µs, takes about 10 µs per message off the event loop thread itself, and doubles wire bytes, 1.6 to 3.3 MB a second at five venues and 20 to 30 MB a second at fifty.
 With no inbound limit on the VMs this is the one free win, and it is `{ perMessageDeflate: false }` on one line.
 

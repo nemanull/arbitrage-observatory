@@ -19,20 +19,20 @@ This work does not:
 ## Tasks
 
 1. Types. Done.
-   `server/src/engine/types.ts`, `server/src/ws/types.ts`, `server/src/engine/Engine.ts` `SingleMarketClusterQuote`.
+   `server/src/engine/cluster/types.ts`, `server/src/feeds/book/types.ts`, `server/src/engine/Engine.ts` `SingleMarketClusterQuote`.
 2. Connector.
    `server/src/ccxt/connector.ts` `toMarket` sets `contractSize` from the ccxt market, defaulting to 1, and logs one summary line per venue when any market has a contract size other than 1.
    No `Market` literal existed outside the two engine specs and the feed specs, so the sweep touched nothing, and the feed specs were updated under task 6.
    A new `server/src/ccxt/connector.spec.ts` covers the default for every bad value and the summary line.
 3. Builder.
-   `server/src/engine/ClusterIndexBuilder.ts` `createCluster` allocates `sizeMul`, `bidSize` and `askSize` and fills `sizeMul[i] = market.contractSize / scale`.
+   `server/src/engine/cluster/ClusterIndexBuilder.ts` `createCluster` allocates `sizeMul`, `bidSize` and `askSize` and fills `sizeMul[i] = market.contractSize / scale`.
    `ClusterIndexBuilder.spec.ts` asserts the multiplier for a plain market and for a scaled one, and no `Cluster` literal existed outside the two engine specs.
 4. Engine.
    `server/src/engine/Engine.ts` `validateQuote` adds `bid_size_not_finite`, `bid_size_negative`, `ask_size_not_finite`, `ask_size_negative`.
    `updateQuote` writes `bidSize` and `askSize` into the slot before the repeat check, which stays on prices, and the rejection warning carries both sizes.
    `Engine.spec.ts` gains a size-only change that updates the arrays and does not run discovery, and a negative size that is rejected and leaves the arrays untouched.
 5. Manager.
-   `server/src/engine/OpportunityManager.ts` `validate` builds the `Observation` with the four new numbers from the cluster arrays and multipliers.
+   `server/src/engine/opportunity/OpportunityManager.ts` `validate` builds the `Observation` with the four new numbers from the cluster arrays and multipliers.
    `createNewOpportunity`, `recordSample`, `updateOpportunity` and the existing-route path of `trackOpportunity` carry them at open, peak and last.
    The open log line gains the two sizes in coins.
    `OpportunityManager.spec.ts` asserts the twelve numbers at open, after a new peak, and at close.

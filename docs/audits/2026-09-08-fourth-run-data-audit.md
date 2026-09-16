@@ -211,13 +211,13 @@ Outside the five standing basis pairs and without a coinbase leg there are 138 r
 
 References are to the working tree of 2026-09-08.
 
-- The age cap close on the tick path rediscovers the same route in the same call, [`OpportunityManager.ts:55-95`](../../server/src/engine/OpportunityManager.ts), and [`OpportunityManager.spec.ts:268`](../../server/src/engine/OpportunityManager.spec.ts) asserts it.
+- The age cap close on the tick path rediscovers the same route in the same call, [`OpportunityManager.ts:55-95`](../../server/src/engine/opportunity/OpportunityManager.ts), and [`OpportunityManager.spec.ts:268`](../../server/src/engine/opportunity/OpportunityManager.spec.ts) asserts it.
   That is the chain of section 3 item 6.
-- Nothing reads `writtenAt` and `recvTs` is only tested for zero, [`Engine.ts:183-192`](../../server/src/engine/Engine.ts) and [`OpportunityManager.ts:413`](../../server/src/engine/OpportunityManager.ts).
+- Nothing reads `writtenAt` and `recvTs` is only tested for zero, [`Engine.ts:183-192`](../../server/src/engine/Engine.ts) and [`OpportunityManager.ts:413`](../../server/src/engine/opportunity/OpportunityManager.ts).
   Every book channel is change driven, measured on binance depth20 at 100 ms as zero frames in 12 seconds on ISRGUSDT and no identical consecutive frames on BNCUSDT, so a quiet leg and a dead leg look the same for as long as the socket stays up.
-- The sweep and the one sided close carry no closing sample, [`OpportunityManager.ts:429-469`](../../server/src/engine/OpportunityManager.ts), so `netPpmAtClose` and the close edge are the last leg tick.
-- Touch sizes and each leg's far side are computed on every sample and dropped by [`conversion.ts`](../../server/src/db/conversion.ts), which writes none of the twelve fields in [`types.ts:85-107`](../../server/src/engine/types.ts).
-- The comment on `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts:15`](../../server/src/engine/ClusterIndexBuilder.ts) claims twenty levels cover the 0.5 percent band on the finest tick books, and section 3 item 5 shows it does not.
+- The sweep and the one sided close carry no closing sample, [`OpportunityManager.ts:429-469`](../../server/src/engine/opportunity/OpportunityManager.ts), so `netPpmAtClose` and the close edge are the last leg tick.
+- Touch sizes and each leg's far side are computed on every sample and dropped by [`conversion.ts`](../../server/src/db/conversion.ts), which writes none of the twelve fields in [`types.ts:85-107`](../../server/src/engine/opportunity/types.ts).
+- The comment on `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts:15`](../../server/src/engine/cluster/ClusterIndexBuilder.ts) claims twenty levels cover the 0.5 percent band on the finest tick books, and section 3 item 5 shows it does not.
   Bybit sends 50 levels and okx 400, and the block keeps 20.
 - `Engine.updateBook` writes the depth before the quote is validated, [`Engine.ts:133-148`](../../server/src/engine/Engine.ts), so a rejected top leaves the ladder new and the touch old for that leg.
   Zero quotes were rejected in this run, so no row is affected yet.

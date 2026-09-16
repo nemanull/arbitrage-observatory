@@ -39,10 +39,10 @@ The median best net reading was -245 ppm for the kraken clusters and -900 ppm fo
 
 ## Evidence
 
-- The key is built by `getPairFromRaw` in [`ClusterIndexBuilder.ts`](../../server/src/engine/ClusterIndexBuilder.ts) at line 240, which folds the quote through `clusterQuote`.
+- The key is built by `getPairFromRaw` in [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts) at line 240, which folds the quote through `clusterQuote`.
 - The rank decides between a venue's twins in `getPairMarkets` at line 217 of the same file.
-- The family map and the rank live in [`quoteFamily.ts`](../../server/src/engine/quoteFamily.ts) at lines 6 and 18.
-  They are kept out of [`clusterOverrides.ts`](../../server/src/engine/clusterOverrides.ts), which lists exceptions for specific pairs and markets, because the family is a rule for every venue.
+- The family map and the rank live in [`quoteFamily.ts`](../../server/src/engine/cluster/quoteFamily.ts) at lines 6 and 18.
+  They are kept out of [`clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts), which lists exceptions for specific pairs and markets, because the family is a rule for every venue.
 - The connector in [`connector.ts`](../../server/src/ccxt/connector.ts) at line 153 still copies the quote from CCXT unchanged, so `Market.quote` is what the venue says.
 
 Simulated on the live CCXT catalogs on 2026-09-06 with the same grouping the builder uses.
@@ -65,10 +65,10 @@ After the merge no inverse or USDC contract is chosen on binance, bybit or okx.
 
 ## What shipped
 
-1. [`quoteFamily.ts`](../../server/src/engine/quoteFamily.ts): `QUOTE_FAMILY`, `clusterQuote` and `marketRank`.
-2. [`ClusterIndexBuilder.ts`](../../server/src/engine/ClusterIndexBuilder.ts): the key folds the quote, and `getPairMarkets` keeps the better ranked twin at debug instead of the first listed at error.
-3. [`types.ts`](../../server/src/engine/types.ts): comments on `PairKey`, `Market.quote` and `Cluster`.
-4. [`ClusterIndexBuilder.spec.ts`](../../server/src/engine/ClusterIndexBuilder.spec.ts): four cases, the merge, the rank against listing order, a venue with nothing better than a twin, and a non-dollar quote.
+1. [`quoteFamily.ts`](../../server/src/engine/cluster/quoteFamily.ts): `QUOTE_FAMILY`, `clusterQuote` and `marketRank`.
+2. [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts): the key folds the quote, and `getPairMarkets` keeps the better ranked twin at debug instead of the first listed at error.
+3. [`types.ts`](../../server/src/engine/cluster/types.ts): comments on `PairKey`, `Market.quote` and `Cluster`.
+4. [`ClusterIndexBuilder.spec.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.spec.ts): four cases, the merge, the rank against listing order, a venue with nothing better than a twin, and a non-dollar quote.
 5. [`WIKI.md`](../WIKI.md): the cluster definition.
 
 Not touched: the engine, the manager, the feeds, the connector, the schema and the app, none of which read the quote.

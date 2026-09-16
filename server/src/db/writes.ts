@@ -6,18 +6,6 @@ import type { Db } from './prisma';
 export type ArbitrageOpportunityRow =
   Prisma.ArbitrageOpportunityCreateManyInput;
 
-export async function writeOpportunity(
-  db: Db,
-  row: ArbitrageOpportunityRow,
-): Promise<bigint> {
-  const created = await db.arbitrageOpportunity.create({
-    data: row,
-    select: { id: true },
-  });
-
-  return created.id;
-}
-
 // One statement for the whole batch, which is what a venue drop closing many routes at once needs.
 export async function writeOpportunities(
   db: Db,

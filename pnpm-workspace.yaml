@@ -1,7 +1,6 @@
 packages:
   - app
   - server
-  - packages/*
 
 # pnpm blocks dependency build (postinstall) scripts by default.
 # unrs-resolver (via jest-resolve) ships a postinstall that downloads its native

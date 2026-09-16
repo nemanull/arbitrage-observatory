@@ -21,12 +21,12 @@ The engine drops the sizes at each feed's `submit` call and never reads the far 
    No depth channel is subscribed and no snapshot is fetched.
    Depth is the third line of Phase 4 and gets its own design.
 2. The cluster stores raw sizes next to raw prices, and a size multiplier is applied when a reading is taken.
-   This mirrors the prices: [`OpportunityManager.ts:207-208`](../../server/src/engine/OpportunityManager.ts) multiplies `cluster.bid[b] * cluster.bidMul[b]` at read time, and [`Engine.ts`](../../server/src/engine/Engine.ts) writes the raw quote into the slot.
+   This mirrors the prices: [`OpportunityManager.ts:207-208`](../../server/src/engine/opportunity/OpportunityManager.ts) multiplies `cluster.bid[b] * cluster.bidMul[b]` at read time, and [`Engine.ts`](../../server/src/engine/Engine.ts) writes the raw quote into the slot.
    `sizeMul[i] = contractSize / priceScale`, so on a price-scaled market the product of an adjusted price and an adjusted size is still the raw notional.
 3. A size-only change is not a tick.
    `Engine.updateQuote` writes both sizes before its repeat check, and the repeat check keeps comparing prices only, so bybit's idle re-sends and a maker resizing at the touch never run discovery.
 4. `Market` carries `contractSize`, taken from ccxt at boot and defaulting to 1 when ccxt reports none.
-   The builder derives `sizeMul` from it the way it derives `bidMul` from `takerPpm`, in [`ClusterIndexBuilder.ts:84-85`](../../server/src/engine/ClusterIndexBuilder.ts).
+   The builder derives `sizeMul` from it the way it derives `bidMul` from `takerPpm`, in [`ClusterIndexBuilder.ts:84-85`](../../server/src/engine/cluster/ClusterIndexBuilder.ts).
 5. The `Observation` carries four more numbers: the touch size of each leg in coins, and the far side of each leg adjusted by the same multipliers as `highestBid` and `lowestAsk`.
 6. The `Opportunity` keeps those four numbers at open, at peak and at the last tick, twelve scalars in all, and adds no series, so `MAX_SERIES_LENGTH` still bounds the row.
 7. Quote validation rejects a non-finite or negative size with its own issue code and keeps the quote otherwise.
@@ -49,7 +49,7 @@ The engine drops the sizes at each feed's `submit` call and never reads the far 
 
 ## Types
 
-As landed in [`types.ts`](../../server/src/engine/types.ts), [`ws/types.ts`](../../server/src/ws/types.ts) and [`Engine.ts`](../../server/src/engine/Engine.ts):
+As landed in [`types.ts`](../../server/src/engine/cluster/types.ts), [`ws/types.ts`](../../server/src/feeds/book/types.ts) and [`Engine.ts`](../../server/src/engine/Engine.ts):
 
 | type | addition |
 |---|---|
@@ -61,7 +61,7 @@ As landed in [`types.ts`](../../server/src/engine/types.ts), [`ws/types.ts`](../
 
 ## Evidence
 
-- Sizes on the wire, dropped at submit before this change: [`binance/types.ts:9-11`](../../server/src/venues/binance/types.ts), [`coinbase/types.ts:6-7`](../../server/src/venues/coinbase/types.ts), [`krakenfutures/types.ts:6-7`](../../server/src/venues/krakenfutures/types.ts), [`bybit/types.ts:3`](../../server/src/venues/bybit/types.ts), and the feed hand-off at [`VenueFeed.ts:162-164`](../../server/src/ws/VenueFeed.ts).
+- Sizes on the wire, dropped at submit before this change: [`binance/types.ts:9-11`](../../server/src/venues/binance/types.ts), [`coinbase/types.ts:6-7`](../../server/src/venues/coinbase/types.ts), [`krakenfutures/types.ts:6-7`](../../server/src/venues/krakenfutures/types.ts), [`bybit/types.ts:3`](../../server/src/venues/bybit/types.ts), and the feed hand-off at [`VenueFeed.ts:162-164`](../../server/src/feeds/book/VenueFeed.ts).
 - Both sides in memory: `bid` and `ask` in `Cluster`, one slot per venue.
 - `contractSize` discarded today: [`connector.ts:138`](../../server/src/ccxt/connector.ts) `toMarket`.
 - The third-run audit, section 6, for what the row cannot say without these numbers.

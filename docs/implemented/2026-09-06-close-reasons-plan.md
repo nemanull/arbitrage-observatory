@@ -28,7 +28,7 @@ Files: `server/prisma/schema.prisma`, `server/prisma/migrations/20260906000000_c
 
 ## Task 2: Engine types and OpportunityManager
 
-Files: `server/src/engine/types.ts`, `server/src/engine/OpportunityManager.ts`, `server/src/db/conversion.ts`.
+Files: `server/src/engine/cluster/types.ts`, `server/src/engine/opportunity/OpportunityManager.ts`, `server/src/db/conversion.ts`.
 
 - Add `CloseReason` to the types and `closeReason: CloseReason | null` and `minNetPpm: number` to `Opportunity`.
 - Delete `MAX_QUOTE_AGE_MS`.
@@ -60,7 +60,7 @@ Files: `server/src/orchestrator.ts`.
 
 ## Task 5: Tests
 
-Files: `server/src/engine/OpportunityManager.spec.ts`, `server/src/engine/Engine.spec.ts`, and the five venue specs' comment on `recvTs`.
+Files: `server/src/engine/opportunity/OpportunityManager.spec.ts`, `server/src/engine/Engine.spec.ts`, and the five venue specs' comment on `recvTs`.
 
 - Fill `bidMul` and `askMul` in the Engine spec fixture, so the opportunity path is reachable.
 - A quiet route stays open, and the sweep does not close it.

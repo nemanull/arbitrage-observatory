@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullMQOtel } from 'bullmq-otel';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { PrismaService } from './db/prisma';
 import {
   OpportunityWorker,
@@ -33,6 +32,6 @@ import { Orchestrator } from './orchestrator';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService, OpportunityWorker, Orchestrator],
+  providers: [PrismaService, OpportunityWorker, Orchestrator],
 })
 export class AppModule {}

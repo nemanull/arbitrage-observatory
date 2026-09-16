@@ -22,3 +22,6 @@ yarn-error.log*
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+# Agent session state, local only
+/.claude/

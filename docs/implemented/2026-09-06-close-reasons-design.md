@@ -36,23 +36,23 @@ Out of scope:
 
 1. A leg is live when the feed says so, and wall-clock age plays no part.
    A leg is valid for discovery and for an open route exactly when `cluster.recvTs[i] > 0`.
-   `VenueFeed.onClose` reports a dead socket by calling `Engine.markStale`, which sets `recvTs` to 0 for every market on that socket ([`server/src/ws/VenueFeed.ts:125`](../../server/src/ws/VenueFeed.ts), [`server/src/engine/Engine.ts:124`](../../server/src/engine/Engine.ts)).
+   `VenueFeed.onClose` reports a dead socket by calling `Engine.markStale`, which sets `recvTs` to 0 for every market on that socket ([`server/src/feeds/book/VenueFeed.ts:125`](../../server/src/feeds/book/VenueFeed.ts), [`server/src/engine/Engine.ts:124`](../../server/src/engine/Engine.ts)).
    The first accepted frame after a reconnect restores it ([`server/src/engine/Engine.ts:109`](../../server/src/engine/Engine.ts)).
    `MAX_QUOTE_AGE_MS` is gone.
-   Discovery skips a slot whose `recvTs` is 0 ([`server/src/engine/OpportunityManager.ts:488`](../../server/src/engine/OpportunityManager.ts) and `:512`).
+   Discovery skips a slot whose `recvTs` is 0 ([`server/src/engine/opportunity/OpportunityManager.ts:488`](../../server/src/engine/opportunity/OpportunityManager.ts) and `:512`).
 2. Exactly four things end an episode, and each is recorded.
-   `closeReasonFor` decides the tick path ([`server/src/engine/OpportunityManager.ts:299`](../../server/src/engine/OpportunityManager.ts)).
+   `closeReasonFor` decides the tick path ([`server/src/engine/opportunity/OpportunityManager.ts:299`](../../server/src/engine/opportunity/OpportunityManager.ts)).
    `spread_collapsed`: the route's own reading fell below `CLOSURE_NET_PPM` on a tick (`:314`).
    `feed_down`: the socket carrying one of the legs closed.
    `age_cap`: the episode reached `MAX_OPPORTUNITY_AGE_MS`, on the tick path (`:318`) or from the sweep.
    `shutdown`: the orchestrator stopped.
    Silence is not on the list.
 3. `feed_down` is event-driven.
-   `Engine.markStale` closes every open route with a leg on one of the dead markets in the same call that zeroes their `recvTs`, through `closeOpportunitiesOnVenue` ([`server/src/engine/OpportunityManager.ts:334`](../../server/src/engine/OpportunityManager.ts)).
+   `Engine.markStale` closes every open route with a leg on one of the dead markets in the same call that zeroes their `recvTs`, through `closeOpportunitiesOnVenue` ([`server/src/engine/opportunity/OpportunityManager.ts:334`](../../server/src/engine/opportunity/OpportunityManager.ts)).
    `closeVenue`, which production never called, is gone.
    A whole-venue close would be too coarse, because a venue runs several sockets and only one of them died.
    The tick path keeps a guard that returns `feed_down` if an open route ever has a leg with `recvTs` 0 (`:310`), which documents the invariant rather than a reachable path.
-4. The sweep enforces only the age cap ([`server/src/engine/OpportunityManager.ts:325`](../../server/src/engine/OpportunityManager.ts)).
+4. The sweep enforces only the age cap ([`server/src/engine/opportunity/OpportunityManager.ts:325`](../../server/src/engine/opportunity/OpportunityManager.ts)).
    It stays on the 1 s timer at [`server/src/orchestrator.ts:109`](../../server/src/orchestrator.ts), because a route whose legs stop changing has no tick left to reach it.
    The cap is a chunk boundary rather than the end of a basis: the tick that closes the old episode runs discovery and opens the next one.
 5. Shutdown flushes instead of dropping.
@@ -60,14 +60,14 @@ Out of scope:
    The feeds are stopped first so no new episode can open behind the flush.
    Their socket close events land later and find nothing open.
    `stop` runs from `beforeApplicationShutdown` (`:67`), which Nest completes for every module before any `onApplicationShutdown`, and `BullModule` closes the queue in `onApplicationShutdown` ([`server/node_modules/@nestjs/bullmq/dist/bull.providers.js:51`](../../server/node_modules/@nestjs/bullmq/dist/bull.providers.js)).
-   `OpportunityManager` keeps the set of in-flight queue writes ([`server/src/engine/OpportunityManager.ts:40`](../../server/src/engine/OpportunityManager.ts)), so `shutdown` (`:368`) also waits for closes that were still being enqueued when the signal arrived.
+   `OpportunityManager` keeps the set of in-flight queue writes ([`server/src/engine/opportunity/OpportunityManager.ts:40`](../../server/src/engine/opportunity/OpportunityManager.ts)), so `shutdown` (`:368`) also waits for closes that were still being enqueued when the signal arrived.
    The tick path keeps not awaiting a write, for the reason stated at `:443`.
    The engine ignores quotes once shutdown has begun ([`server/src/engine/Engine.ts:59`](../../server/src/engine/Engine.ts)), so a frame already buffered by a closing socket cannot open a route that nothing would flush.
 6. `closeReason` is a Prisma enum with the same lowercase values as the engine union, so nothing maps between them.
    The column is `NOT NULL`.
    The migration refuses to run while the table has rows, because a row closed by the old silence rule cannot be labelled with any of the four reasons truthfully.
    The table is cleared between experimental runs today, so this costs nothing in practice.
-7. The four series are capped at `MAX_SERIES_LENGTH = 10 000` samples and the aggregates keep counting ([`server/src/engine/OpportunityManager.ts:23`](../../server/src/engine/OpportunityManager.ts), `:288`).
+7. The four series are capped at `MAX_SERIES_LENGTH = 10 000` samples and the aggregates keep counting ([`server/src/engine/opportunity/OpportunityManager.ts:23`](../../server/src/engine/opportunity/OpportunityManager.ts), `:288`).
    Without a cap, decision 2 lets a single 5 minute chunk of `OPENAI` reach about 130 000 samples, at the 436 samples per second measured in the second run.
    The cap keeps the first 10 000 samples.
    `ticks`, `avgNetPpm`, `peakNetPpm`, `minNetPpm` and `lastSeenAt` are still computed over every tick.

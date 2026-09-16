@@ -24,8 +24,8 @@ The table was wiped before the run and holds 745 rows with `openedAt` from 15:18
 ## 1. Reading a row
 
 Every stored price already carries the taker fee.
-[`ClusterIndexBuilder.ts:84-85`](../../server/src/engine/ClusterIndexBuilder.ts) multiplies a bid by `1 - takerPpm / 1e6` and an ask by `1 + takerPpm / 1e6`.
-[`OpportunityManager.ts:93`](../../server/src/engine/OpportunityManager.ts) then reads `netPpm = (highestBid / lowestAsk - 1) * 1e6`.
+[`ClusterIndexBuilder.ts:84-85`](../../server/src/engine/cluster/ClusterIndexBuilder.ts) multiplies a bid by `1 - takerPpm / 1e6` and an ask by `1 + takerPpm / 1e6`.
+[`OpportunityManager.ts:93`](../../server/src/engine/opportunity/OpportunityManager.ts) then reads `netPpm = (highestBid / lowestAsk - 1) * 1e6`.
 So a net reading is the edge on the first unit after one fill on each leg, and a raw price is recovered by dividing the stored one by its multiplier.
 
 Row 16, `S|USDT`, route binance-coinbase, fees 500 and 400 ppm:
@@ -63,7 +63,7 @@ It is negative on the episodes that held for five minutes, because the age cap c
 
 Recommendation: remove the column.
 It is derived from the row, so nothing is lost.
-References are the schema lines above, [`migration.sql:69`](../../server/prisma/migrations/20260906150000_init/migration.sql), the converter, [`OpportunityManager.spec.ts:520`](../../server/src/engine/OpportunityManager.spec.ts), the column table row at [`2026-08-19-schema-rework-design.md:91`](../implemented/2026-08-19-schema-rework-design.md), and the generated client under `server/src/db/generated/`.
+References are the schema lines above, [`migration.sql:69`](../../server/prisma/migrations/20260906150000_init/migration.sql), the converter, [`OpportunityManager.spec.ts:520`](../../server/src/engine/opportunity/OpportunityManager.spec.ts), the column table row at [`2026-08-19-schema-rework-design.md:91`](../implemented/2026-08-19-schema-rework-design.md), and the generated client under `server/src/db/generated/`.
 The column was removed later the same day, from the schema, the init migration, the converter, the spec, the generated client and the local database.
 
 ## 3. Four rows, four classes
@@ -186,11 +186,11 @@ All at 2026-09-06 UTC, all endpoints public and unauthenticated.
 | did it last | durationMs, ticks | yes | yes |
 | is the quote current | per venue liveness | no | bybit re-sends every 3 s, okx every 60 s, kraken 1 per s, binance on change only, coinbase on trades only |
 | how much size sat at the price | top-of-book sizes | no | yes, every feed sends them and drops them |
-| what would the unwind cost | each leg's own other side | no | yes, [`types.ts:33-34`](../../server/src/engine/types.ts) holds both sides of every market |
+| what would the unwind cost | each leg's own other side | no | yes, [`types.ts:33-34`](../../server/src/engine/cluster/types.ts) holds both sides of every market |
 | what is the edge at 1k, 5k, 20k dollars | depth | no | no, needs a snapshot or a depth channel |
 
 Sizes are parsed and discarded at each feed's `submit` call, for example [`binance/types.ts:9-11`](../../server/src/venues/binance/types.ts) and [`coinbase/types.ts:6-7`](../../server/src/venues/coinbase/types.ts).
-The feed hands the engine a `NormalizedQuote` from [`ws/types.ts:27-32`](../../server/src/ws/types.ts) through [`VenueFeed.ts:162-164`](../../server/src/ws/VenueFeed.ts).
+The feed hands the engine a `NormalizedQuote` from [`ws/types.ts:27-32`](../../server/src/feeds/book/types.ts) through [`VenueFeed.ts:162-164`](../../server/src/feeds/book/VenueFeed.ts).
 
 ## 7. Has a capturable opportunity been recorded
 
@@ -208,14 +208,14 @@ Sizes come from a read-only code map of 2026-09-06 and are not commitments.
    Files in section 2.
    A drop-column migration keeps this run's rows and follows the additive rule of the schema rework design, while editing the init migration forces `prisma migrate reset --force` on every database that applied it.
    Size S.
-2. Add `MIN_EPISODE_MS = 1_000` next to `MIN_NET_PPM` at [`OpportunityManager.ts:18`](../../server/src/engine/OpportunityManager.ts).
+2. Add `MIN_EPISODE_MS = 1_000` next to `MIN_NET_PPM` at [`OpportunityManager.ts:18`](../../server/src/engine/opportunity/OpportunityManager.ts).
    Every close path, tick at `:217`, feed down at `:357`, sweep at `:389` and shutdown, funnels into `closeOpportunity` at `:403`, so the gate sits there between the map delete and `enqueueClosed` at `:440` and returns true without writing.
-   The `opportunity_closed` log needs a `written` flag, and the `opportunities_written` count in [`OpportunityWorker.ts`](../../server/src/engine/OpportunityWorker.ts) stays the only write count.
+   The `opportunity_closed` log needs a `written` flag, and the `opportunities_written` count in [`OpportunityWorker.ts`](../../server/src/engine/opportunity/OpportunityWorker.ts) stays the only write count.
    Existing close specs open at 1,000 ms and close at 2,000 ms or later, so a strict comparison keeps them green.
    This removes 438 of 745 rows.
    Size S.
 3. Record top-of-book sizes and each leg's own width.
-   Add `bidSize` and `askSize` to `NormalizedQuote` and to each feed's `submit`, to the cluster arrays allocated in [`ClusterIndexBuilder.ts`](../../server/src/engine/ClusterIndexBuilder.ts), and six scalars on the row for open, peak and close.
+   Add `bidSize` and `askSize` to `NormalizedQuote` and to each feed's `submit`, to the cluster arrays allocated in [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts), and six scalars on the row for open, peak and close.
    Width per leg is `cluster.ask[i] / cluster.bid[i] - 1` and needs no size.
    Record, do not gate, so the ranking can filter in SQL.
    A size-only change must not count as a tick.

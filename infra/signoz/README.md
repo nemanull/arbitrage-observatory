@@ -48,14 +48,8 @@ The container registers nothing outbound, so any email and password work, though
 The collector picks up the real config on its own within about thirty seconds.
 No restart is needed.
 
-An account already exists on this machine.
-
-| Field | Value |
-| --- | --- |
-| Email | `dev@observatory.local` |
-| Password | `Observatory123!` |
-
-Change it in the UI, or drop the metastore volume to start over.
+The account lives in the metastore volume, so it survives a restart and is created once per machine.
+Drop that volume to start over.
 
 ## What runs
 
@@ -79,7 +73,7 @@ SigNoz stopped shipping Compose files in its own repository at v0.130.0 and move
 The generated single node Docker output is published in the [SigNoz/foundry](https://github.com/SigNoz/foundry) repository, so these files are copied from there rather than generated locally.
 That keeps `foundryctl` off the list of things a fresh checkout needs.
 
-[`casting.yaml`](./casting.yaml) is the Foundry input that produced this output.
+[`casting.yaml`](./telemetrystore/clickhouse/casting.yaml) is the Foundry input that produced this output.
 It is kept for reference and is not read by anything here.
 
 ## Upgrading

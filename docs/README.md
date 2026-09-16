@@ -50,6 +50,10 @@ The newest audit is the one that describes current behaviour.
 - [`bestiary/standing-basis.md`](./bestiary/standing-basis.md) describes a gap between two perps that the market holds open on purpose, because each perp is chained to its own venue's index and nothing chains the two perps to each other, which is 352 of the fourth run's 597 rows.
 - [`bestiary/index-mark-and-premium.md`](./bestiary/index-mark-and-premium.md) is the vocabulary behind the basis entries: what a perp's index, mark, premium and funding are, how each is built and how fast it moves, with live recipes and a worked settlement.
 - [`bestiary/settlement-dip.md`](./bestiary/settlement-dip.md) describes a perp moving against the side paying funding in the minutes around its settlement instant, why leaving before the bill is self defeating, and the IOST capture across the 19:00 instant that shows the shape on two venues and its absence under the fee.
+- [`bestiary/lagging-view.md`](./bestiary/lagging-view.md) describes a view running seconds behind a venue while its socket keeps delivering at full rate, the one frame collapse that gives it away, and the 30 of the fifth run's 66 rows it produced inside two flash crashes.
+- [`bestiary/gate-margin.md`](./bestiary/gate-margin.md) describes what a hard threshold does to a noisy estimator, the eleven ppm that separated SIREN's 20,364 refusals from its first row, and the 22 of the fifth run's 66 rows that are the measurement rather than the edge.
+- [`bestiary/saturated-anchor.md`](./bestiary/saturated-anchor.md) describes a mark clamped into a band around its index, why a fresh premium past that band never decays to zero, and what the fifth run can and cannot prove about it.
+- [`bestiary/blind-guard.md`](./bestiary/blind-guard.md) describes a refusal wired into the open path only, which stopped the engine opening a route and also stopped it closing the routes already open, leaving 55.6 percent of the fifth run's samples blind.
 
 ## Implemented
 

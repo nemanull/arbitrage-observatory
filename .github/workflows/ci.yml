@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # The server postinstall runs prisma generate, which needs no database.
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter server run typecheck
+
+      - run: pnpm lint
+
+      # Unit tests only. Nothing here reaches Postgres, Redis or a venue socket.
+      - run: pnpm test
+
+      - run: pnpm build

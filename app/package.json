@@ -2,6 +2,8 @@
   "name": "app",
   "private": true,
   "version": "0.0.0",
+  "description": "Placeholder frontend, reserving the workspace slot for a future read-only view of stored episodes",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",

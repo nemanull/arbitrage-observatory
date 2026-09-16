@@ -1,7 +1,5 @@
 # Exchange Profiles Research Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
-
 **Goal:** Produce complete, sourced, and readable fee and WebSocket profiles for Binance, Bybit, OKX, Coinbase, and Kraken.
 
 **Architecture:** Detailed facts live in consistent per-exchange profiles.

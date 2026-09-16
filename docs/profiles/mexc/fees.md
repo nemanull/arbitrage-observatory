@@ -8,7 +8,7 @@
 
 This profile covers perpetual futures on MEXC, the CCXT id `mexc`, for a perp to perp taker cross.
 Every probed number comes from [`../../../scripts/probes/mexc-rest-probe.mjs`](../../../scripts/probes/mexc-rest-probe.mjs).
-Evidence labels follow [`../../plans/2026-09-15-five-venue-research-design.md`](../../plans/2026-09-15-five-venue-research-design.md), with `Probed` meaning that script observed it from this host on 2026-09-15.
+Evidence labels follow [`../../implemented/2026-09-15-five-venue-research-design.md`](../../implemented/2026-09-15-five-venue-research-design.md), with `Probed` meaning that script observed it from this host on 2026-09-15.
 
 ## 1. Scope and freshness
 

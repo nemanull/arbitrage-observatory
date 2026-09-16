@@ -10,7 +10,7 @@ This design records the rework of [`server/prisma/schema.prisma`](../../server/p
 
 The old schema was written before the engine existed.
 It modelled venues as exchanges, kept socket settings and fee schedules in two tables, and stored an opportunity as a single peak snapshot.
-The engine in [`server/src/engine/types.ts`](../../server/src/engine/types.ts) had since settled on a different vocabulary and a much richer opportunity, so every write would have needed a translation layer that threw most of the episode away.
+The engine in [`server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) had since settled on a different vocabulary and a much richer opportunity, so every write would have needed a translation layer that threw most of the episode away.
 
 The reworked schema mirrors the engine types instead.
 It is an outlining schema for the testing stage, not the final one.
@@ -24,7 +24,7 @@ This work does not:
 - add a catalog sync that fills Venue, Pair, and Market from ccxt,
 - change `OpportunityManager`, which still returns a closed `Opportunity` instead of enqueueing it,
 - add the per venue config that replaces the deleted `ExchangeConfig` and `ExchangeFee` tables,
-- touch `server/src/ws/ws.spec.ts`, which was a stale pre-engine draft that still failed `tsgo -p tsconfig.json --noEmit` for reasons unrelated to this work, and which has since been removed.
+- touch `server/src/feeds/book/ws.spec.ts`, which was a stale pre-engine draft that still failed `tsgo -p tsconfig.json --noEmit` for reasons unrelated to this work, and which has since been removed.
 
 ## Decisions
 
@@ -32,7 +32,7 @@ This work does not:
    The model is `Venue`, its natural key is `slug`, and every foreign key that pointed at an exchange now points at a venue.
    `slug` must equal `Venue.id` in the engine types, which is also the ccxt exchange id.
 2. `ExchangeConfig` and `ExchangeFee` are deleted.
-   Socket settings already have a home in code as `VenueSpec` in [`server/src/ws/types.ts`](../../server/src/ws/types.ts), and fee schedules belong next to it.
+   Socket settings already have a home in code as `VenueSpec` in [`server/src/feeds/book/types.ts`](../../server/src/feeds/book/types.ts), and fee schedules belong next to it.
    The venue research that seeded those tables is preserved under [`profiles/`](../profiles/), so nothing is lost by dropping them.
 3. `Pair` is unchanged.
    Its `symbol` is the engine `PairKey`, spelled `BTC|USDT`.
@@ -60,8 +60,9 @@ This work does not:
 11. The `Opportunity` to row converter lives in [`server/src/db/conversion.ts`](../../server/src/db/conversion.ts) as `toOpportunityRow`.
     That keeps [`server/src/db/writes.ts`](../../server/src/db/writes.ts) free of engine types, as its own comment promises, and keeps the queue payload plain JSON.
     Conversion sits beside the write path rather than inside the engine, because the engine only needs the queue and never the row shape.
-    Its `min` helper moved to [`server/src/shared/shared.ts`](../../server/src/shared/shared.ts) alongside `max`, since neither is specific to an opportunity.
-    The queue name and the job type live in [`server/src/engine/OpportunityWorker.ts`](../../server/src/engine/OpportunityWorker.ts) next to the consumer that reads them, so there is no separate contract file.
+    Its `min` helper moved to `server/src/shared/shared.ts` alongside `max`, since neither is specific to an opportunity.
+    Both were dropped later, because [`OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) tracks `minNetPpm` as each sample arrives and never scans the finished series.
+    The queue name and the job type live in [`server/src/engine/opportunity/OpportunityWorker.ts`](../../server/src/engine/opportunity/OpportunityWorker.ts) next to the consumer that reads them, so there is no separate contract file.
 12. The migration is additive on top of the existing history rather than a fresh single init.
     `20260819000000_venue_core` drops the exchange tables, drops and rebuilds `Market` and `ArbitrageOpportunity`, keeps `Pair`, and creates `Venue`.
     It applies cleanly to a fresh database and to a database already carrying the two earlier migrations.

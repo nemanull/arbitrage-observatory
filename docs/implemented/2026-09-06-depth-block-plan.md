@@ -18,9 +18,9 @@ This work does not:
 ## Tasks
 
 1. Types.
-   `server/src/engine/types.ts` gains `BookLevel` and `ClusterDepth`, and `Cluster` gains `depth`.
+   `server/src/engine/cluster/types.ts` gains `BookLevel` and `ClusterDepth`, and `Cluster` gains `depth`.
 2. Builder.
-   `server/src/engine/ClusterIndexBuilder.ts` exports `DEPTH_LEVELS` and `createClusterDepth(width, levels)`, takes `depthLevels` as a constructor option, and allocates the block in `createCluster`.
+   `server/src/engine/cluster/ClusterIndexBuilder.ts` exports `DEPTH_LEVELS` and `createClusterDepth(width, levels)`, takes `depthLevels` as a constructor option, and allocates the block in `createCluster`.
 3. Engine.
    `server/src/engine/Engine.ts` adds `updateDepth(venueId, rawMarketId, bids, asks, ts)` with the validation of the design and a `depth_update_rejected` warning.
    Deviation: the file already had a silent `resolveSlot` used by `tracks`, so `updateDepth` reuses it and warns on a miss itself, and `updateQuote` keeps its own warning lookup untouched.

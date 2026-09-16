@@ -1,35 +1,41 @@
-# Roadmap for this project
+# Roadmap
 
-# Version 0.1
+The staged build of version 0.1.
+Everything below shipped.
+Work found after this point is tracked as GitHub issues and in [`BACKLOG.md`](./BACKLOG.md), because a checklist stopped being the right shape for it.
 
-# Phase 1
+## Phase 1
 
-- [x] Create this repo. Set up the server, docs, agents, and raw frontend.
-- [x] Do research on major exchanges.
-- [x] Add Prisma, BullMQ, and Redis. Set up all of the infrastructure.
+- [x] Create the repository, and set up the server, the docs, the agent rules and a raw frontend.
+- [x] Research the major exchanges.
+- [x] Add Prisma, BullMQ and Redis, and set up the rest of the infrastructure.
 
-# Phase 2 
+## Phase 2
 
-- [x] Create core project types
-- [x] Create cluster builder
-- [x] Set up a simple engine and an opportunity manager
+- [x] Create the core project types.
+- [x] Create the cluster builder.
+- [x] Set up a simple engine and an opportunity manager.
 
-# Phase 3
+## Phase 3
 
-- [X] Define and implement opportunity monitoring and saving
-- [x] Implement ws and it's integration for Binance
-- [x] Implement ws and it's integration for Bybit and Okx
-- [x] Add signoz
-- [x] Add orchestration
+- [x] Define and implement opportunity monitoring and saving.
+- [x] Implement the WebSocket feed and its integration for Binance.
+- [x] Implement the WebSocket feed and its integration for Bybit and OKX.
+- [x] Add SigNoz.
+- [x] Add orchestration.
 
-# Phase 3
-- [x] Add Coinbase and Kraken
-- [x] Record why an episode closed, and stop closing on silence
+## Phase 4
 
-# Phase 4
+- [x] Add Coinbase and Kraken.
+- [x] Record why an episode closed, and stop closing on silence.
+
+## Phase 5
 
 - [x] Record both sides and the touch sizes of both legs at open, peak and close in the engine.
 - [x] Stream a twenty level book for every market from each venue's WebSocket into the engine.
 
+## Not started
 
-The base is built. Now the new tasks/issues will be stored in GitHub issues to keep things more organized. 
+- A frontend.
+  [`app/`](../app/) is still the Vite starter and holds the slot.
+  The engine is headless and the data is read through Prisma Studio, `psql` or SigNoz, so nothing is blocked on this.

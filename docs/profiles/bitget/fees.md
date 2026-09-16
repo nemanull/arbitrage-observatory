@@ -21,7 +21,7 @@ The terms also forbid using a VPN to get around the restriction.
 Bitget lists regional licences and registrations on its [regulatory licence page](https://www.bitget.com/promotion/regulatory-license), for Australia, El Salvador, the United Kingdom, Georgia, Argentina, Mexico and Switzerland.
 None of those pages names a separate perpetual fee schedule, so the global schedule below is the only one this research found.
 
-The labels of the July package apply, plus `Probed` from [`../../plans/2026-09-15-five-venue-research-design.md`](../../plans/2026-09-15-five-venue-research-design.md).
+The labels of the July package apply, plus `Probed` from [`../../implemented/2026-09-15-five-venue-research-design.md`](../../implemented/2026-09-15-five-venue-research-design.md).
 
 | Label | Meaning |
 | --- | --- |
