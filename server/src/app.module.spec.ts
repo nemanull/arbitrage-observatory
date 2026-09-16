@@ -5,6 +5,7 @@ import {
 } from '@nestjs/bullmq';
 import { Test } from '@nestjs/testing';
 import { AppModule } from './app.module';
+import { PrismaService } from './db/prisma';
 import {
   OpportunityWorker,
   OPPORTUNITY_CLOSED_QUEUE,
@@ -34,13 +35,16 @@ describe('AppModule', () => {
   it('registers REDIS_URL as the shared BullMQ connection', async () => {
     // The queue and the worker each dial Redis the moment they are constructed.
     // Nest's close does not wait for a dial at an address that does not answer.
-    // Stubbing both leaves the shared config, which is the thing under test.
+    // PrismaService reads DATABASE_URL and opens a pool on construction, and this test has no database.
+    // Stubbing all three leaves the shared config, which is the thing under test.
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(getQueueToken(OPPORTUNITY_CLOSED_QUEUE))
       .useValue({})
       .overrideProvider(OpportunityWorker)
+      .useValue({})
+      .overrideProvider(PrismaService)
       .useValue({})
       .compile();
 
