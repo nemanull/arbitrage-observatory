@@ -1,5 +1,7 @@
 # Arbitrage Observatory
 
+[![CI](https://github.com/nemanull/arbitrage-observatory/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nemanull/arbitrage-observatory/actions/workflows/ci.yml)
+
 Arbitrage Observatory is a research platform for measuring whether cross-venue arbitrage in cryptocurrency perpetual futures is capturable from a retail network position, meaning no exchange relationship, no negotiated fee tier and no colocation.
 
 It maintains a live order book for most perpetual markets on five centralised exchanges, identifies price gaps that remain profitable after both taker fees, and records each one as an episode.
