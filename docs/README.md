@@ -37,6 +37,7 @@ The newest audit is the one that describes current behaviour.
 - [`audits/2026-09-06-second-run-data-audit.md`](./audits/2026-09-06-second-run-data-audit.md) audits the run with the cluster overrides in place and finds the remaining rows are dominated by non-converging and fragmented spreads.
 - [`audits/2026-09-06-third-run-data-audit.md`](./audits/2026-09-06-third-run-data-audit.md) audits the first run with the quote family and finds that roundTripPpm measures a thin book's width, that duration alone cannot separate stale quotes from slow-venue orders, and that no row proves a capturable spread.
 - [`audits/2026-09-08-fourth-run-data-audit.md`](./audits/2026-09-08-fourth-run-data-audit.md) audits the first run with the book feeds and the ladder walk, finds five standing basis and equity pairs behind 389 of 597 rows and a ten dollar coinbase bot behind every coinbase peak, and lists what to verify on the next run.
+- [`audits/2026-09-15-fifth-run-data-audit.md`](./audits/2026-09-15-fifth-run-data-audit.md) audits the first home server run, finds no capturable row among 66, shows 30 rows where the engine's view of okx and kraken lagged their own tapes by 1 to 3.7 s inside two flash crashes and 22 standing basis rows that crossed the fresh gate by under 4,100 ppm, and names the per leg lag guard as the first repair.
 
 ## Bestiary
 
