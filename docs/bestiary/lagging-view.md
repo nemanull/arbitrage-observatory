@@ -73,6 +73,7 @@ The first suspicion is a blocked event loop, and it was not that.
 Between 18:37:10 and 18:37:16 eight to twelve rows were open at once, no gap of 150 ms passed without a sample from one of them, and the longest silence was 157 ms at 18:37:16.410.
 A blocked loop would have delayed every socket by the same amount, and instead okx was 1.1 to 3.7 s late and kraken 2.2 to 2.9 s late in the same seconds.
 That is a per socket backlog between the venue's matching engine and the handler for that connection.
+That backlog was placed inside the process on 2026-09-17: the loop was never blocked, it was saturated, serving each socket's backlog in turn, which is [`saturated-loop.md`](./saturated-loop.md).
 
 ## The signature is a one frame collapse
 
@@ -200,6 +201,7 @@ Every edge column on all 30 rows measures the distance between two clocks rather
 - [`flicker.md`](./flicker.md) is the fast version, a real cross that dies inside a millisecond.
 - [`slow-venue-resting-order.md`](./slow-venue-resting-order.md) is the honest version, a price that is old because nobody has taken it.
 - [`standing-basis.md`](./standing-basis.md) is the other large class of this run, where both views are current and the two venues genuinely disagree.
+- [`saturated-loop.md`](./saturated-loop.md) is the cause behind this run's instance, the process's own thread behind every socket at once.
 
 ## Evidence
 

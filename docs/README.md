@@ -27,6 +27,8 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-15-binance-realtime-depth.md`](./research/2026-09-15-binance-realtime-depth.md) splits our view delay into venue batching and distance, measures `@depth@0ms` at 29 ms ahead of the snapshot channel across 571 markets, and verifies that the two channels share one update id space with 0 mismatched replays.
 - [`research/2026-09-15-one-self-index-fresh-gate.md`](./research/2026-09-15-one-self-index-fresh-gate.md) explains how row 2739, a 3.7 percent ONE binance-okx basis, passed the fresh gate after ONE left `DENIED_PAIRS`: binance's ONE index is the perp itself at weight 1.0, the only such basket among 564 USD-M perps, so its mark trails the perp by about five minutes and the leg's fresh premium is momentum.
 - [`research/2026-09-15-five-venue-integration.md`](./research/2026-09-15-five-venue-integration.md) compares Gate, Bitget, MEXC, Bitstamp and Gemini against the catalog, the fee registry, the book feed and the anchor poller, finds Gate fits as is, Bitget and MEXC fit with small changes, and Bitstamp and Gemini need an anchor other than a one second bulk poll.
+- [`research/2026-09-17-fifth-run-loop-saturation.md`](./research/2026-09-17-fifth-run-loop-saturation.md) reads the fifth run's sample clocks and logs and finds that 34 of its 66 rows opened inside two windows in which the single event loop was saturated, with every book advancing in fixed order bundles every 380 to 640 ms, so each row is a stale leg on one venue against a current leg on another.
+- [`research/2026-09-17-node-event-loop-ceiling.md`](./research/2026-09-17-node-event-loop-ceiling.md) gathers every measurement of the one thread's ceiling and of the 2026-09-15 crash that reached it, with the verified Node, libuv, `ws` and TCP read path, the timeline, the four measurements, why no gate could see it, what it says about Node's limits, and what is still unmeasured.
 
 ## Audits
 
@@ -54,6 +56,7 @@ The newest audit is the one that describes current behaviour.
 - [`bestiary/gate-margin.md`](./bestiary/gate-margin.md) describes what a hard threshold does to a noisy estimator, the eleven ppm that separated SIREN's 20,364 refusals from its first row, and the 22 of the fifth run's 66 rows that are the measurement rather than the edge.
 - [`bestiary/saturated-anchor.md`](./bestiary/saturated-anchor.md) describes a mark clamped into a band around its index, why a fresh premium past that band never decays to zero, and what the fifth run can and cannot prove about it.
 - [`bestiary/blind-guard.md`](./bestiary/blind-guard.md) describes a refusal wired into the open path only, which stopped the engine opening a route and also stopped it closing the routes already open, leaving 55.6 percent of the fifth run's samples blind.
+- [`bestiary/saturated-loop.md`](./bestiary/saturated-loop.md) describes the process's one thread falling behind every socket at once in the fifth run's flash crash, the fixed order bundles and late timers that show it without venue data, and the lateness guard that names it.
 
 ## Implemented
 
