@@ -11,6 +11,8 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`plans/2026-09-15-binance-realtime-depth-plan.md`](./plans/2026-09-15-binance-realtime-depth-plan.md) records the plan that ships it, and what the first run has to measure.
 - [`plans/2026-09-15-minimum-cross-age-design.md`](./plans/2026-09-15-minimum-cross-age-design.md) records the design that refuses a cross younger than `MIN_CROSS_AGE_MS`, and why a minimum episode age at close cannot exist in a trading engine.
 - [`plans/2026-09-15-minimum-cross-age-plan.md`](./plans/2026-09-15-minimum-cross-age-plan.md) records the plan that ships the age gate.
+- [`plans/2026-09-22-venue-survey-design.md`](./plans/2026-09-22-venue-survey-design.md) records the design for researching the 151 venues of the CoinGecko ranking that have no profile, one researcher per venue in waves of five.
+- [`plans/2026-09-22-venue-survey-plan.md`](./plans/2026-09-22-venue-survey-plan.md) records the plan, the template changes for spot-only venues, and the per venue tracker.
 
 ## Research
 
@@ -27,6 +29,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-15-binance-realtime-depth.md`](./research/2026-09-15-binance-realtime-depth.md) splits our view delay into venue batching and distance, measures `@depth@0ms` at 29 ms ahead of the snapshot channel across 571 markets, and verifies that the two channels share one update id space with 0 mismatched replays.
 - [`research/2026-09-15-one-self-index-fresh-gate.md`](./research/2026-09-15-one-self-index-fresh-gate.md) explains how row 2739, a 3.7 percent ONE binance-okx basis, passed the fresh gate after ONE left `DENIED_PAIRS`: binance's ONE index is the perp itself at weight 1.0, the only such basket among 564 USD-M perps, so its mark trails the perp by about five minutes and the leg's fresh premium is momentum.
 - [`research/2026-09-15-five-venue-integration.md`](./research/2026-09-15-five-venue-integration.md) compares Gate, Bitget, MEXC, Bitstamp and Gemini against the catalog, the fee registry, the book feed and the anchor poller, finds Gate fits as is, Bitget and MEXC fit with small changes, and Bitstamp and Gemini need an anchor other than a one second bulk poll.
+- [`research/2026-09-22-venue-survey.md`](./research/2026-09-22-venue-survey.md) holds one row per surveyed venue: its product, perpetual families, VIP 0 taker, book channel, anchor, access from this host and a verdict on whether it fits the engine.
 - [`research/2026-09-17-fifth-run-loop-saturation.md`](./research/2026-09-17-fifth-run-loop-saturation.md) reads the fifth run's sample clocks and logs and finds that 34 of its 66 rows opened inside two windows in which the single event loop was saturated, with every book advancing in fixed order bundles every 380 to 640 ms, so each row is a stale leg on one venue against a current leg on another.
 - [`research/2026-09-17-node-event-loop-ceiling.md`](./research/2026-09-17-node-event-loop-ceiling.md) gathers every measurement of the one thread's ceiling and of the 2026-09-15 crash that reached it, with the verified Node, libuv, `ws` and TCP read path, the timeline, the four measurements, why no gate could see it, what it says about Node's limits, and what is still unmeasured.
 
@@ -108,3 +111,480 @@ The newest audit is the one that describes current behaviour.
 - [`profiles/gemini/fees.md`](./profiles/gemini/fees.md) records Gemini perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
 - [`profiles/gemini/websocket.md`](./profiles/gemini/websocket.md) records Gemini public book channels, captured frames, session rules and the recommended feed shape.
 - [`profiles/gemini/rest.md`](./profiles/gemini/rest.md) records Gemini catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/cryptocom/fees.md`](./profiles/cryptocom/fees.md) records Crypto.com Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/cryptocom/websocket.md`](./profiles/cryptocom/websocket.md) records Crypto.com Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/cryptocom/rest.md`](./profiles/cryptocom/rest.md) records Crypto.com Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/osl/fees.md`](./profiles/osl/fees.md) records OSL Exchange spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/osl/websocket.md`](./profiles/osl/websocket.md) records OSL Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/osl/rest.md`](./profiles/osl/rest.md) records OSL Exchange catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/kucoin/fees.md`](./profiles/kucoin/fees.md) records KuCoin (KuCoin Futures) perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/kucoin/websocket.md`](./profiles/kucoin/websocket.md) records KuCoin (KuCoin Futures) public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/kucoin/rest.md`](./profiles/kucoin/rest.md) records KuCoin (KuCoin Futures) catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/toobit/fees.md`](./profiles/toobit/fees.md) records Toobit perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/toobit/websocket.md`](./profiles/toobit/websocket.md) records Toobit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/toobit/rest.md`](./profiles/toobit/rest.md) records Toobit catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/whitebit/fees.md`](./profiles/whitebit/fees.md) records WhiteBIT perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/whitebit/websocket.md`](./profiles/whitebit/websocket.md) records WhiteBIT public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/whitebit/rest.md`](./profiles/whitebit/rest.md) records WhiteBIT catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitvavo/fees.md`](./profiles/bitvavo/fees.md) records Bitvavo spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitvavo/websocket.md`](./profiles/bitvavo/websocket.md) records Bitvavo public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitvavo/rest.md`](./profiles/bitvavo/rest.md) records Bitvavo catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitunix/fees.md`](./profiles/bitunix/fees.md) records Bitunix perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitunix/websocket.md`](./profiles/bitunix/websocket.md) records Bitunix public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitunix/rest.md`](./profiles/bitunix/rest.md) records Bitunix catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bingx/fees.md`](./profiles/bingx/fees.md) records BingX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bingx/websocket.md`](./profiles/bingx/websocket.md) records BingX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bingx/rest.md`](./profiles/bingx/rest.md) records BingX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bullish/fees.md`](./profiles/bullish/fees.md) records Bullish perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bullish/websocket.md`](./profiles/bullish/websocket.md) records Bullish public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bullish/rest.md`](./profiles/bullish/rest.md) records Bullish catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitso/fees.md`](./profiles/bitso/fees.md) records Bitso spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitso/websocket.md`](./profiles/bitso/websocket.md) records Bitso public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitso/rest.md`](./profiles/bitso/rest.md) records Bitso catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/hashkey-exchange/fees.md`](./profiles/hashkey-exchange/fees.md) records HashKey Exchange spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/hashkey-exchange/websocket.md`](./profiles/hashkey-exchange/websocket.md) records HashKey Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hashkey-exchange/rest.md`](./profiles/hashkey-exchange/rest.md) records HashKey Exchange catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/ourbit/fees.md`](./profiles/ourbit/fees.md) records Ourbit perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/ourbit/websocket.md`](./profiles/ourbit/websocket.md) records Ourbit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/ourbit/rest.md`](./profiles/ourbit/rest.md) records Ourbit catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitkub/fees.md`](./profiles/bitkub/fees.md) records Bitkub spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitkub/websocket.md`](./profiles/bitkub/websocket.md) records Bitkub public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitkub/rest.md`](./profiles/bitkub/rest.md) records Bitkub catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/luno/fees.md`](./profiles/luno/fees.md) records Luno spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/luno/websocket.md`](./profiles/luno/websocket.md) records Luno public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/luno/rest.md`](./profiles/luno/rest.md) records Luno catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitbank/fees.md`](./profiles/bitbank/fees.md) records Bitbank spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitbank/websocket.md`](./profiles/bitbank/websocket.md) records Bitbank public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitbank/rest.md`](./profiles/bitbank/rest.md) records Bitbank catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinw/fees.md`](./profiles/coinw/fees.md) records CoinW perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/coinw/websocket.md`](./profiles/coinw/websocket.md) records CoinW public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinw/rest.md`](./profiles/coinw/rest.md) records CoinW catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinstore/fees.md`](./profiles/coinstore/fees.md) records Coinstore perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/coinstore/websocket.md`](./profiles/coinstore/websocket.md) records Coinstore public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinstore/rest.md`](./profiles/coinstore/rest.md) records Coinstore catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/lbank/fees.md`](./profiles/lbank/fees.md) records LBank perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/lbank/websocket.md`](./profiles/lbank/websocket.md) records LBank public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/lbank/rest.md`](./profiles/lbank/rest.md) records LBank catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bit2me/fees.md`](./profiles/bit2me/fees.md) records Bit2Me spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bit2me/websocket.md`](./profiles/bit2me/websocket.md) records Bit2Me public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bit2me/rest.md`](./profiles/bit2me/rest.md) records Bit2Me catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/niza/fees.md`](./profiles/niza/fees.md) records Niza.io perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/niza/websocket.md`](./profiles/niza/websocket.md) records Niza.io public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/niza/rest.md`](./profiles/niza/rest.md) records Niza.io catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitopro/fees.md`](./profiles/bitopro/fees.md) records BitoPro spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitopro/websocket.md`](./profiles/bitopro/websocket.md) records BitoPro public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitopro/rest.md`](./profiles/bitopro/rest.md) records BitoPro catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/max-maicoin/fees.md`](./profiles/max-maicoin/fees.md) records Max Maicoin spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/max-maicoin/websocket.md`](./profiles/max-maicoin/websocket.md) records Max Maicoin public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/max-maicoin/rest.md`](./profiles/max-maicoin/rest.md) records Max Maicoin catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/btcturk/fees.md`](./profiles/btcturk/fees.md) records BtcTurk | Kripto spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/btcturk/websocket.md`](./profiles/btcturk/websocket.md) records BtcTurk | Kripto public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/btcturk/rest.md`](./profiles/btcturk/rest.md) records BtcTurk | Kripto catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bittrade/fees.md`](./profiles/bittrade/fees.md) records BitTrade spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bittrade/websocket.md`](./profiles/bittrade/websocket.md) records BitTrade public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bittrade/rest.md`](./profiles/bittrade/rest.md) records BitTrade catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/digital-x/fees.md`](./profiles/digital-x/fees.md) records Digital X spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/digital-x/websocket.md`](./profiles/digital-x/websocket.md) records Digital X public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/digital-x/rest.md`](./profiles/digital-x/rest.md) records Digital X catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/hashkey/fees.md`](./profiles/hashkey/fees.md) records HashKey Global perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/hashkey/websocket.md`](./profiles/hashkey/websocket.md) records HashKey Global public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hashkey/rest.md`](./profiles/hashkey/rest.md) records HashKey Global catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitazza/fees.md`](./profiles/bitazza/fees.md) records Bitazza spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitazza/websocket.md`](./profiles/bitazza/websocket.md) records Bitazza public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitazza/rest.md`](./profiles/bitazza/rest.md) records Bitazza catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitfinex/fees.md`](./profiles/bitfinex/fees.md) records Bitfinex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitfinex/websocket.md`](./profiles/bitfinex/websocket.md) records Bitfinex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitfinex/rest.md`](./profiles/bitfinex/rest.md) records Bitfinex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/grovex/fees.md`](./profiles/grovex/fees.md) records GroveX spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/grovex/websocket.md`](./profiles/grovex/websocket.md) records GroveX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/grovex/rest.md`](./profiles/grovex/rest.md) records GroveX catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/upbit/fees.md`](./profiles/upbit/fees.md) records Upbit spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/upbit/websocket.md`](./profiles/upbit/websocket.md) records Upbit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/upbit/rest.md`](./profiles/upbit/rest.md) records Upbit catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/byte-exchange/fees.md`](./profiles/byte-exchange/fees.md) records Byte Exchange spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/byte-exchange/websocket.md`](./profiles/byte-exchange/websocket.md) records Byte Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/byte-exchange/rest.md`](./profiles/byte-exchange/rest.md) records Byte Exchange catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/phemex/fees.md`](./profiles/phemex/fees.md) records Phemex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/phemex/websocket.md`](./profiles/phemex/websocket.md) records Phemex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/phemex/rest.md`](./profiles/phemex/rest.md) records Phemex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/p2b/fees.md`](./profiles/p2b/fees.md) records P2B spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/p2b/websocket.md`](./profiles/p2b/websocket.md) records P2B public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/p2b/rest.md`](./profiles/p2b/rest.md) records P2B catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/weex/fees.md`](./profiles/weex/fees.md) records WEEX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/weex/websocket.md`](./profiles/weex/websocket.md) records WEEX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/weex/rest.md`](./profiles/weex/rest.md) records WEEX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/gmo-coin/fees.md`](./profiles/gmo-coin/fees.md) records GMO Coin Japan perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/gmo-coin/websocket.md`](./profiles/gmo-coin/websocket.md) records GMO Coin Japan public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/gmo-coin/rest.md`](./profiles/gmo-coin/rest.md) records GMO Coin Japan catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinsph/fees.md`](./profiles/coinsph/fees.md) records Coins.ph spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/coinsph/websocket.md`](./profiles/coinsph/websocket.md) records Coins.ph public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinsph/rest.md`](./profiles/coinsph/rest.md) records Coins.ph catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/zoomex/fees.md`](./profiles/zoomex/fees.md) records Zoomex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/zoomex/websocket.md`](./profiles/zoomex/websocket.md) records Zoomex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/zoomex/rest.md`](./profiles/zoomex/rest.md) records Zoomex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/cointr/fees.md`](./profiles/cointr/fees.md) records CoinTR spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/cointr/websocket.md`](./profiles/cointr/websocket.md) records CoinTR public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/cointr/rest.md`](./profiles/cointr/rest.md) records CoinTR catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bithumb/fees.md`](./profiles/bithumb/fees.md) records Bithumb spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bithumb/websocket.md`](./profiles/bithumb/websocket.md) records Bithumb public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bithumb/rest.md`](./profiles/bithumb/rest.md) records Bithumb catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/htx/fees.md`](./profiles/htx/fees.md) records HTX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/htx/websocket.md`](./profiles/htx/websocket.md) records HTX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/htx/rest.md`](./profiles/htx/rest.md) records HTX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/blofin/fees.md`](./profiles/blofin/fees.md) records BloFin perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/blofin/websocket.md`](./profiles/blofin/websocket.md) records BloFin public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/blofin/rest.md`](./profiles/blofin/rest.md) records BloFin catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/deepcoin/fees.md`](./profiles/deepcoin/fees.md) records Deepcoin perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/deepcoin/websocket.md`](./profiles/deepcoin/websocket.md) records Deepcoin public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/deepcoin/rest.md`](./profiles/deepcoin/rest.md) records Deepcoin catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/koinpark/fees.md`](./profiles/koinpark/fees.md) records Koinpark spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/koinpark/websocket.md`](./profiles/koinpark/websocket.md) records Koinpark public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/koinpark/rest.md`](./profiles/koinpark/rest.md) records Koinpark catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/btse/fees.md`](./profiles/btse/fees.md) records BTSE perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/btse/websocket.md`](./profiles/btse/websocket.md) records BTSE public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/btse/rest.md`](./profiles/btse/rest.md) records BTSE catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/deribit/fees.md`](./profiles/deribit/fees.md) records Deribit Spot perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/deribit/websocket.md`](./profiles/deribit/websocket.md) records Deribit Spot public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/deribit/rest.md`](./profiles/deribit/rest.md) records Deribit Spot catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitkan/fees.md`](./profiles/bitkan/fees.md) records BitKan perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitkan/websocket.md`](./profiles/bitkan/websocket.md) records BitKan public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitkan/rest.md`](./profiles/bitkan/rest.md) records BitKan catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/valr/fees.md`](./profiles/valr/fees.md) records VALR perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/valr/websocket.md`](./profiles/valr/websocket.md) records VALR public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/valr/rest.md`](./profiles/valr/rest.md) records VALR catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitrue/fees.md`](./profiles/bitrue/fees.md) records Bitrue perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitrue/websocket.md`](./profiles/bitrue/websocket.md) records Bitrue public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitrue/rest.md`](./profiles/bitrue/rest.md) records Bitrue catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/pionex/fees.md`](./profiles/pionex/fees.md) records Pionex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/pionex/websocket.md`](./profiles/pionex/websocket.md) records Pionex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/pionex/rest.md`](./profiles/pionex/rest.md) records Pionex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/webot/fees.md`](./profiles/webot/fees.md) records Webot spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/webot/websocket.md`](./profiles/webot/websocket.md) records Webot public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/webot/rest.md`](./profiles/webot/rest.md) records Webot catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/backpack/fees.md`](./profiles/backpack/fees.md) records Backpack Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/backpack/websocket.md`](./profiles/backpack/websocket.md) records Backpack Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/backpack/rest.md`](./profiles/backpack/rest.md) records Backpack Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/onetrading/fees.md`](./profiles/onetrading/fees.md) records One Trading perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/onetrading/websocket.md`](./profiles/onetrading/websocket.md) records One Trading public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/onetrading/rest.md`](./profiles/onetrading/rest.md) records One Trading catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/hibt/fees.md`](./profiles/hibt/fees.md) records Hibt perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/hibt/websocket.md`](./profiles/hibt/websocket.md) records Hibt public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hibt/rest.md`](./profiles/hibt/rest.md) records Hibt catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/safebit/fees.md`](./profiles/safebit/fees.md) records SAFEbit spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/safebit/websocket.md`](./profiles/safebit/websocket.md) records SAFEbit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/safebit/rest.md`](./profiles/safebit/rest.md) records SAFEbit catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/cex/fees.md`](./profiles/cex/fees.md) records CEX.IO spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/cex/websocket.md`](./profiles/cex/websocket.md) records CEX.IO public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/cex/rest.md`](./profiles/cex/rest.md) records CEX.IO catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/ondo-stocks/fees.md`](./profiles/ondo-stocks/fees.md) records Ondo Stocks spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/ondo-stocks/websocket.md`](./profiles/ondo-stocks/websocket.md) records Ondo Stocks public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/ondo-stocks/rest.md`](./profiles/ondo-stocks/rest.md) records Ondo Stocks catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/tothemoon/fees.md`](./profiles/tothemoon/fees.md) records Tothemoon perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/tothemoon/websocket.md`](./profiles/tothemoon/websocket.md) records Tothemoon public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/tothemoon/rest.md`](./profiles/tothemoon/rest.md) records Tothemoon catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/tokocrypto/fees.md`](./profiles/tokocrypto/fees.md) records TokoCrypto spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/tokocrypto/websocket.md`](./profiles/tokocrypto/websocket.md) records TokoCrypto public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/tokocrypto/rest.md`](./profiles/tokocrypto/rest.md) records TokoCrypto catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinone/fees.md`](./profiles/coinone/fees.md) records Coinone spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/coinone/websocket.md`](./profiles/coinone/websocket.md) records Coinone public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinone/rest.md`](./profiles/coinone/rest.md) records Coinone catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitlo/fees.md`](./profiles/bitlo/fees.md) records Bitlo spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitlo/websocket.md`](./profiles/bitlo/websocket.md) records Bitlo public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitlo/rest.md`](./profiles/bitlo/rest.md) records Bitlo catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/kcex/fees.md`](./profiles/kcex/fees.md) records KCEX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/kcex/websocket.md`](./profiles/kcex/websocket.md) records KCEX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/kcex/rest.md`](./profiles/kcex/rest.md) records KCEX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/orangex/fees.md`](./profiles/orangex/fees.md) records OrangeX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/orangex/websocket.md`](./profiles/orangex/websocket.md) records OrangeX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/orangex/rest.md`](./profiles/orangex/rest.md) records OrangeX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitdelta/fees.md`](./profiles/bitdelta/fees.md) records BitDelta perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitdelta/websocket.md`](./profiles/bitdelta/websocket.md) records BitDelta public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitdelta/rest.md`](./profiles/bitdelta/rest.md) records BitDelta catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/dex-trade/fees.md`](./profiles/dex-trade/fees.md) records Dex-Trade spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/dex-trade/websocket.md`](./profiles/dex-trade/websocket.md) records Dex-Trade public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/dex-trade/rest.md`](./profiles/dex-trade/rest.md) records Dex-Trade catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/tapbit/fees.md`](./profiles/tapbit/fees.md) records Tapbit perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/tapbit/websocket.md`](./profiles/tapbit/websocket.md) records Tapbit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/tapbit/rest.md`](./profiles/tapbit/rest.md) records Tapbit catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/websea/fees.md`](./profiles/websea/fees.md) records Websea perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/websea/websocket.md`](./profiles/websea/websocket.md) records Websea public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/websea/rest.md`](./profiles/websea/rest.md) records Websea catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/levex/fees.md`](./profiles/levex/fees.md) records LeveX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/levex/websocket.md`](./profiles/levex/websocket.md) records LeveX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/levex/rest.md`](./profiles/levex/rest.md) records LeveX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/biconomy/fees.md`](./profiles/biconomy/fees.md) records Biconomy.com perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/biconomy/websocket.md`](./profiles/biconomy/websocket.md) records Biconomy.com public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/biconomy/rest.md`](./profiles/biconomy/rest.md) records Biconomy.com catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bittime/fees.md`](./profiles/bittime/fees.md) records Bittime perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bittime/websocket.md`](./profiles/bittime/websocket.md) records Bittime public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bittime/rest.md`](./profiles/bittime/rest.md) records Bittime catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/hotcoin/fees.md`](./profiles/hotcoin/fees.md) records Hotcoin perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/hotcoin/websocket.md`](./profiles/hotcoin/websocket.md) records Hotcoin public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hotcoin/rest.md`](./profiles/hotcoin/rest.md) records Hotcoin catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/gate-us/fees.md`](./profiles/gate-us/fees.md) records Gate US spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/gate-us/websocket.md`](./profiles/gate-us/websocket.md) records Gate US public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/gate-us/rest.md`](./profiles/gate-us/rest.md) records Gate US catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/independentreserve/fees.md`](./profiles/independentreserve/fees.md) records Independent Reserve spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/independentreserve/websocket.md`](./profiles/independentreserve/websocket.md) records Independent Reserve public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/independentreserve/rest.md`](./profiles/independentreserve/rest.md) records Independent Reserve catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitflyer/fees.md`](./profiles/bitflyer/fees.md) records bitFlyer perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitflyer/websocket.md`](./profiles/bitflyer/websocket.md) records bitFlyer public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitflyer/rest.md`](./profiles/bitflyer/rest.md) records bitFlyer catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/azbit/fees.md`](./profiles/azbit/fees.md) records Azbit perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/azbit/websocket.md`](./profiles/azbit/websocket.md) records Azbit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/azbit/rest.md`](./profiles/azbit/rest.md) records Azbit catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bvox/fees.md`](./profiles/bvox/fees.md) records BVOX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bvox/websocket.md`](./profiles/bvox/websocket.md) records BVOX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bvox/rest.md`](./profiles/bvox/rest.md) records BVOX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bydfi/fees.md`](./profiles/bydfi/fees.md) records BYDFi perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bydfi/websocket.md`](./profiles/bydfi/websocket.md) records BYDFi public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bydfi/rest.md`](./profiles/bydfi/rest.md) records BYDFi catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/digifinex/fees.md`](./profiles/digifinex/fees.md) records DigiFinex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/digifinex/websocket.md`](./profiles/digifinex/websocket.md) records DigiFinex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/digifinex/rest.md`](./profiles/digifinex/rest.md) records DigiFinex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/xt/fees.md`](./profiles/xt/fees.md) records XT.COM perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/xt/websocket.md`](./profiles/xt/websocket.md) records XT.COM public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/xt/rest.md`](./profiles/xt/rest.md) records XT.COM catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/okj/fees.md`](./profiles/okj/fees.md) records OKJ spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/okj/websocket.md`](./profiles/okj/websocket.md) records OKJ public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/okj/rest.md`](./profiles/okj/rest.md) records OKJ catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/pointpay/fees.md`](./profiles/pointpay/fees.md) records PointPay perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/pointpay/websocket.md`](./profiles/pointpay/websocket.md) records PointPay public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/pointpay/rest.md`](./profiles/pointpay/rest.md) records PointPay catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinjar/fees.md`](./profiles/coinjar/fees.md) records CoinJar Exchange spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/coinjar/websocket.md`](./profiles/coinjar/websocket.md) records CoinJar Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinjar/rest.md`](./profiles/coinjar/rest.md) records CoinJar Exchange catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinex/fees.md`](./profiles/coinex/fees.md) records CoinEx perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/coinex/websocket.md`](./profiles/coinex/websocket.md) records CoinEx public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinex/rest.md`](./profiles/coinex/rest.md) records CoinEx catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/poloniex/fees.md`](./profiles/poloniex/fees.md) records Poloniex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/poloniex/websocket.md`](./profiles/poloniex/websocket.md) records Poloniex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/poloniex/rest.md`](./profiles/poloniex/rest.md) records Poloniex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitmart/fees.md`](./profiles/bitmart/fees.md) records BitMart perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitmart/websocket.md`](./profiles/bitmart/websocket.md) records BitMart public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitmart/rest.md`](./profiles/bitmart/rest.md) records BitMart catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/coindcx/fees.md`](./profiles/coindcx/fees.md) records CoinDCX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/coindcx/websocket.md`](./profiles/coindcx/websocket.md) records CoinDCX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coindcx/rest.md`](./profiles/coindcx/rest.md) records CoinDCX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bigone/fees.md`](./profiles/bigone/fees.md) records BigONE perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bigone/websocket.md`](./profiles/bigone/websocket.md) records BigONE public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bigone/rest.md`](./profiles/bigone/rest.md) records BigONE catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/woo/fees.md`](./profiles/woo/fees.md) records WOO X perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/woo/websocket.md`](./profiles/woo/websocket.md) records WOO X public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/woo/rest.md`](./profiles/woo/rest.md) records WOO X catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/delta/fees.md`](./profiles/delta/fees.md) records Delta Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/delta/websocket.md`](./profiles/delta/websocket.md) records Delta Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/delta/rest.md`](./profiles/delta/rest.md) records Delta Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinup/fees.md`](./profiles/coinup/fees.md) records CoinUp.io perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/coinup/websocket.md`](./profiles/coinup/websocket.md) records CoinUp.io public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinup/rest.md`](./profiles/coinup/rest.md) records CoinUp.io catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/hitbtc/fees.md`](./profiles/hitbtc/fees.md) records HitBTC perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/hitbtc/websocket.md`](./profiles/hitbtc/websocket.md) records HitBTC public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hitbtc/rest.md`](./profiles/hitbtc/rest.md) records HitBTC catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/btcbox/fees.md`](./profiles/btcbox/fees.md) records BTCBOX spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/btcbox/websocket.md`](./profiles/btcbox/websocket.md) records BTCBOX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/btcbox/rest.md`](./profiles/btcbox/rest.md) records BTCBOX catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/aivora/fees.md`](./profiles/aivora/fees.md) records Aivora Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/aivora/websocket.md`](./profiles/aivora/websocket.md) records Aivora Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/aivora/rest.md`](./profiles/aivora/rest.md) records Aivora Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitbaby/fees.md`](./profiles/bitbaby/fees.md) records Bitbaby perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitbaby/websocket.md`](./profiles/bitbaby/websocket.md) records Bitbaby public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitbaby/rest.md`](./profiles/bitbaby/rest.md) records Bitbaby catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/btcc/fees.md`](./profiles/btcc/fees.md) records BTCC perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/btcc/websocket.md`](./profiles/btcc/websocket.md) records BTCC public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/btcc/rest.md`](./profiles/btcc/rest.md) records BTCC catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/fameex/fees.md`](./profiles/fameex/fees.md) records FameEX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/fameex/websocket.md`](./profiles/fameex/websocket.md) records FameEX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/fameex/rest.md`](./profiles/fameex/rest.md) records FameEX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/globe/fees.md`](./profiles/globe/fees.md) records Globe perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/globe/websocket.md`](./profiles/globe/websocket.md) records Globe public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/globe/rest.md`](./profiles/globe/rest.md) records Globe catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/orbix/fees.md`](./profiles/orbix/fees.md) records Orbix spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/orbix/websocket.md`](./profiles/orbix/websocket.md) records Orbix public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/orbix/rest.md`](./profiles/orbix/rest.md) records Orbix catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/catex/fees.md`](./profiles/catex/fees.md) records Catex spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/catex/websocket.md`](./profiles/catex/websocket.md) records Catex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/catex/rest.md`](./profiles/catex/rest.md) records Catex catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/btcmarkets/fees.md`](./profiles/btcmarkets/fees.md) records BTCMarkets spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/btcmarkets/websocket.md`](./profiles/btcmarkets/websocket.md) records BTCMarkets public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/btcmarkets/rest.md`](./profiles/btcmarkets/rest.md) records BTCMarkets catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/mercado/fees.md`](./profiles/mercado/fees.md) records Mercado Bitcoin spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/mercado/websocket.md`](./profiles/mercado/websocket.md) records Mercado Bitcoin public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/mercado/rest.md`](./profiles/mercado/rest.md) records Mercado Bitcoin catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/coinzoom/fees.md`](./profiles/coinzoom/fees.md) records Coinzoom spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/coinzoom/websocket.md`](./profiles/coinzoom/websocket.md) records Coinzoom public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coinzoom/rest.md`](./profiles/coinzoom/rest.md) records Coinzoom catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/foxbit/fees.md`](./profiles/foxbit/fees.md) records Foxbit spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/foxbit/websocket.md`](./profiles/foxbit/websocket.md) records Foxbit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/foxbit/rest.md`](./profiles/foxbit/rest.md) records Foxbit catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/young-platform/fees.md`](./profiles/young-platform/fees.md) records Young Platform spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/young-platform/websocket.md`](./profiles/young-platform/websocket.md) records Young Platform public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/young-platform/rest.md`](./profiles/young-platform/rest.md) records Young Platform catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/changelly-pro/fees.md`](./profiles/changelly-pro/fees.md) records Changelly PRO perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/changelly-pro/websocket.md`](./profiles/changelly-pro/websocket.md) records Changelly PRO public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/changelly-pro/rest.md`](./profiles/changelly-pro/rest.md) records Changelly PRO catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/emirex/fees.md`](./profiles/emirex/fees.md) records Emirex spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/emirex/websocket.md`](./profiles/emirex/websocket.md) records Emirex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/emirex/rest.md`](./profiles/emirex/rest.md) records Emirex catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/gopax/fees.md`](./profiles/gopax/fees.md) records GoPax spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/gopax/websocket.md`](./profiles/gopax/websocket.md) records GoPax public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/gopax/rest.md`](./profiles/gopax/rest.md) records GoPax catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitcastle/fees.md`](./profiles/bitcastle/fees.md) records bitcastle perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitcastle/websocket.md`](./profiles/bitcastle/websocket.md) records bitcastle public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitcastle/rest.md`](./profiles/bitcastle/rest.md) records bitcastle catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/latoken/fees.md`](./profiles/latoken/fees.md) records LATOKEN spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/latoken/websocket.md`](./profiles/latoken/websocket.md) records LATOKEN public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/latoken/rest.md`](./profiles/latoken/rest.md) records LATOKEN catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/mudrex/fees.md`](./profiles/mudrex/fees.md) records Mudrex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/mudrex/websocket.md`](./profiles/mudrex/websocket.md) records Mudrex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/mudrex/rest.md`](./profiles/mudrex/rest.md) records Mudrex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/zebpay/fees.md`](./profiles/zebpay/fees.md) records ZebPay perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/zebpay/websocket.md`](./profiles/zebpay/websocket.md) records ZebPay public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/zebpay/rest.md`](./profiles/zebpay/rest.md) records ZebPay catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/imbx/fees.md`](./profiles/imbx/fees.md) records IMBX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/imbx/websocket.md`](./profiles/imbx/websocket.md) records IMBX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/imbx/rest.md`](./profiles/imbx/rest.md) records IMBX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/icrypex/fees.md`](./profiles/icrypex/fees.md) records Icrypex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/icrypex/websocket.md`](./profiles/icrypex/websocket.md) records Icrypex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/icrypex/rest.md`](./profiles/icrypex/rest.md) records Icrypex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/blockchaincom/fees.md`](./profiles/blockchaincom/fees.md) records Blockchain.com spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/blockchaincom/websocket.md`](./profiles/blockchaincom/websocket.md) records Blockchain.com public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/blockchaincom/rest.md`](./profiles/blockchaincom/rest.md) records Blockchain.com catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/hata/fees.md`](./profiles/hata/fees.md) records Hata spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/hata/websocket.md`](./profiles/hata/websocket.md) records Hata public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hata/rest.md`](./profiles/hata/rest.md) records Hata catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/zaif/fees.md`](./profiles/zaif/fees.md) records Zaif spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/zaif/websocket.md`](./profiles/zaif/websocket.md) records Zaif public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/zaif/rest.md`](./profiles/zaif/rest.md) records Zaif catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/secondbtc/fees.md`](./profiles/secondbtc/fees.md) records SecondBTC spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/secondbtc/websocket.md`](./profiles/secondbtc/websocket.md) records SecondBTC public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/secondbtc/rest.md`](./profiles/secondbtc/rest.md) records SecondBTC catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/paribu/fees.md`](./profiles/paribu/fees.md) records Paribu spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/paribu/websocket.md`](./profiles/paribu/websocket.md) records Paribu public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/paribu/rest.md`](./profiles/paribu/rest.md) records Paribu catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/earnbit/fees.md`](./profiles/earnbit/fees.md) records EarnBIT spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/earnbit/websocket.md`](./profiles/earnbit/websocket.md) records EarnBIT public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/earnbit/rest.md`](./profiles/earnbit/rest.md) records EarnBIT catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/fmfwio/fees.md`](./profiles/fmfwio/fees.md) records FMFW.io perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/fmfwio/websocket.md`](./profiles/fmfwio/websocket.md) records FMFW.io public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/fmfwio/rest.md`](./profiles/fmfwio/rest.md) records FMFW.io catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitexlive/fees.md`](./profiles/bitexlive/fees.md) records Bitexlive spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitexlive/websocket.md`](./profiles/bitexlive/websocket.md) records Bitexlive public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitexlive/rest.md`](./profiles/bitexlive/rest.md) records Bitexlive catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/xbo/fees.md`](./profiles/xbo/fees.md) records XBO.com perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/xbo/websocket.md`](./profiles/xbo/websocket.md) records XBO.com public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/xbo/rest.md`](./profiles/xbo/rest.md) records XBO.com catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/figure-markets/fees.md`](./profiles/figure-markets/fees.md) records Figure Markets spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/figure-markets/websocket.md`](./profiles/figure-markets/websocket.md) records Figure Markets public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/figure-markets/rest.md`](./profiles/figure-markets/rest.md) records Figure Markets catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/coincheck/fees.md`](./profiles/coincheck/fees.md) records Coincheck spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/coincheck/websocket.md`](./profiles/coincheck/websocket.md) records Coincheck public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/coincheck/rest.md`](./profiles/coincheck/rest.md) records Coincheck catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/indodax/fees.md`](./profiles/indodax/fees.md) records Indodax spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/indodax/websocket.md`](./profiles/indodax/websocket.md) records Indodax public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/indodax/rest.md`](./profiles/indodax/rest.md) records Indodax catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/wazirx/fees.md`](./profiles/wazirx/fees.md) records WazirX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/wazirx/websocket.md`](./profiles/wazirx/websocket.md) records WazirX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/wazirx/rest.md`](./profiles/wazirx/rest.md) records WazirX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/tokpie/fees.md`](./profiles/tokpie/fees.md) records Tokpie spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/tokpie/websocket.md`](./profiles/tokpie/websocket.md) records Tokpie public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/tokpie/rest.md`](./profiles/tokpie/rest.md) records Tokpie catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/btc-trade-ua/fees.md`](./profiles/btc-trade-ua/fees.md) records BTC Trade UA spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/btc-trade-ua/websocket.md`](./profiles/btc-trade-ua/websocket.md) records BTC Trade UA public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/btc-trade-ua/rest.md`](./profiles/btc-trade-ua/rest.md) records BTC Trade UA catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitbegin/fees.md`](./profiles/bitbegin/fees.md) records Bitbegin spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitbegin/websocket.md`](./profiles/bitbegin/websocket.md) records Bitbegin public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitbegin/rest.md`](./profiles/bitbegin/rest.md) records Bitbegin catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/safetrade/fees.md`](./profiles/safetrade/fees.md) records SafeTrade spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/safetrade/websocket.md`](./profiles/safetrade/websocket.md) records SafeTrade public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/safetrade/rest.md`](./profiles/safetrade/rest.md) records SafeTrade catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bilaxy/fees.md`](./profiles/bilaxy/fees.md) records Bilaxy spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bilaxy/websocket.md`](./profiles/bilaxy/websocket.md) records Bilaxy public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bilaxy/rest.md`](./profiles/bilaxy/rest.md) records Bilaxy catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/dinari/fees.md`](./profiles/dinari/fees.md) records Dinari spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/dinari/websocket.md`](./profiles/dinari/websocket.md) records Dinari public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/dinari/rest.md`](./profiles/dinari/rest.md) records Dinari catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/digitalexchange-id/fees.md`](./profiles/digitalexchange-id/fees.md) records Digitalexchange.id spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/digitalexchange-id/websocket.md`](./profiles/digitalexchange-id/websocket.md) records Digitalexchange.id public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/digitalexchange-id/rest.md`](./profiles/digitalexchange-id/rest.md) records Digitalexchange.id catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/paymium/fees.md`](./profiles/paymium/fees.md) records Paymium spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/paymium/websocket.md`](./profiles/paymium/websocket.md) records Paymium public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/paymium/rest.md`](./profiles/paymium/rest.md) records Paymium catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/chainex/fees.md`](./profiles/chainex/fees.md) records ChainEX spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/chainex/websocket.md`](./profiles/chainex/websocket.md) records ChainEX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/chainex/rest.md`](./profiles/chainex/rest.md) records ChainEX catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/giottus/fees.md`](./profiles/giottus/fees.md) records Giottus perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/giottus/websocket.md`](./profiles/giottus/websocket.md) records Giottus public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/giottus/rest.md`](./profiles/giottus/rest.md) records Giottus catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bit2c/fees.md`](./profiles/bit2c/fees.md) records Bit2c spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bit2c/websocket.md`](./profiles/bit2c/websocket.md) records Bit2c public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bit2c/rest.md`](./profiles/bit2c/rest.md) records Bit2c catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/alp/fees.md`](./profiles/alp/fees.md) records ALP.COM spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/alp/websocket.md`](./profiles/alp/websocket.md) records ALP.COM public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/alp/rest.md`](./profiles/alp/rest.md) records ALP.COM catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/kinesis/fees.md`](./profiles/kinesis/fees.md) records Kinesis Money spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/kinesis/websocket.md`](./profiles/kinesis/websocket.md) records Kinesis Money public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/kinesis/rest.md`](./profiles/kinesis/rest.md) records Kinesis Money catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/inex/fees.md`](./profiles/inex/fees.md) records INEX spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/inex/websocket.md`](./profiles/inex/websocket.md) records INEX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/inex/rest.md`](./profiles/inex/rest.md) records INEX catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitexen/fees.md`](./profiles/bitexen/fees.md) records Bitexen spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/bitexen/websocket.md`](./profiles/bitexen/websocket.md) records Bitexen public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitexen/rest.md`](./profiles/bitexen/rest.md) records Bitexen catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/kanga/fees.md`](./profiles/kanga/fees.md) records Kanga Global spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/kanga/websocket.md`](./profiles/kanga/websocket.md) records Kanga Global public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/kanga/rest.md`](./profiles/kanga/rest.md) records Kanga Global catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/vindax/fees.md`](./profiles/vindax/fees.md) records Vindax spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/vindax/websocket.md`](./profiles/vindax/websocket.md) records Vindax public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/vindax/rest.md`](./profiles/vindax/rest.md) records Vindax catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/cryptal/fees.md`](./profiles/cryptal/fees.md) records Cryptal spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/cryptal/websocket.md`](./profiles/cryptal/websocket.md) records Cryptal public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/cryptal/rest.md`](./profiles/cryptal/rest.md) records Cryptal catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/inx-one/fees.md`](./profiles/inx-one/fees.md) records INX One spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/inx-one/websocket.md`](./profiles/inx-one/websocket.md) records INX One public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/inx-one/rest.md`](./profiles/inx-one/rest.md) records INX One catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitbns/fees.md`](./profiles/bitbns/fees.md) records BitBNS perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitbns/websocket.md`](./profiles/bitbns/websocket.md) records BitBNS public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitbns/rest.md`](./profiles/bitbns/rest.md) records BitBNS catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/nbx/fees.md`](./profiles/nbx/fees.md) records NBX spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/nbx/websocket.md`](./profiles/nbx/websocket.md) records NBX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/nbx/rest.md`](./profiles/nbx/rest.md) records NBX catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/exmo/fees.md`](./profiles/exmo/fees.md) records EXMO spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/exmo/websocket.md`](./profiles/exmo/websocket.md) records EXMO public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/exmo/rest.md`](./profiles/exmo/rest.md) records EXMO catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/nonkyc/fees.md`](./profiles/nonkyc/fees.md) records Nonkyc.io perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/nonkyc/websocket.md`](./profiles/nonkyc/websocket.md) records Nonkyc.io public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/nonkyc/rest.md`](./profiles/nonkyc/rest.md) records Nonkyc.io catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/upbit-indonesia/fees.md`](./profiles/upbit-indonesia/fees.md) records Upbit Indonesia spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/upbit-indonesia/websocket.md`](./profiles/upbit-indonesia/websocket.md) records Upbit Indonesia public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/upbit-indonesia/rest.md`](./profiles/upbit-indonesia/rest.md) records Upbit Indonesia catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/buda/fees.md`](./profiles/buda/fees.md) records Buda spot fees, tiers, the CCXT fee and the recommended registry values.
+- [`profiles/buda/websocket.md`](./profiles/buda/websocket.md) records Buda public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/buda/rest.md`](./profiles/buda/rest.md) records Buda catalog, the absence of an anchor, REST book, rate limits and the recommended poller shape.
+- [`profiles/koinbx/fees.md`](./profiles/koinbx/fees.md) records KoinBX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/koinbx/websocket.md`](./profiles/koinbx/websocket.md) records KoinBX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/koinbx/rest.md`](./profiles/koinbx/rest.md) records KoinBX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/omnix/fees.md`](./profiles/omnix/fees.md) records OmniX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/omnix/websocket.md`](./profiles/omnix/websocket.md) records OmniX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/omnix/rest.md`](./profiles/omnix/rest.md) records OmniX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/yubit/fees.md`](./profiles/yubit/fees.md) records YUBIT perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/yubit/websocket.md`](./profiles/yubit/websocket.md) records YUBIT public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/yubit/rest.md`](./profiles/yubit/rest.md) records YUBIT catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/uzx/fees.md`](./profiles/uzx/fees.md) records UZX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/uzx/websocket.md`](./profiles/uzx/websocket.md) records UZX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/uzx/rest.md`](./profiles/uzx/rest.md) records UZX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/echobit/fees.md`](./profiles/echobit/fees.md) records Echobit perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/echobit/websocket.md`](./profiles/echobit/websocket.md) records Echobit public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/echobit/rest.md`](./profiles/echobit/rest.md) records Echobit catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/crypfine/fees.md`](./profiles/crypfine/fees.md) records CrypFine perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/crypfine/websocket.md`](./profiles/crypfine/websocket.md) records CrypFine public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/crypfine/rest.md`](./profiles/crypfine/rest.md) records CrypFine catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/flipster/fees.md`](./profiles/flipster/fees.md) records Flipster perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/flipster/websocket.md`](./profiles/flipster/websocket.md) records Flipster public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/flipster/rest.md`](./profiles/flipster/rest.md) records Flipster catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/x-me/fees.md`](./profiles/x-me/fees.md) records x.me Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/x-me/websocket.md`](./profiles/x-me/websocket.md) records x.me Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/x-me/rest.md`](./profiles/x-me/rest.md) records x.me Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/astralx/fees.md`](./profiles/astralx/fees.md) records AstralX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/astralx/websocket.md`](./profiles/astralx/websocket.md) records AstralX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/astralx/rest.md`](./profiles/astralx/rest.md) records AstralX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
