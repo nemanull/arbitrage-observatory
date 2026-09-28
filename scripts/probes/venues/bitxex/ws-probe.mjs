@@ -1,8 +1,9 @@
 // BitxEX futures WebSocket probe: handshake, depth snapshot and delta channels, sequence chain, level order, anchor channels, errors, keepalive, silence, deflate.
 // Public, unauthenticated, read-only. Sockets open with perMessageDeflate false, like server/src/feeds/book/VenueFeed.ts.
 // The socket is wss://bitxex.io/ws/market, built by the futures web bundle as origin + "/ws" + "/market", the XT.com futures layout.
-// Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/bitxex/ws-probe.mjs [book|errors|silence|deflate]
+// Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/bitxex/ws-probe.mjs [book|web|errors|silence|deflate]
 //   book     depth@<s>,50 and depth_update@<s>,100ms on five perps for 60 s, plus mark, index, funding and agg ticker channels on btc_usdt. About 65 s.
+//   web      the web client protocol, {"req": "sub_symbol", "symbol": s} plus sub_tickers and sub_mark_prices, with binary frames inflated. Optional symbol argument, WEB_MS sets the run length, default 40 s.
 //   silence  one socket that subscribes nothing and sends nothing, and one that only sends "ping" every 20 s, for up to 70 s.
 //   errors   one socket each for an unknown symbol, an unsupported depth level and a frame that is not JSON, 12 s each.
 //   deflate  asks for permessage-deflate once and prints what the server negotiates.
@@ -183,5 +184,5 @@ else if (mode === 'silence') await silence();
 else if (mode === 'deflate') await deflate();
 else if (mode === 'errors') await errors();
 else if (mode === 'web') await web();
-else console.log('modes: book | errors | silence | deflate');
+else console.log('modes: book | web | errors | silence | deflate');
 process.exit(0);

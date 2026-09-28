@@ -608,3 +608,24 @@ The newest audit is the one that describes current behaviour.
 - [`profiles/bitradex/fees.md`](./profiles/bitradex/fees.md) records BitradeX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
 - [`profiles/bitradex/websocket.md`](./profiles/bitradex/websocket.md) records BitradeX public book channels, captured frames, session rules and the recommended feed shape.
 - [`profiles/bitradex/rest.md`](./profiles/bitradex/rest.md) records BitradeX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/four-e/fees.md`](./profiles/four-e/fees.md) records 4E perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/four-e/websocket.md`](./profiles/four-e/websocket.md) records 4E public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/four-e/rest.md`](./profiles/four-e/rest.md) records 4E catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/mandala/fees.md`](./profiles/mandala/fees.md) records Mandala Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/mandala/websocket.md`](./profiles/mandala/websocket.md) records Mandala Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/mandala/rest.md`](./profiles/mandala/rest.md) records Mandala Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitxex/fees.md`](./profiles/bitxex/fees.md) records BitxEX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitxex/websocket.md`](./profiles/bitxex/websocket.md) records BitxEX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitxex/rest.md`](./profiles/bitxex/rest.md) records BitxEX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/basekx/fees.md`](./profiles/basekx/fees.md) records BASEKX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/basekx/websocket.md`](./profiles/basekx/websocket.md) records BASEKX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/basekx/rest.md`](./profiles/basekx/rest.md) records BASEKX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/gleec-btc/fees.md`](./profiles/gleec-btc/fees.md) records Gleec BTC perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/gleec-btc/websocket.md`](./profiles/gleec-btc/websocket.md) records Gleec BTC public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/gleec-btc/rest.md`](./profiles/gleec-btc/rest.md) records Gleec BTC catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitbase/fees.md`](./profiles/bitbase/fees.md) records Bitbase perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitbase/websocket.md`](./profiles/bitbase/websocket.md) records Bitbase public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitbase/rest.md`](./profiles/bitbase/rest.md) records Bitbase catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/biking/fees.md`](./profiles/biking/fees.md) records BiKing perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/biking/websocket.md`](./profiles/biking/websocket.md) records BiKing public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/biking/rest.md`](./profiles/biking/rest.md) records BiKing catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.

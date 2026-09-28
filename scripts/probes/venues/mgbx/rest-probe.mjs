@@ -1,9 +1,9 @@
 // MGBX futures REST probe: host and latency, catalog, the bulk anchor calls over a minute, funding per symbol and its history, a Binance cross-check, REST book, errors and clock.
-// MGBX publishes no API documentation, so every path here is one the www.mgbx.com web app calls, read from its JavaScript bundle on 2026-09-22.
-// Public, unauthenticated, read-only. It sends one request at a time, at most about 3 a second, and every request times out after 5 s.
+// MGBX publishes no API documentation, so every path here is one the www.mgbx.com web app calls, read from its JavaScript bundle on 2026-09-22 and 2026-09-23.
+// Public, unauthenticated, read-only. It sends one request at a time, at most about 4 a second, and every request times out after 5 s.
 // Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/mgbx/rest-probe.mjs [latency|catalog|anchor|funding|fundingpoll|mirror|book|errors|clock]
 //   latency  DNS, 10 cold requests on fresh connections and 20 warm requests on one kept-alive connection.
-//   catalog  whether CCXT has a class, then symbol/list by type, state, fee and contract size, cross-checked with agg-tickers and the coin-M path.
+//   catalog  whether CCXT has a class, then symbol/list by type, state, fee and contract size, cross-checked with agg-tickers, the spot list and the coin-M path.
 //   anchor   60 polls at 1 s of agg-tickers, mark-price and index-price: reply time and size, index against mark, and how often each field changed. About 70 s.
 //   funding  funding-rate for every listed perpetual at 4 a second, then funding-rate-record on three symbols. About 80 s.
 //   fundingpoll  funding-rate of four contracts once a second for 60 s: how often the running rate changes.
@@ -133,6 +133,8 @@ async function catalog() {
   const listed = new Set(d.map((x) => x.symbol));
   const inAgg = new Set((a.json?.data ?? []).map((x) => x.s));
   log('agg_vs_list', { status: a.status, tries: a.tries, aggRows: inAgg.size, notListed: [...inAgg].filter((s) => !listed.has(s)), notInAgg: [...listed].filter((s) => !inAgg.has(s)).slice(0, 10) });
+  const spot = await getRetry(`https://${HOST}/pro/p/symbol/list`);
+  log('spot_list', { status: spot.status, tries: spot.tries, pairs: spot.json?.data?.length, tradeSwitch: countBy(spot.json?.data ?? [], (x) => x.tradeSwitch) });
   for (const path of ['futures/dapi/market/v1/public/symbol/list', 'futures/dapi/market/v1/public/q/agg-tickers']) {
     const dapi = await getRetry(`https://${HOST}/${path}`);
     log('coin_m_path', { path, status: dapi.status, tries: dapi.tries, error: dapi.error, body: dapi.text?.slice(0, 200) });
@@ -355,7 +357,7 @@ async function errors() {
   const cases = [
     ['unknown symbol, depth', q('q/depth?symbol=nope_usdt&level=20')],
     ['missing level, depth', q('q/depth?symbol=btc_usdt')],
-    ['bad level, depth', q('q/depth?symbol=btc_usdt&level=7')],
+    ['level 7, depth', q('q/depth?symbol=btc_usdt&level=7')],
     ['unknown symbol, mark', q('q/mark-price?symbol=nope_usdt')],
     ['missing symbol, funding', q('q/funding-rate')],
     ['uppercase symbol, mark', q('q/mark-price?symbol=BTC_USDT')],
@@ -364,7 +366,7 @@ async function errors() {
   ];
   for (const [name, url] of cases) {
     const r = await get(url);
-    log('error_case', { name, status: r.status, error: r.error, ms: r.ms, body: r.text?.slice(0, 160), retryAfter: r.headers?.get('retry-after') ?? null });
+    log('error_case', { name, status: r.status, error: r.error, ms: r.ms, levels: r.json?.data?.b ? [r.json.data.b.length, r.json.data.a.length] : undefined, body: r.text?.slice(0, 160), retryAfter: r.headers?.get('retry-after') ?? null });
     await sleep(500);
   }
 }

@@ -262,6 +262,8 @@ Wave 35 is the five of them it ranks highest: MGBX at 26, Echobit at 28, YUBIT a
 Wave 36 is the next four on that ranking, Bitbase at 42, CrypFine at 44, x.me Exchange at 49 and AstralX at 53, plus Flipster at 59, which CoinGecko also confirms with 243 perpetuals.
 Koinbay, at 51, was passed over for Flipster because it reports no open interest.
 On the user's request of the same day, waves 37 to 41 take the next 25 additions by that derivatives ranking, run at most ten researchers at a time, and cap each researcher at about 40 minutes.
+Waves 39 and 40 were stopped on 2026-09-24 at the user's request.
+BiKing finished, IBIT Global and MGBX are In progress with partial files, and the other eight venues of those waves and all of wave 41 are Not started.
 The other 63 keep CoinMarketCap rank order in waves 42 to 54, and 7 of them still appear on that derivatives ranking.
 
 | wave | CMC rank | venue | folder | CCXT 4.5.68 | perps on CoinGecko | status |
@@ -271,7 +273,7 @@ The other 63 keep CoinMarketCap rank order in waves 42 to 54, and 7 of them stil
 | 35 | 43 | YUBIT | `yubit` | none | no | Done |
 | 35 | 52 | UZX | `uzx` | none | no | Done |
 | 35 | 57 | OmniX | `omnix` | none | no | Done |
-| 36 | 60 | Bitbase | `bitbase` | none | no | In progress |
+| 36 | 60 | Bitbase | `bitbase` | none | no | Done |
 | 36 | 64 | CrypFine | `crypfine` | none | no | Done |
 | 36 | 76 | x.me Exchange | `x-me` | none | no | Done |
 | 36 | 93 | AstralX | `astralx` | none | no | Done |
@@ -281,15 +283,15 @@ The other 63 keep CoinMarketCap rank order in waves 42 to 54, and 7 of them stil
 | 37 | 104 | Batonex | `batonex` | none | no | Done |
 | 37 | 111 | TruBit Pro Exchange | `trubit-pro` | none | no | Done |
 | 37 | 129 | BitradeX | `bitradex` | none | no | Done |
-| 38 | 142 | 4E | `four-e` | none | no | Not started |
-| 38 | 143 | Mandala Exchange | `mandala` | none | no | Not started |
-| 38 | 145 | BitxEX | `bitxex` | none | no | Not started |
-| 38 | 149 | BASEKX | `basekx` | none | no | Not started |
-| 38 | 157 | Gleec BTC | `gleec-btc` | none | no | Not started |
+| 38 | 142 | 4E | `four-e` | none | no | Done |
+| 38 | 143 | Mandala Exchange | `mandala` | none | no | Done |
+| 38 | 145 | BitxEX | `bitxex` | none | no | Done |
+| 38 | 149 | BASEKX | `basekx` | none | no | Done |
+| 38 | 157 | Gleec BTC | `gleec-btc` | none | no | Done |
 | 39 | 159 | Blockfinex | `blockfinex` | none | no | Not started |
-| 39 | 160 | BiKing | `biking` | none | no | Not started |
+| 39 | 160 | BiKing | `biking` | none | no | Done |
 | 39 | 161 | BitTap | `bittap` | none | no | Not started |
-| 39 | 166 | IBIT Global | `ibit-global` | none | no | Not started |
+| 39 | 166 | IBIT Global | `ibit-global` | none | no | In progress |
 | 39 | 168 | WOO X Pro | `woo-x-pro` | none | no | Not started |
 | 40 | 170 | OneBullEx | `onebullex` | none | no | Not started |
 | 40 | 173 | OneEx | `oneex` | none | no | Not started |

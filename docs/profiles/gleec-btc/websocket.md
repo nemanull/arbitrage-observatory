@@ -195,7 +195,8 @@ Neither was opened.
 - URL: `wss://api.exchange.gleec.com/api/3/ws/public`, perMessageDeflate off.
 - Markets per connection: all 30 working perpetuals fit one socket at 83 frames per second.
 - Subscribe: one frame, `{"method":"subscribe","ch":"orderbook/full","params":{"symbols":[…]},"id":1}`, then check the reply's `subscriptions` list.
-- Keepalive: answer the server's protocol ping, which `ws` does by itself. No application ping is needed.
+- Keepalive: answer the server's protocol ping, which `ws` does by itself.
+  No application ping is needed.
 - `maxSilenceMs`: 15,000, since the quietest book went 5.8 s between frames and the server pings every 30 s.
 - Resync: on `s` not equal to last plus 1, terminate and resubscribe, since each subscribe starts with a snapshot.
 - Skip any symbol whose catalog `status` is not `working`, because CCXT marks `TONUSDT_PERP` active.
