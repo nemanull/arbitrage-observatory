@@ -2,13 +2,13 @@
 
 **Status:** Done.
 
-**Retrieved:** 2026-09-22.
+**Retrieved:** 2026-09-23.
 
-**Probed:** 2026-09-23 06:44 to 07:10 UTC, which is the evening of 2026-09-22 on the development host near Seattle, through a Surfshark WireGuard exit that Cloudflare places in Canada (`loc=CA`, edges `YVR` and `SEA`).
+**Probed:** 2026-09-23 06:44 to 07:10 UTC and 2026-09-24 06:28 to 06:40 UTC, which are the evenings of 2026-09-22 and 2026-09-23 on the development host near Seattle, through a Surfshark WireGuard exit that Cloudflare places in Canada (`loc=CA`, edge `YVR`).
 
 This profile covers the perpetual futures of Bitbase (www.bitbase.com, CoinMarketCap slug `bitbase-com`, id 33662), which has no CCXT class.
 It is not BitBase.io (CoinMarketCap slug `bitbase`, id 318), which CoinMarketCap marks `inactive` with 0 market pairs, S1.
-Bitbase publishes no API documentation, and every page on www.bitbase.com answers this host with a Cloudflare challenge, see [`rest.md`](./rest.md) section 1.
+Bitbase publishes no API documentation, and every page and API path on www.bitbase.com except `robots.txt` answers this host with a Cloudflare challenge, see [`rest.md`](./rest.md) section 1.
 The fee facts below therefore come from the Bitbase help center on Zendesk, from CoinMarketCap, and from an archived copy of the web app's own symbol list.
 
 ## 1. Scope and freshness
@@ -25,7 +25,7 @@ The fee facts below therefore come from the Bitbase help center on Zendesk, from
 | KYC | the help center has an article on KYC requirements and account limits, not read beyond its title | S15 |
 | this host | the web site and every REST path refuse this host with a Cloudflare managed challenge, HTTP 403 with `cf-mitigated: challenge`, and the futures and spot WebSockets accept it, see [`rest.md`](./rest.md) section 1 | P1, P2 |
 
-The fee pages were read on 2026-09-22 and 2026-09-23 UTC.
+The fee pages were read on 2026-09-23 UTC, and the help center, the VIP notice and the CoinMarketCap fees were read again on 2026-09-24 UTC.
 The official fee page, `https://www.bitbase.com/rate`, answers this host with HTTP 403, the home page answered the WebFetch tool with HTTP 403 as well, and the archived fee page of 2026-07-21 shows the table as "Loading...", S12.
 
 ## 2. Quick answer
@@ -45,7 +45,7 @@ CoinMarketCap's exchange record gives `makerFee` 0.02 and `takerFee` 0.06, in pe
 
 | product | present | evidence |
 |---|---|---|
-| USDT-M linear perpetuals | yes, 761 live on 2026-09-23 | the `agg_tickers` stream carried 795 perpetuals, 761 of them `_usdt`, in both probe runs, P2 |
+| USDT-M linear perpetuals | yes, 761 live on 2026-09-23 and 766 on 2026-09-24 | the `agg_tickers` stream carried 795 perpetuals, 761 of them `_usdt`, in every frame on 2026-09-23, and 800, 766 of them `_usdt`, in the union of the 2026-09-24 reads, P2 |
 | USDC-M linear perpetuals | yes, 34 live | 34 `_usdc` rows in the same stream, P2 |
 | TradFi perpetuals, stocks, commodities, indices and forex | yes, inside the USDT-M list, for example `nbis_usdt`, `xau_usdt`, `soxl_usdt` | S13, P2 |
 | coin-margined (inverse) perpetuals | not listed | the archived list has `underlyingType` `U_BASED` on all 853 rows, S13. The Futures Services Agreement still defines Coin-M futures as a term, S5 |
@@ -82,7 +82,7 @@ The fee page adds that "The fee rate may be adjusted according to platform promo
 
 | discount | effect | source |
 |---|---|---|
-| exchange token | none, Bitbase has no fee token | no article in the 306 help center articles names one, S15 |
+| exchange token | none, Bitbase has no fee token | no article in the 309 help center articles names one, S15 |
 | VIP level | the table in section 4 | S6 |
 | referral and agent rebates | agent rebates are settled in USDT, rebate ratios are not published | S16 |
 | trial funds and fee coupons | event trial funds offset fees at a 50 % deduction ratio, and a compensation plan handed out 100 USDT fee deduction coupons | S17 |
@@ -99,15 +99,15 @@ The rules name arbitrage as protected short-term trading, yet an engine that cro
 | item | value | source |
 |---|---|---|
 | who pays | longs and shorts exchange payments on position nominal value at the Funding Rate | S5, S14 |
-| interval | "the times falling at each 8-hour interval or as may be amended or varied by Bitbase from time to time" | S5 |
+| interval | "the times falling at each 8-hour interval or as may be amended or varied by Bitbase from time to time", and "the actual Funding Times may be subject to a deviation of up to 60 seconds" | S5 |
 | settlement instants | Not publicly specified, and no REST call that would name them could be read from this host | [`rest.md`](./rest.md) section 3 |
 | formula | Not publicly specified | S7, S14 |
 | cap and floor | Not publicly specified | S14 |
-| published rate | the `fund_rate@<symbol>` topic pushes one rate per symbol at each minute boundary, for example `-0.00000125` on `btc_usdt`, `0.00005981` on `eth_usdt` and `0.0001` on `doge_usdt` at 07:06 UTC | P2, [`websocket.md`](./websocket.md) section 2 |
+| published rate | the `fund_rate@<symbol>` topic pushes one rate per symbol at each minute boundary, for example `-0.00000125` on `btc_usdt`, `0.00005981` on `eth_usdt` and `0.0001` on `doge_usdt` at 07:06 UTC on 2026-09-23. At 06:35 UTC on 2026-09-24, 340 of 795 perpetuals read exactly `0.00005`, 138 read 0 and 75 read `0.0001`, and the largest magnitude was `-0.0070758` on `cvc_usdt` | P2, [`websocket.md`](./websocket.md) section 2, [`rest.md`](./rest.md) section 4 |
 | on delisting | "No funding fees or delivery fees will be charged during the settlement process." | S9 |
 
 The settlement instant itself was not captured, and whether the pushed rate is the one for the upcoming settlement is Not verified.
-The rate moved between the two minutely pushes on `btc_usdt` and `eth_usdt`, which fits a predicted rate for the coming settlement rather than a settled one, P2.
+The rate moved between the two minutely pushes on `btc_usdt` and `eth_usdt` on 2026-09-23, and on `btc_usdt`, `eth_usdt` and `doge_usdt` on 2026-09-24, which fits a predicted rate for the coming settlement rather than a settled one, P2.
 
 ## 7. Liquidation, settlement and delisting
 
@@ -118,14 +118,14 @@ The rate moved between the two minutely pushes on `btc_usdt` and `eth_usdt`, whi
 | liquidation fee | not stated in the liquidation article. The archived symbol list carries a `liquidationFee` field of `"0.0125"` on 748 rows, `"0.015"` on 67, `"0.01"` on 21, `"0.02"` on 12, `"0.125"` on 3 and `"0.025"` on 2, whose meaning is Not publicly specified | S8, S13 |
 | auto-deleveraging | "No trading fee is charged for an ADL execution." | S8 |
 | delisting | new positions stop at the announcement, open positions are settled at "the 30-minute average index price prior to delisting", with no funding or delivery fee | S9 |
-| delisting pace | 20 help center articles announce perpetual delistings, and the latest named `PIPEDOGUSDT` for 2026-09-25, `RCATUSDT` for 2026-09-22 and `ICXUSDT` for 2026-09-18 | S15 |
+| delisting pace | 22 help center articles announce perpetual delistings. The latest, of 2026-09-23 08:42 UTC, names `SPACEHOODUSDT` for 2026-09-28 and `TOADUSDT`, `AMPUSDT`, `MICRODUCKUSDT` and `SAYLORMOONUSDT` for 2026-09-29, and the ones before it named `PIPEDOGUSDT` for 2026-09-25, `RCATUSDT` for 2026-09-22 and `ICXUSDT` for 2026-09-18 | S15, S18 |
 | maintenance | six upgrade windows in September 2026 up to the 22nd, on the 2nd, 5th, 9th, 16th, 19th and 22nd, each starting at 23:00 UTC with an estimated impact of 15 to 60 minutes, during which futures "orders placement, opening/closing positions may fail" | S11, S15 |
 
 ## 8. CCXT
 
 CCXT 4.5.68 has no Bitbase class.
 `require('ccxt').exchanges` run from `server/` lists 104 ids, and none matches `bitbase`, P4.
-The CCXT master branch on GitHub, `ts/src` at commit `0588dade44` of 2026-09-23 07:09 UTC, has 112 entries and none matches `bitbase`, P4.
+The CCXT master branch on GitHub, `ts/src` at commit `0588dade44` of 2026-09-23 07:09 UTC, has 112 entries and none matches `bitbase`, and at commit `15b904507e` of 2026-09-24 06:29 UTC it has 111 entries and none matches, P4.
 So there is no `market.taker` to report, and `ccxtTakerPpm` has nothing to declare.
 
 The web app is built on the XT.com code base, see [`websocket.md`](./websocket.md) section 1, and CCXT has an `xt` class.
@@ -147,7 +147,7 @@ No registry entry is recommended today, because the catalog and the anchor canno
 |---|---|---|---|---|---|
 | S1 | CoinMarketCap exchange record, Bitbase | https://api.coinmarketcap.com/data-api/v3/exchange/detail?slug=bitbase-com | 2026-09-23 | Bitbase, global | fees 0.02 and 0.06, volumes, open interest, launch date, headquarters, restricted countries, spot fees. Also `slug=bitbase` for the inactive BitBase.io |
 | S2 | CoinMarketCap market pairs, `category` spot, perpetual and futures | https://api.coinmarketcap.com/data-api/v3/exchange/market-pairs/latest?slug=bitbase-com&category=perpetual&start=1&limit=5 | 2026-09-23 | Bitbase | 740 perpetual, 399 spot and 0 futures pairs |
-| S3 | CoinMarketCap derivatives ranking | https://coinmarketcap.com/rankings/exchanges/derivatives/ | 2026-09-23 | CoinMarketCap | Bitbase listed at position 45 of the page's structured data with 1,140 markets, the task brief cites rank 42 |
+| S3 | CoinMarketCap derivatives ranking | https://coinmarketcap.com/rankings/exchanges/derivatives/ | 2026-09-23 | CoinMarketCap | Bitbase at position 45 of the page's structured data, with 1,140 markets. [`2026-09-22-venue-survey-plan.md`](../../plans/2026-09-22-venue-survey-plan.md) records rank 42 |
 | S4 | Terms Of Use, updated 2026-07-22 | https://bitbase-support.zendesk.com/hc/en-us/articles/5181225937566-Terms-Of-Use | 2026-09-23 | Bitbase Corp., Panama | counterparty, governing law, eligibility, Prohibited Jurisdiction, VPN clause |
 | S5 | Futures Services Agreement, updated 2026-08-02 | https://bitbase-support.zendesk.com/hc/en-us/articles/5199905354910-Futures-Services-Agreement | 2026-09-23 | Bitbase | Funding Times every 8 hours, Coin-M term, fee discounts |
 | S6 | Bitbase VIP Tier Adjustment Notice, 2026-09-04 | https://bitbase-support.zendesk.com/hc/en-us/articles/5628585245726-Bitbase-VIP-Tier-Adjustment-Notice | 2026-09-23 | Bitbase | the VIP 0 to VIP 7 futures fee table |
@@ -159,10 +159,11 @@ No registry entry is recommended today, because the catalog and the anchor canno
 | S12 | Wayback Machine copy of the fee page, 2026-07-21 | https://web.archive.org/web/20260721014757/https://www.bitbase.com/rate | 2026-09-23 | Bitbase | VIP update rule, regional adjustment, the table renders client-side |
 | S13 | Wayback Machine copy of the web app's symbol list, 2026-09-10 | https://web.archive.org/web/20260910123242id_/https://www.bitbase.com/fapi/market/v2/public/symbol/list?isPredict=true&isDelivery=true | 2026-09-23 | Bitbase | per contract `makerFee`, `takerFee`, `liquidationFee`, `underlyingType`, `contractType` |
 | S14 | Risk Disclosure Statement, updated 2026-09-12 | https://bitbase-support.zendesk.com/hc/en-us/articles/5205541097374-Risk-Disclosure-Statement | 2026-09-23 | Bitbase | funding exchanged between longs and shorts |
-| S15 | Bitbase help center article list, 306 articles | https://bitbase-support.zendesk.com/api/v2/help_center/en-us/articles.json | 2026-09-23 | Bitbase | titles, delisting and maintenance counts, absence of API docs and fee tokens |
+| S15 | Bitbase help center article list, 306 articles on 2026-09-23 UTC and 309 on 2026-09-24 UTC | https://bitbase-support.zendesk.com/api/v2/help_center/en-us/articles.json | 2026-09-23 | Bitbase | titles, delisting and maintenance counts, absence of API docs and fee tokens |
 | S16 | Bitbase Agent Rebate Settlement Unified to USDT | https://bitbase-support.zendesk.com/hc/en-us/articles/5625925740830--Important-Notice-Bitbase-Agent-Rebate-Settlement-Unified-to-USDT | 2026-09-23 | Bitbase | agent rebates |
 | S17 | BWTC trading competition rules, and the risk control compensation statement | https://bitbase-support.zendesk.com/hc/en-us/articles/5458287528094 and https://bitbase-support.zendesk.com/hc/en-us/articles/5304559504670 | 2026-09-23 | Bitbase | trial funds and fee coupons |
-| P1 | `rest-probe.mjs access`, two runs at 07:01 and 07:09 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/bitbase/rest-probe.mjs) | 2026-09-23 | this host | DNS, challenge on every REST path, sections 1 and 8 |
-| P2 | `ws-probe.mjs catalog`, `anchor` and `errors`, two runs each between 06:44 and 07:07 UTC | [`ws-probe.mjs`](../../../scripts/probes/venues/bitbase/ws-probe.mjs) | 2026-09-23 | this host | live perpetual counts, funding pushes, spot socket |
-| P3 | `rest-probe.mjs archive`, two runs at 07:01 and 07:10 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/bitbase/rest-probe.mjs) | 2026-09-23 | this host | archived fee fields summarised |
-| P4 | `rest-probe.mjs ccxt`, two runs at 07:01 and 07:10 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/bitbase/rest-probe.mjs) | 2026-09-23 | this host | no Bitbase class in CCXT 4.5.68 or master |
+| S18 | Bitbase Announcement on the Delisting of Multiple Perpetual Contracts, 2026-09-23 | https://bitbase-support.zendesk.com/hc/en-us/articles/5675490393502-Bitbase-Announcement-on-the-Delisting-of-Multiple-Perpetual-Contracts | 2026-09-23 | Bitbase | close-only and delisting dates for five contracts |
+| P1 | `rest-probe.mjs access`, runs at 2026-09-23 07:01 and 07:09 UTC and 2026-09-24 06:31 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/bitbase/rest-probe.mjs) | 2026-09-23 | this host | DNS, challenge on every REST path, sections 1 and 8 |
+| P2 | `ws-probe.mjs catalog`, `anchor` and `errors`, two runs each between 2026-09-23 06:44 and 07:07 UTC, and one each between 2026-09-24 06:28 and 06:37 UTC | [`ws-probe.mjs`](../../../scripts/probes/venues/bitbase/ws-probe.mjs) | 2026-09-23 | this host | live perpetual counts, funding pushes, spot socket |
+| P3 | `rest-probe.mjs archive`, runs at 2026-09-23 07:02 and 07:09 UTC and 2026-09-24 06:31 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/bitbase/rest-probe.mjs) | 2026-09-23 | this host | archived fee fields summarised |
+| P4 | `rest-probe.mjs ccxt`, runs at 2026-09-23 07:01 and 07:10 UTC and 2026-09-24 06:31 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/bitbase/rest-probe.mjs) | 2026-09-23 | this host | no Bitbase class in CCXT 4.5.68 or master |

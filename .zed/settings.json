@@ -23,10 +23,10 @@
     }
   },
 
-  // node_modules is excluded from the project file tree in user settings; that
-  // is fine for the LSP (it resolves from disk itself) but keep dist/ out of
-  // the way so stale build output never shows up in completions or search.
-  "file_scan_exclusions": ["**/.git", "**/node_modules", "**/dist", "**/.pnpm"],
+  // This list replaces the user-level one, which hides node_modules and dist.
+  // They stay visible here so leftover build output can be seen and removed.
+  // Both are gitignored, so Zed dims them and keeps them out of project search.
+  "file_scan_exclusions": ["**/.git", "**/.pnpm"],
 
   // Zed bundles two TypeScript servers, vtsls and typescript-language-server.
   // The installed tsgo extension registers a third one called typescript-ls.

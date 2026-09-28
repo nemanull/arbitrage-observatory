@@ -13,6 +13,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`plans/2026-09-15-minimum-cross-age-plan.md`](./plans/2026-09-15-minimum-cross-age-plan.md) records the plan that ships the age gate.
 - [`plans/2026-09-22-venue-survey-design.md`](./plans/2026-09-22-venue-survey-design.md) records the design for researching the 151 venues of the CoinGecko ranking that have no profile, one researcher per venue in waves of five.
 - [`plans/2026-09-22-venue-survey-plan.md`](./plans/2026-09-22-venue-survey-plan.md) records the plan, the template changes for spot-only venues, and the per venue tracker.
+- [`plans/2026-09-23-hyperliquid-research-plan.md`](./plans/2026-09-23-hyperliquid-research-plan.md) records the plan that researches Hyperliquid, the first decentralised venue, with four researchers on fees, the socket, the REST anchor and the decentralised layer.
 
 ## Research
 
@@ -30,6 +31,7 @@ Project-wide rules live in the root [AGENTS.md](../AGENTS.md).
 - [`research/2026-09-15-one-self-index-fresh-gate.md`](./research/2026-09-15-one-self-index-fresh-gate.md) explains how row 2739, a 3.7 percent ONE binance-okx basis, passed the fresh gate after ONE left `DENIED_PAIRS`: binance's ONE index is the perp itself at weight 1.0, the only such basket among 564 USD-M perps, so its mark trails the perp by about five minutes and the leg's fresh premium is momentum.
 - [`research/2026-09-15-five-venue-integration.md`](./research/2026-09-15-five-venue-integration.md) compares Gate, Bitget, MEXC, Bitstamp and Gemini against the catalog, the fee registry, the book feed and the anchor poller, finds Gate fits as is, Bitget and MEXC fit with small changes, and Bitstamp and Gemini need an anchor other than a one second bulk poll.
 - [`research/2026-09-22-venue-survey.md`](./research/2026-09-22-venue-survey.md) holds one row per surveyed venue: its product, perpetual families, VIP 0 taker, book channel, anchor, access from this host and a verdict on whether it fits the engine.
+- [`research/2026-09-23-hyperliquid-dex.md`](./research/2026-09-23-hyperliquid-dex.md) covers what makes Hyperliquid a decentralised venue for the engine: block timing, the self-run node as a data source, builder-deployed dexes and their oracles, USDC settlement, and the survey venues that route to it.
 - [`research/2026-09-17-fifth-run-loop-saturation.md`](./research/2026-09-17-fifth-run-loop-saturation.md) reads the fifth run's sample clocks and logs and finds that 34 of its 66 rows opened inside two windows in which the single event loop was saturated, with every book advancing in fixed order bundles every 380 to 640 ms, so each row is a stale leg on one venue against a current leg on another.
 - [`research/2026-09-17-node-event-loop-ceiling.md`](./research/2026-09-17-node-event-loop-ceiling.md) gathers every measurement of the one thread's ceiling and of the 2026-09-15 crash that reached it, with the verified Node, libuv, `ws` and TCP read path, the timeline, the four measurements, why no gate could see it, what it says about Node's limits, and what is still unmeasured.
 
@@ -588,3 +590,21 @@ The newest audit is the one that describes current behaviour.
 - [`profiles/astralx/fees.md`](./profiles/astralx/fees.md) records AstralX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
 - [`profiles/astralx/websocket.md`](./profiles/astralx/websocket.md) records AstralX public book channels, captured frames, session rules and the recommended feed shape.
 - [`profiles/astralx/rest.md`](./profiles/astralx/rest.md) records AstralX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/hyperliquid/fees.md`](./profiles/hyperliquid/fees.md) records Hyperliquid perpetual fees, tiers, staking and builder discounts, HIP-3 fees, hourly funding, access and the CCXT mapping.
+- [`profiles/hyperliquid/websocket.md`](./profiles/hyperliquid/websocket.md) records Hyperliquid public socket channels, the whole-book `l2Book` and its fast mode, session limits and the recommended feed shape.
+- [`profiles/hyperliquid/rest.md`](./profiles/hyperliquid/rest.md) records Hyperliquid info calls, the one-call anchor from `metaAndAssetCtxs`, oracle, mark and funding semantics, weights and the recommended poller shape.
+- [`profiles/koinbay/fees.md`](./profiles/koinbay/fees.md) records Koinbay perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/koinbay/websocket.md`](./profiles/koinbay/websocket.md) records Koinbay public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/koinbay/rest.md`](./profiles/koinbay/rest.md) records Koinbay catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitmarkets/fees.md`](./profiles/bitmarkets/fees.md) records BITmarkets perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitmarkets/websocket.md`](./profiles/bitmarkets/websocket.md) records BITmarkets public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitmarkets/rest.md`](./profiles/bitmarkets/rest.md) records BITmarkets catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/batonex/fees.md`](./profiles/batonex/fees.md) records Batonex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/batonex/websocket.md`](./profiles/batonex/websocket.md) records Batonex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/batonex/rest.md`](./profiles/batonex/rest.md) records Batonex catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/trubit-pro/fees.md`](./profiles/trubit-pro/fees.md) records TruBit Pro Exchange perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/trubit-pro/websocket.md`](./profiles/trubit-pro/websocket.md) records TruBit Pro Exchange public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/trubit-pro/rest.md`](./profiles/trubit-pro/rest.md) records TruBit Pro Exchange catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.
+- [`profiles/bitradex/fees.md`](./profiles/bitradex/fees.md) records BitradeX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/bitradex/websocket.md`](./profiles/bitradex/websocket.md) records BitradeX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/bitradex/rest.md`](./profiles/bitradex/rest.md) records BitradeX catalog, anchor calls and semantics, REST book, rate limits and the recommended poller shape.

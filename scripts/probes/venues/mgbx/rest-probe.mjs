@@ -1,22 +1,32 @@
 // MGBX futures REST probe: host and latency, catalog, the bulk anchor calls over a minute, funding per symbol and its history, a Binance cross-check, REST book, errors and clock.
 // MGBX publishes no API documentation, so every path here is one the www.mgbx.com web app calls, read from its JavaScript bundle on 2026-09-22.
 // Public, unauthenticated, read-only. It sends one request at a time, at most about 3 a second, and every request times out after 5 s.
-// Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/mgbx/rest-probe.mjs [latency|catalog|anchor|funding|mirror|book|errors|clock]
+// Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/mgbx/rest-probe.mjs [latency|catalog|anchor|funding|fundingpoll|mirror|book|errors|clock]
 //   latency  DNS, 10 cold requests on fresh connections and 20 warm requests on one kept-alive connection.
 //   catalog  whether CCXT has a class, then symbol/list by type, state, fee and contract size, cross-checked with agg-tickers and the coin-M path.
 //   anchor   60 polls at 1 s of agg-tickers, mark-price and index-price: reply time and size, index against mark, and how often each field changed. About 70 s.
 //   funding  funding-rate for every listed perpetual at 4 a second, then funding-rate-record on three symbols. About 80 s.
-//   mirror   MGBX mark, funding and book against Binance USDT-M on common symbols, one read each.
+//   fundingpoll  funding-rate of four contracts once a second for 60 s: how often the running rate changes.
+//   mirror   MGBX mark against Binance mark and index, funding and book against Binance USDT-M on common symbols, one read each.
 //   book     REST depth at each level, level order, number types, caching, size unit against contractSize.
 //   errors   unknown symbol, missing parameter, bad level and unknown path.
-//   clock    the Date header and reply timestamps against the local clock.
+//   clock    Binance serverTime, the MGBX time call, the Date header and reply timestamps against the local clock.
 // Set PROBE_OUT_DIR to keep the last replies. Recorded in docs/profiles/mgbx/rest.md.
 import { createRequire } from 'node:module';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { lookup } from 'node:dns/promises';
 
-const require = createRequire(new URL('../../../../server/package.json', import.meta.url));
+// Loads a package the way the engine did, through server/package.json, falling back to old_ts_server/ and the root pnpm store after the 2026-09-23 move.
+function load(name) {
+  for (const base of ['../../../../server/package.json', '../../../../old_ts_server/package.json', '../../../../package.json']) {
+    try {
+      return createRequire(new URL(base, import.meta.url))(name);
+    } catch {}
+  }
+  const store = { ccxt: 'ccxt@4.5.68_protobufjs@7.6.6', ws: 'ws@8.21.1_bufferutil@4.1.0' }[name];
+  return createRequire(new URL(`../../../../node_modules/.pnpm/${store}/node_modules/${name}/package.json`, import.meta.url))(name);
+}
 
 const HOST = 'www.mgbx.com';
 const BASE = `https://${HOST}/futures/fapi/market/v1/public`;
@@ -92,7 +102,7 @@ async function latency() {
 }
 
 async function catalog() {
-  const ccxt = require('ccxt');
+  const ccxt = load('ccxt');
   log('ccxt', { version: ccxt.version, exchanges: ccxt.exchanges.length, hasMgbx: ccxt.exchanges.filter((x) => /mgbx|megabit/i.test(x)) });
   const r = await getRetry(q('symbol/list'));
   log('symbol_list', { status: r.status, ms: r.ms, bytes: r.bytes, code: r.json?.code });
@@ -233,6 +243,28 @@ async function funding() {
   }
 }
 
+// The running funding rate of four contracts, read once a second for a minute: how often it changes, and whether the mark moves with it.
+async function fundingpoll() {
+  const syms = ['btc_usdt', 'eth_usdt', 'sol_usdt', 'xau_usdt'];
+  const seen = new Map(syms.map((s) => [s, []]));
+  let fails = 0;
+  for (let i = 0; i < 60; i++) {
+    const start = Date.now();
+    for (const s of syms) {
+      const r = await get(q(`q/funding-rate?symbol=${s}`));
+      if (r.json?.code === 0) seen.get(s).push(r.json.data.fundingRate);
+      else fails++;
+    }
+    await sleep(Math.max(0, 1000 - (Date.now() - start)));
+  }
+  for (const s of syms) {
+    const v = seen.get(s);
+    const changes = v.reduce((n, x, j) => n + (j > 0 && x !== v[j - 1] ? 1 : 0), 0);
+    log('funding_changes', { s, polls: v.length, changes, distinct: new Set(v).size, first: v[0], last: v[v.length - 1] });
+  }
+  log('funding_poll_fails', { fails });
+}
+
 async function mirror() {
   const bn = await getRetry(`${BINANCE}/premiumIndex`);
   const m = await getRetry(q('q/mark-price'));
@@ -252,6 +284,15 @@ async function mirror() {
     if (Number(r.p) === Number(b.markPrice)) exact++;
   }
   log('mark_vs_binance_mark', { common, exactEqual: exact, absPpm: stats(diffs) });
+  const toIndex = [];
+  let exactIndex = 0;
+  for (const r of m.json.data) {
+    const b = bmap.get(r.s.replace('_', '').toUpperCase());
+    if (!b) continue;
+    toIndex.push(Math.abs(Math.round((Number(r.p) / Number(b.indexPrice) - 1) * 1e6)));
+    if (Number(r.p) === Number(b.indexPrice)) exactIndex++;
+  }
+  log('mark_vs_binance_index', { common: toIndex.length, exactEqual: exactIndex, absPpm: stats(toIndex) });
   const idiffs = [];
   for (const r of a.json?.data ?? []) {
     const b = bmap.get(r.s.replace('_', '').toUpperCase());
@@ -301,13 +342,13 @@ async function book() {
     const types = countBy([...d.b, ...d.a].flat(), (v) => typeof v);
     const sci = [...d.b, ...d.a].filter((l) => /e/i.test(String(l[1]))).length;
     const touchCoins = Number(d.b[0][1]) * Number(cs.get(s));
-    log('depth', { s, keys: Object.keys(d), u: d.u, tAgeMs: Date.now() - d.t, bids: d.b.length, asks: d.a.length, bidsDesc: desc, asksAsc: asc, types, sciSizes: sci, touch: [d.b[0], d.a[0]], contractSize: cs.get(s), bidTouchCoins: touchCoins });
+    log('depth', { s, keys: Object.keys(d), uRaw: r.text.match(/"u":(\d+)/)?.[1], uType: typeof d.u, tAgeMs: Date.now() - d.t, bids: d.b.length, asks: d.a.length, bidsDesc: desc, asksAsc: asc, types, sciSizes: sci, touch: [d.b[0], d.a[0]], contractSize: cs.get(s), bidTouchCoins: touchCoins });
     await sleep(300);
   }
   // Caching: two reads back to back.
   const r1 = await get(q('q/depth?symbol=btc_usdt&level=20'));
   const r2 = await get(q('q/depth?symbol=btc_usdt&level=20'));
-  log('cache', { u1: r1.json?.data?.u, u2: r2.json?.data?.u, t1: r1.json?.data?.t, t2: r2.json?.data?.t, cacheHeaders: [r1.headers?.get('cache-control'), r1.headers?.get('x-cache'), r1.headers?.get('age')] });
+  log('cache', { u1: r1.text?.match(/"u":(\d+)/)?.[1], u2: r2.text?.match(/"u":(\d+)/)?.[1], t1: r1.json?.data?.t, t2: r2.json?.data?.t, cacheHeaders: [r1.headers?.get('cache-control'), r1.headers?.get('x-cache'), r1.headers?.get('age')] });
 }
 
 async function errors() {
@@ -329,18 +370,34 @@ async function errors() {
 }
 
 async function clock() {
+  // Binance serverTime, read at the midpoint of a warm request, bounds the local clock offset to within half a round trip.
+  for (let i = 0; i < 3; i++) {
+    const t0 = Date.now();
+    const b = await get(`${BINANCE}/time`);
+    const t1 = Date.now();
+    log('local_vs_binance', { status: b.status, rttMs: t1 - t0, offsetMs: b.json?.serverTime ? b.json.serverTime - Math.round((t0 + t1) / 2) : null });
+    await sleep(500);
+  }
+  // The server time call is not in the web app bundle. It answered on 2026-09-24 when tried by hand.
+  for (let i = 0; i < 6; i++) {
+    const t0 = Date.now();
+    const r = await get(q('time'));
+    const t1 = Date.now();
+    log('server_time', { status: r.status, rttMs: t1 - t0, body: r.text?.slice(0, 80), offsetMs: typeof r.json?.data === 'number' ? r.json.data - Math.round((t0 + t1) / 2) : null });
+    await sleep(500);
+  }
   for (let i = 0; i < 5; i++) {
     const t0 = Date.now();
     const r = await get(q('q/mark-price?symbol=btc_usdt'));
     const t1 = Date.now();
     const date = r.headers?.get('date');
     const replyT = r.json?.data?.[0]?.t;
-    log('clock', { status: r.status, rttMs: t1 - t0, dateHeader: date, dateOffsetMs: date ? Date.parse(date) - Math.round((t0 + t1) / 2) : null, markTAgeMs: replyT ? t1 - replyT : null, server: r.headers?.get('server'), via: r.headers?.get('via') });
+    log('clock', { status: r.status, rttMs: t1 - t0, dateHeader: date, dateOffsetMs: date ? Date.parse(date) - Math.round((t0 + t1) / 2) : null, markTAgeMs: replyT ? t1 - replyT : null, server: r.headers?.get('server'), via: r.headers?.get('via'), rateLimit: ['remaining', 'requested-tokens', 'burst-capacity', 'replenish-rate'].map((h) => r.headers?.get(`x-ratelimit-${h}`)) });
     await sleep(1000);
   }
 }
 
-const modes = { latency, catalog, anchor, funding, mirror, book, errors, clock };
+const modes = { latency, catalog, anchor, funding, fundingpoll, mirror, book, errors, clock };
 const mode = process.argv[2] ?? 'catalog';
 if (!modes[mode]) {
   console.error(`unknown mode ${mode}, one of ${Object.keys(modes).join(', ')}`);

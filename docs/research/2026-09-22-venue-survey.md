@@ -10,7 +10,7 @@ Rows are added as waves finish, so a venue missing here has not been researched 
 
 ## Answer
 
-151 of the 151 venues are recorded.
+151 of the 151 venues of the CoinGecko list are recorded.
 2 fit the engine as it stands: HashKey Global, KuCoin.
 39 fit with a named change: Aivora Exchange, Backpack Exchange, Biconomy.com, BigONE, BingX, Bitfinex, BitMart, Bitunix, BTSE, BYDFi, Changelly PRO, CoinW, Crypto.com Exchange, Deepcoin, Delta Exchange, Deribit Spot, DigiFinex, FameEX, FMFW.io, Globe, Hibt, HitBTC, Hotcoin, HTX, Niza.io, Nonkyc.io, OrangeX, Ourbit, Phemex, Pionex, Poloniex, Toobit, Tothemoon, VALR, WEEX, WhiteBIT, WOO X, XT.COM, Zoomex.
 72 list no perpetual and are spot only.
@@ -40,7 +40,8 @@ Several venues are not independent markets, and a cross between one of them and 
 - Digitalexchange.id republishes Binance spot ladders at a fixed 17,800 IDR per USDT.
 
 Every access result was recorded from a Surfshark exit that geolocates to Canada, as the section "Table" explains, so a refusal such as BloFin's may depend on that exit.
-The 98 CoinMarketCap additions in the plan are not researched yet.
+Hyperliquid, the first decentralised venue, was researched under its own plan and fits with a named change, see its row.
+13 CoinMarketCap additions are recorded so far, all chosen from its derivatives ranking: 6 fits with a named change, 3 blocked, 4 no public API.
 
 ## Verdicts
 
@@ -225,6 +226,12 @@ The Backpack researcher found the tunnel in wave 13, and the waves before it rec
 | 36 | Flipster, [`../profiles/flipster/`](../profiles/flipster/) | none | perpetuals | USDT-M 242. All are named <BASE>USDT.PERP and include TradFi perps such as XAU, CL, NVDA and SPY. The count comes from the flipster.io website's undocumented public stream, read twice on 2026-09-23, because the documented catalog calls return 401 without a key. The docs name USD1-M perps, but none were listed (0). There are no coin-M, dated futures or options. CoinGecko shows 243 perps. | 600 | Documented topic orderbook.{symbol} on wss://trading-api.flipster.io/api/v1/stream is described only as "real-time depth snapshots". Its depth, sequence and checksum are not specified. The handshake needs signed api-key/api-expires/api-signature headers and returned 401 {"error":"api.unauthorized"} to this host, so nothing was captured. The website's undocumented stream (market/orderbooks-v2) sends a whole uncompressed JSON snapshot every ~200 ms, with 40 to 158 levels, no sequence and no checksum, and sizes in coins. On zero-spread pairs (BTC, ETH) the touch is a thin 150 to 760 USDT quote one tick wide, and the real book starts 39 ppm (BTC) or 54 ppm (ETH) away. | The documented bulk call is GET /api/v1/market/ticker with no symbol. It carries indexPrice, markPrice, fundingRate, fundingIntervalHours and nextFundingTime (in ns), which covers all five AnchorRow fields, plus fundingRateCap. GET /api/v1/market/funding-info adds fundingRate (upcoming estimate) and lastFundingRate. Both return 401 without an API key. Mark = median(index*(1+lastRate*timeLeft/period), index + 30 s average basis, last trade), and "may" be forced to the list price in extreme conditions. The index is an equal-weight average of constituent exchanges, each capped to within 3% of the median, and the basket is not published. Funding = [Avg(P) + clamp(Avg(I)-Avg(P), ±0.05%) + an unpublished skew term]/(8/N). The cap is /rate/ <= 75% of the maintenance margin rate. The default interval is 8 h. | Flipster Corp (Panama. CoinGecko says Seychelles) excludes 62 jurisdictions, including the US, its territories, China, Singapore and the UAE, so US persons may not trade. Canada is not on the list. API access is a "private launch" for selected users on request. Results below are from a Surfshark exit that geolocates to Canada (x-prex-ipcountry CA, origin region tokyo). REST: /api/v1/public/ping and /api/v1/public/time return 200. Every market and trade call returns 401 {"error":"api.unauthorized"} with header x-prex-error-type: api.unauthorized. The documented WS upgrade also returns 401 with the same body. Only the website's undocumented stream wss://api.flipster.io/api/v2/stream/r230522-public accepted an anonymous connection. | no public API |
 | 36 | x.me Exchange, [`../profiles/x-me/`](../profiles/x-me/) | none | perpetuals | USDT-M 266 active (343 listed, 77 status 0), USDC-M 0, coin-M 0, no dated futures, no options. At least 41 of the 266 are unflagged equity, ETF, commodity or pre-IPO perps (OPENAI, QQQ, SPY, TQQQ, SOXL/SOXS, NVDA, TSLA, SAMSUNG, SKHYNIX, XAU, XAG, CL, BZ, COPPER, SPCX, ZHIPU and others). Spot has 200 symbols and is named only. | 600 | market_e_<base lowercase>usdt_depth_step0 (the website's subSymbol, e.g. e_btcusdt against REST E-BTC-USDT) on wss://futuresws.x.me/kline-api/ws. Every push is a whole book of exactly 30 levels per side, sent every 500 ms (p50 500, p90 502 to 506 ms) whether or not it changed. Quiet books repeat identical frames (TRX 33 to 42 of 91, DOS 58 to 61 of 91). No ack, no sequence, no checksum: every frame is a snapshot, so the only failure signal is silence. Buys descending, asks ascending. Numbers are JSON numbers and sizes are integer contracts of `multiplier` coins. REST matched at 54/57 and 57/59 shared prices. Envelope ts is ms, 155 to 205 ms before arrival. Every frame is gzip inside a binary WS frame, and permessage-deflate is not negotiated. The server sends {"ping":<unix s>} every 10 s on subscribed sockets only. An unanswered subscribed socket lived 100 s, and an unsubscribed silent one closed at 60.8 to 60.9 s with 1006. Unknown symbol: one empty-book frame then silence. Closed contract: one stale book, never refreshed. All 266 on one socket: 532 frames/s, 242 KB/s gzipped, all served. | No bulk REST call. Per contract only: GET futuresopenapi.x.me/fapi/v1/index?contractName=E-BTC-USDT (undocumented, median 199 to 223 ms) or POST www.x.me/fe-co-api/common/public_market_info {"contractId":48} (median 160 to 166 ms), each giving indexPrice, tagPrice (the mark), currentFundRate (the upcoming rate) and nextFundRate (equal to it on 480/480 samples). Interval (capitalFrequency: 8 h on 103, 4 h on 163) and next funding (nextCapitalSettTime, Unix ms) come in bulk from POST fe-co-api/common/public_info. /tickers, /premiumIndex and /fundingRate answer -1002, the same reply as any unknown path. A full REST round of 266 took 26.3 to 26.7 s at 2 in flight. The WS market_<sym>_ticker channel carries mark, index and funds_rate for all 266 on one socket, with gaps median 1.2 to 1.8 s and worst 4.5 s. Index baskets (index_price_weight_list) weight other venues heavily, often Binance futures: BTC is okex 3 / binancefutures 8. The help article's OKX/HTX/Binance thirds disagree with this. No x.me self-index. Mark = median(last-ish price, reasonable price, index + 5 min MA basis), with no published premium clamp (seen -1,143 to +1,782 ppm). Funding caps are per contract by announcement (HYPER ±1.5%). KERNEL settled -1.288% per 4 h. Settled history comes from POST fe-co-api/common/funding_rate_list {"contractId","page":1,"limit":n}. The settlement instant was not captured. | Operator VOOX Limited (User Agreement, jurisdiction not stated. CMC country SG). Restricted Regions (help article edited 2026-07-01): Afghanistan, Mainland China, Cuba, Crimea, Iran, North Korea, South Sudan, Syria, Zimbabwe, Myanmar, Cambodia, United States. The User Agreement's older list omits the US. So US persons may not trade, and Canada is not listed. KYC is not required to trade. From this host through the Canadian Surfshark exit, every public REST call (futuresopenapi.x.me, openapi.x.me, www.x.me fe-co-api and fe-ex-api) answered 200 and every WS upgrade answered 101, with no refusal, challenge or geoblock. All sit behind Tencent EdgeOne at 43.169.25.48. public_info_v4 reports limitCountryList []. | fits with a named change |
 | 36 | AstralX, [`../profiles/astralx/`](../profiles/astralx/) | none | perpetuals | USDT-M 32 listed (plus 19 hidden ids in the ticker and funding calls with zero volume and no book), USDC-M 0, coin-M 0. The 32 include XAUUSDT_PERP and XAGUSDT_PERP. | 600 | depth_full on wss://fws.astralx.com/future/websocket. This is the web front's own socket and is not documented. Subscribe with {id, topic:"depth_full", event:"sub", symbol:"BTCUSDT_PERP", params:{binary:false}}, one symbol per frame. Every frame is the whole book, up to 400 levels per side, pushed about every 200 ms (median 200 to 400 ms) as about 17.6 KB of JSON. The first frame arrives before the ack, with bids ascending and some numbers unpadded. Later frames have bids descending. There is no sequence field and none is needed, because each frame replaces the book. No checksum. The server never negotiates permessage-deflate, and binary:true only switches to a binary opcode carrying plain JSON. Text ping gets {"pong":ms} back. An idle unsubscribed socket closes at 60 s. Unknown or hidden ids are acked as success and then stay silent, and non-JSON text closes the socket. The top 20 prices matched OKX's book 20 of 20 on 5 contracts in 4 reads, with sizes about 0.9x OKX's. | One bulk call: GET https://www.astralx.com/futures/funding_rates (51 rows, 9,498 B, median 118 to 130 ms). It returns fundingRate, which equalled OKX's rate digit for digit on 6 of 6 contracts, plus nextSettleTime and lastSettleTime. The interval can only be derived where lastSettleTime is nonzero: 8 h on 10 rows, and 41 rows have 0. No REST call returns index or mark: /quote/indices and /quote/markPrice give 404. Index and mark exist only as per-symbol WS topics index_price and mark_price, one frame per second each. The published index equalled the mark on 25 of 25 pairs on 5 contracts, and the mark equalled OKX's markPx (7 of 10 exact, 3 one tick off). So the index is OKX's mark, not the documented 15-exchange basket. No clamp or cap is published. | Who may trade: the terms (AstralX Sp. z o.o., Poland, Singapore law) prohibit anyone located in the United States, and no other excluded-region list was found, so US persons may not trade. What this host saw, near Seattle through a Surfshark exit in Canada (Cloudflare loc=CA, colo SEA/YVR): www.astralx.com public calls answered 200 and wss://fws.astralx.com upgraded 101, with no challenge. api.astralx.com answered 403 with a SafeLine WAF page on every path, and its DNS is a wildcard. www.astralx.com/openapi/* answered HTTP 500 {"code":20401,"msg":"Authentication failed, login again"}, and unknown /futures/* paths answered 401. The help center JSON API answered 200, but the VIP article HTML got a 403 Cloudflare challenge and the API returned RecordNotFound. | no public API |
+| H | Hyperliquid, [`../profiles/hyperliquid/`](../profiles/hyperliquid/) | hyperliquid | perpetuals | USDC settled: 178 main-dex perps, plus live builder-dex (HIP-3) perps on xyz, para, mkts and io | 450 | `l2Book` sends the whole 20-level book about every 5.4 s by default, or 5 levels about every 0.54 s with `fast`. No sequence or checksum. One unknown coin closes the whole socket | `metaAndAssetCtxs` in one call: `oraclePx` as index, `markPx`, hourly `funding` for the coming hour. It weighs 20 of a 1,200 a minute IP budget, so poll every 3 s at most | From the Canadian VPN exit, REST and socket answered with no refusal. The Interface terms bar US persons and Ontario | fits with a named change |
+| 37 | Koinbay, [`../profiles/koinbay/`](../profiles/koinbay/) | none | perpetuals | USDT-M 127 active (plus 47 status 0), coin-M 1 (E-BTC-USD inverse), plus 2 odd BTC contracts (S-BTC-USDT margined in EXUSD, FILCOIN-BTC-USDT dead since 2021). 35 of 130 active contracts had no trade in over 7 days | 750 | market_<e_btcusdt>_depth_step0 on wss://futuresws.koinbay.com/kline-api/ws: every frame is a whole 30-level book (asks and "buys"), about 3 frames a second, first frame within about 740 ms, no deltas, no sequence, no checksum, no subscribe ack, unknown symbols silently ignored, static books send nothing (34 of 127 silent for 30 s), every frame is gzip inside a binary frame, permessage-deflate not negotiated, server JSON ping {"ping":sec} every 10 s | No bulk call: /fapi/v1/index?contractName=X returns indexPrice, tagPrice (mark), currentFundRate, nextFundRate for one contract (p50 273 ms), with no interval and no next funding time. The socket channel mark_price_<symbol> carries the same fields plus nextSettlementTime (08:00 UTC) at about 1 Hz and is pushed along with every depth subscription. Interval, cap and which rate is upcoming are undocumented and not verified. No clamp published. Small-contract index sat still for 60 s (SSV). | Operator KOINBAY LTD (DIFC arbitration). Terms Schedule 1 prohibit USA and US territories, China, Russia and others, and refuse service to EU, EEA and UK residents. Canada not named. From this host (Canadian Surfshark exit), every public futures REST call returned HTTP 200 (API on AWS Tokyo ALB) and the futures WS opened in 730 to 781 ms with no refusal. | fits with a named change |
+| 37 | BITmarkets, [`../profiles/bitmarkets/`](../profiles/bitmarkets/) | none | perpetuals | USDT-M 129, from CoinMarketCap only (market-pairs category=perpetual, 2026-09-24). BITmarkets itself exposes no catalog this host can reach. No USDC-M or coin-M pairs seen. | 1000 | none: no documented socket. wss://platform-api.bitmarkets.com:8443 and :2096 (web app config) upgrade 101, send no frame, and close with 1000 about 250 ms after any client text frame. wss://ws.bitmarkets.com returns a stored block JSON (HTTP 200) instead of upgrading. Levels, snapshot, sequence, checksum: Not verified. No deflate offered. | none: no public index, mark or funding call. CoinMarketCap's copy has indexPrice and fundingRate per pair (62 of 129 at exactly 0.0001, range -0.00010348 to 0.0001), with no mark, interval or next funding. Formula and clamps are not published. | Futures are offered by Unicorn Technologies Limited (St. Vincent and the Grenadines) and spot by UAB BITmarkets (Lithuania). US and UK are on the restricted list, so US persons may not trade. From this host, via the Canadian Surfshark exit: bitmarkets.com gives 403 cf-mitigated challenge on every page except /en/api (404). api.bitmarkets.com has a TLS certificate that expired 2023-12-21, and behind it is 200 {"code":44444444,"msg":"block"}, which ws.bitmarkets.com also returns and WebFetch also got. platform-api /v1/* gives 404, myzone-api /api/v2 gives 401 or 404. | no public API |
+| 37 | Batonex, [`../profiles/batonex/`](../profiles/batonex/) | none | perpetuals | USDT-M 119 (all TRADING, linear, contract size from contractMultiplier. No coin-M, no USDC-M, no options, no dated futures. Spot 30 pairs) | 700 | v1 topic `depth` on wss://wsapi.batonex.com/openapi/quote/ws/v1 with a comma-separated symbol list: every frame is a full book of up to 200 levels per side (docs say 300) at about 2.5 frames/s, so each frame resets the book. No deltas, no ack on v1, version `v` = "<n>_18" rises on every frame but skips numbers, so there is no gap rule and none is needed. No checksum. Plain JSON text: permessage-deflate was not negotiated, and binary is an opt-in flag. Sizes are contracts of contractMultiplier coins. One socket carried all 119 perps at 151 frames/s, 723 KB/s and 47.5 us parse per frame. Client sends {"ping":ms} (docs: at least every 5 min). A socket with no subscription was closed at 61 s. | Bulk GET /openapi/v1/contracts (119 rows, 250 ms warm) carries indexPrice, nextFundingRate (upcoming), fundingRate (last settled) and nextFundingRateTs in seconds. Interval is 8 h at 00/08/16 UTC, from /openapi/contract/v1/fundingRate (116 rows. The three INDEX* contracts are missing). No mark price is published: the markPrice call returns an empty 200 and the WS markPrice topic is refused. The index is another venue's perp mark: 107 of 119 are formula MARK_PRICE_BINANCE, equal to the Binance fapi markPrice to the last digit (83 of 113 exactly equal in a parallel fetch, 110 of 113 within 500 ppm). No funding cap or formula is published. | Operator is Pointex LLC under Seychelles law. The United States is absent from the 214-country registration list, and the terms name no other excluded country. From this host through the Canadian Surfshark exit: api.batonex.com REST and the wsapi.batonex.com WebSocket (AWS Tokyo) returned 200 and delivered with no refusal. The site returned 200. The help centre pages returned HTTP 403 with a Cloudflare challenge but were readable through the Zendesk API. | blocked |
+| 37 | TruBit Pro Exchange, [`../profiles/trubit-pro/`](../profiles/trubit-pro/) | none | perpetuals | USDT-M 40 (no USDC-M, no coin-M. Includes TSLAUSDT, NVDAUSDT, XAGUSDT, PAXGUSDT, 1000PEPEUSDT and TBTCTUSDT, a second BTC contract with an index identical to BTCUSDT) | 600 | depthUpdate on wss://api-futures.trubit.com/ws/market, one {"op":"subscribe","key":"<SYM>","channel":"depthUpdate"} frame per symbol. Up to 20 levels per side. Each frame holds changed levels by price, qty 0 deletes, and trades ride along. Frames come every 200 to 800 ms. No snapshot on subscribe, so the book must be seeded from REST GET /depth/list level 20. No sequence number, update id or timestamp, so gaps cannot be detected. No checksum. qty is integer USDT notional, not contracts. Plain text when deflate is off, and deflate is accepted when offered. Text ping gets text pong. A REST seed plus deltas matched REST depth on 60 of 60 checks. | Three bulk calls cover all 40 perps: GET /basic/indexPrice (index), GET /basic/markPrice (mark) and GET /kLine/fundingRate?symbols=<all 40> (rate). The funding call fails with code 1 if symbols is omitted. Warm replies are about 258 ms median, 509 ms max. The API publishes no funding interval and no next funding time. Docs say 8 h, but the equity-perp article says 4 h. The rate's date field read 06:00 UTC and did not change for the whole minute. Documented funding cap is ±0.375% (125x contracts) or ±0.75% (50x contracts). No mark clamp or index basket is published. The MASKUSDT index kept the same time value for at least 892 s while its mark moved. | Operator is Lunexa Limited (St Vincent and the Grenadines). The user agreement excludes US citizens and residents, plus North Korea, Iran, Iraq, Syria, Yemen and Zimbabwe. Argentina service is being discontinued. From this host (Canadian Surfshark exit, loc=CA, colo YVR), all public futures REST calls on api-futures.trubit.com and the market WS returned 200 or opened. Errors come back as HTTP 200 with a nonzero code. help.trubit.com answered with a JS challenge and 403, so articles were read through the help.trubit.live Zendesk API (200). api.trubit.com answered 500 on every path tried. | fits with a named change |
+| 37 | BitradeX, [`../profiles/bitradex/`](../profiles/bitradex/) | none | perpetuals | USDT-M 56 (72 listed, 56 with tradeSwitch true, one SOL-quoted xaut_sol switched off). A coin-M path exists in the web app but was not probed. | 600 | wss://fws.bitradex.ai/public (from the web app bundle, not documented). depth@<sym>,20 sends a full 20x20 snapshot about once a second (repeats with an unchanged id when the book is still). depth_update@<sym>,100ms sends deltas only, with string pu/fu/u where pu equals the previous u. The first delta's pu equalled the snapshot id on 3 of 3 symbols, with 0 gaps in 225 plus 1,111 deltas. No checksum, no compression (deflate not negotiated). Text ping/pong keepalive. A silent socket dies at 60 s. Bad topics or symbols get no reply. 56 symbols on one socket gave 94 frames/s. | GET www.bitradex.ai/v1/future-u/market/public/q/agg-tickers gives index (i) and mark (m) for all symbols in one call (65 rows, 12 KB, median 119 ms, p90 148 ms). Funding has no bulk call: q/funding-rate?symbol= per contract gives the predicted upcoming rate (fraction), interval in hours (8 h on 55, 4 h on trump_usdt) and nextCollectionTime. History settles at 00/08/16 UTC. Index, mark and funding formulas, basket and caps are not published. Observed funding range was +0.007166 to -0.006461. Mark minus index median is 516 ppm. | The ToS disclaimer excludes the United States and all US territories, Canada and others (the user agreement lists only Canada (Alberta)). Derivatives are also restricted in the UK and Australia. The operator is BITRADEX FINTECH LIMITED (UK), and the ToS names BitradeX Singapore as counterparty. From the Canadian Surfshark exit (Cloudflare loc=CA, colo=YVR, IPv6), every public REST path and the WS handshake returned 200/101 from Node. The only refusal is HTTP 456 with body "xxx", sent to the curl/8.14.1 user agent on any agent-independent URL. That is a UA filter, not a geoblock. api.bitradex.ai and api.bitradex.com return 401. | fits with a named change |
 
 ## Notes per venue
 
@@ -5333,3 +5340,164 @@ Open questions:
 - The delisting notice for ORDI, W, PNUT and RIVER (2026-07-07) disagrees with the catalog, where ORDI and W are still listed and traded.
 - CoinMarketCap put AstralX at rank 55 when read at 06:44 UTC on 2026-09-23, against rank 53 in the brief.
   Its 7.41B USD 24 h derivatives volume is exactly the sum of the ticker qv.
+
+### Hyperliquid
+
+Verdict: fits with a named change.
+Researched under its own plan, [`../plans/2026-09-23-hyperliquid-research-plan.md`](../plans/2026-09-23-hyperliquid-research-plan.md), with the decentralised layer in [`2026-09-23-hyperliquid-dex.md`](./2026-09-23-hyperliquid-dex.md).
+CCXT's `market.id` is the numeric asset index, so `rawMarketId` must come from `market.info.name`.
+The six k-prefixed perps need a price scale of 1,000, and builder-dex (HIP-3) markets stay out at first behind a `marketFilter` on `info.hip3`.
+The anchor poller needs a POST helper and a 3 s cadence.
+
+### Koinbay
+
+Verdict: fits with a named change.
+Market data is fully public and reachable, and the snapshot-only 30-level book is easy to consume, but joining needs a hand-built adapter: no CCXT class (catalog from /fapi/v1/contracts), a gunzip of every socket frame, REST and socket symbol mapping (E-BTC-USDT vs e_btcusdt), and an anchor read from the mark_price socket channel, since no bulk REST anchor exists.
+Liquidity is thin and about a quarter of listed contracts are ghost books.
+US persons are prohibited.
+
+Blockers:
+
+- No CCXT class in 4.5.68 or in CCXT master (ts/src checked 2026-09-22), so the catalog has to be built from /fapi/v1/contracts.
+- Every WS frame is gzip-compressed inside a binary frame, so the generic feed needs a gunzip step.
+- No bulk REST anchor call exists: index, mark and funding are per contract, or come from the mark_price socket channel.
+- Funding interval, cap and whether currentFundRate or nextFundRate is the upcoming rate are undocumented.
+- US persons prohibited, EU, EEA and UK refused service.
+- 35 of 130 active contracts had no trade in over 7 days, and some are one-sided (E-BSV-USDT).
+  They need a liveness filter.
+- No public rate limit published (-1003 TOO_MANY_REQUESTS exists but its trigger and status were not seen).
+
+Open questions:
+
+- Which of currentFundRate and nextFundRate is charged at nextSettlementTime, and is the interval 8 h?
+  A capture across a settlement is needed.
+- Index basket and mark formula, and whether the mark premium is clamped.
+- Whether the documented pong-or-disconnect rule is enforced: a socket that ignored 7 pings stayed open for 70 s.
+- Public REST rate limit and the HTTP status and Retry-After of -1003.
+- What S-BTC-USDT (EXUSD margin) and FILCOIN-BTC-USDT are.
+- Server/node_modules vanished during the run (server/ is now the Rust crate), so ws-probe.mjs cannot be rerun until ws is available again.
+
+### BITmarkets
+
+Verdict: no public API.
+BITmarkets lists about 129 USDT perpetuals (per CoinMarketCap), but it publishes no API documentation and has no CCXT class, in 4.5.68 or on master.
+Every candidate REST host either returns a stored "block" error, sits behind an expired certificate, or answers 404 or 401.
+The only sockets that open are undocumented web app sockets that close on the first client frame.
+So there is no catalog, book feed or anchor poller to build on.
+
+Blockers:
+
+- No public REST or WebSocket API documentation anywhere (no docs subdomain, no API page, /en/api is 404).
+- No CCXT class in 4.5.68 or current master ts/src.
+- Api.bitmarkets.com serves an expired 2023 certificate and a stored {code:44444444,msg:block} body on every path, and ws.bitmarkets.com serves the same.
+- Web app sockets platform-api.bitmarkets.com:8443 and :2096 close with 1000 on any client frame and send no data.
+- No public index, mark or funding endpoint.
+- US persons restricted (United States on the restricted jurisdictions list).
+
+Open questions:
+
+- Whether the web app's trading socket uses an authenticated or binary protocol (the archived Nuxt bundle holding the socket code was not in the Wayback Machine).
+- Funding formula, interval, cap and settlement instant are unpublished, and whether 0.0001 is a default interest term or a cap.
+- Whether the live fee page still matches the Wayback capture of 2025-10-25 (page dated 18/09/2025), since the live page is behind a Cloudflare challenge.
+- Whether the restricted jurisdictions list changed after the 2024-08-05 capture (the newer restricted-jurisdictions-new document has no capture).
+- Whether dated futures exist besides the perpetuals (the site menu has separate Futures Trading and Perpetuals entries).
+
+### Batonex
+
+Verdict: blocked.
+The book feed would be easy: one socket, full-book frames, contracts sized by contractMultiplier.
+But the catalog and the anchor do not fit.
+CCXT has no class, so loadMarkets cannot build the catalog.
+Batonex publishes no mark price, so the engine would refuse every route at open with mark 0.
+Its index for 107 of 119 perps is the Binance perp mark price itself, so the fresh gate would judge a Binance-Batonex route against the Binance leg's own mark, which is the self-index failure shape.
+
+Blockers:
+
+- No CCXT 4.5.68 class and none in CCXT master ts/src, so the catalog needs a hand-written brokerInfo loader.
+- No mark price on REST or WS: the AnchorRow mark would be 0 and every route is refused at open.
+- Index is MARK_PRICE_BINANCE for 107 of 119 perps (Binance fapi mark to the last digit), MARK_PRICE_BITGET for 3, and a two-venue mark average for 5.
+  That is a self-referential anchor against Binance and Bitget legs.
+- US persons cannot register because the United States is absent from the registration country list.
+
+Open questions:
+
+- What price drives liquidation?
+  The help centre says TP/SL triggers on the index or the market price, and no mark is named.
+- The funding formula, cap and floor are unpublished. nextFundingRate changed only 0.04 times per symbol per minute, so it is a periodic estimate.
+- Is the order book a mirror of Binance?
+  One-shot bookTicker reads matched the Binance touch exactly on ETH and SOL.
+  This is an inference and was not written into the profiles as fact.
+- Does a subscribed socket that never pings survive the documented 5 minutes?
+  The silence test stopped at 70 s.
+- Do the equity and commodity perps (AAPL, TSLA, CL, SOXL) carry the same 0.07% taker?
+  The commission page lists only one crypto-contract row.
+- What does depth send for an empty side?
+  No one-sided book was seen.
+
+### TruBit Pro Exchange
+
+Verdict: fits with a named change.
+Public WS book and REST anchor data exist and work from this host, but the venue needs three changes before it can join.
+First, there is no CCXT class, so the catalog loader must be written by hand from /basic/refData, and the loader must divide sizes by price because qty is USDT notional.
+Second, the book feed must be seeded from REST because the socket sends no snapshot and no sequence.
+Third, the funding interval and next funding time must be supplied as constants because the API does not publish them.
+
+Blockers:
+
+- No CCXT class in 4.5.68 or in CCXT master, so the catalog has to be hand-written from GET /basic/refData, which returns only symbol, tick, lotSize and type.
+- Book qty is integer USDT notional, so no contractSize constant converts it and a base size must be computed as qty divided by price.
+- DepthUpdate has no snapshot, no sequence id and no timestamp, so the book is seeded from REST depth/list and a lost frame is undetectable.
+- The anchor has no fundingIntervalHours or nextFundingAt, and the docs conflict: 8 h in the Funding Fee and Overview articles, 4 h in the equity-perp article.
+- US persons may not trade under the user agreement.
+
+Open questions:
+
+- VIP 0 taker: the fee chart example says 0.06%, the perpetual overview says 0.04%, and the tier table image returned HTTP 410.
+- Funding interval, 8 h or 4 h, and the settlement instants.
+  Also whether the rate is the upcoming one or the last one computed at its date field (06:00 UTC for all 40 at 06:42 to 06:57 UTC).
+  The settlement instant was not captured.
+- 35 of 40 funding rates were exactly ±0.00001, which may be an undocumented minimum magnitude.
+- Index freshness: the MASKUSDT index time and price did not change for at least 892 s, and 5 of 40 indexes did not change in 60 s.
+  The index basket per contract is not published.
+- Whether a subscribed socket that sends no ping is closed after more than 70 s.
+  A socket that never subscribed was closed at 30 s.
+- Status code and body when a REST rate limit is hit.
+  Not provoked.
+- What TBTCTUSDT is (same index as BTCUSDT, whole-dollar tick, about 4.6M USDT open interest).
+  A loader must skip it or map it explicitly.
+- Server/node_modules was removed by the Rust rewrite during this run.
+  The probes load ws and ccxt from server/node_modules and fall back to the root node_modules/.pnpm store.
+  Sibling venue probes that use the same createRequire pattern and have no fallback will no longer run.
+
+### BitradeX
+
+Verdict: fits with a named change.
+The public web-app API has everything the engine needs.
+A socket snapshot joins a gap-free sequenced delta chain at 20 levels, and one bulk REST call gives index and mark.
+There is no CCXT class, so the catalog must come from a hand-written read of /v1/future-u/market/public/symbol/list.
+Funding needs per-symbol polling.
+The endpoints are undocumented web-app paths.
+The touch equalled Binance exactly on BTC, ETH and SOL, which suggests a Binance-quoted book.
+
+Blockers:
+
+- No CCXT class in 4.5.68 or CCXT master, so the catalog needs a hand-written adapter over /v1/future-u/market/public/symbol/list (the XT-shaped paths differ from CCXT xt's prefix).
+- No bulk funding call: q/funding-rate is per symbol (56 calls), so the anchor poller must split index/mark (bulk agg-tickers) from a rotating funding poll.
+- No published API documentation: every endpoint and topic is a web-app path read from the _app bundle and may change without notice.
+- HTTPS answers the curl user agent with 456, so any client must send a non-curl User-Agent.
+
+Open questions:
+
+- Is the book a Binance mirror? bp/ap equalled Binance USDT-M bookTicker exactly on btc/eth/sol, and the BTC book changed only 34 times in 45 s.
+  If so, crosses against Binance are lag artefacts.
+- Which fee applies at VIP 0: the step table (600/400 ppm) or the per-symbol symbol/list fields (btc_usdt 650/200, eth_usdt 6,500/200, sol/xrp/bnb 600/200)?
+  The eth_usdt 0.0065 taker looks like a data slip but is published.
+- Index basket, mark formula and clamps, and the funding cap and floor are unpublished.
+  The index differs from Binance's by a median of 578 ppm.
+- IsOpenApi is true on only 4 of 72 contracts (btc, xrp, bnb, trb).
+  It is unclear whether an official user API exists for the rest.
+- The fund_rate@<sym> socket topic was acked but sent nothing in 20 s.
+  There is no verified funding push.
+- The settlement instant was not captured.
+  The 4 h trump_usdt showed the same next settlement (08:00 UTC) as the 8 h contracts.
+- The coin-M (future-c) family and spot were not probed.

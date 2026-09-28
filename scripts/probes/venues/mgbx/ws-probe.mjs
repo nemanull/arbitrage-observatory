@@ -1,6 +1,6 @@
 // MGBX futures WebSocket probe: the per-symbol push (book snapshot, per-level deltas, ticker, index, mark), one symbol per socket, control replies, keepalive and silence, a fan-out of sockets, and the market-wide channels.
 // MGBX publishes no API documentation, so the URL and request frames are the ones the www.mgbx.com web app sends, read from its JavaScript bundle on 2026-09-22.
-// Public, unauthenticated, read-only. Sockets open with perMessageDeflate false, like server/src/feeds/book/VenueFeed.ts, except the one deflate mode that asks for it once.
+// Public, unauthenticated, read-only. Sockets open with perMessageDeflate false, like old_ts_server/src/feeds/book/VenueFeed.ts, except the one deflate mode that asks for it once.
 // Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/mgbx/ws-probe.mjs [book|control|silence|fanout|bulk|mirror|deflate]
 //   book     four sockets, one symbol each, for 60 s: snapshot cadence and depth, delta ids, delta replay against the next snapshot, level order, number format.
 //   control  one socket: each ping shape, the kline style subscribe, a second symbol, unsubscribe, unknown symbol, then a frame that is not JSON. About 30 s.
@@ -14,8 +14,17 @@ import { createRequire } from 'node:module';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const require = createRequire(new URL('../../../../server/package.json', import.meta.url));
-const WebSocket = require('ws');
+// Loads a package the way the engine did, through server/package.json, falling back to old_ts_server/ and the root pnpm store after the 2026-09-23 move.
+function load(name) {
+  for (const base of ['../../../../server/package.json', '../../../../old_ts_server/package.json', '../../../../package.json']) {
+    try {
+      return createRequire(new URL(base, import.meta.url))(name);
+    } catch {}
+  }
+  const store = { ccxt: 'ccxt@4.5.68_protobufjs@7.6.6', ws: 'ws@8.21.1_bufferutil@4.1.0' }[name];
+  return createRequire(new URL(`../../../../node_modules/.pnpm/${store}/node_modules/${name}/package.json`, import.meta.url))(name);
+}
+const WebSocket = load('ws');
 
 const URL_MARKET = 'wss://www.mgbx.com/ws/market';
 const REST = 'https://www.mgbx.com/futures/fapi/market/v1/public';
@@ -59,10 +68,10 @@ function open(url, onFrame, opts = {}) {
   });
 }
 
-// A fresh connection to this host hangs about a third of the time, so every open is tried up to three times.
+// A fresh connection to this host hangs in the TLS handshake a third of the time or more, so every open is tried up to five times.
 async function openRetry(url, onFrame, opts = {}) {
   let info;
-  for (let tries = 1; tries <= 3; tries++) {
+  for (let tries = 1; tries <= 5; tries++) {
     info = await open(url, onFrame, opts);
     info.tries = tries;
     if (info.openMs !== null) return info;
@@ -73,30 +82,36 @@ async function openRetry(url, onFrame, opts = {}) {
 
 const send = (ws, obj) => ws.readyState === ws.OPEN && ws.send(typeof obj === 'string' ? obj : JSON.stringify(obj));
 
+// The REST depth `u` is a bare JSON number above 2^53, so it is also returned as the digits on the wire.
 async function restJson(path) {
   for (let i = 0; i < 3; i++) {
     try {
       const r = await fetch(`${REST}/${path}`, { signal: AbortSignal.timeout(5000) });
-      return await r.json();
+      const text = await r.text();
+      const j = JSON.parse(text);
+      if (j && typeof j === 'object') j.rawU = text.match(/"u":(\d+)/)?.[1];
+      return j;
     } catch {}
   }
   return null;
 }
 
 // Book state from push.deep.full, with push.deep applied by price, for the replay check.
+// Price keys are normalised with Number, so "86461" and "86461.0" are one level.
+const pk = (p) => String(Number(p));
 class Book {
   constructor() {
     this.bids = new Map();
     this.asks = new Map();
   }
   reset(full) {
-    this.bids = new Map(full.b.map(([p, q]) => [p, q]));
-    this.asks = new Map(full.a.map(([p, q]) => [p, q]));
+    this.bids = new Map(full.b.map(([p, q]) => [pk(p), q]));
+    this.asks = new Map(full.a.map(([p, q]) => [pk(p), q]));
   }
   apply(d) {
     const side = d.ba === 1 ? this.bids : this.asks;
-    if (Number(d.q) === 0) side.delete(d.p);
-    else side.set(d.p, d.q);
+    if (Number(d.q) === 0) side.delete(pk(d.p));
+    else side.set(pk(d.p), d.q);
   }
   top(n) {
     const b = [...this.bids.entries()].sort((x, y) => Number(y[0]) - Number(x[0])).slice(0, n);
@@ -107,16 +122,17 @@ class Book {
 
 async function book() {
   const agg = await restJson('q/agg-tickers');
-  const byAmount = (agg?.data ?? []).filter((x) => !/^(btc|eth|xau)_/.test(x.s)).sort((x, y) => Number(x.v) - Number(y.v));
-  const quiet = byAmount[Math.floor(byAmount.length * 0.1)]?.s ?? 'lsk_usdt';
-  const symbols = ['btc_usdt', 'eth_usdt', quiet, 'xau_usdt'];
   const list = await restJson('symbol/list');
   const cs = new Map((list?.data ?? []).map((x) => [x.symbol, x.contractSize]));
+  // agg-tickers still carries burger_usdt, a contract missing from symbol/list, so the quiet pick is limited to listed contracts.
+  const byAmount = (agg?.data ?? []).filter((x) => cs.has(x.s) && !/^(btc|eth|xau)_/.test(x.s)).sort((x, y) => Number(x.v) - Number(y.v));
+  const quiet = byAmount[Math.floor(byAmount.length * 0.1)]?.s ?? 'lsk_usdt';
+  const symbols = ['btc_usdt', 'eth_usdt', quiet, 'xau_usdt'];
   log('symbols', { symbols, quietVolumeUsdt: byAmount[Math.floor(byAmount.length * 0.1)]?.v });
   const per = new Map();
   const sockets = [];
   for (const s of symbols) {
-    const st = { s, counts: {}, fullGaps: [], lastFullAt: null, firstFullMs: null, fullLevels: [], idStep: [], idBackwards: 0, deepBeforeFull: 0, deepStale: 0, fullOrderBad: 0, crossedFull: 0, sci: 0, sizeKinds: {}, replay: { compared: 0, top20Equal: 0, touchEqual: 0, firstDiffRank: [], priceDiffs: [] }, book: new Book(), fullId: null, lastDeepId: null, lastDeepAt: null, maxQuietMs: 0, lastBookFrameAt: null, ba: {}, deepTAge: [], deltasBetweenFull: [], deltasSinceFull: 0, firstFull: null };
+    const st = { s, counts: {}, fullGaps: [], lastFullAt: null, firstFullMs: null, fullLevels: [], idStep: [], idBackwards: 0, deepBeforeFull: 0, deepStale: 0, fullOrderBad: 0, crossedFull: 0, sci: 0, sizeKinds: {}, replay: { compared: 0, top20Equal: 0, touchEqual: 0, firstDiffRank: [], priceDiffs: [], samples: [] }, book: new Book(), fullId: null, pending: [], aheadOfFull: 0, fullIdIsDeltaId: 0, fullRepeats: 0, lastFullKey: null, lastFull: null, lastDeepId: null, lastDeepAt: null, maxQuietMs: 0, lastBookFrameAt: null, ba: {}, deepTAge: [], deltasBetweenFull: [], firstFull: null };
     per.set(s, st);
     let info;
     const onFrame = (data, isBinary, at) => {
@@ -153,31 +169,41 @@ async function book() {
           const k = typeof l[1];
           st.sizeKinds[k] = (st.sizeKinds[k] || 0) + 1;
         }
-        // Replay: the book built from the previous snapshot plus the deltas since, against this snapshot.
+        // Replay: the previous snapshot plus the buffered deltas whose id is at or below this snapshot's id, against this snapshot.
+        // Deltas that arrived before this snapshot but carry a larger id are newer than it, so they are carried over instead.
+        const fullId = BigInt(d.id);
+        const norm = (side) => side.slice(0, 20).map(([p, q]) => [pk(p), q]);
+        const ahead = st.pending.filter((x) => BigInt(x.id) > fullId);
+        st.aheadOfFull += ahead.length;
+        if (st.pending.some((x) => BigInt(x.id) === fullId)) st.fullIdIsDeltaId++;
         if (st.fullId !== null) {
+          for (const x of st.pending) if (BigInt(x.id) <= fullId) st.book.apply(x);
           const mine = st.book.top(20);
+          const snap = { b: norm(d.b), a: norm(d.a) };
           st.replay.compared++;
           const same = (x, y) => x.length === y.length && x.every((l, k) => l[0] === y[k][0] && Number(l[1]) === Number(y[k][1]));
-          if (same(mine.b, d.b.slice(0, 20)) && same(mine.a, d.a.slice(0, 20))) st.replay.top20Equal++;
+          if (same(mine.b, snap.b) && same(mine.a, snap.a)) st.replay.top20Equal++;
           else {
-            // How far from the touch the first difference sits, and whether it is a price or only a size.
+            // How far from the touch the first difference sits, and how many replayed levels sit at a price the snapshot lacks.
             const firstDiff = (x, y) => x.findIndex((l, k) => !y[k] || l[0] !== y[k][0] || Number(l[1]) !== Number(y[k][1]));
-            const rb = firstDiff(mine.b, d.b.slice(0, 20));
-            const ra = firstDiff(mine.a, d.a.slice(0, 20));
-            const rank = Math.min(rb === -1 ? 99 : rb, ra === -1 ? 99 : ra);
-            st.replay.firstDiffRank.push(rank);
-            const priceSet = (x) => new Set(x.map((l) => l[0]));
-            const pb = priceSet(d.b.slice(0, 20));
-            const pa = priceSet(d.a.slice(0, 20));
-            const priceDiffs = mine.b.filter((l) => !pb.has(l[0])).length + mine.a.filter((l) => !pa.has(l[0])).length;
-            st.replay.priceDiffs.push(priceDiffs);
+            const rb = firstDiff(mine.b, snap.b);
+            const ra = firstDiff(mine.a, snap.a);
+            st.replay.firstDiffRank.push(Math.min(rb === -1 ? 99 : rb, ra === -1 ? 99 : ra));
+            const pb = new Set(snap.b.map((l) => l[0]));
+            const pa = new Set(snap.a.map((l) => l[0]));
+            st.replay.priceDiffs.push(mine.b.filter((l) => !pb.has(l[0])).length + mine.a.filter((l) => !pa.has(l[0])).length);
+            if (st.replay.samples.length < 2) st.replay.samples.push({ mine: { b: mine.b.slice(0, 4), a: mine.a.slice(0, 4) }, snap: { b: snap.b.slice(0, 4), a: snap.a.slice(0, 4) } });
           }
-          if (mine.b[0]?.[0] === d.b[0]?.[0] && mine.a[0]?.[0] === d.a[0]?.[0]) st.replay.touchEqual++;
-          st.deltasBetweenFull.push(st.deltasSinceFull);
+          if (mine.b[0]?.[0] === snap.b[0]?.[0] && mine.a[0]?.[0] === snap.a[0]?.[0]) st.replay.touchEqual++;
+          st.deltasBetweenFull.push(st.pending.length - ahead.length);
+          const key = JSON.stringify([d.b, d.a]);
+          if (key === st.lastFullKey) st.fullRepeats++;
+          st.lastFullKey = key;
         }
-        st.deltasSinceFull = 0;
         st.book.reset(d);
-        st.fullId = BigInt(d.id);
+        st.lastFull = d;
+        st.fullId = fullId;
+        st.pending = ahead;
         return;
       }
       if (ch === 'push.deep') {
@@ -190,13 +216,9 @@ async function book() {
           else st.idStep.push(Number(id - st.lastDeepId));
         }
         st.lastDeepId = id;
-        if (st.fullId === null) {
-          st.deepBeforeFull++;
-          return;
-        }
-        if (id <= st.fullId) st.deepStale++;
-        st.deltasSinceFull++;
-        st.book.apply(d);
+        if (st.fullId === null) st.deepBeforeFull++;
+        else if (id <= st.fullId) st.deepStale++;
+        st.pending.push(d);
       }
     };
     info = await openRetry(URL_MARKET, onFrame);
@@ -206,16 +228,21 @@ async function book() {
     sockets.push(info);
   }
   await sleep(60_000);
-  // Size unit: the REST book read now against the last snapshot of the same socket, matched by price.
+  // Size unit: the REST book read while the sockets are open, against the last snapshot of the same socket, matched by price.
   for (const s of symbols) {
     const st = per.get(s);
-    const r = await restJson(`q/depth?symbol=${s}&level=20`);
-    const rest = new Map([...(r?.data?.b ?? []), ...(r?.data?.a ?? [])].map((l) => [l[0], Number(l[1])]));
-    const top = st.book.top(20);
-    const ws = [...top.b, ...top.a];
-    const shared = ws.filter((l) => rest.has(l[0]));
+    let r = null;
+    let tries = 0;
+    while (!r?.data && tries < 3) {
+      tries++;
+      r = await restJson(`q/depth?symbol=${s}&level=20`);
+    }
+    const snapAt = st.lastFullAt;
+    const rest = new Map([...(r?.data?.b ?? []), ...(r?.data?.a ?? [])].map((l) => [pk(l[0]), Number(l[1])]));
+    const snap = st.lastFull ? [...st.lastFull.b.slice(0, 20), ...st.lastFull.a.slice(0, 20)].map(([p, q]) => [pk(p), q]) : [];
+    const shared = snap.filter((l) => rest.has(l[0]));
     const equal = shared.filter((l) => rest.get(l[0]) === Number(l[1])).length;
-    log('rest_vs_ws', { s, restTouch: [r?.data?.b?.[0], r?.data?.a?.[0]], wsTouch: [top.b[0], top.a[0]], sharedPrices: `${shared.length} of ${ws.length}`, equalSizes: equal });
+    log('rest_vs_ws', { s, tries, restCode: r?.code, restU: r?.rawU, snapId: st.lastFull?.id, snapAgeMs: Date.now() - snapAt, restTouch: [r?.data?.b?.[0], r?.data?.a?.[0]], snapTouch: [st.lastFull?.b?.[0], st.lastFull?.a?.[0]], sharedPrices: `${shared.length} of ${snap.length}`, equalSizes: equal });
   }
   for (const info of sockets) info.ws.terminate();
   for (const st of per.values()) {
@@ -237,8 +264,11 @@ async function book() {
       deepIdSteps: { n: steps.length, stepOne, backwards: st.idBackwards, largest: steps.length ? Math.max(...steps) : null },
       deepBeforeFirstFull: st.deepBeforeFull,
       deepAtOrBelowFullId: st.deepStale,
+      deepAheadOfFull: st.aheadOfFull,
+      fullIdIsDeltaId: st.fullIdIsDeltaId,
+      fullRepeats: st.fullRepeats,
       deltasBetweenFull: stats(st.deltasBetweenFull),
-      replay: { compared: st.replay.compared, top20Equal: st.replay.top20Equal, touchEqual: st.replay.touchEqual, mismatchFirstDiffRank: stats(st.replay.firstDiffRank), mismatchLevelsAtOtherPrices: stats(st.replay.priceDiffs) },
+      replay: { compared: st.replay.compared, top20Equal: st.replay.top20Equal, touchEqual: st.replay.touchEqual, mismatchFirstDiffRank: stats(st.replay.firstDiffRank), mismatchLevelsAtOtherPrices: stats(st.replay.priceDiffs), samples: st.replay.samples },
       deepTAgeMs: stats(st.deepTAge),
       maxBookSilenceMs: st.maxQuietMs,
     });
@@ -344,6 +374,7 @@ async function fanout() {
   }
   log('fanout_open', { sockets: top.length, openMs: stats(opens.filter((x) => typeof x === 'number')), failed: opens.filter((x) => typeof x !== 'number'), hungOpensRetried: retries });
   const startFrames = frames;
+  const startBytes = bytes;
   const t0 = Date.now();
   let last = frames;
   for (let i = 0; i < 30; i++) {
@@ -353,7 +384,7 @@ async function fanout() {
   }
   const secs = (Date.now() - t0) / 1000;
   const closed = infos.filter((x) => x.closed).map((x) => x.closed);
-  log('fanout', { secs, frames: frames - startFrames, framesPerSecond: stats(perSecond), kbPerSecond: Math.round(bytes / 1024 / secs), bytesPerFrame: Math.round(bytes / frames), parseUsPerFrame: Number(parseNs / BigInt(frames)) / 1000, closed });
+  log('fanout', { secs, frames: frames - startFrames, framesPerSecond: stats(perSecond), kbPerSecond: Math.round((bytes - startBytes) / 1024 / secs), bytesPerFrame: Math.round((bytes - startBytes) / (frames - startFrames)), parseUsPerFrame: Number(parseNs / BigInt(frames)) / 1000, closed });
   for (const info of infos) info.ws.terminate();
 }
 

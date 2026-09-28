@@ -261,7 +261,8 @@ CoinMarketCap's derivatives ranking, read through its data API with `exType=2`, 
 Wave 35 is the five of them it ranks highest: MGBX at 26, Echobit at 28, YUBIT at 32, UZX at 37 and OmniX at 39.
 Wave 36 is the next four on that ranking, Bitbase at 42, CrypFine at 44, x.me Exchange at 49 and AstralX at 53, plus Flipster at 59, which CoinGecko also confirms with 243 perpetuals.
 Koinbay, at 51, was passed over for Flipster because it reports no open interest.
-The other 88 keep CoinMarketCap rank order in waves 37 to 54.
+On the user's request of the same day, waves 37 to 41 take the next 25 additions by that derivatives ranking, run at most ten researchers at a time, and cap each researcher at about 40 minutes.
+The other 63 keep CoinMarketCap rank order in waves 42 to 54, and 7 of them still appear on that derivatives ranking.
 
 | wave | CMC rank | venue | folder | CCXT 4.5.68 | perps on CoinGecko | status |
 |---|---|---|---|---|---|---|
@@ -275,69 +276,69 @@ The other 88 keep CoinMarketCap rank order in waves 37 to 54.
 | 36 | 76 | x.me Exchange | `x-me` | none | no | Done |
 | 36 | 93 | AstralX | `astralx` | none | no | Done |
 | 36 | 112 | Flipster | `flipster` | none | yes | Done |
-| 37 | 15 | Binance TR | `binance-tr` | none | no | Not started |
-| 37 | 30 | Binance TH | `binance-th` | none | no | Not started |
-| 37 | 44 | BiFinance | `bifinance` | none | no | Not started |
-| 37 | 73 | C-Patex | `c-patex` | none | no | Not started |
-| 37 | 89 | Koinbay | `koinbay` | none | no | Not started |
-| 38 | 99 | Reku | `reku` | none | no | Not started |
-| 38 | 102 | Coinmate | `coinmate` | `coinmate` | no | Not started |
-| 38 | 103 | BITmarkets | `bitmarkets` | none | no | Not started |
-| 38 | 104 | Batonex | `batonex` | none | no | Not started |
-| 38 | 107 | IndoEx | `indoex` | none | no | Not started |
-| 39 | 111 | TruBit Pro Exchange | `trubit-pro` | none | no | Not started |
-| 39 | 114 | LMAX Digital | `lmax-digital` | none | no | Not started |
-| 39 | 118 | Ripio | `ripio` | none | no | Not started |
-| 39 | 124 | Coinmetro | `coinmetro` | none | no | Not started |
-| 39 | 127 | Bitspay | `bitspay` | none | no | Not started |
-| 40 | 129 | BitradeX | `bitradex` | none | no | Not started |
-| 40 | 136 | Altcoin Trader | `altcoin-trader` | none | no | Not started |
-| 40 | 137 | SuperEx | `superex` | none | no | Not started |
-| 40 | 139 | SWFT Trade | `swft-trade` | none | no | Not started |
-| 40 | 140 | Remitano | `remitano` | none | no | Not started |
-| 41 | 141 | ZKE | `zke` | none | no | Not started |
-| 41 | 142 | 4E | `four-e` | none | no | Not started |
-| 41 | 143 | Mandala Exchange | `mandala` | none | no | Not started |
-| 41 | 145 | BitxEX | `bitxex` | none | no | Not started |
-| 41 | 146 | AIA Exchange | `aia` | none | no | Not started |
-| 42 | 147 | YoBit | `yobit` | none | no | Not started |
-| 42 | 149 | BASEKX | `basekx` | none | no | Not started |
-| 42 | 151 | Crypton Exchange | `crypton` | none | no | Not started |
-| 42 | 153 | Bitcoiva | `bitcoiva` | none | no | Not started |
-| 42 | 155 | CoinCorner | `coincorner` | none | no | Not started |
-| 43 | 157 | Gleec BTC | `gleec-btc` | none | no | Not started |
-| 43 | 159 | Blockfinex | `blockfinex` | none | no | Not started |
-| 43 | 160 | BiKing | `biking` | none | no | Not started |
-| 43 | 161 | BitTap | `bittap` | none | no | Not started |
-| 43 | 162 | Revolut X | `revolut-x` | none | no | Not started |
-| 44 | 164 | Cryptomus | `cryptomus` | `cryptomus` | no | Not started |
-| 44 | 166 | IBIT Global | `ibit-global` | none | no | Not started |
-| 44 | 167 | TRIV | `triv` | none | no | Not started |
-| 44 | 168 | WOO X Pro | `woo-x-pro` | none | no | Not started |
-| 44 | 170 | OneBullEx | `onebullex` | none | no | Not started |
-| 45 | 173 | OneEx | `oneex` | none | no | Not started |
-| 45 | 175 | Picol | `picol` | none | no | Not started |
-| 45 | 176 | CoinCola | `coincola` | none | no | Not started |
-| 45 | 177 | CoinP | `coinp` | none | no | Not started |
-| 45 | 180 | GudangKripto | `gudangkripto` | none | no | Not started |
-| 46 | 181 | Dzengi | `dzengi` | none | no | Not started |
-| 46 | 184 | idax exchange | `idax` | none | no | Not started |
-| 46 | 185 | EasiCoin | `easicoin` | none | no | Not started |
-| 46 | 186 | BitGW Exchange | `bitgw` | none | no | Not started |
-| 46 | 188 | Tebbit | `tebbit` | none | no | Not started |
+| 37 | 89 | Koinbay | `koinbay` | none | no | Done |
+| 37 | 103 | BITmarkets | `bitmarkets` | none | no | Done |
+| 37 | 104 | Batonex | `batonex` | none | no | Done |
+| 37 | 111 | TruBit Pro Exchange | `trubit-pro` | none | no | Done |
+| 37 | 129 | BitradeX | `bitradex` | none | no | Done |
+| 38 | 142 | 4E | `four-e` | none | no | Not started |
+| 38 | 143 | Mandala Exchange | `mandala` | none | no | Not started |
+| 38 | 145 | BitxEX | `bitxex` | none | no | Not started |
+| 38 | 149 | BASEKX | `basekx` | none | no | Not started |
+| 38 | 157 | Gleec BTC | `gleec-btc` | none | no | Not started |
+| 39 | 159 | Blockfinex | `blockfinex` | none | no | Not started |
+| 39 | 160 | BiKing | `biking` | none | no | Not started |
+| 39 | 161 | BitTap | `bittap` | none | no | Not started |
+| 39 | 166 | IBIT Global | `ibit-global` | none | no | Not started |
+| 39 | 168 | WOO X Pro | `woo-x-pro` | none | no | Not started |
+| 40 | 170 | OneBullEx | `onebullex` | none | no | Not started |
+| 40 | 173 | OneEx | `oneex` | none | no | Not started |
+| 40 | 177 | CoinP | `coinp` | none | no | Not started |
+| 40 | 184 | idax exchange | `idax` | none | no | Not started |
+| 40 | 185 | EasiCoin | `easicoin` | none | no | Not started |
+| 41 | 188 | Tebbit | `tebbit` | none | no | Not started |
+| 41 | 190 | CZR Exchange | `czr` | none | no | Not started |
+| 41 | 200 | AEGET | `aeget` | none | no | Not started |
+| 41 | 201 | Cofinex | `cofinex` | none | no | Not started |
+| 41 | 205 | KTX | `ktx` | none | no | Not started |
+| 42 | 15 | Binance TR | `binance-tr` | none | no | Not started |
+| 42 | 30 | Binance TH | `binance-th` | none | no | Not started |
+| 42 | 44 | BiFinance | `bifinance` | none | no | Not started |
+| 42 | 73 | C-Patex | `c-patex` | none | no | Not started |
+| 42 | 99 | Reku | `reku` | none | no | Not started |
+| 43 | 102 | Coinmate | `coinmate` | `coinmate` | no | Not started |
+| 43 | 107 | IndoEx | `indoex` | none | no | Not started |
+| 43 | 114 | LMAX Digital | `lmax-digital` | none | no | Not started |
+| 43 | 118 | Ripio | `ripio` | none | no | Not started |
+| 43 | 124 | Coinmetro | `coinmetro` | none | no | Not started |
+| 44 | 127 | Bitspay | `bitspay` | none | no | Not started |
+| 44 | 136 | Altcoin Trader | `altcoin-trader` | none | no | Not started |
+| 44 | 137 | SuperEx | `superex` | none | no | Not started |
+| 44 | 139 | SWFT Trade | `swft-trade` | none | no | Not started |
+| 44 | 140 | Remitano | `remitano` | none | no | Not started |
+| 45 | 141 | ZKE | `zke` | none | no | Not started |
+| 45 | 146 | AIA Exchange | `aia` | none | no | Not started |
+| 45 | 147 | YoBit | `yobit` | none | no | Not started |
+| 45 | 151 | Crypton Exchange | `crypton` | none | no | Not started |
+| 45 | 153 | Bitcoiva | `bitcoiva` | none | no | Not started |
+| 46 | 155 | CoinCorner | `coincorner` | none | no | Not started |
+| 46 | 162 | Revolut X | `revolut-x` | none | no | Not started |
+| 46 | 164 | Cryptomus | `cryptomus` | `cryptomus` | no | Not started |
+| 46 | 167 | TRIV | `triv` | none | no | Not started |
+| 46 | 175 | Picol | `picol` | none | no | Not started |
+| 47 | 176 | CoinCola | `coincola` | none | no | Not started |
+| 47 | 180 | GudangKripto | `gudangkripto` | none | no | Not started |
+| 47 | 181 | Dzengi | `dzengi` | none | no | Not started |
+| 47 | 186 | BitGW Exchange | `bitgw` | none | no | Not started |
 | 47 | 189 | Gems Trade | `gems-trade` | none | no | Not started |
-| 47 | 190 | CZR Exchange | `czr` | none | no | Not started |
-| 47 | 192 | Blynex | `blynex` | none | no | Not started |
-| 47 | 193 | BIT.TEAM | `bit-team` | `bitteam` | no | Not started |
-| 47 | 195 | COINSPACE | `coinspace` | none | no | Not started |
+| 48 | 192 | Blynex | `blynex` | none | no | Not started |
+| 48 | 193 | BIT.TEAM | `bit-team` | `bitteam` | no | Not started |
+| 48 | 195 | COINSPACE | `coinspace` | none | no | Not started |
 | 48 | 196 | XXKK | `xxkk` | none | no | Not started |
 | 48 | 197 | NexDAX | `nexdax` | none | no | Not started |
-| 48 | 198 | Metal X | `metal-x` | none | no | Not started |
-| 48 | 200 | AEGET | `aeget` | none | no | Not started |
-| 48 | 201 | Cofinex | `cofinex` | none | no | Not started |
+| 49 | 198 | Metal X | `metal-x` | none | no | Not started |
 | 49 | 202 | CRMClick | `crmclick` | none | no | Not started |
 | 49 | 204 | CoinMy | `coinmy` | none | no | Not started |
-| 49 | 205 | KTX | `ktx` | none | no | Not started |
 | 49 | 206 | ChangeNOW | `changenow` | none | no | Not started |
 | 49 | 207 | CriptoSwaps | `criptoswaps` | none | no | Not started |
 | 50 | 208 | BlockFin | `blockfin` | none | no | Not started |

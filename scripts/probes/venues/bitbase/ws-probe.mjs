@@ -1,10 +1,10 @@
 // Bitbase futures WebSocket probe: catalog from the ticker streams, the book channels, the anchor topics, errors, a batch of perpetuals on one connection, silence and deflate.
-// Public, unauthenticated, read-only. Sockets open with perMessageDeflate false, like server/src/feeds/book/VenueFeed.ts.
+// Public, unauthenticated, read-only. Sockets open with perMessageDeflate false, like the engine's book feed, VenueFeed.ts.
 // The URL is the one the Bitbase web app builds, getOrigin("fstream") plus "/ws/market", since Bitbase publishes no API documentation.
 // Run from server/: node --max-old-space-size=512 ../scripts/probes/venues/bitbase/ws-probe.mjs [catalog|book|anchor|errors|batch|silence|deflate]
-//   catalog  tickers and agg_tickers for 12 s: symbol count by quote, contract size implied by turnover. About 13 s.
+//   catalog  tickers and agg_tickers for 12 s: symbol count by quote, row age, symbols missing from some frames, contract size implied by turnover. About 13 s.
 //   book     depth_update (100 ms) and depth,50 on four perps for 60 s: chain rule, snapshot alignment, level order, window. About 62 s.
-//   anchor   agg_tickers plus mark_price, index_price, fund_rate and agg_ticker on three perps for 65 s: cadence, coverage, premium. About 67 s.
+//   anchor   agg_tickers plus mark_price, index_price, fund_rate and agg_ticker on three perps for 75 s: cadence, coverage, premium, row age, fund_rate on every perp, clock bound. Start it near second 50 so two minute boundaries fall inside. About 77 s.
 //   errors   unknown, delisted and close-only symbols, a batch holding one unknown symbol, depth levels and intervals, bad topic, non-JSON, duplicate, unsubscribe, one spot check. About 35 s.
 //   batch    depth_update on 150 perps on one connection for 45 s. About 50 s.
 //   silence  five sockets that differ only in what the client sends or subscribes, for up to 70 s.
@@ -76,7 +76,8 @@ async function readCatalog(ms = 12_000) {
       for (const r of j.data) tick.set(r.s, r);
     }
     if (j.topic === 'agg_tickers') {
-      aggFrames.push({ at: Date.now(), n: j.data.length, bytes: d.length, lagMs: Date.now() - Math.max(...j.data.map((r) => r.t)) });
+      const ages = j.data.map((r) => Date.now() - r.t).sort((x, y) => x - y);
+      aggFrames.push({ at: Date.now(), n: j.data.length, bytes: d.length, lagMs: ages[0], ageMaxMs: ages.at(-1), syms: j.data.map((r) => r.s) });
       for (const r of j.data) agg.set(r.s, r);
     }
   });
@@ -107,7 +108,11 @@ async function modeCatalog() {
     aggGapsMs: aggFrames.slice(1).map((f, i) => f.at - aggFrames[i].at),
     aggBytesPerFrame: aggFrames.map((f) => f.bytes),
     aggLagFromNewestRowMs: aggFrames.map((f) => f.lagMs),
+    aggAgeOfOldestRowMs: aggFrames.map((f) => f.ageMaxMs),
   });
+  // A symbol missing from some agg_tickers frames would be lost by a list built from one frame.
+  const inAll = (x) => aggFrames.every((f) => f.syms.includes(x));
+  log('agg_intermittent', { symbols: [...agg.keys()].filter((x) => !inAll(x)), framesHolding: [...agg.keys()].filter((x) => !inAll(x)).map((x) => aggFrames.filter((f) => f.syms.includes(x)).length) });
   // Turnover over amount over last price estimates the contract size in coins.
   const implied = [];
   for (const [s, r] of tick) {
@@ -331,7 +336,12 @@ async function modeAnchor() {
   const ws = await open();
   const t0 = Date.now();
   const per = {};
-  const agg = { frames: [], seen: new Map(), prem: new Map() };
+  const agg = { frames: [], seen: new Map(), prem: new Map(), vals: new Map() };
+  const fund = new Map(); // every perpetual's fund_rate pushes: symbol to [{r, t, at}]
+  const pings = [];
+  let fundSubscribed = 0;
+  let fundAcks = 0;
+  let fundInvalid = 0;
   const note = (k, s, at, v) => {
     per[k] ??= {};
     per[k][s] ??= { n: 0, changes: 0, last: null, gaps: [], lastAt: null, lag: [], sample: null };
@@ -345,19 +355,39 @@ async function modeAnchor() {
   ws.on('message', (d) => {
     const at = Date.now();
     const { s, j } = parse(d);
+    if (s === 'pong' && pings.length && pings.at(-1).pong === null) pings.at(-1).pong = at - pings.at(-1).sent;
+    if (s === 'Invalid method') fundInvalid++;
+    if (j?.id?.startsWith?.('f')) fundAcks++;
     if (!j?.topic) return;
     if (j.topic === 'agg_tickers') {
       capture('anchor-agg.jsonl', s);
-      agg.frames.push({ at: at - t0, n: j.data.length });
+      const ages = j.data.map((r) => at - r.t).sort((a, b) => a - b);
+      agg.frames.push({ at: at - t0, n: j.data.length, bytes: d.length, ageP50: pct(ages, 50), ageMax: ages.at(-1), over60s: ages.filter((a) => a > 60_000).length });
       for (const r of j.data) {
         agg.seen.set(r.s, (agg.seen.get(r.s) ?? 0) + 1);
+        const v = agg.vals.get(r.s) ?? { i: new Set(), m: new Set(), t: new Set() };
+        v.i.add(r.i);
+        v.m.add(r.m);
+        v.t.add(r.t);
+        agg.vals.set(r.s, v);
         const i = Number(r.i);
         const m = Number(r.m);
         if (i > 0 && m > 0) agg.prem.set(r.s, { ppm: Math.round(((m - i) / i) * 1e6), markEqLast: r.m === r.c, markEqMid: Number(r.m) === (Number(r.bp) + Number(r.ap)) / 2 });
       }
+      // The second frame is live, so its symbols are the list every fund_rate topic is built from, 100 topics per frame.
+      if (agg.frames.length === 2 && !fundSubscribed) {
+        const all = j.data.map((r) => r.s).filter((x) => !syms.includes(x));
+        for (let k = 0; k < all.length; k += 100) ws.send(JSON.stringify({ id: `f${k}`, method: 'SUBSCRIBE', params: all.slice(k, k + 100).map((x) => `fund_rate@${x}`) }));
+        fundSubscribed = all.length;
+      }
       return;
     }
     const sym = j.data?.s;
+    if (j.topic === 'fund_rate') {
+      const arr = fund.get(sym) ?? [];
+      arr.push({ r: j.data.r, t: j.data.t, at });
+      fund.set(sym, arr);
+    }
     if (!syms.includes(sym)) return;
     capture(`anchor-${j.topic}.jsonl`, s);
     if (j.topic === 'fund_rate') {
@@ -375,13 +405,16 @@ async function modeAnchor() {
   });
   ws.send(sub(['agg_tickers']));
   ws.send(sub(syms.flatMap((s) => [`mark_price@${s}`, `index_price@${s}`, `fund_rate@${s}`, `agg_ticker@${s}`])));
-  const pinger = setInterval(() => ws.send('ping'), 20_000);
-  await sleep(65_000);
+  const pinger = setInterval(() => {
+    pings.push({ sent: Date.now(), pong: null });
+    ws.send('ping');
+  }, 15_000);
+  await sleep(75_000);
   clearInterval(pinger);
   ws.terminate();
   for (const [k, bySym] of Object.entries(per)) {
     for (const [s, r] of Object.entries(bySym)) {
-      log('anchor_topic', { topic: k, s, frames: r.n, eventTimesUtc: r.times, valueChanges: r.changes, gapMs: { p50: pct(r.gaps, 50), max: pct(r.gaps, 100) }, lagMs: { p50: pct(r.lag, 50), max: pct(r.lag, 100) }, last: r.last, sample: r.sample });
+      log('anchor_topic', { topic: k, s, frames: r.n, eventTimesUtc: r.times, valueChanges: r.changes, gapMs: { p50: pct(r.gaps, 50), max: pct(r.gaps, 100) }, lagMs: { min: pct(r.lag, 0), p50: pct(r.lag, 50), max: pct(r.lag, 100) }, last: r.last, sample: r.sample });
     }
   }
   const prem = [...agg.prem.values()];
@@ -391,6 +424,10 @@ async function modeAnchor() {
     frames: agg.frames.length,
     rowsPerFrame: agg.frames.map((f) => f.n),
     frameAtMs: agg.frames.map((f) => f.at),
+    bytesPerFrame: { min: Math.min(...agg.frames.map((f) => f.bytes)), max: Math.max(...agg.frames.map((f) => f.bytes)) },
+    rowAgeMsP50PerFrame: agg.frames.map((f) => f.ageP50),
+    rowAgeMsMaxPerFrame: agg.frames.map((f) => f.ageMax),
+    rowsOver60sPerFrame: agg.frames.map((f) => f.over60s),
     symbolsSeen: agg.seen.size,
     timesSeenPerSymbol: { min: pct(counts, 0), p50: pct(counts, 50), max: pct(counts, 100) },
     premiumAbsPpm: { p50: pct(abs, 50), p90: pct(abs, 90), p99: pct(abs, 99), max: pct(abs, 100) },
@@ -399,6 +436,31 @@ async function modeAnchor() {
     markEqualsMid: prem.filter((p) => p.markEqMid).length,
     widest: [...agg.prem.entries()].sort((a, b) => Math.abs(b[1].ppm) - Math.abs(a[1].ppm)).slice(0, 6).map(([s, p]) => `${s}:${p.ppm}`),
   });
+  // Distinct values per symbol over all frames after the first, which is the change count a 3 s poll of this topic would see.
+  const distinct = (key) => {
+    const n = [...agg.vals.values()].map((v) => v[key].size);
+    return { p10: pct(n, 10), p50: pct(n, 50), p90: pct(n, 90), max: pct(n, 100), onlyOneValue: n.filter((x) => x === 1).length };
+  };
+  log('agg_tickers_distinct_values', { frames: agg.frames.length, index: distinct('i'), mark: distinct('m'), rowTime: distinct('t') });
+  const rates = [...fund.entries()].map(([s, arr]) => ({ s, r: Number(arr.at(-1).r), n: arr.length, ms: new Date(arr.at(-1).t).getUTCSeconds() * 1000 + new Date(arr.at(-1).t).getUTCMilliseconds() }));
+  const absR = rates.map((x) => Math.abs(x.r)).sort((a, b) => a - b);
+  const valueCounts = {};
+  for (const x of rates) valueCounts[x.r] = (valueCounts[x.r] ?? 0) + 1;
+  log('fund_rate_all', {
+    subscribed: fundSubscribed + syms.length,
+    ackFrames: fundAcks,
+    invalidReplies: fundInvalid,
+    symbolsPushed: fund.size,
+    pushesPerSymbol: { min: pct(rates.map((x) => x.n), 0), max: pct(rates.map((x) => x.n), 100) },
+    pushOffsetIntoMinuteMs: { min: pct(rates.map((x) => x.ms), 0), p50: pct(rates.map((x) => x.ms), 50), max: pct(rates.map((x) => x.ms), 100) },
+    absRate: { p50: pct(absR, 50), p90: pct(absR, 90), max: absR.at(-1) },
+    positive: rates.filter((x) => x.r > 0).length,
+    negative: rates.filter((x) => x.r < 0).length,
+    zero: rates.filter((x) => x.r === 0).length,
+    mostCommon: Object.entries(valueCounts).sort((a, b) => b[1] - a[1]).slice(0, 5),
+    extremes: [...rates].sort((a, b) => Math.abs(b.r) - Math.abs(a.r)).slice(0, 6).map((x) => `${x.s}:${x.r}`),
+  });
+  log('clock', { pongMs: pings.map((p) => p.pong), minLagMarkPriceMs: Math.min(...Object.values(per.mark_price ?? {}).map((r) => pct(r.lag, 0))) });
 }
 
 // Each request is sent alone and replies are read for 1.2 s, because an error reply is plain text with no id.
