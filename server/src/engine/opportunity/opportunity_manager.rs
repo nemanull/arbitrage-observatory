@@ -155,6 +155,8 @@ impl OpportunityManager {
             }
         };
 
+        
+
         if anchor.fresh_net_ppm < MIN_NET_PPM {
             let rejection = Rejection::StandingBasis { net_ppm, anchor };
             self.report_rejection(rejection, pair, &route, now);
