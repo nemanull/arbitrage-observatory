@@ -107,6 +107,7 @@ mod tests {
             taker_ppm,
             linear: true,
             contract_size: 1.0,
+            price_scale: 1.0,
         }
     }
 

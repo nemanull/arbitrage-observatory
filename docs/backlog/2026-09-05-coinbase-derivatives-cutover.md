@@ -8,7 +8,7 @@ Coinbase International derivatives move to a Deribit powered gateway on 2026-09-
 This is a merger rather than a withdrawal.
 Coinbase International Exchange and Deribit combine into one platform, trading continues through the API, and Coinbase states that the existing CDP API key authenticates to the new gateway with no new credentials to create.
 The account side therefore needs nothing from this project, which places no orders and only reads prices.
-The feed in [`coinbase.ts`](../../server/src/venues/coinbase/coinbase.ts), shipped on 2026-09-05, reads those instruments through Coinbase Advanced.
+The feed in [`coinbase.ts`](../../old_ts_server/src/venues/coinbase/coinbase.ts), shipped on 2026-09-05, reads those instruments through Coinbase Advanced.
 It therefore has a known expiry date four days after it was written.
 
 ## Finding
@@ -30,7 +30,7 @@ Both readings are consistent with the published wording.
 If the Advanced Trade socket keeps the perpetuals under renamed ids, nothing needs doing.
 `rawMarketId` comes from `loadMarkets()` on every boot, so a pure rename flows through once CCXT catches up.
 The risk in that branch is CCXT lag rather than Coinbase.
-The acknowledgement diff in [`coinbase.ts`](../../server/src/venues/coinbase/coinbase.ts) is what makes that lag visible instead of silent.
+The acknowledgement diff in [`coinbase.ts`](../../old_ts_server/src/venues/coinbase/coinbase.ts) is what makes that lag visible instead of silent.
 
 If the Advanced Trade socket drops the perpetuals, the feed goes dead rather than wrong.
 The silence watchdog terminates and reconnects forever with backoff, `markStale` zeroes the venue's slots, and its clusters stop producing opportunities.
@@ -75,3 +75,12 @@ Re-probe both hosts on the morning of 2026-09-09 and take the branch the evidenc
 Where the Advanced Trade socket survives, confirm CCXT reports the new ids and that the acknowledgement diff is quiet.
 Where it does not, add the second feed class and switch the `coinbase` registration to it.
 Either way, remove this entry once the observatory has streamed Coinbase perpetual quotes across the cutover.
+
+## 2026-10-01: the INTX perpetuals paused
+
+The cutover did not happen on 2026-09-09, and the INTX perpetuals kept trading through September.
+On 2026-10-01 every INTX perpetual that is not delisted, 131 of them, read `PAUSED` on `api.international.coinbase.com/api/v1/instruments`, with its quote frozen at 09:00:29 or 09:00:30 UTC.
+The Advanced socket still acknowledges every `-PERP-INTX` product and answers each with an empty snapshot and no update, and the Advanced REST book answers "no pricebook found".
+The Advanced products list still carries all 131 with `is_disabled` false and `trading_disabled` true.
+So the Advanced Trade socket stops serving the perpetuals, which is the second branch above, and the Rust coinbase adapter of [`2026-10-01-rust-venue-adapters-design.md`](../implemented/2026-10-01-rust-venue-adapters-design.md) streams empty books until a feed against the replacement host exists.
+Whether the replacement host now carries the merged books was not probed.

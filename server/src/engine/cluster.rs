@@ -21,6 +21,7 @@ pub struct Market {
     pub taker_ppm: u32,        // taker fee in parts per million: 550 = 0.055%
     pub linear: bool,
     pub contract_size: f64,
+    pub price_scale: f64, // venue price × price_scale = the price every other venue quotes. 10 on okx ANTHROPIC, which quotes a tenth
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

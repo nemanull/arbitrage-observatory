@@ -71,9 +71,10 @@ impl ClusterIndex {
 
             slots[market_index] = Some(market.clone());
 
-            bid_mul[market_index] = 1.0 - f64::from(market.taker_ppm) / 1_000_000.0;
-            ask_mul[market_index] = 1.0 + f64::from(market.taker_ppm) / 1_000_000.0;
-            size_mul[market_index] = f64::from(market.contract_size);
+            // The scale turns the venue's price into everyone else's, so a contract counts for that many fewer of their units.
+            bid_mul[market_index] = (1.0 - f64::from(market.taker_ppm) / 1_000_000.0) * market.price_scale;
+            ask_mul[market_index] = (1.0 + f64::from(market.taker_ppm) / 1_000_000.0) * market.price_scale;
+            size_mul[market_index] = market.contract_size / market.price_scale;
 
             market_count += 1;
         }
@@ -211,6 +212,7 @@ mod tests {
             taker_ppm: 500,
             linear,
             contract_size: 1.0,
+            price_scale: 1.0,
         }
     }
 
@@ -350,5 +352,29 @@ mod tests {
         assert_eq!(ids.get("binance", "SOLUSDT"), None); // one venue, no cluster
         assert_eq!(ids.get("binance", "BTCUSDC"), None); // lost to the USDT twin
         assert_eq!(ids.get("okx", "BTCUSDT"), None);
+    }
+
+    #[test]
+    fn a_price_scale_multiplies_both_price_multipliers_and_divides_the_size_multiplier() {
+        let scaled = Market {
+            contract_size: 2.0,
+            price_scale: 10.0,
+            ..market("okx", "ANTHROPIC-USDT-SWAP", "ANTHROPIC", "USDT", true)
+        };
+        let index = ClusterIndex::build_index(&[
+            venue("binance", vec![market("binance", "ANTHROPICUSDT", "ANTHROPIC", "USDT", true)]),
+            venue("okx", vec![scaled]),
+        ])
+        .unwrap();
+
+        let keeps = 1.0 - 500.0 / 1_000_000.0;
+        let pays = 1.0 + 500.0 / 1_000_000.0;
+        let cluster = &index.clusters[0];
+        assert_eq!(cluster.bid_mul[0], keeps);
+        assert_eq!(cluster.ask_mul[0], pays);
+        assert_eq!(cluster.size_mul[0], 1.0);
+        assert_eq!(cluster.bid_mul[1], keeps * 10.0);
+        assert_eq!(cluster.ask_mul[1], pays * 10.0);
+        assert_eq!(cluster.size_mul[1], 0.2);
     }
 }

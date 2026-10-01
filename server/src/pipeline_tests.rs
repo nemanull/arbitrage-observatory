@@ -209,6 +209,7 @@ fn venue(id: &str, listings: &[(&str, &str)]) -> Venue {
             taker_ppm: 500,
             linear: true,
             contract_size: 1.0,
+            price_scale: 1.0,
         });
     }
 

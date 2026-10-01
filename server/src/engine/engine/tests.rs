@@ -56,6 +56,7 @@ fn market(venue_id: &str) -> Market {
         taker_ppm: TAKER_PPM,
         linear: true,
         contract_size: 1.0,
+        price_scale: 1.0,
     }
 }
 

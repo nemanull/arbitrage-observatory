@@ -82,6 +82,8 @@ The newest audit is the one that describes current behaviour.
 - [`implemented/2026-09-15-five-venue-research-plan.md`](./implemented/2026-09-15-five-venue-research-plan.md) records the reconciled plan and the profile template that produced the fifteen venue profiles.
 - [`implemented/2026-09-15-five-venue-adapters-design.md`](./implemented/2026-09-15-five-venue-adapters-design.md) records the reconciled design that builds Gate, Bitget, MEXC, Bitstamp and Gemini as registered venues that do not start, the shared feed, poller and connector changes they needed, and each adapter's live smoke numbers.
 - [`implemented/2026-09-15-five-venue-adapters-plan.md`](./implemented/2026-09-15-five-venue-adapters-plan.md) records the reconciled plan that shipped the five adapters, and the checks each venue needs before it is activated.
+- [`implemented/2026-10-01-rust-venue-adapters-design.md`](./implemented/2026-10-01-rust-venue-adapters-design.md) records the reconciled design that ports the ten Nest venue adapters to Rust, reads each catalog without CCXT by CCXT's own rules, moves the deny list and the okx price scale into the venue loaders, and what the live checks found, including the paused Coinbase International perpetuals.
+- [`implemented/2026-10-01-rust-venue-adapters-plan.md`](./implemented/2026-10-01-rust-venue-adapters-plan.md) records the reconciled plan that shipped the five running venues, their catalog parity, live smokes and the first Rust test run, then the five later venues unstarted.
 
 ## Reference
 

@@ -274,6 +274,7 @@ mod tests {
                 taker_ppm: 500,
                 linear: true,
                 contract_size: 1.0,
+                price_scale: 1.0,
             });
         }
 

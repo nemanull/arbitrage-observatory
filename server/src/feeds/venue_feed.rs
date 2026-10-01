@@ -284,6 +284,52 @@ impl<S: Default> Connection<S> {
     }
 }
 
+// Venue tests drive handle on this, as the Nest specs drove handleMessage on a stub connection.
+#[cfg(test)]
+impl<S: Default> Connection<S> {
+    // Market i sits in cluster i, and the connection is open with no frame handled yet.
+    pub fn for_test(id: &str, markets: Vec<Market>) -> Self {
+        let mut slots = Vec::with_capacity(markets.len());
+        for cluster in 0..markets.len() {
+            slots.push(Slot { cluster, venue: 0 });
+        }
+
+        let mut conn = Self::new(id.to_string(), markets, slots);
+        conn.begin();
+        conn.frame_recv_ts = 1;
+        conn
+    }
+
+    // What the engine would get for the frames handled since the last call, as (raw id, bids, asks) in publish order.
+    pub fn take_published(&mut self) -> Vec<(String, Vec<BookLevel>, Vec<BookLevel>)> {
+        let mut published = Vec::with_capacity(self.changed.len());
+
+        for i in 0..self.changed.len() {
+            let position = self.changed[i];
+            self.is_changed[position] = false;
+
+            if let Some(EngineEvent::Book(update)) = self.update(position) {
+                published.push((
+                    self.markets[position].raw_market_id.clone(),
+                    update.bids.as_slice().to_vec(),
+                    update.asks.as_slice().to_vec(),
+                ));
+            }
+        }
+
+        self.changed.clear();
+        published
+    }
+
+    pub fn resync_requested(&self) -> bool {
+        self.resync
+    }
+
+    pub fn take_sent(&mut self) -> Vec<Message> {
+        std::mem::take(&mut self.outbox)
+    }
+}
+
 struct EngineGone;
 
 #[derive(Debug, PartialEq, Eq)]
