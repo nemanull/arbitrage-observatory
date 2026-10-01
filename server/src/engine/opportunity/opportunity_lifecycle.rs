@@ -78,6 +78,12 @@ impl OpportunityLifecycle {
         }
     }
 
+    // The open routes of one pair, for tests, which cannot see the private map from a sibling module.
+    #[cfg(test)]
+    pub fn routes(&self, pair: &str) -> Option<&std::collections::HashMap<RouteKey, Opportunity>> {
+        self.active.get(pair)
+    }
+
     pub fn does_opportunity_already_exist(
         &self,
         pair: &str,

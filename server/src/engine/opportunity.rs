@@ -1,6 +1,7 @@
 pub mod anchor_reading;
 pub mod ladder_walk;
 pub mod opportunity_lifecycle;
+pub mod opportunity_manager;
 pub mod opportunity_writer;
 
 use super::cluster::{Cluster, Market, PairKey};
@@ -58,7 +59,7 @@ pub enum AnchorIssue {
     Moving,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EdgeSample {
     pub avg_ppm: f64, // average edge over the whole region after fees. 0 when the region is empty
     pub size: f64,    // coins in the region, the same quantity bought and sold
