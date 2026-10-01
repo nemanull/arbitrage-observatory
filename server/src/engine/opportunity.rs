@@ -1,5 +1,12 @@
-use std::collections::HashMap;
+pub mod anchor_reading;
+pub mod ladder_walk;
+pub mod opportunity_lifecycle;
+pub mod opportunity_writer;
+
 use super::cluster::{Cluster, Market, PairKey};
+use ladder_walk::walk_ladders;
+use opportunity_lifecycle::MAX_OPPORTUNITY_AGE_MS;
+use std::collections::HashMap;
 
 pub type RouteKey = String; // "bybit-binance": the venue we sell on, then the venue we buy on
 
@@ -17,11 +24,11 @@ pub enum CloseReason {
 #[derive(Debug, Clone, Copy)]
 pub struct AnchorLeg {
     pub index: f64,
-    pub mark: f64,           // a route opens only on a positive mark
-    pub touch: f64,          // the top-of-book price your trade would actually hit on that leg
-    pub touch_premium: f64,  // touch over index minus one, what the book says
-    pub mark_premium: f64,   // mark over index minus one, what the venue has accepted
-    pub fresh_premium: f64,  // touch over mark minus one, what the book says that the venue has not absorbed
+    pub mark: f64,          // a route opens only on a positive mark
+    pub touch: f64,         // the top-of-book price your trade would actually hit on that leg
+    pub touch_premium: f64, // touch over index minus one, what the book says
+    pub mark_premium: f64,  // mark over index minus one, what the venue has accepted
+    pub fresh_premium: f64, // touch over mark minus one, what the book says that the venue has not absorbed
     pub funding_rate: f64,
     pub funding_interval_hours: f64,
     pub next_funding_at: i64, // Unix ms
@@ -32,12 +39,12 @@ pub struct AnchorLeg {
 // In fractions, 1 + net_ppm = (1 + index_gap_ppm) × (1 + carried_ppm) × (1 + fresh_net_ppm).
 #[derive(Debug, Clone, Copy)]
 pub struct AnchorPair {
-    pub sell: AnchorLeg,     // the venue of the highest bid
-    pub buy: AnchorLeg,      // the venue of the lowest ask
-    pub index_gap_ppm: f64,  // sell index over buy index minus one: the structural part, which funding never closes
-    pub carried_ppm: f64,    // the accepted premiums' gap, the part funding is pricing and closes over hours
-    pub fresh_net_ppm: f64,  // the net edge after fees once each book is divided by its own anchor, the part a taker cross can capture
-    pub standing_ppm: f64,   // net_ppm minus fresh_net_ppm, the part the two anchors already explain
+    pub sell: AnchorLeg,    // the venue of the highest bid
+    pub buy: AnchorLeg,     // the venue of the lowest ask
+    pub index_gap_ppm: f64, // sell index over buy index minus one: the structural part, which funding never closes
+    pub carried_ppm: f64, // the accepted premiums' gap, the part funding is pricing and closes over hours
+    pub fresh_net_ppm: f64, // the net edge after fees once each book is divided by its own anchor, the part a taker cross can capture
+    pub standing_ppm: f64,  // net_ppm minus fresh_net_ppm, the part the two anchors already explain
 }
 
 // Why read_anchor_pair could not judge a route, which refuses it, see anchor_reading.rs.
@@ -53,14 +60,18 @@ pub enum AnchorIssue {
 
 #[derive(Debug, Clone, Copy)]
 pub struct EdgeSample {
-    pub avg_ppm: f64,       // average edge over the whole region after fees. 0 when the region is empty
-    pub size: f64,          // coins in the region, the same quantity bought and sold
-    pub notional: f64,      // what buying the region costs after fees, in the quote asset
-    pub exhausted: bool,    // the region ended because a book ran out of held levels, so size and notional are lower bounds
-    pub buy_levels: usize,  // ask levels the region reaches into on the buy venue
+    pub avg_ppm: f64, // average edge over the whole region after fees. 0 when the region is empty
+    pub size: f64,    // coins in the region, the same quantity bought and sold
+    pub notional: f64, // what buying the region costs after fees, in the quote asset
+    pub exhausted: bool, // the region ended because a book ran out of held levels, so size and notional are lower bounds
+    pub buy_levels: usize, // ask levels the region reaches into on the buy venue
     pub sell_levels: usize, // bid levels on the sell venue
 }
 
+// A real average edge or notional is never negative, so this marks a sample where a leg held no depth in the edge series.
+pub const NO_EDGE: f64 = -1.0;
+
+// A fresh edge is never under minus one million ppm, since a price ratio cannot be negative, so this marks a sample where no anchor could be read.
 pub const NO_ANCHOR: f64 = -2_000_000.0;
 
 // net_ppm, highest_bid and lowest_ask are all after fee adjustments.
@@ -106,7 +117,7 @@ pub struct Opportunity {
     pub net_ppm_series: Vec<f64>,
     pub highest_bid_series: Vec<f64>,
     pub lowest_ask_series: Vec<f64>,
-    pub sample_ts: Vec<i32>, // ms since opened_at, one per sample
+    pub sample_ts: Vec<i32>,           // ms since opened_at, one per sample
     pub edge_avg_ppm_series: Vec<f64>, // the walk per sample, aligned with sample_ts, -1 where a leg held no depth
     pub edge_notional_series: Vec<f64>,
 
@@ -141,21 +152,93 @@ pub struct Observation<'a> {
     pub highest_bid: f64,
     pub lowest_ask: f64,
     pub highest_bid_size: f64, // coins we could sell at highest_bid, already × size_mul
-    pub lowest_ask_size: f64, // coins we could buy at lowest_ask
+    pub lowest_ask_size: f64,  // coins we could buy at lowest_ask
     pub highest_bid_leg_ask: f64, // the other side of the venue we sell on, fee adjusted like highest_bid. Its distance to highest_bid is that book's width
-    pub lowest_ask_leg_bid: f64, // the other side of the venue we buy on
+    pub lowest_ask_leg_bid: f64,  // the other side of the venue we buy on
     pub net_ppm: f64,
     pub anchor: AnchorPair,
     pub now: i64, // Unix ms
 }
 
+impl Opportunity {
+    pub fn createNew(o: Observation) -> Self {
+        let edge = walk_ladders(
+            o.cluster,
+            o.lowest_ask_venue_index,
+            o.highest_bid_venue_index,
+        );
+
+        Self {
+            highest_bid_market: o.highest_bid_market.clone(),
+            lowest_ask_market: o.lowest_ask_market.clone(),
+
+            highest_bid_venue_index: o.highest_bid_venue_index,
+            lowest_ask_venue_index: o.lowest_ask_venue_index,
+
+            opened_at: o.now,
+            net_ppm_at_open: o.net_ppm,
+            highest_bid_at_open: o.highest_bid,
+            lowest_ask_at_open: o.lowest_ask,
+
+            highest_bid_size_at_open: o.highest_bid_size,
+            lowest_ask_size_at_open: o.lowest_ask_size,
+            highest_bid_leg_ask_at_open: o.highest_bid_leg_ask,
+            lowest_ask_leg_bid_at_open: o.lowest_ask_leg_bid,
+
+            ticks_since_start: 1,
+            net_ppm_sum: o.net_ppm,
+            peak_net_ppm: o.net_ppm,
+            peak_at: o.now,
+            peak_highest_bid: o.highest_bid,
+            peak_lowest_ask: o.lowest_ask,
+            peak_highest_bid_size: o.highest_bid_size,
+            peak_lowest_ask_size: o.lowest_ask_size,
+            peak_highest_bid_leg_ask: o.highest_bid_leg_ask,
+            peak_lowest_ask_leg_bid: o.lowest_ask_leg_bid,
+            min_net_ppm: o.net_ppm,
+            last_seen_at: o.now,
+            last_net_ppm: o.net_ppm,
+            last_highest_bid_size: o.highest_bid_size,
+            last_lowest_ask_size: o.lowest_ask_size,
+            last_highest_bid_leg_ask: o.highest_bid_leg_ask,
+            last_lowest_ask_leg_bid: o.lowest_ask_leg_bid,
+
+            net_ppm_series: vec![o.net_ppm],
+            highest_bid_series: vec![o.highest_bid],
+            lowest_ask_series: vec![o.lowest_ask],
+            sample_ts: vec![0],
+            edge_avg_ppm_series: vec![edge.map_or(NO_EDGE, |e| e.avg_ppm)],
+            edge_notional_series: vec![edge.map_or(NO_EDGE, |e| e.notional)],
+
+            anchor_at_open: o.anchor,
+            peak_anchor: Some(o.anchor),
+            last_anchor: Some(o.anchor),
+            fresh_net_ppm_series: vec![o.anchor.fresh_net_ppm],
+            anchor_ts_ms: vec![0],
+            highest_bid_index_series: vec![o.anchor.sell.index],
+            highest_bid_mark_series: vec![o.anchor.sell.mark],
+            lowest_ask_index_series: vec![o.anchor.buy.index],
+            lowest_ask_mark_series: vec![o.anchor.buy.mark],
+
+            edge_at_open: edge,
+            peak_edge: edge,
+            peak_edge_at: o.now,
+            max_edge_notional: edge.map_or(0.0, |e| e.notional),
+            last_edge: edge,
+            edge_samples: if edge.is_some() { 1 } else { 0 },
+
+            closed_at: None,
+            close_reason: None,
+        }
+    }
+
+    pub fn is_past_age_cap(&self, now: i64) -> bool {
+        now - self.opened_at >= MAX_OPPORTUNITY_AGE_MS
+    }
+
+    pub fn has_leg_on(&self, venue_index: usize) -> bool {
+        self.highest_bid_venue_index == venue_index || self.lowest_ask_venue_index == venue_index
+    }
+}
 
 pub type ActiveOpportunityMap = HashMap<PairKey, HashMap<RouteKey, Opportunity>>; // <"BTC|USDT", <"bybit-binance", Opportunity>>
-
-
-
-
-
-
-
-
