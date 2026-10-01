@@ -6,7 +6,6 @@ use sqlx::PgPool;
 use sqlx::postgres::Postgres;
 use sqlx::query_builder::QueryBuilder;
 use tokio::sync::mpsc::Receiver;
-use std::char::DecodeUtf16Error;
 use std::time::Duration;
 
 pub const QUEUE_CAPACITY: usize = 1_024;
@@ -47,21 +46,23 @@ pub async fn run_writer(pool: PgPool, mut rx: Receiver<Opportunity>) {
     }
 }
 
-pub async fn write_with_retry(pool: &PgPool, batch: &[Opportunity]){
-    for a in 0..ATTEMPTS{
+pub async fn write_with_retry(pool: &PgPool, batch: &[Opportunity]) {
+    for attempt in 1..=ATTEMPTS {
         match insert_batch(pool, batch).await {
             Ok(written) => {
-                tracing::info!(event = "opportunities_written", rows = batch.len(), written, a)
+                tracing::info!(event = "opportunities_written", rows = batch.len(), written, attempt);
+                return;
             }
             Err(error) => {
-                tracing::warn!(event = "opportunity_write_failed", rows = batch.len(), a, %error);
-                    if a < ATTEMPTS {
-                        tokio::time::sleep(RETRY_DELAY * a).await;
-                    }
-
+                tracing::warn!(event = "opportunity_write_failed", rows = batch.len(), attempt, %error);
+                if attempt < ATTEMPTS {
+                    tokio::time::sleep(RETRY_DELAY * attempt).await;
+                }
             }
         }
     }
+
+    tracing::error!(event = "opportunity_batch_dropped", rows = batch.len(), attempts = ATTEMPTS);
 }
 
 pub async fn insert_batch(pool: &PgPool, batch: &[Opportunity]) -> sqlx::Result<u64> {
