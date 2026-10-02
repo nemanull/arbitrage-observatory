@@ -243,7 +243,7 @@ They need `user.auth` on the same socket.
 
 No feed is recommended.
 LeveX says it offers no API, forbids scripts from monitoring the site, and excludes US persons, see [`fees.md`](./fees.md) section 1.
-The socket also lacks what [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) relies on to call `resync`: a sequence or update id per symbol.
+The socket also lacks what [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) relies on to call `resync`: a sequence or update id per symbol.
 
 If LeveX ever publishes this socket as an API, the shape the probe supports would be:
 

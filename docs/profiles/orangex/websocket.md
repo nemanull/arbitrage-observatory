@@ -115,7 +115,7 @@ None is documented, and no frame carries one.
 The stream sends changes below the top 100 levels as well.
 After a seed of 100 levels, the BTC book held up to 154 bids and 159 asks in the first run, 149 and 162 in the second, and 185 and 174 in the third, while the full REST book had 435 to 438 bids and 362 to 369 asks.
 So a feed seeded from `depth=100` holds the top of the book exactly, and a level below the seed appears only once it changes.
-That is enough for the engine's 20 levels at [`../../../server/src/engine/Engine.ts`](../../../server/src/engine/Engine.ts) line 61, unless a single move sweeps about 80 levels before a reseed.
+That is enough for the engine's 20 levels at [`../../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, unless a single move sweeps about 80 levels before a reseed.
 
 ### Exact check against REST
 

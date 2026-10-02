@@ -59,7 +59,7 @@ CoinGecko also showed 1 pair, see [`fees.md`](./fees.md) section 3.
 CCXT 4.5.68 has no Bitexen class, and the current master has none, see [`fees.md`](./fees.md) section 8.
 There is no `market.id`, `contractSize`, `linear` or `active` to compare.
 The code `USDTTRY` is the same string in `market_info`, in the ticker key, in the order book path and in the socket subscription, see [`websocket.md`](./websocket.md) section 3.
-The engine's catalog keeps active swaps only, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 200, so Bitexen would contribute nothing even with a class.
+The engine's catalog keeps active swaps only, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 200, so Bitexen would contribute nothing even with a class.
 
 ## 3. Anchor
 

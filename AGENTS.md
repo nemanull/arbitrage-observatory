@@ -39,8 +39,8 @@ Write the word "to", or "between X and Y".
 ## 3. Logging
 
 Logging is critical in this project because most work happens in background jobs.
-Use Nest's default logger on the server.
-A comparable alternative may be chosen for React and Rust in the future.
+Use the `tracing` crate on the server.
+A comparable alternative may be chosen for React in the future.
 Every job and pipeline stage transition should produce a log line with enough context to trace the item it processed.
 
 ## 4. Clean code

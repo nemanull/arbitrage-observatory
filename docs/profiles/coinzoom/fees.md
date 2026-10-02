@@ -122,7 +122,7 @@ CoinZoom lists no perpetual, so there is no funding rate, interval, cap or settl
 None.
 CoinZoom has no perpetual, so it cannot join the engine as a perpetual leg, and no entry in `server/src/venues/registry.ts` is recommended.
 If a later spot stage adds it, `takerPpm` would be 6,000 from S3 and the assets reply, and `ccxtTakerPpm` would be unset because no CCXT class exists.
-Such a stage would also need its own catalog loader, because the connector builds the catalog from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68, 79 and 196 to 201.
+Such a stage would also need its own catalog loader, because the connector builds the catalog from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68, 79 and 196 to 201.
 
 ## 10. Source ledger
 

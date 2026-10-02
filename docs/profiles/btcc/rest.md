@@ -64,7 +64,7 @@ The current values are behind the login, so the size unit is Not verified, see [
 
 Each dictionary name appears once, 384 names for 384 contracts.
 22 bases are listed in more than one settlement family, among them BTC, ETH, XRP and SOL in USDT, USDC and USD.
-The engine treats USD, USDC and USDT as one family, so each of those bases would need a `marketFilter` choice, see [`types.ts`](../../../server/src/ccxt/types.ts) line 23.
+The engine treats USD, USDC and USDT as one family, so each of those bases would need a `marketFilter` choice, see [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) line 23.
 The leverage suffixes were 20x on 76 contracts, 50x on 270, 100x on 6, 150x on 24, 250x on 3 and 500x on 5.
 One contract carries a scale prefix, `1000BONK/USDT.20x`, which would need a price scale.
 
@@ -172,7 +172,7 @@ The quote socket's `Login` frame carried a `Time` equal to or 1 s ahead of the l
 ## 8. Recommended poller shape
 
 No poller is recommended.
-BTCC has no index and no mark, so every BTCC route would be refused at open by the anchor reader, see [`../../../server/src/engine/cluster/types.ts`](../../../server/src/engine/cluster/types.ts) line 34.
+BTCC has no index and no mark, so every BTCC route would be refused at open by the anchor reader, see [`../../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34.
 The one anchor field that exists, the funding estimate, comes from an undocumented web call, one contract per request.
 
 ## 9. Source ledger

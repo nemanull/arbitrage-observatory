@@ -78,7 +78,7 @@ A catalog read has to come from `public_info`, and every other reply has to be f
 | display | `contractOtherName` | `BTCUSDT`, but `MET-USDT` for MET and `TSLAUSDT` for `TSLAX` |
 
 No CCXT class exists, so there is no `market.id` to match, see [`fees.md`](./fees.md) section 8.
-The engine takes its catalog from a CCXT class at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 21 and 68, so IMBX would need a catalog outside CCXT, and `contractName` is the natural `rawMarketId`, since `public_info` and `price_list` both key on it.
+The engine takes its catalog from a CCXT class at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 21 and 68, so IMBX would need a catalog outside CCXT, and `contractName` is the natural `rawMarketId`, since `public_info` and `price_list` both key on it.
 
 ### Size unit, pairs listed twice, and price scale
 
@@ -227,7 +227,7 @@ The refusal matches a load balancer rate rule that fired a few minutes after abo
 It also refused `https://api.imbx.io/vip/levels`, a different host behind the same load balancer, while `www.imbx.io` on CloudFront and the Zendesk help center kept answering 200.
 It still held at 05:05 UTC, 28 minutes after it began, when this profile was written, so its length is unknown.
 The second pass therefore could not rerun any probe, and every number here was checked against the first run's output instead.
-The engine's poller pauses on 403 at [`../../../server/src/feeds/anchor/AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 193 and [`../../../server/src/shared/errors.ts`](../../../server/src/shared/errors.ts) line 1, but a block that also refuses the socket would take the book down with it.
+The engine's poller pauses on 403 at [`../../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 193 and [`../../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, but a block that also refuses the socket would take the book down with it.
 
 ### Error shapes
 
@@ -255,7 +255,7 @@ Over five calls at 04:29:51 UTC the server time minus the local midpoint was −
 No poller is recommended.
 IMBX cannot join the engine in its current shape for four reasons.
 
-1. The catalog is a CCXT class at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 21, and IMBX has none.
+1. The catalog is a CCXT class at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 21, and IMBX has none.
 2. The index comes only from one `public_market_info` call per contract, so a one second anchor round costs 30 requests, one `price_list` and 29 index calls, and a sequential sweep took 4,255 ms.
 3. The load balancer refused this host, socket included, a few minutes after about 250 requests between 04:27 and 04:32 UTC, so a one second round of 30 requests would run into the same block, section 6.
 4. The mark is the median of IMBX's own last price, its own book basis and a funding model, so it reads IMBX's perpetual rather than the index, section 4.

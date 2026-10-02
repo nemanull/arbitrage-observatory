@@ -49,13 +49,13 @@ Five catalog traps came out of the profiles.
 4. MEXC lists 41 contracts with `apiAllowed` false, which the API cannot trade, so the registry needs a filter on `market.info.apiAllowed`.
 5. Gate's 9 USD1 perpetuals sit on a settlement path CCXT does not load, and `BTC_USD` reports a `quanto_multiplier` of 0, which CCXT turns into 1.
 
-The quote family in [`../../server/src/engine/cluster/quoteFamily.ts`](../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 13 joins USD, USDC and USDT.
+The quote family in [`../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/quoteFamily.ts) lines 3 to 13 joins USD, USDC and USDT.
 GUSD and USD1 are outside it.
 So Gemini's 7 GUSD perpetuals and MEXC's 35 USD1 perpetuals form clusters of their own and are never compared.
 Gemini's GUSD and USDC twins publish one identical book, so the 6 USDC twins cover the same markets and nothing is lost.
 
 No venue needs a `PRICE_SCALE` line.
-Gate and Bitget already quote `OPENAI_USDT` and `ANTHROPIC_USDT` at about ten times the OKX price, which is the magnitude OKX's scale of 10 produces, see [`../../server/src/engine/cluster/clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
+Gate and Bitget already quote `OPENAI_USDT` and `ANTHROPIC_USDT` at about ten times the OKX price, which is the magnitude OKX's scale of 10 produces, see [`../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
 
 ## 3. Fees
 
@@ -71,7 +71,7 @@ Gate and Bitget already quote `OPENAI_USDT` and `ANTHROPIC_USDT` at about ten ti
 MEXC is the one venue where the rate a trader sees is not the rate the engine would pay.
 Since 2026-06-01 08:00 UTC, API orders on every futures pair outside the Innovation Zone pay 0.06 % maker and 0.08 % taker, and that schedule "takes precedence over any rates or promotional offers".
 The per contract rate CCXT reads, 200 ppm on `BTC_USDT`, applies to web and app orders only.
-The connector compares every market's CCXT fee against one number at [`../../server/src/ccxt/connector.ts`](../../server/src/ccxt/connector.ts) lines 27 to 31, so MEXC would warn on every market unless `isExpectedCcxtTakerPpm` is overridden, as the comment above it already anticipates.
+The connector compares every market's CCXT fee against one number at [`../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 27 to 31, so MEXC would warn on every market unless `isExpectedCcxtTakerPpm` is overridden, as the comment above it already anticipates.
 
 Bitstamp's 150 ppm belongs to two launch programmes with no published end date.
 They run until Bitstamp introduces volume tiers.
@@ -95,7 +95,7 @@ Gate's contracts reply carries a `taker_fee_rate` of 0.00075 on every row, which
 | markets per connection | 150 | 50, with at most 10 args per frame | 150, one subscribe frame per contract | all 20 | all tracked |
 | evidence | [`gate/websocket.md`](../profiles/gate/websocket.md) sections 4 and 8 | [`bitget/websocket.md`](../profiles/bitget/websocket.md) sections 4 and 8 | [`mexc/websocket.md`](../profiles/mexc/websocket.md) sections 4 and 8 | [`bitstamp/websocket.md`](../profiles/bitstamp/websocket.md) sections 4 and 8 | [`gemini/websocket.md`](../profiles/gemini/websocket.md) sections 4 and 8 |
 
-Every book channel sent text JSON with no compression, so the feed's refusal of deflate at [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) line 77 costs nothing on any of them.
+Every book channel sent text JSON with no compression, so the feed's refusal of deflate at [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/book/VenueFeed.ts) line 77 costs nothing on any of them.
 
 Four feed traps matter.
 
@@ -119,12 +119,12 @@ MEXC's lower latency channel, merged `sub.depth`, sends deltas every 200 ms with
 | median round trip | 158 to 165 ms | 123 to 141 ms | 138 to 142 ms | 164 to 299 ms | riskstats 109 to 189 ms, funding 1.2 to 3.8 s |
 | evidence | [`gate/rest.md`](../profiles/gate/rest.md) sections 3 and 8 | [`bitget/rest.md`](../profiles/bitget/rest.md) sections 3 and 8 | [`mexc/rest.md`](../profiles/mexc/rest.md) sections 3 and 8 | [`bitstamp/rest.md`](../profiles/bitstamp/rest.md) sections 3 and 8 | [`gemini/rest.md`](../profiles/gemini/rest.md) sections 3 and 8 |
 
-The reader at [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) lines 4 to 6 refuses legs read more than 5 s apart, readings older than 10 s, and anchors that moved more than 1,000 ppm in one poll.
+The reader at [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/opportunity/anchorReading.ts) lines 4 to 6 refuses legs read more than 5 s apart, readings older than 10 s, and anchors that moved more than 1,000 ppm in one poll.
 Three venues press against those numbers.
 
 1. Gemini's index republishes about every 5 s, which is the whole skew budget, and its mark premium sat pinned at one of two edges exactly 1,000 ppm apart, so a flip between them is a 1,000 ppm move in one poll.
 2. Bitstamp's thin crypto indices move in coarse steps, one AVAX step was 2,271 ppm, which trips the moving anchor guard on an index that did not move that far.
-3. MEXC reports errors, including its rate limit code 510, with HTTP 200 and `success` false, and [`../../server/src/shared/errors.ts`](../../server/src/shared/errors.ts) line 1 pauses only on 403, 418 and 429.
+3. MEXC reports errors, including its rate limit code 510, with HTTP 200 and `success` false, and [`../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/shared/errors.ts) line 1 pauses only on 403, 418 and 429.
 
 ### Index and mark shapes that have produced false rows before
 

@@ -145,9 +145,9 @@ So there is no CCXT source line to cite, and no `ccxtTakerPpm` to declare.
 | field | value | reason |
 |---|---|---|
 | `takerPpm` | 600 | the VIP 0 futures taker of 0.0600 % on the fee page, S1, for every family |
-| `ccxtTakerPpm` | unset | CCXT has no Bitunix class, so the connector at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 has no `loadMarkets` to call |
+| `ccxtTakerPpm` | unset | CCXT has no Bitunix class, so the connector at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 has no `loadMarkets` to call |
 
-The registry entry cannot be added as it stands, because every venue in [`registry.ts`](../../../server/src/venues/registry.ts) builds its catalog from a CCXT class, as at lines 40 to 77.
+The registry entry cannot be added as it stands, because every venue in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) builds its catalog from a CCXT class, as at lines 40 to 77.
 A Bitunix leg needs a catalog loader that reads `trading_pairs` directly, and that loader would carry the 600 ppm.
 
 ## 10. Source ledger

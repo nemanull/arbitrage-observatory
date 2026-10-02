@@ -153,7 +153,7 @@ The rate the engine reads for the upcoming settlement is known up to four hours 
 | funding in CCXT | `fetchFundingRate` reads `estimated_funding_rate`, the next interval's estimate, and not the rate being charged | `server/node_modules/ccxt/js/src/cryptocom.js` line 3083 |
 
 The CCXT number is 5,000 ppm, and it is the spot Level 1 taker, twelve and a half times the perpetual Level 1 taker.
-The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 33 to 39.
+The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 33 to 39.
 
 ## 9. Recommended registry values
 

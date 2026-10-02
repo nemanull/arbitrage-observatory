@@ -144,7 +144,7 @@ The history call lists the interval still in progress, see [`rest.md`](./rest.md
 | `contractSize` | 1 on every swap | `server/node_modules/ccxt/js/src/backpack.js` line 736, Probed |
 
 CCXT reports no taker at all, so there is no CCXT constant to compare.
-The connector maps a market whose `takerPpm` is unset and whose CCXT taker is not a number to `null`, and skips it, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 162 to 166 and 180 to 186.
+The connector maps a market whose `takerPpm` is unset and whose CCXT taker is not a number to `null`, and skips it, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 162 to 166 and 180 to 186.
 With no registry value every Backpack market would be skipped and the venue would log "no usable swap markets", at the same file, line 51.
 The mismatch warning never fires either, because it runs only when CCXT's number is a number, at line 120.
 

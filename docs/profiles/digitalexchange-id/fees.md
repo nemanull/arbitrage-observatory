@@ -107,14 +107,14 @@ Nothing here feeds an `AnchorRow`.
 CCXT 4.5.68 lists 104 exchange ids and none is this venue, P2.
 No id contains "digital", "indonesia" or "dexid", and the two Indonesian venues it does list, `indodax` and `tokocrypto`, are other exchanges, P2.
 The current CCXT master on GitHub, version 4.5.82, imports 105 exchange classes in `ts/ccxt.ts` and none is this venue, and `ts/src/digitalexchange.ts`, `ts/src/digitalexchangeid.ts` and `ts/src/digitalexchange_id.ts` answer 404, S10.
-So there is no `market.taker` to report, and the engine's connector, which keeps only active swap markets at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202, has nothing to load.
+So there is no `market.taker` to report, and the engine's connector, which keeps only active swap markets at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202, has nothing to load.
 
 ## 9. Recommended registry values
 
 None, because the venue has no perpetual and no CCXT class, so it cannot join the engine as a perpetual leg.
 
 If a later design adds spot legs, `takerPpm` would be 3,600, the published all in rate, because no CCXT value exists to fall back on.
-Every pair is quoted in IDR, which the quote family does not merge with USD, USDC or USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a market here could only pair with another IDR market.
+Every pair is quoted in IDR, which the quote family does not merge with USD, USDC or USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a market here could only pair with another IDR market.
 
 ## 10. Source ledger
 

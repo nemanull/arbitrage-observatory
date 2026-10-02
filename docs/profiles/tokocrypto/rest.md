@@ -65,7 +65,7 @@ All 850 rows had `spotTradingEnable` 1, and none is a perpetual or a future.
 | pairs listed twice | none | P1 and P2 |
 | `fetchOrderBook` | a USDT quoted market reads `https://api.binance.com/api/v3/depth`, every other market reads `/open/v1/market/depth` | lines 911 to 917, and the `binance` base URL at line 166 |
 
-The engine's connector keeps only markets with `type` `swap`, `swap` true and `active` not false, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 195 to 201.
+The engine's connector keeps only markets with `type` `swap`, `swap` true and `active` not false, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 195 to 201.
 TokoCrypto yields none, so the connector would log `no usable swap markets; skipping the venue` at line 51.
 Even for spot, the CCXT `market.id` is not the symbol the socket or the REST book uses, so a feed would need a mapping.
 

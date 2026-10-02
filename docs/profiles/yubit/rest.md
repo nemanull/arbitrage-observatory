@@ -159,7 +159,7 @@ Over about 30 `tickers.all` frames in about 30 s, in the two runs of P4 that cou
 | index `ip` | 354 and 334 of 514 | 3 and 2 | 5 and 6 | 5 and 6 | 6 and 5 |
 
 The index of the most liquid contracts moved about once every 5 to 6 s, and the mark about once every 2 to 3 s.
-The engine refuses a reading older than 10 s, see [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5, so the cadence is inside that bound for liquid contracts and is Not verified for quiet ones.
+The engine refuses a reading older than 10 s, see [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5, so the cadence is inside that bound for liquid contracts and is Not verified for quiet ones.
 
 ## 5. REST book snapshot
 

@@ -183,7 +183,7 @@ BitKan offers no API keys, so a future execution stage has no documented route.
 
 None.
 BitKan has no documented socket, and the website socket has no book channel, carries undocumented and zlib-compressed frames, and relays Binance USD-M trades a median 392 ms after Binance's own trade time.
-The engine already reads the same contracts from Binance directly through [`binance.ts`](../../../server/src/venues/binance/binance.ts).
+The engine already reads the same contracts from Binance directly through [`binance.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/binance/binance.ts).
 
 ## 9. Source ledger
 

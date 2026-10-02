@@ -315,7 +315,7 @@ A recommendation for a later design, not a decision.
 The lower latency alternative is merged `sub.depth`, which arrives about 100 ms sooner.
 It needs a change the current feed does not have: buffer deltas, fetch `GET https://api.mexc.com/api/v1/contract/depth/{symbol}?limit=1000`, drop buffered frames whose `end` is at or below the seed `version`, apply the rest, and resync when `begin` is not the last `end` plus 1.
 The REST depth limit is 10 calls per 2 seconds in the current docs, see [`./rest.md`](./rest.md) section 6, so seeding a 150 contract slice takes about 30 s.
-`resync` in [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 225 to 244 terminates the whole socket, so one gap would re-seed the slice.
+`resync` in [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/book/VenueFeed.ts) lines 225 to 244 terminates the whole socket, so one gap would re-seed the slice.
 The unmerged stream is not worth its bandwidth: `ETH_USDT` alone sent 327 KB per second.
 
 ## 9. Source ledger

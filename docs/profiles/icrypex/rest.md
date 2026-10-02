@@ -56,7 +56,7 @@ The synthetic bases are venue specific tokens named after equities, indices, cur
 ### How CCXT 4.5.68 maps it
 
 CCXT 4.5.68 has no Icrypex class, and CCXT master at commit `1d8b674434fde39ef282988b066812adf8d19b9e` has none either, see [`fees.md`](./fees.md) section 8.
-So the engine's catalog path, `loadMarkets` filtered to `type === 'swap'` at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 199 to 200, cannot load this venue.
+So the engine's catalog path, `loadMarkets` filtered to `type === 'swap'` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 199 to 200, cannot load this venue.
 Were a class written, the natural mapping is `market.id` equal to `symbol`, which the socket's `ps` and the REST book's `pairSymbol` spell identically, and `contractSize` 1, because every size on the wire is a base asset quantity, see [`websocket.md`](./websocket.md) section 4.
 Nothing in the catalog marks the perpetual as linear or inverse, and every size and price is in base and USDT, so it would be linear.
 
@@ -72,7 +72,7 @@ No public call returns an index, a mark, a funding rate, an interval or a next s
 | `GET /v1/future/funding-rates`, `/v1/future/mark-price`, `/v1/future/pairs`, `/v1/premium-index`, `/v1/funding-rate`, `/v1/mark-price`, `/v1/index-price` | 404, empty body | guesses, none exists |
 
 The only per pair prices in public are the ticker's `last`, `bid` and `ask`, and the book.
-So an `AnchorRow` could only be filled with `mark` equal to the last trade, no index, and no funding fields, and the engine's reader refuses a route whose mark is 0 with `anchor_no_mark` at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 38.
+So an `AnchorRow` could only be filled with `mark` equal to the last trade, no index, and no funding fields, and the engine's reader refuses a route whose mark is 0 with `anchor_no_mark` at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 38.
 
 ## 4. Anchor semantics
 

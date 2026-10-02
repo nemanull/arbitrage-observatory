@@ -52,7 +52,7 @@ The web app's pair model also names `ob_external_limit_orders`, `ob_external_min
 ### How CCXT 4.5.68 maps it
 
 It does not, since CCXT has no bitcastle class, see [`fees.md`](./fees.md) section 8.
-The engine builds its catalog from `loadMarkets` of a CCXT class at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, so the venue has no catalog without new code.
+The engine builds its catalog from `loadMarkets` of a CCXT class at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, so the venue has no catalog without new code.
 
 | engine field | what bitcastle offers |
 |---|---|
@@ -144,8 +144,8 @@ The settlement instant was not captured, and these rows come from the history ca
 
 The poller stamps each reading on arrival, so a mark that is already up to 5.7 s old when it arrives would read as fresh.
 That is the slow republish the design asks a researcher to flag.
-The move guard at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6 reads the index or the mark, whichever moved more, so here it would see only a mark that jumps once per 5 s.
-A mark of 0 refuses the route at open, at [`types.ts`](../../../server/src/engine/cluster/types.ts) line 34, which is what an unknown coin's ticker row would give.
+The move guard at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6 reads the index or the mark, whichever moved more, so here it would see only a mark that jumps once per 5 s.
+A mark of 0 refuses the route at open, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34, which is what an unknown coin's ticker row would give.
 
 ## 5. REST book snapshot
 

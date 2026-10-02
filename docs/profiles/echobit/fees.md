@@ -118,7 +118,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | `takerPpm` | 600 | the VIP 0 USDT-M perpetual taker in S1, S2 and S5 |
 | `ccxtTakerPpm` | not applicable | there is no CCXT class to declare a constant for |
-| `createExchange` | needs a named change | the registry type requires `createExchange: () => ccxt.Exchange` at [`registry.ts`](../../../server/src/venues/registry.ts) line 29, and the catalog comes from `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, so Echobit needs a hand written catalog built from `GET /uapi/contract/list`, see [`rest.md`](./rest.md) section 2 |
+| `createExchange` | needs a named change | the registry type requires `createExchange: () => ccxt.Exchange` at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29, and the catalog comes from `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, so Echobit needs a hand written catalog built from `GET /uapi/contract/list`, see [`rest.md`](./rest.md) section 2 |
 
 ## 10. Source ledger
 

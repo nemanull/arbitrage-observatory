@@ -133,7 +133,7 @@ So no `market.taker` exists to read, and `ccxtTakerPpm` has no CCXT constant to 
 |---|---|---|
 | `takerPpm` | 700 | tier 1 perpetual taker, 0.070 %, S1 |
 | `ccxtTakerPpm` | none | no CCXT class, section 8 |
-| `createExchange` | cannot be a CCXT constructor | [`../../../server/src/venues/registry.ts`](../../../server/src/venues/registry.ts) line 29 types it as `() => ccxt.Exchange`, so VALR needs a catalog that does not come from CCXT, see [`rest.md`](./rest.md) section 2 |
+| `createExchange` | cannot be a CCXT constructor | [`../../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29 types it as `() => ccxt.Exchange`, so VALR needs a catalog that does not come from CCXT, see [`rest.md`](./rest.md) section 2 |
 
 ## 10. Source ledger
 

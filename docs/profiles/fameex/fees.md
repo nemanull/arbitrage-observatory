@@ -135,7 +135,7 @@ Pull request 28154, "Add FameEX exchange (futures/swap)", has been open and unme
 | `takerPpm` | 600 | the VIP0 futures taker from S3 and S6 |
 | `ccxtTakerPpm` | none | there is no CCXT class, so there is no CCXT constant to declare |
 
-The registry today builds each venue's catalog from a CCXT class, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68.
+The registry today builds each venue's catalog from a CCXT class, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68.
 FameEX would need a catalog read from `/fapi/v1/contracts` instead, with `multiplier` as the contract size, see [`rest.md`](./rest.md) section 2.
 The other two changes it needs are a gunzip step in the book feed and a per contract anchor poller, see [`websocket.md`](./websocket.md) section 8 and [`rest.md`](./rest.md) section 8.
 

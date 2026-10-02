@@ -92,7 +92,7 @@ In the frame below the BTC touch held 0.00443 BTC at 86,476.6, and the second bi
 The capture of the first run, at 06:40 UTC, held 2 BTC snapshots of 124 with bid equal to ask, and the three later runs, which counted it, held none.
 PYTH, which is not on the zero spread list, showed an ordinary one tick book with no thin level in front.
 If the documented topic carries the same book, the engine would read a thin quote as the touch, and its walk would reach the real book only past it.
-The engine refuses a profitable region below 1,000 quote units at [`OpportunityManager.ts`](../../../server/src/engine/opportunity/OpportunityManager.ts) line 9, so a cross made only of these touches would be refused as `thin_book`.
+The engine refuses a profitable region below 1,000 quote units at [`OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/OpportunityManager.ts) line 9, so a cross made only of these touches would be refused as `thin_book`.
 
 ### Size unit against CCXT `contractSize`
 
@@ -171,7 +171,7 @@ A recommendation for a later design, not a decision.
 | now | no feed | the only documented stream refuses a handshake without a key, and keys come only from the private launch, S1 and S4 |
 | website stream | do not use it for the engine | it is not a published API, its protocol belongs to the web client, and it can change with any web release |
 | with a read key | first capture `orderbook.{symbol}` for its snapshot, delta, id and depth rules | none of them is documented |
-| handshake | the base `VenueFeed` opens a socket with no headers at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, so a Flipster feed would need signed `api-key`, `api-expires` and `api-signature` headers on every connect | S1 |
+| handshake | the base `VenueFeed` opens a socket with no headers at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, so a Flipster feed would need signed `api-key`, `api-expires` and `api-signature` headers on every connect | S1 |
 | touch | treat a one tick touch on a zero spread contract as the thin quote it is, and check how the walk and the `thin_book` rule see it | section 4 |
 | deflate | keep `perMessageDeflate: false` | nothing is known about the documented stream |
 

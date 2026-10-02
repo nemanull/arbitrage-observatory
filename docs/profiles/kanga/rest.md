@@ -61,7 +61,7 @@ Of the 322 CoinGecko pairs, 272 match a market id once the first underscore beco
 
 It does not.
 CCXT 4.5.68 has no Kanga class, and the current CCXT master has none either, see [`fees.md`](./fees.md) section 8.
-So there is no `market.id`, no `contractSize`, no `linear` and no `active` flag to compare, and the engine's catalog, which is CCXT `loadMarkets` filtered to swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 200 to 201, has nothing to load.
+So there is no `market.id`, no `contractSize`, no `linear` and no `active` flag to compare, and the engine's catalog, which is CCXT `loadMarkets` filtered to swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 200 to 201, has nothing to load.
 
 ### Size unit, pairs listed twice, and the settlement family
 
@@ -69,7 +69,7 @@ Sizes are in the base currency on the REST book and on the socket, see [`websock
 There is no contract size and no price scale.
 
 The USD settlement family, USDT, USDC and `oUSD`, holds 265 markets on 197 base assets, and 67 bases are listed in more than one of those quotes, mostly as both `-USDT` and `-USDC`, P1 tag `usd family`.
-A spot integration would pick one market per base, as `marketFilter` does for perpetuals at [`types.ts`](../../../server/src/ccxt/types.ts) lines 14 to 16.
+A spot integration would pick one market per base, as `marketFilter` does for perpetuals at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) lines 14 to 16.
 
 `POST /api/markets` also carries `indexedMarket` and `indexedPayingCurrency` on every market, for example `"indexedPayingCurrency":"USDC","indexedMarket":"BTC-USDC"` on `BTC-USDT` and `"indexedMarket":"AAVE-EURC"` on `AAVE-oPLN`, P1.
 No documentation explains these fields, S1, and they are not an index price.
@@ -92,7 +92,7 @@ The spot mid there comes from the REST book, which can be up to 120 s old, secti
 No call names its source or formula.
 
 Nothing here can fill an `AnchorRow`.
-A route with no anchor row is refused as `anchor_missing`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 25 and 26, and a row with a mark of 0 as `anchor_no_mark`, at lines 37 and 38.
+A route with no anchor row is refused as `anchor_missing`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 25 and 26, and a row with a mark of 0 as `anchor_no_mark`, at lines 37 and 38.
 So a Kanga leg could never pass the open gate in the engine's current shape.
 
 ## 4. Anchor semantics

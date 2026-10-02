@@ -137,7 +137,7 @@ For the perpetuals, CCXT does have `woofipro`, the class for WOOFi Pro, another 
 | `market.maker` | 0.0002, 200 ppm | `woofipro.js` line 317, P1 |
 | `tierBased` | true | `woofipro.js` line 315 |
 | `contractSize` | 1 on all 139 | `woofipro.js` line 570, P1 |
-| `active` | `undefined` on all 139, which the connector's `market.active !== false` lets through | `woofipro.js` line 566, [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203 |
+| `active` | `undefined` on all 139, which the connector's `market.active !== false` lets through | `woofipro.js` line 566, [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203 |
 
 The 500 ppm constant belongs to WOOFi Pro's schedule and says nothing about NonKYC's builder rate.
 

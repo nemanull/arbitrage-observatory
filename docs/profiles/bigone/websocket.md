@@ -128,7 +128,7 @@ The socket and the REST snapshot both send the whole book, and it is thin.
 | `DOGEUSDT` | 16 | 8 |
 | `SQQQUSDT` | 8 | 8 |
 
-So many sides hold fewer than the engine's 20 levels, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, and the feed simply hands over what exists.
+So many sides hold fewer than the engine's 20 levels, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, and the feed simply hands over what exists.
 
 ### Size unit against CCXT `contractSize`
 
@@ -171,7 +171,7 @@ A quiet book sends no frame until it changes: the longest gaps were 28.3 s on `S
 | text `hello` or `ping` on an open socket | nothing, the socket stays open |
 | any JSON object on an open socket | `{"pong": <value of its ping key, or null>}` |
 
-The engine reopens a closed plan with exponential backoff and no attempt limit, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 356 to 373, so a contract that starts to answer 400 would be retried until the next restart.
+The engine reopens a closed plan with exponential backoff and no attempt limit, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 356 to 373, so a contract that starts to answer 400 would be retried until the next restart.
 
 ## 5. Session
 
@@ -249,10 +249,10 @@ It depends on the connection limit of section 5, which has to be settled first, 
 
 | item | recommendation | reason |
 |---|---|---|
-| URL plan | one `EndpointPlan` per market, `wss://api.big.one/ws/contract/v2/depth@<rawMarketId>`, 97 plans for the linear perpetuals | the URL is the subscription, and `EndpointPlan` already takes a URL per plan, at [`types.ts`](../../../server/src/feeds/book/types.ts) lines 4 to 8 |
-| subscribe frames | `[]` | the engine sends nothing for an empty list, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 135 to 150 |
+| URL plan | one `EndpointPlan` per market, `wss://api.big.one/ws/contract/v2/depth@<rawMarketId>`, 97 plans for the linear perpetuals | the URL is the subscription, and `EndpointPlan` already takes a URL per plan, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/types.ts) lines 4 to 8 |
+| subscribe frames | `[]` | the engine sends nothing for an empty list, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 135 to 150 |
 | markets per connection | 1 | fixed by the venue |
-| keepalive | a protocol ping every 15 s | the server sends none, and a pong refreshes the silence clock, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 98 |
+| keepalive | a protocol ping every 15 s | the server sends none, and a pong refreshes the silence clock, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 98 |
 | `maxSilenceMs` | 45,000 | three missed pongs. A quiet book went 28 s without a frame, so the pong has to count as traffic |
 | routing | the connection's single market, `c.plan.markets[0].rawMarketId` | the snapshot has no `symbol` |
 | snapshot | `from === 0`: `resetBook` from the maps and store `to` | |

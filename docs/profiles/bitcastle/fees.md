@@ -124,7 +124,7 @@ So `market.taker` has no value to report, and `ccxtTakerPpm` is null.
 ## 9. Recommended registry values
 
 None.
-The venue should not be added to [`registry.ts`](../../../server/src/venues/registry.ts), because the connector loads every catalog through a CCXT class at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, and the book it would read is a copy of another venue's book.
+The venue should not be added to [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts), because the connector loads every catalog through a CCXT class at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, and the book it would read is a copy of another venue's book.
 If a later design adds it anyway, `takerPpm` is 600, the sum of `order_taker_fee_rate`, `margin_fee_rate` and `insurance_fee_rate`, and there is no CCXT constant to declare.
 
 ## 10. Source ledger

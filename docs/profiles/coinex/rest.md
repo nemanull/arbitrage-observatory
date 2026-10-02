@@ -59,7 +59,7 @@ Hourly lows reached 77,858, 74,050 and 62,900 in the 20:00, 21:00 and 22:00 UTC 
 | source call | `fetchContractMarkets` calls `v2PublicGetFuturesMarket` at `coinex.js` lines 911 and 912 | same call |
 | swaps after the connector filter | 221 | 221 |
 | `market.id` | the REST `market`, `BTCUSDT` | equal on 221 of 221, and equal to the socket's `data.market` |
-| `active` | `undefined` on every swap, line 967 | passes `market.active !== false` in [`connector.ts`](../../../server/src/ccxt/connector.ts), so CCXT would still hand the engine 221 dead contracts |
+| `active` | `undefined` on every swap, line 967 | passes `market.active !== false` in [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts), so CCXT would still hand the engine 221 dead contracts |
 | `settle` | `USDT` for every linear contract, line 948 | wrong for the 18 USDC-margined contracts, which CCXT names `BTC/USDC:USDT` |
 | `linear` | true on 219, false on the 2 inverse | matches `contract_type` |
 | `contractSize` | 1 on every swap, line 973 | not verifiable on an empty book |
@@ -149,7 +149,7 @@ The offset against this host's clock at the midpoint of each request was 0 to 5 
 None.
 CoinEx futures ceased on 2026-09-22, and the anchor endpoints now serve values frozen that morning, so no poller should be written.
 A poller that read them would have seen a stale index and a `nextFundingAt` in the past on every row.
-The age check would not have caught it, because a row without its own `ts` is stamped on arrival at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 133, and only the `created_at` of `futures/index` shows the index's age.
+The age check would not have caught it, because a row without its own `ts` is stamped on arrival at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 133, and only the `created_at` of `futures/index` shows the index's age.
 
 ## 9. Source ledger
 

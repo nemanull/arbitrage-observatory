@@ -52,9 +52,9 @@ Every CCXT line below is in S6.
 |---|---|---|---|
 | `id` | `book`, for example `btc_usd` | identical to the socket's `book` and the REST `book` on 54 of 54 | tag `ccxt_fields`, `idEqualsInfoBook` true |
 | `symbol` | `BASE/QUOTE` upper case, `BTC/USD` | | tag `ccxt_btc_usd` |
-| `type` | `spot` on 54 of 54 | the connector keeps only `type === 'swap'`, so 0 markets survive, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203 | tag `ccxt_fields`, and `server/node_modules/ccxt/js/src/bitso.js` line 544 |
+| `type` | `spot` on 54 of 54 | the connector keeps only `type === 'swap'`, so 0 markets survive, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203 | tag `ccxt_fields`, and `server/node_modules/ccxt/js/src/bitso.js` line 544 |
 | `active` | `undefined` on 54 of 54 | the connector's `active !== false` would pass it | `server/node_modules/ccxt/js/src/bitso.js` line 550 |
-| `contractSize` | `undefined` on 54 of 54 | the connector turns it into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, which is right for sizes in the base currency | `server/node_modules/ccxt/js/src/bitso.js` line 556, and [`websocket.md`](./websocket.md) section 4 |
+| `contractSize` | `undefined` on 54 of 54 | the connector turns it into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194, which is right for sizes in the base currency | `server/node_modules/ccxt/js/src/bitso.js` line 556, and [`websocket.md`](./websocket.md) section 4 |
 | `linear` | `undefined` on 54 of 54 | | line 552 |
 | `taker` and `maker` | `fees.structure[0]`, `0.0036` and `0.003` on `BTC/USD` | see [`fees.md`](./fees.md) section 8 | tag `ccxt_btc_usd` |
 | `precision.price` | `tick_size`, 1 on `btc_usd` | | tag `ccxt_btc_usd` |
@@ -78,7 +78,7 @@ The reply was 14,415 to 14,427 bytes over 60 polls in two runs, with a median of
 Each row has `high`, `last`, `created_at`, `book`, `volume`, `vwap`, `low`, `ask`, `bid`, `change_24` and `rolling_average_change`.
 
 No anchor poller is recommended.
-An `AnchorRow` for Bitso would have a mark of 0, and the reader refuses such a route at open with `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 36 to 38.
+An `AnchorRow` for Bitso would have a mark of 0, and the reader refuses such a route at open with `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 36 to 38.
 
 ## 4. Anchor semantics
 
@@ -129,7 +129,7 @@ The REST book is the only way to seed the socket's book, and one call per book f
 | `Retry-After` or limit headers | Not publicly specified | none. The full header set of a `curl` reply to `GET /v3/ticker/` at 01:18 UTC had `date`, `content-type`, `content-length`, `x-envoy-upstream-service-time`, `server`, `x-content-type-options`, `cf-cache-status`, `strict-transport-security` and `cf-ray`, plus a `set-cookie`, and the probe saw no `retry-after` on any reply |
 | CCXT | `rateLimit` 2,000 ms, "30 requests per minute" | `server/node_modules/ccxt/js/src/bitso.js` line 24 |
 
-The engine's poller pauses on 403, 418 and 429 only, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1.
+The engine's poller pauses on 403, 418 and 429 only, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1.
 Bitso's documented limit status is 420, so a Bitso poller would have to add it.
 
 Error shapes, probed at 01:23 UTC and again at 01:42 UTC with the same statuses and bodies:

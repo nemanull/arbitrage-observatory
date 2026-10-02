@@ -119,7 +119,7 @@ The hostname swap is a workaround and not a supported class, so the survey recor
 
 ## 9. Recommended registry values
 
-None, because OKJ lists no perpetual and the engine trades perpetuals only, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202.
+None, because OKJ lists no perpetual and the engine trades perpetuals only, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202.
 If a spot leg were ever added, `takerPpm` would be 1,400, the Lv1 taker of S1.
 A `ccxtTakerPpm` of 1,500 would describe the `okx` class under a hostname swap, and it would be wrong for OKJ by 100 ppm.
 

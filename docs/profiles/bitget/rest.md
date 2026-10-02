@@ -60,7 +60,7 @@ Probed: every classic row read `normal` and every UTA row read `online`, in the 
 
 ### Active perpetuals by settlement asset
 
-Probed with CCXT 4.5.68, filtered as `isActiveSwapMarket` does at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194.
+Probed with CCXT 4.5.68, filtered as `isActiveSwapMarket` does at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 188 to 194.
 
 | settle | linear | CCXT active swaps | classic `productType` | example `market.id` |
 | --- | --- | ---: | --- | --- |
@@ -96,14 +96,14 @@ The UTA USDT-M and USDC-M lists matched the classic lists id for id, 786 and 49 
 No base and quote pair is listed twice.
 But 49 pairs have two or three contracts inside one quote family, since the engine groups USD, USDC and USDT, see [`../../implemented/2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
 BTC, for example, is `BTCUSDT`, `BTCPERP` and `BTCUSD`.
-Every one of the 49 USDC-M contracts and the 9 Coin-M contracts has a USDT-M twin, so `marketRank` in [`../../../server/src/engine/cluster/quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) would keep the USDT-M contract on every pair.
-The orchestrator streams only tracked markets, at [`../../../server/src/orchestrator.ts`](../../../server/src/orchestrator.ts) lines 218 to 220, so in practice Bitget contributes only USDT-M perpetuals.
+Every one of the 49 USDC-M contracts and the 9 Coin-M contracts has a USDT-M twin, so `marketRank` in [`../../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/quoteFamily.ts) would keep the USDT-M contract on every pair.
+The orchestrator streams only tracked markets, at [`../../../server/src/orchestrator.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/orchestrator.ts) lines 218 to 220, so in practice Bitget contributes only USDT-M perpetuals.
 
 ### Price scale and name collisions
 
 - `OPENAIUSDT` read 1,458.86 and `ANTHROPICUSDT` 2,069.2 at 07:11 UTC, while okx's `OPENAI-USDT-SWAP` read 148.81 and `ANTHROPIC-USDT-SWAP` 214.22 at about 07:33 UTC.
   In the second pass, read seconds apart, Bitget's marks were 1,443.39 and 2,065.28 and okx's last trades 147.5 and 211.55.
-  The engine already scales those two okx markets by 10, see [`../../../server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23, and Bitget's prices sit at that scaled magnitude, so Bitget needs no scale on them.
+  The engine already scales those two okx markets by 10, see [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23, and Bitget's prices sit at that scaled magnitude, so Bitget needs no scale on them.
   The morning reads were 22 minutes apart, and the second pass compared a mark with a last trade, so the gap between the two venues was not measured.
   Both Bitget indices come from one source, see section 4.
 - `BBUSDT` and `QNTUSDT` are listed, and `ONUSDT` is not.
@@ -134,7 +134,7 @@ The keys of both calls use the CCXT `market.id` spelling.
 
 ### Field for each `AnchorRow` column
 
-The row type is at [`../../../server/src/engine/cluster/types.ts`](../../../server/src/engine/cluster/types.ts) lines 42 to 49.
+The row type is at [`../../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/types.ts) lines 42 to 49.
 
 | column | field | unit | probed |
 | --- | --- | --- | --- |

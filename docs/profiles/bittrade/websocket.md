@@ -282,7 +282,7 @@ Today the connector would skip BitTrade before any feed opens, see [`fees.md`](.
 | markets per connection | all 45 online pairs | 45 ran on one socket at 72 or 73 frames per second, with 0 gaps in two runs of three and 1 in the other |
 | subscribe frames | one `{"sub": "market.<id>.mbp.150", "id": "<id>"}` per pair | one topic per frame |
 | snapshot | one `{"req": "market.<id>.mbp.150", "id": "<id>"}` per pair, paced at about 10 a second, after the `sub`, and a pair with no snapshot after 10 s is logged | a burst of 45 got 21 refusals with 429, paced requests got none, and `daijpy` never answered |
-| decode | `zlib.gunzipSync` on every binary frame before `JSON.parse` | the server gzips every frame, and `VenueFeed` hands `handleMessage` the raw buffer at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 209 |
+| decode | `zlib.gunzipSync` on every binary frame before `JSON.parse` | the server gzips every frame, and `VenueFeed` hands `handleMessage` the raw buffer at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 209 |
 | keepalive | answer every `{"ping": n}` with `{"pong": n}` | two missed pings, about 16 s, close the socket |
 | `maxSilenceMs` | 15,000 | the server's ping every 5 s arrives as a message and counts as traffic, since `VenueFeed` stamps `lastMessageAt` on every frame at line 205, so three missed pings is a dead socket |
 | routing | `ch.split('.')[1]` gives the `rawMarketId` of a delta, and `rep` of a snapshot | the topic wraps the symbol |

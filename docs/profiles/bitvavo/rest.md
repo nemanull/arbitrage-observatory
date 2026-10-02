@@ -62,7 +62,7 @@ The documented `status` values are `trading`, `halted`, `auction`, `auctionMatch
 | `taker`, `maker` | 0.0025 and 0.002 on every market, lines 508 and 509 | see [`fees.md`](./fees.md) section 8 |
 | pairs listed twice | none within one quote | 11 bases trade in both EUR and USDC, among them `BTC-EUR` and `BTC-USDC` |
 
-The engine's catalog keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+The engine's catalog keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 From Bitvavo it would keep 0 and skip the venue, at lines 49 to 51.
 Even as spot, 427 of the 438 markets are quoted in EUR, which the quote family does not merge with USD, USDC or USDT, see [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
 
@@ -146,7 +146,7 @@ A recommendation for a later design, not a decision.
 
 | item | recommendation | reason |
 |---|---|---|
-| anchor poller | none | Bitvavo publishes no index, mark or funding, and a mark of 0 is refused at open as `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 to 39 |
+| anchor poller | none | Bitvavo publishes no index, mark or funding, and a mark of 0 is refused at open as `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 to 39 |
 | catalog | `GET /v2/markets`, keep `status === 'trading'` | the halted market is acknowledged by the socket and never delivers, and its `ticker/book` row is frozen |
 | book seed | `getBook` on the socket, or `GET /v2/{market}/book` at the default 1,000 levels | same nonce, one point each |
 | budget | stay under about 300 points a minute for snapshots and polls together | an IP over 1,000 points a minute without a key is blocked for 15 minutes |

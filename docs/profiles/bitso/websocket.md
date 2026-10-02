@@ -140,7 +140,7 @@ None is documented, and no frame carries one.
 ### Size unit
 
 `a` is in the base currency, "Major" in S2 and S3.
-CCXT reports `contractSize` undefined for every Bitso market, at `server/node_modules/ccxt/js/src/bitso.js` line 556 (S6), and the connector turns that into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194.
+CCXT reports `contractSize` undefined for every Bitso market, at `server/node_modules/ccxt/js/src/bitso.js` line 556 (S6), and the connector turns that into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194.
 So the engine's size multiplier would read Bitso sizes correctly.
 The replay above is the evidence: REST amounts and diff amounts summed to the `orders` sizes at every level compared.
 
@@ -283,7 +283,7 @@ If spot legs are ever added, the shape would be as follows.
 | keepalive | none sent | the server needs no client frame and sends `ka` every 20 s |
 | `maxSilenceMs` | 60,000 | three missed `ka` frames. The `ka` frame has to count as traffic, since a quiet book sends nothing |
 | routing | `type` and `book`, with `book` equal to `rawMarketId` | the socket spells books as CCXT `market.id` does |
-| resync | a sequence jump on one book refetches that book's REST snapshot | the engine's `resync` terminates the whole socket, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 296 to 314, which here would cost one REST call per book, and Bitso allows 60 public REST calls a minute per IP, see [`rest.md`](./rest.md) section 6. So a socket of 54 books takes about a minute to reseed |
+| resync | a sequence jump on one book refetches that book's REST snapshot | the engine's `resync` terminates the whole socket, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 296 to 314, which here would cost one REST call per book, and Bitso allows 60 public REST calls a minute per IP, see [`rest.md`](./rest.md) section 6. So a socket of 54 books takes about a minute to reseed |
 | unserved book | log a refusal by its `error` text, and never subscribe without `book` | a missing `book` kills the socket with 1011 |
 | receive time | stamp on arrival | `sent` is a server time, 38 ms or more behind arrival |
 | sizes | `Number()` of `a`, base currency, contract size 1 | section 4 |

@@ -40,7 +40,7 @@ The registration country list at `https://back.pointpay.io/v3/profile/countrylis
 
 The Knowledge Base page and the live schedule disagree.
 The live schedule that feeds the `/fees/futures` page and the CoinGecko and CoinMarketCap contract replies all say 850 ppm taker, while the Knowledge Base page says 550 ppm.
-550 ppm taker and 200 ppm maker are Bybit's own VIP 0 derivatives rates, see the VIP 0 row of [`../bybit/fees.md`](../bybit/fees.md) section "Standard product rates", and the engine registry uses 550 ppm for Bybit at [`registry.ts`](../../../server/src/venues/registry.ts) line 46.
+550 ppm taker and 200 ppm maker are Bybit's own VIP 0 derivatives rates, see the VIP 0 row of [`../bybit/fees.md`](../bybit/fees.md) section "Standard product rates", and the engine registry uses 550 ppm for Bybit at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 46.
 This profile takes 850 ppm as the rate a PointPay account pays, because three live sources agree on it and the page reads as copied from Bybit, and that reading is an inference.
 
 ## 3. Coverage matrix

@@ -11,7 +11,7 @@ BitBNS documents no public perpetual stream.
 The perpetual book and index below are the Socket.IO endpoints the BitBNS web app opens, read out of its bundles, S2, and captured by [`ws-probe.mjs`](../../../scripts/probes/venues/bitbns/ws-probe.mjs).
 The documented public streams are spot only, S1, and appear here only where they share the protocol or show a trap.
 CCXT 4.5.68 has no BitBNS class under `pro/`, so CCXT offers no stream at all.
-Every socket opened with `perMessageDeflate: false`, like [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81.
+Every socket opened with `perMessageDeflate: false`, like [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81.
 
 ## 1. Endpoints
 
@@ -105,7 +105,7 @@ None is documented, and no frame carries one.
 
 The spot stream holds 15 levels per side on every book deep enough, on 8 pairs in the rerun and 3 in the first run, while the REST route `exchangeData/orderbook` returned up to 333 bids for `BTC/INR`, see [`rest.md`](./rest.md) section 5.
 No perpetual book had more than 11 levels on a side, so its window was not reached.
-Fifteen levels is below the engine's 20, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+Fifteen levels is below the engine's 20, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 
 ### Size unit
 

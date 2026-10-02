@@ -124,7 +124,7 @@ Not publicly specified, and not probed.
 | forced disconnect | a missed pong unsubscribes every channel and kills the connection, S1 | not reachable |
 | maintenance notice | Not publicly specified | not reachable |
 | compression | Not publicly specified | not observable, since the upgrade was refused with 401 before any extension could be negotiated |
-| handshake | token and key id in the upgrade headers, S1 | refused in 57 to 159 ms. A client with no User-Agent, which is how the engine's [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 opens a socket, is stopped by Cloudflare before it reaches the origin |
+| handshake | token and key id in the upgrade headers, S1 | refused in 57 to 159 ms. A client with no User-Agent, which is how the engine's [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 opens a socket, is stopped by Cloudflare before it reaches the origin |
 | subscription limits | 5 subscriptions per key, and up to 10 API keys per user, S1 | not reachable |
 
 ## 6. Captured frames

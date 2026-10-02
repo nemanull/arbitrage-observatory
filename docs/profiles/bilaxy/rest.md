@@ -22,7 +22,7 @@ Every access result comes from the Canadian VPN exit.
 | cold request | `GET /health` 299, 317 and 323 ms in three runs | same |
 | warm requests | bimodal: 81 to 99 ms or 206 to 277 ms. Ten requests at 04:56 UTC gave 208, 85, 211, 274, 83, 209, 82, 81, 88 and 88 ms, and ten at 05:02 UTC gave 209, 85, 207, 99, 207, 208, 206, 210, 81 and 271 ms | same |
 | request without a `User-Agent` | HTTP 403 from CloudFront, `x-cache: Error from cloudfront`, title "403 ERROR", on `newapi.bilaxy.com/health` and on `bilaxy.com/`. Any value works, curl sent `x` and got 200 | `rest-probe.mjs host` with `node:https`, and curl with `-A ''` and `-A x` at 04:44 UTC |
-| Node `fetch` with no headers | 200, because `fetch` sends a default `User-Agent`. [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 225 uses `fetch`, so a REST poller would pass | `rest-probe.mjs host` |
+| Node `fetch` with no headers | 200, because `fetch` sends a default `User-Agent`. [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 225 uses `fetch`, so a REST poller would pass | `rest-probe.mjs host` |
 | old API host | `https://api.bilaxy.com/v1/ticker?symbol=1` and `/v1/coins` answer HTTP 502 from nginx | `rest-probe.mjs host`. The old API is documented at `https://api.bilaxy.com`, S3 |
 
 ## 2. Catalog
@@ -63,7 +63,7 @@ The 24 h numbers are not trustworthy.
 
 ### How a catalog would map it
 
-There is no CCXT class, so nothing maps it today, and the connector's swap filter at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202 would find no market in any case.
+There is no CCXT class, so nothing maps it today, and the connector's swap filter at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202 would find no market in any case.
 A spot catalog built by hand would take the key as the REST pair and `pair_id` as the WebSocket symbol, which are two spellings of one market.
 The amount is in base currency, so the contract size is 1, see [`websocket.md`](./websocket.md) section 4.
 No base is listed against two trade-enabled quotes.

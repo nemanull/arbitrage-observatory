@@ -109,7 +109,7 @@ So `market.taker` has no value to report, and `ccxtTakerPpm` is null.
 ## 9. Recommended registry values
 
 None.
-Tokpie cannot join the engine, which reads active swaps from CCXT at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196, and Tokpie has neither swaps nor a CCXT class.
+Tokpie cannot join the engine, which reads active swaps from CCXT at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196, and Tokpie has neither swaps nor a CCXT class.
 For the record, the spot taker a spot leg would pay on the base plan is 1,000 ppm, S2.
 
 ## 10. Source ledger

@@ -62,7 +62,7 @@ The quote amounts add up to about 11.3 million, which agrees with CoinGecko's 12
 
 It does not.
 CCXT 4.5.68 has no class for Webot, Pionex.US or Pionex, and CCXT master at commit `1d8b674` of 2026-09-22 has none either, see [`fees.md`](./fees.md) section 8.
-The connector's catalog is `venue.loadMarkets()` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, so Webot has no catalog path into the engine without a hand-written loader.
+The connector's catalog is `venue.loadMarkets()` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, so Webot has no catalog path into the engine without a hand-written loader.
 Were one written, `market.id` would be the `symbol` above, which is exactly what the socket routes on, see [`websocket.md`](./websocket.md) section 3, and `contractSize` would be 1, since spot sizes are in the base currency.
 
 ### The USD settlement family and pairs listed twice
@@ -98,7 +98,7 @@ The one bulk market call is `GET https://api.webot.com/api/v1/market/tickers`, 6
 | `count` | 24 h trade count | integer, 0 on 86 rows |
 
 It carries no bid and no ask.
-Nothing in it can fill an `AnchorRow`, whose `mark` of 0 refuses a route at open with `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 to 39, and a route with no anchor row at all is refused earlier as `anchor_missing`, at lines 25 to 27.
+Nothing in it can fill an `AnchorRow`, whose `mark` of 0 refuses a route at open with `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 to 39, and a route with no anchor row at all is refused earlier as `anchor_missing`, at lines 25 to 27.
 So a Webot leg could never pass the open gate in the engine's current shape.
 
 ## 4. Anchor semantics

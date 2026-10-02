@@ -70,7 +70,7 @@ It returns 1,050 swaps, of which these are active, P1.
 
 CCXT sets `contractSize` to 1 for every USDT settled swap without reading any field, at lines 722 to 724.
 That is right: the book and the order quantity are in base coin, with `qtyStepSize` 0.001 on `BTCUSDT`, and socket and REST sizes agree, see [`websocket.md`](./websocket.md) section 4.
-A USDC settled row has no `contractSize` field, so the default `' '` reaches `parseNumber(' ')` at line 733 and gives 0, which the engine's connector turns into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194.
+A USDC settled row has no `contractSize` field, so the default `' '` reaches `parseNumber(' ')` at line 733 and gives 0, which the engine's connector turns into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194.
 A COIN-M row reads `"1 USD"`, so its size unit is US dollars.
 
 No pair is listed twice with the same quote.

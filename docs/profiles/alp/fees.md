@@ -131,7 +131,7 @@ The retired v1 API that the old class called answered 404 `Not Found` at `https:
 
 None.
 The engine builds its catalog from CCXT `loadMarkets` filtered to active swaps, at `server/src/ccxt/connector.ts` lines 68 and 79.
-ALP.COM has no CCXT class and no swap, so it cannot enter [`registry.ts`](../../../server/src/venues/registry.ts) as a perpetual leg.
+ALP.COM has no CCXT class and no swap, so it cannot enter [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) as a perpetual leg.
 If a later design ever adds spot legs from a hand-built catalog, the taker is `takerPpm` 1,500, the `REGULAR` tier, and there is no `ccxtTakerPpm` to declare.
 
 ## 10. Source ledger

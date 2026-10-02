@@ -61,11 +61,11 @@ The tickers call, `GET /api/v2/spot/market/tickers`, returns every pair's best b
 
 ### How the engine's catalog would map it
 
-The engine's catalog is `loadMarkets` from CCXT filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79 with the predicate at lines 199 and 200.
+The engine's catalog is `loadMarkets` from CCXT filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79 with the predicate at lines 199 and 200.
 CoinTR has no CCXT class and no swap, so it contributes nothing, see [`fees.md`](./fees.md) section 8.
 For the record, the spot fields would map without surprises.
 `symbol` equals the socket's `instId`, sizes are in the base coin on both REST and the socket, so a contract size of 1 is right, and no pair needs a price scale.
-TRY pairs sit outside the engine's quote family at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 4, 5 and 13, which leaves the 134 USDT pairs.
+TRY pairs sit outside the engine's quote family at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 4, 5 and 13, which leaves the 134 USDT pairs.
 
 ## 3. Anchor
 

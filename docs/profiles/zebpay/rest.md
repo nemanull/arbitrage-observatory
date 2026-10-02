@@ -62,7 +62,7 @@ The documentation's status value is `"Open"`, S1 `market.md` line 45, which matc
 | `market.id` | `BTCUSDT`, from `symbol`, line 1689 | the socket's `s` and the marketInfo key are spelled the same, see [`websocket.md`](./websocket.md) section 3 | matches on 425 of 425 |
 | symbol | `BTC/USDT:USDT` and `BTC/INR:INR`, lines 1694 and 1699 | | |
 | `active` | `status === 'Open'`, line 1710 | `"Open"` on 425 | 425 active |
-| `contractSize` | not set, so undefined | sizes are base coin | the engine's fallback of 1 at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194 is right |
+| `contractSize` | not set, so undefined | sizes are base coin | the engine's fallback of 1 at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194 is right |
 | `linear` | not set, so undefined | USDT and INR settled, linear in fact | the engine reads `false`, at line 174 |
 | `settle` | not set as a field, only inside the symbol | | a `marketFilter` on `settle` would drop everything |
 | `taker` | `0.06` or `0.1`, the percent field read as a fraction, line 1712 | see [`fees.md`](./fees.md) section 8 | wrong by a factor of 100 |
@@ -71,7 +71,7 @@ The documentation's status value is `"Open"`, S1 `market.md` line 45, which matc
 
 Sizes are in the base coin, `lotSz` `0.001` on `BTCUSDT`, and the REST book sizes equal Binance's own at the same level, section 5.
 A base listed in both families gives two CCXT swaps, `BTC/USDT:USDT` and `BTC/INR:INR`.
-They land in different clusters, because INR is not in the quote family at [`../../../server/src/engine/cluster/quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so an INR contract would cluster with no other venue.
+They land in different clusters, because INR is not in the quote family at [`../../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so an INR contract would cluster with no other venue.
 A `marketFilter` of `market.quote === 'USDT'` keeps the 248 USDT contracts.
 Five bases carry Binance's 1000 unit prefix, `1000BONK`, `1000SATS`, `1000PEPE`, `1000FLOKI` and `1000SHIB`, spelled as Binance spells them, so no price scale is needed against Binance.
 
@@ -101,7 +101,7 @@ The socket's mark stream does carry both, one pair per stream, see [`websocket.m
 | `fundingIntervalHours` | `fundingFeeInterval` from exchangeInfo | integer hours: 1, 4 or 8 | none |
 | `nextFundingAt` | none in REST | | unavailable, the socket's `T` is the only source |
 
-The engine divides by the index at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 58, so a REST poller alone cannot fill a usable row.
+The engine divides by the index at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 58, so a REST poller alone cannot fill a usable row.
 
 ## 4. Anchor semantics
 

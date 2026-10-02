@@ -34,8 +34,13 @@ Work found after this point is tracked as GitHub issues and in [`BACKLOG.md`](./
 - [x] Record both sides and the touch sizes of both legs at open, peak and close in the engine.
 - [x] Stream a twenty level book for every market from each venue's WebSocket into the engine.
 
+## Phase 6
+
+- [x] Rewrite the server in Rust: the engine, the feeds, the anchor pollers and ten venue adapters.
+- [x] Measure the Rust server with a saturation replay of recorded frames.
+
 ## Not started
 
 - A frontend.
   [`app/`](../app/) is still the Vite starter and holds the slot.
-  The engine is headless and the data is read through Prisma Studio, `psql` or SigNoz, so nothing is blocked on this.
+  The engine is headless and the data is read through `psql` or SigNoz, so nothing is blocked on this.

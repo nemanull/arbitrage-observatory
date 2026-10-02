@@ -106,12 +106,12 @@ Prices are per coin even on large multipliers: `PEPE_USDT` last traded at 0.0000
 `precision.amount` of 1 is wrong for the 14 decimal contracts, and the engine does not read it.
 
 No pair is listed twice inside CCXT's own keys.
-The quote family folds `USD` into `USDT`, so `BTC_USD` and `BTC_USDT` land on one pair, and [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 12 to 16 rank the linear contract first.
+The quote family folds `USD` into `USDT`, so `BTC_USD` and `BTC_USDT` land on one pair, and [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/quoteFamily.ts) lines 12 to 16 rank the linear contract first.
 That drop matters, because CCXT reports `BTC_USD` with `contractSize` 1, which the engine reads as 1 BTC per contract, while its book sizes look like US dollars, see [`websocket.md`](./websocket.md) section 4.
 
 No Gate contract needs a price scale for the pairs checked.
 `OPENAI_USDT` last traded at 1,455.74 and `ANTHROPIC_USDT` at 2,125.98 on Gate at 07:10 UTC, while okx's `OPENAI-USDT-SWAP` and `ANTHROPIC-USDT-SWAP` read 149.18 and 214.2 at 07:24 UTC.
-Gate therefore quotes those two on the basis okx reaches after its price scale of 10 in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
+Gate therefore quotes those two on the basis okx reaches after its price scale of 10 in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
 Both are pre-market contracts on Gate, with no index basket, see section 4.
 Whether a Gate ticker names a different token than the same ticker on another venue was not surveyed, and `DENIED_PAIRS` needs that check before Gate joins.
 
@@ -306,7 +306,7 @@ The recommended feed takes its snapshot from the socket and needs no REST book, 
 | `premium_index` without `contract` | 400 | `{"label":"MISSING_REQUIRED_PARAM","message":"Missing required parameter: contract"}` |
 | `index_constituents/OPENAI_USDT` | 400 | `{"label":"INVALID_PARAM_VALUE","message":"invalid index"}` |
 
-The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 191.
+The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 191.
 Which of those Gate sends at the limit is Not verified, so a Gate poller should also log any other non-200 status in full.
 
 ## 7. Server time and clock offset

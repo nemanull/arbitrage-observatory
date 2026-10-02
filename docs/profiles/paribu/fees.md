@@ -140,8 +140,8 @@ So `market.taker` has no CCXT value in 4.5.68, and would be `undefined` if the p
 | `takerPpm` | 1,000 for a USDT market and 2,800 for a TRY market, if the venue were ever added | F1 and F3. Only the USDT markets fall in the engine's USD quote family |
 | `ccxtTakerPpm` | none | no CCXT class in 4.5.68 |
 
-The venue does not fit the engine, because the engine loads only active swap markets from CCXT, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and Paribu has neither swaps nor a CCXT class.
-Nothing is added to [`registry.ts`](../../../server/src/venues/registry.ts).
+The venue does not fit the engine, because the engine loads only active swap markets from CCXT, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and Paribu has neither swaps nor a CCXT class.
+Nothing is added to [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
 
 ## 10. Source ledger
 

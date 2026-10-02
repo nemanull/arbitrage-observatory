@@ -62,7 +62,7 @@ It is not a face value, and the loader ignores it.
 HIBT lists no two contracts with the same base.
 It does list the same underlying under two bases: `gold` and `xau_usdt`, `silver` and `xag_usdt`, `platinumu` and `xpt_usdt`, `chiwheat` and `wheat_usdt`, and `crude` beside `cl_usdt` and `lco`.
 The six ids without an underscore had zero 24 h volume and zero open interest in every run, four of them have `last_price` `0`, and all six hold a one-level book, section 5.
-A base such as `GOLD`, `DRAM`, `SPCX` or `O` can name a different token on another venue, so these bases need a `DENIED_PAIRS` check before they cluster, see [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+A base such as `GOLD`, `DRAM`, `SPCX` or `O` can name a different token on another venue, so these bases need a `DENIED_PAIRS` check before they cluster, see [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 Small coins are quoted per coin, not per thousand: `shib_usdt` and `pepe_usdt` carry 9 price decimals in `symbols`, and `shib_usdt` arrives in exponent notation (`"6.186e-06"`), so no price scale is needed and `Number()` parses it.
 
 ### Volume against open interest
@@ -163,7 +163,7 @@ On the wire the mark equals the index, section 3, which is what either formula g
 No clamp is published.
 
 For the engine this is the capped mark shape at its limit.
-`freshPremium` is the touch against the mark, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 84, so with the mark equal to the index every HIBT premium reads as fresh.
+`freshPremium` is the touch against the mark, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 84, so with the mark equal to the index every HIBT premium reads as fresh.
 
 ### Funding
 

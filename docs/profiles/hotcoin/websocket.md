@@ -117,7 +117,7 @@ The third element of each level is the running sum of the sizes from the touch, 
 
 The socket holds 50 levels a side, and the REST book holds 100.
 At 03:25 and 03:47 UTC the socket's 50th bid and 50th ask equalled the REST book's 50th on `btcusdt`, `sophusdt` and `xrpusd`, so the socket is the top half of the same book, P1 `book`.
-50 levels covers the engine's 20, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+50 levels covers the engine's 20, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 
 ### Push cadence
 

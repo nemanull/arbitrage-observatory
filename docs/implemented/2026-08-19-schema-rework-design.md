@@ -6,11 +6,11 @@
 
 ## Purpose
 
-This design records the rework of [`server/prisma/schema.prisma`](../../server/prisma/schema.prisma) that was needed before the BullMQ write path could carry a closed opportunity into Postgres.
+This design records the rework of [`server/prisma/schema.prisma`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/prisma/schema.prisma) that was needed before the BullMQ write path could carry a closed opportunity into Postgres.
 
 The old schema was written before the engine existed.
 It modelled venues as exchanges, kept socket settings and fee schedules in two tables, and stored an opportunity as a single peak snapshot.
-The engine in [`server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) had since settled on a different vocabulary and a much richer opportunity, so every write would have needed a translation layer that threw most of the episode away.
+The engine in [`server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/types.ts) had since settled on a different vocabulary and a much richer opportunity, so every write would have needed a translation layer that threw most of the episode away.
 
 The reworked schema mirrors the engine types instead.
 It is an outlining schema for the testing stage, not the final one.
@@ -32,7 +32,7 @@ This work does not:
    The model is `Venue`, its natural key is `slug`, and every foreign key that pointed at an exchange now points at a venue.
    `slug` must equal `Venue.id` in the engine types, which is also the ccxt exchange id.
 2. `ExchangeConfig` and `ExchangeFee` are deleted.
-   Socket settings already have a home in code as `VenueSpec` in [`server/src/feeds/book/types.ts`](../../server/src/feeds/book/types.ts), and fee schedules belong next to it.
+   Socket settings already have a home in code as `VenueSpec` in [`server/src/feeds/book/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/feeds/book/types.ts), and fee schedules belong next to it.
    The venue research that seeded those tables is preserved under [`profiles/`](../profiles/), so nothing is lost by dropping them.
 3. `Pair` is unchanged.
    Its `symbol` is the engine `PairKey`, spelled `BTC|USDT`.
@@ -57,12 +57,12 @@ This work does not:
 10. `pair` and `route` are stored as plain strings on the opportunity.
     They are the two keys the engine already groups by, and `route` is exactly `OpportunityManager.getRouteKey`, spelled `bybit-binance`.
     Both are indexed with `openedAt` so the common analysis queries need no join.
-11. The `Opportunity` to row converter lives in [`server/src/db/conversion.ts`](../../server/src/db/conversion.ts) as `toOpportunityRow`.
-    That keeps [`server/src/db/writes.ts`](../../server/src/db/writes.ts) free of engine types, as its own comment promises, and keeps the queue payload plain JSON.
+11. The `Opportunity` to row converter lives in [`server/src/db/conversion.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/db/conversion.ts) as `toOpportunityRow`.
+    That keeps [`server/src/db/writes.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/db/writes.ts) free of engine types, as its own comment promises, and keeps the queue payload plain JSON.
     Conversion sits beside the write path rather than inside the engine, because the engine only needs the queue and never the row shape.
     Its `min` helper moved to `server/src/shared/shared.ts` alongside `max`, since neither is specific to an opportunity.
-    Both were dropped later, because [`OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) tracks `minNetPpm` as each sample arrives and never scans the finished series.
-    The queue name and the job type live in [`server/src/engine/opportunity/OpportunityWorker.ts`](../../server/src/engine/opportunity/OpportunityWorker.ts) next to the consumer that reads them, so there is no separate contract file.
+    Both were dropped later, because [`OpportunityLifecycle.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityLifecycle.ts) tracks `minNetPpm` as each sample arrives and never scans the finished series.
+    The queue name and the job type live in [`server/src/engine/opportunity/OpportunityWorker.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityWorker.ts) next to the consumer that reads them, so there is no separate contract file.
 12. The migration is additive on top of the existing history rather than a fresh single init.
     `20260819000000_venue_core` drops the exchange tables, drops and rebuilds `Market` and `ArbitrageOpportunity`, keeps `Pair`, and creates `Venue`.
     It applies cleanly to a fresh database and to a database already carrying the two earlier migrations.

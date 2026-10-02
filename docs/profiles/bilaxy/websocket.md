@@ -232,7 +232,7 @@ If a spot leg were ever wanted, this is the shape the wire allows.
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one plan per market, `wss://bilaxy.com/stream?symbol=<pair_id>` | the query string selects one pair and there is no subscribe message |
-| `User-Agent` | a header on the upgrade | CloudFront refuses an upgrade without one, and [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 opens sockets with `{ perMessageDeflate: false }` and no headers, so this is a change to shared code |
+| `User-Agent` | a header on the upgrade | CloudFront refuses an upgrade without one, and [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 opens sockets with `{ perMessageDeflate: false }` and no headers, so this is a change to shared code |
 | markets per connection | 1 | the protocol has no way to carry more |
 | subscribe frames | none, `getSubscribeFrames` returns an empty list | any client frame closes the socket |
 | keepalive | none, `startKeepalive` does nothing | a protocol ping closes the socket, and the server pushes every second |

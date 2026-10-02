@@ -125,7 +125,7 @@ The best bid is the last element of `b` on the socket.
 ### Size unit against CCXT `contractSize`
 
 Sizes are in the base coin: `BTCUSDT` levels read `0.001` to `16.795` BTC, identical to Binance's size at the same level, P1 and [`rest.md`](./rest.md) section 5.
-CCXT leaves `contractSize` undefined, and the engine turns that into 1, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 194, which is the right unit.
+CCXT leaves `contractSize` undefined, and the engine turns that into 1, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 194, which is the right unit.
 `BTCINR` frames carry the same base-coin sizes at INR prices near 95.5 times the USDT price.
 
 ### One-sided and empty books
@@ -234,7 +234,7 @@ If it were ever added, the feed would look like this.
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one socket, `wss://futuresws.zebpay.com/socket.io/?EIO=4&transport=websocket` | USDT and INR pairs share it, and 425 streams ran on one socket |
-| framing | the subclass sends raw text: `40` after the `0{…}` open packet, then `42["subscribe",{"params":[…]}]` after `40{…}` | VenueFeed sends `JSON.stringify(frame)` at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, and a JSON frame without the `42` prefix closes the socket. So `getSubscribeFrames` returns an empty list and `handleMessage` drives the join, which is a named change |
+| framing | the subclass sends raw text: `40` after the `0{…}` open packet, then `42["subscribe",{"params":[…]}]` after `40{…}` | VenueFeed sends `JSON.stringify(frame)` at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, and a JSON frame without the `42` prefix closes the socket. So `getSubscribeFrames` returns an empty list and `handleMessage` drives the join, which is a named change |
 | markets per connection | all tracked USDT pairs | 425 streams delivered at 578 to 638 frames per second |
 | stream | `<rawMarketId lower case>@depth_<depthGrouping[0]>` | what the web app sends, and the grouping has no effect |
 | keepalive | answer every `2` with `3` in `handleMessage`, and `startKeepalive` sends nothing | Engine.IO 4 is server pinged |

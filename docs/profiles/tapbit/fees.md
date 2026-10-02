@@ -122,7 +122,7 @@ So there is no `market.taker` to report, and no CCXT source line exists.
 ## 9. Recommended registry values
 
 None today.
-The venue cannot join: the engine's catalog is a CCXT exchange instance, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 21 and 68, and Tapbit has none, and its market data API refuses this host.
+The venue cannot join: the engine's catalog is a CCXT exchange instance, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 21 and 68, and Tapbit has none, and its market data API refuses this host.
 If an approved account ever puts a host on the whitelist and a hand-written catalog replaces CCXT, `takerPpm` would be 600, from S3, and `ccxtTakerPpm` would not apply.
 
 ## 10. Source ledger

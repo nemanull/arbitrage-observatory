@@ -48,7 +48,7 @@ The API allows 1,440 requests a day per client, so every probe here was sized to
 
 ### How the engine's catalog would map it
 
-The engine's catalog is CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79.
+The engine's catalog is CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79.
 CCXT 4.5.68 has no Koinpark class and Koinpark has no swap, so the catalog would be empty, see [`fees.md`](./fees.md) section 8.
 For a spot use, the pair id `BTC_USDT` is spelled the same in `markets`, `ticker`, `orderbook` and every socket topic, [`websocket.md`](./websocket.md) section 3.
 The `orderbook` call also accepts `btc_usdt` in lower case, and refuses `BTC-USDT`.

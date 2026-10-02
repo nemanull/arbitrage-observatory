@@ -81,7 +81,7 @@ There is no bulk ticker call, so these took one request per pair.
 | `taker`, `maker` | not set per market, so the exchange constant 0.001 and 0 applies | see [`fees.md`](./fees.md) section 8 | |
 | pairs listed twice | | none, P1 | |
 
-The engine's connector keeps only `type === 'swap'` markets, so it would load no Zaif market at all, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+The engine's connector keeps only `type === 'swap'` markets, so it would load no Zaif market at all, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 
 ### Price scale
 

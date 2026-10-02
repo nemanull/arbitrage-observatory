@@ -58,7 +58,7 @@ So the website field is not a volume the survey can use, and many contracts trad
 
 It does not.
 CCXT 4.5.68 has no Flipster class, and the CCXT master branch at commit `1c996ee07ed6f5c03c7097b2d46d8a8c0eeb5adb` has none either, see [`fees.md`](./fees.md) section 8.
-So the engine's catalog step, `loadMarkets` filtered to active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, has nothing to call.
+So the engine's catalog step, `loadMarkets` filtered to active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, has nothing to call.
 A custom catalog would read `GET /api/v1/market/contract` with a key and would have to take the base from the symbol, because the documented contract carries only `quoteCurrency`.
 
 ### Size unit and pairs listed twice
@@ -66,7 +66,7 @@ A custom catalog would read `GET /api/v1/market/contract` with a key and would h
 The website book's sizes read as coins: the BTC touch held `"0.00443"` at 86,476.6 and the ETH touch `"0.137"` at 2,754.96, which is 383 and 377 USDT, see [`websocket.md`](./websocket.md) section 6, P4.
 Whether the API book uses the same unit could not be checked without a key.
 No pair was listed twice in the website table, since no USD1 contract was listed.
-Three contracts carry a 1000 prefix, `1000BONKUSDT.PERP`, `1000SHIBUSDT.PERP` and `1000PEPEUSDT.PERP`, and would need a price scale in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts), P5.
+Three contracts carry a 1000 prefix, `1000BONKUSDT.PERP`, `1000SHIBUSDT.PERP` and `1000PEPEUSDT.PERP`, and would need a price scale in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts), P5.
 
 ## 3. Anchor
 
@@ -180,7 +180,7 @@ Level order, depth limits and caching are Not verified.
 | `GET /api/v1/nope` | 403 | `Invalid Origin`, `text/plain` |
 | `GET /api/v2/market/ticker` | 404 | nginx HTML `404 Not Found` |
 
-The engine's anchor poller pauses only on 403, 418 and 429, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, so a 401 would surface as an ordinary error on every poll.
+The engine's anchor poller pauses only on 403, 418 and 429, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, so a 401 would surface as an ordinary error on every poll.
 
 ## 7. Server time and clock offset
 
@@ -203,7 +203,7 @@ A recommendation for a later design, not a decision.
 | skip | rows with a null `markPrice` or `indexPrice` | both are nullable in the schema |
 | skip | TradFi rows while their market is closed | mark and funding are frozen then, S5 |
 | rate limit pause | honour `Retry-After` | documented, S1 |
-| auth | the poller would need to send `api-key`, `api-expires` and an HMAC-SHA256 `api-signature` | the base poller sends only an `accept` header today, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 230, S1 |
+| auth | the poller would need to send `api-key`, `api-expires` and an HMAC-SHA256 `api-signature` | the base poller sends only an `accept` header today, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 230, S1 |
 
 Before any of this, someone has to request API access from Flipster support, and the engine has to learn to sign requests.
 

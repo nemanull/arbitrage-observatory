@@ -297,7 +297,7 @@ A recommendation for a later design, not a decision.
 | URL plan | one plan on `wss://open-api-swap.bingx.com/swap-market` for USDT-M and USDC-M | one socket carries both, and coin-M is filtered out of the catalog, see [`rest.md`](./rest.md) section 8 |
 | channel | `<rawMarketId>@incrDepth` | snapshot on subscribe, then updates, and sizes in coins |
 | markets per connection | 180 | the cap is 200 topics, 199 ran at 334 to 349 frames a second, and 20 topics of headroom cost nothing |
-| subscribe frames | one frame per market, `{"id": <uuid>, "reqType": "sub", "dataType": "BTC-USDT@incrDepth"}`, with `subscribeGapMs` 111 at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 27 | one topic per frame, and the FAQ asks for under 10 a second, so a 180 market socket takes 20 s to subscribe |
+| subscribe frames | one frame per market, `{"id": <uuid>, "reqType": "sub", "dataType": "BTC-USDT@incrDepth"}`, with `subscribeGapMs` 111 at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 27 | one topic per frame, and the FAQ asks for under 10 a second, so a 180 market socket takes 20 s to subscribe |
 | decode | `gunzipSync(raw).toString('utf8')` in `handleMessage` before any parse | every frame, the `Ping` included, is binary gzip, and `VenueFeed` hands `handleMessage` the raw buffer at line 209 |
 | keepalive | answer the text `Ping` with the text `Pong` inside `handleMessage`, and start no timer in `startKeepalive` | the server pings every 5 s and closes a silent client at 30.5 s |
 | `maxSilenceMs` | 15,000 | three missed pings, since each `Ping` counts as traffic and a quiet book went 21.6 s without a book frame |

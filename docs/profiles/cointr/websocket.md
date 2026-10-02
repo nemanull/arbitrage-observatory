@@ -108,7 +108,7 @@ A feed still applies updates by price, since the documentation only promises the
 The largest side seen was 200 levels, on `BTCUSDT` asks, in every snapshot of both runs.
 One `BTCUSDT` update deleted the ask at 86784.80 and in the same frame added an ask of 0.00001 BTC at 190000.00, far beyond the rest, which reads as a 200-level window refilling itself, see section 6.
 A side below 200 levels can grow: `ETHUSDT` asks went from 128 to 130, and from 131 to 132, within a minute.
-The engine keeps 20 levels per side, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so any book deeper than 20 serves it.
+The engine keeps 20 levels per side, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so any book deeper than 20 serves it.
 
 ### Size unit against CCXT `contractSize`
 

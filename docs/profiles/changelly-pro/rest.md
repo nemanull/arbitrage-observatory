@@ -70,7 +70,7 @@ The fee rows differ: `take_rate` is `"0.0005"` here and `"0.0007"` on HitBTC, P3
 | `active` | true on all 19, including the expired `LUNAUSDT_PERP` | line 873, a constant |
 | pairs listed twice | none | P1 |
 
-CCXT ignores `status`, and the connector keeps any swap whose `active` is not false at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202.
+CCXT ignores `status`, and the connector keeps any swap whose `active` is not false at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202.
 So a registration needs a `marketFilter` of `m.info.status === 'working'`, or `LUNAUSDT_PERP` enters the catalog with an empty book and an anchor frozen in 2022.
 
 ### Size unit, pairs listed twice, and price scale
@@ -133,7 +133,7 @@ At 04:36 and 04:54 UTC, 3.4 and 3.1 h before settlement, it put the mark 0 to 83
 
 So the mark carries no price from the venue's own book.
 Its premium over the index is at most the settled funding rate, which the floor in Funding below keeps within about 0.3 %.
-The engine reads `freshPremium` as the touch over the mark at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 84, so every standing gap between this book and the index reads as fresh.
+The engine reads `freshPremium` as the touch over the mark at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 84, so every standing gap between this book and the index reads as fresh.
 That is the same trap as a capped mark, since a standing basis of a thin book, as `BCHUSDT_PERP` has held for a month, would pass the fresh gate.
 
 ### Funding
@@ -170,7 +170,7 @@ The first run's oldest reading was 2,281 ms, and in the third run every row but 
 `MANAUSDT_PERP` reached 5,523 ms in the third run, and one row reached 11,000 ms in the second, most likely `MANAUSDT_PERP`, whose `timestamp` moved 16 times against 21 on the others.
 So a quiet contract's row can skip steps of the grid.
 The socket channel `futures/info` pushes the same numbers every 3 s, arriving 66 to 72 ms after their `t` at the median over three runs, see [`websocket.md`](./websocket.md) section 2, so REST serves a copy up to one grid step old.
-The reader refuses readings older than 10 s and index or mark moves over 1,000 ppm per poll at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 5 and 6, and a 3 s grid stays inside both.
+The reader refuses readings older than 10 s and index or mark moves over 1,000 ppm per poll at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 5 and 6, and a 3 s grid stays inside both.
 The poller stamps a reading on arrival, so that 11 s old row would have passed as fresh.
 
 ## 5. REST book snapshot

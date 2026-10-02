@@ -52,7 +52,7 @@ Every one of the 168 combinations answered `GetMarketSummary` with 200 and a bid
 | `symbol` | `BTC/AUD`, because CCXT renames `Xbt` to `BTC`, the only renamed code | P1 |
 | `type`, `spot`, `swap` | `spot`, `true`, `false` on all 168 | lines 357 to 360, P1 |
 | `active` | `undefined` on all 168 | line 363 |
-| `linear`, `contractSize` | `undefined` on all 168, so the connector would take a contract size of 1 | lines 365 and 367, and [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 191 |
+| `linear`, `contractSize` | `undefined` on all 168, so the connector would take a contract size of 1 | lines 365 and 367, and [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 191 |
 | `precision` | `amount` and `price` both `undefined` | lines 372 to 375, P1 |
 | `limits.amount.min` | from `GetOrderMinimumVolumes`, 0.000007 for `BTC/AUD` | line 343, P1 |
 

@@ -138,7 +138,7 @@ CCXT 4.5.68 returns `market.taker` and `market.maker` as `undefined` on all 103 
 So the 1,000 ppm constant never reaches a market.
 It would also be wrong, since the published perpetual taker is 600 ppm.
 
-The engine's connector returns no market when neither the registry nor CCXT gives a taker, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 162 to 166.
+The engine's connector returns no market when neither the registry nor CCXT gives a taker, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 162 to 166.
 Without a registry `takerPpm`, all 99 BigONE perpetuals would be skipped with "skipped 99 market(s) missing an id, a symbol, or a taker fee".
 
 ## 9. Recommended registry values
@@ -146,7 +146,7 @@ Without a registry `takerPpm`, all 99 BigONE perpetuals would be skipped with "s
 | field | value | reason |
 |---|---|---|
 | `takerPpm` | 600 | the VIP 1 perpetual taker of 0.06 %, flat across all levels, S1 |
-| `ccxtTakerPpm` | unset | CCXT reports no taker, and the comparison runs only when CCXT reports a number, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 119 to 124 |
+| `ccxtTakerPpm` | unset | CCXT reports no taker, and the comparison runs only when CCXT reports a number, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 119 to 124 |
 | `marketFilter` | keep `linear === true` | the two inverse contracts `BTCUSD` and `ETHUSD` quote their book in contracts of 1 USD, which the engine would read as 1 coin, see [`websocket.md`](./websocket.md) section 4 |
 
 ## 10. Source ledger

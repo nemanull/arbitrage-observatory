@@ -126,7 +126,7 @@ So `market.taker` has no value to report for Buda in CCXT 4.5.68, and `ccxtTaker
 | `takerPpm` | 8,000, only if a spot leg is ever modelled | tier 1 crypto taker, P1 |
 | `ccxtTakerPpm` | none | no CCXT class exists |
 
-Buda cannot join the engine today, because it lists no perpetual, has no CCXT class for the connector at [`registry.ts`](../../../server/src/venues/registry.ts) line 29 to build, and quotes only two markets in the USD, USDC and USDT settlement family, `BTC-USDC`, which traded nothing in 24 h, and the stablecoin pair `USDT-USDC`.
+Buda cannot join the engine today, because it lists no perpetual, has no CCXT class for the connector at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29 to build, and quotes only two markets in the USD, USDC and USDT settlement family, `BTC-USDC`, which traded nothing in 24 h, and the stablecoin pair `USDT-USDC`.
 
 ## 10. Source ledger
 

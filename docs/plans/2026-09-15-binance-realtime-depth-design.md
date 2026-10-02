@@ -5,7 +5,7 @@ Research: [`research/2026-09-15-binance-realtime-depth.md`](../research/2026-09-
 
 ## Problem
 
-The Binance book feed subscribes `@depth20@100ms` and treats every frame as a whole book, at [`binance.ts:15`](../../server/src/venues/binance/binance.ts) and [`binance.ts:110`](../../server/src/venues/binance/binance.ts).
+The Binance book feed subscribes `@depth20@100ms` and treats every frame as a whole book, at [`binance.ts:15`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/venues/binance/binance.ts) and [`binance.ts:110`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/venues/binance/binance.ts).
 That channel publishes a snapshot every 100 ms, so our view of Binance carries up to 100 ms of the venue's own batching before the network delay starts.
 A price that lives for less than one interval never reaches the engine at all.
 
@@ -28,9 +28,9 @@ Binance was dumped at 00:12:38.146 and our view of the crash arrived 108 ms late
    The window is the snapshot's deepest bid price and deepest ask price.
    Without this a level of rank 21 or worse can appear inside a top 20 reading whenever the levels above it are consumed.
 6. A sequence break marks the symbol unsynced and waits for the next snapshot, which is at most about 100 ms away.
-   It no longer terminates the connection, which today costs 200 markets their books through [`VenueFeed.ts:225`](../../server/src/feeds/book/VenueFeed.ts).
+   It no longer terminates the connection, which today costs 200 markets their books through [`VenueFeed.ts:225`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/feeds/book/VenueFeed.ts).
 7. Every applied frame publishes, as on the other delta venues.
-   The engine already drops a repeat of the same top prices before discovery at [`Engine.ts:187`](../../server/src/engine/Engine.ts).
+   The engine already drops a repeat of the same top prices before discovery at [`Engine.ts:187`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/engine/Engine.ts).
 8. USD-M and COIN-M use one code path.
    `dstream` answers `@depth@0ms` with the same fields and the same cadence.
 9. A diff that empties a side of the window marks the symbol unsynced and publishes nothing.

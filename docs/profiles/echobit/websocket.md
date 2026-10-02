@@ -112,7 +112,7 @@ None is documented and no frame carries one.
 ### Level order on the wire
 
 Bids descending and asks ascending on every `depth` frame of every run, 0 frames out of order, and the same on the REST book.
-The engine holds `depthLevels` per side, set at [`Engine.ts`](../../../server/src/engine/Engine.ts) lines 72 and 73 and 20 by default from `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
+The engine holds `depthLevels` per side, set at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) lines 72 and 73 and 20 by default from `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
 
 ### Level window
 

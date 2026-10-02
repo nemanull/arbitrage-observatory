@@ -142,7 +142,7 @@ A feed applies levels by price and sorts for itself.
 
 The server keeps about 15 levels a side.
 Without stale levels, the merged book held at most 15 to 18 levels on a side on every contract in the first two runs.
-This is below the engine's 20 levels a side, `DEPTH_LEVELS = 20` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
+This is below the engine's 20 levels a side, `DEPTH_LEVELS = 20` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
 
 The BTC book held two levels more than 5 % from the mid in every run, one of them a bid at `0.3` in the first frame of the 03:27 run, P2.
 AVAX held a bid at `5.000` in the same run, P2.

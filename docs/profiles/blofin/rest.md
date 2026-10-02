@@ -79,7 +79,7 @@ Sixteen bases are listed more than once: BTC, ETH, DOGE, XRP, SOL, SUI, ADA and 
 The quote family treats USD, USDC and USDT as one family, see [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md), so the `marketFilter` above leaves one market per pair.
 Five bases carry their multiplier in the name, `1000BONK`, `1000FLOKI`, `1000LUNC`, `1000RATS` and `1000000MOG`, S2 and S3.
 `1000BONK-USDT` has `contractValue` `1000` of `1000BONK` units, so one contract is one million BONK and the price is per thousand BONK.
-CCXT's `base` is `1000BONK`, and whether another venue spells the same base the same way decides whether a price scale is needed at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+CCXT's `base` is `1000BONK`, and whether another venue spells the same base the same way decides whether a price scale is needed at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 `ETHBTC-USDT` is a ratio contract with base `ETHBTC`, and `4STOCK-USDT` is a crypto token despite its name, S2.
 
 ## 3. Anchor
@@ -142,7 +142,7 @@ Caching and repeat reads are Not verified, since the call returned 403, P1.
 | other errors | HTTP 200 with `code` and `msg` in the body, such as `152014` "Instrument ID does not exist" and `152015` "Number of instId values exceeds the maximum limit of 20" | S1, errors table |
 | CCXT | maps 429 to `ExchangeNotAvailable` at `blofin.js` line 428, and 403 to `ExchangeNotAvailable` at `base/Exchange.js` line 2408 | CCXT 4.5.68 |
 
-The engine treats 403 as a rate limit, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, and pauses the poller at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 192.
+The engine treats 403 as a rate limit, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, and pauses the poller at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 192.
 From this host a BloFin poller would therefore pause after every round and never read a row.
 A body with a non-zero `code` under HTTP 200 would need to fail the round, since the poller only pauses on the status.
 

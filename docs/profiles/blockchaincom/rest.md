@@ -53,7 +53,7 @@ Every `close` symbol's ticker reads 0 for all three numbers.
 | minimum amount | `min_order_size` scaled, 0.00005 BTC on BTC-USD | lines 358 to 363, P1 |
 | `market.taker` | undefined on every market, see [`fees.md`](./fees.md) section 8 | P1 |
 
-The engine's catalog keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79, so this venue would contribute no market.
+The engine's catalog keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79, so this venue would contribute no market.
 
 ### Pairs listed twice, and price scale
 

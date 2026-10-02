@@ -74,7 +74,7 @@ The fee page lists order book fees for BTC, BCH, ETH and LTC only, which agrees 
 
 No pair is listed twice, and no price scale applies.
 `fetchOrderBook` sends `coin` only when more than one symbol is loaded, lines 424 to 427, and with 7 markets loaded it always does, so `fetchOrderBook('ETH/JPY')` returned the ETH book, 18 bids and 21 asks, P3.
-The connector would still drop every market, because it keeps only `type === 'swap'` at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 199 to 201.
+The connector would still drop every market, because it keeps only `type === 'swap'` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 199 to 201.
 
 ## 3. Anchor
 

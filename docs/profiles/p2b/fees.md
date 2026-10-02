@@ -111,13 +111,13 @@ Deposit and withdrawal fees are on the "Deposit & Withdrawal Fees" tab of the fe
 | `market.taker` without credentials | the whole taker tier array, `[[0, 0.2], [1, 0.19], …]` | P2 `catalog`, and the base class merges `fees.trading` into every market at `server/node_modules/ccxt/js/src/base/Exchange.js` lines 3732 to 3735 |
 
 CCXT's `market.taker` for a P2B market is therefore not a number.
-The connector's `toPpm` returns null for anything that is not a finite number, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 180 to 186, so `ccxtTakerPpm` has no value to declare.
+The connector's `toPpm` returns null for anything that is not a finite number, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 180 to 186, so `ccxtTakerPpm` has no value to declare.
 Even read as a number, the first tier's `0.2` is in percent while CCXT fees are fractions, so it would read as 20 % and not 0.2 %.
 Without a registry `takerPpm`, `toMarket` would drop every market for a missing taker, at the same file lines 162 to 166.
 
 ## 9. Recommended registry values
 
-P2B cannot join the engine as it stands, because the connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and P2B has none.
+P2B cannot join the engine as it stands, because the connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and P2B has none.
 If a spot leg is ever modelled, the values would be:
 
 | key | value | reason |

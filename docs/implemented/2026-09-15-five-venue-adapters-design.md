@@ -10,22 +10,22 @@ The research found what each venue needs, and none of it exists as code.
 The user wants every adapter built now and switched on later.
 So each venue gets a registry entry, a book feed, an anchor poller, its wire types and its tests, and nothing starts it.
 
-A venue runs only when its id is in `activeVenues` at [`orchestrator.ts:48`](../../server/src/orchestrator.ts).
-The registry at [`registry.ts:34`](../../server/src/venues/registry.ts) is a lookup and starts nothing.
+A venue runs only when its id is in `activeVenues` at [`orchestrator.ts:48`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/orchestrator.ts).
+The registry at [`registry.ts:34`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/venues/registry.ts) is a lookup and starts nothing.
 That split is what lets an adapter land without running.
 
 ## What the existing shape gives a venue
 
-- A `VenueRegistration` at [`registry.ts:28`](../../server/src/venues/registry.ts) holds the connector options, the CCXT exchange, a feed factory and a poller factory.
-- `VenueConnector` loads the catalog through CCXT, applies `marketFilter`, sets the taker fee and warns when CCXT's fee is not the one the registry expects, at [`connector.ts:33`](../../server/src/ccxt/connector.ts).
+- A `VenueRegistration` at [`registry.ts:28`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/venues/registry.ts) holds the connector options, the CCXT exchange, a feed factory and a poller factory.
+- `VenueConnector` loads the catalog through CCXT, applies `marketFilter`, sets the taker fee and warns when CCXT's fee is not the one the registry expects, at [`connector.ts:33`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/ccxt/connector.ts).
 - `VenueFeed` owns sockets, reconnects, the silence watch and the `OrderBook` per market.
-  A venue writes `planEndpoints`, `getSubscribeFrames`, `startKeepalive` and `handleMessage`, see [`VenueFeed.ts:387`](../../server/src/feeds/book/VenueFeed.ts).
-  Before this work `onOpen` sent every subscribe frame at once, and decision 7 changed that at [`VenueFeed.ts:117`](../../server/src/feeds/book/VenueFeed.ts).
+  A venue writes `planEndpoints`, `getSubscribeFrames`, `startKeepalive` and `handleMessage`, see [`VenueFeed.ts:387`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/feeds/book/VenueFeed.ts).
+  Before this work `onOpen` sent every subscribe frame at once, and decision 7 changed that at [`VenueFeed.ts:117`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/feeds/book/VenueFeed.ts).
 - `AnchorPoller` runs one round per interval, and a venue writes `fetchRound`, which returns an `AnchorMap` keyed by `rawMarketId`.
-  Before this work `apply` stamped every row with the round's arrival time, and decision 5 changed that at [`AnchorPoller.ts:133`](../../server/src/feeds/anchor/AnchorPoller.ts).
-  `failed` paused only on an `HttpStatusError` whose status is 403, 418 or 429, at [`errors.ts:1`](../../server/src/shared/errors.ts), and decision 6 added a second case at [`AnchorPoller.ts:190`](../../server/src/feeds/anchor/AnchorPoller.ts).
-- The orchestrator hands a feed and a poller only the markets that share a cluster with another venue, at [`orchestrator.ts:214`](../../server/src/orchestrator.ts).
-  So a GUSD or USD1 perpetual, which sits outside the quote family at [`quoteFamily.ts:3`](../../server/src/engine/cluster/quoteFamily.ts), never reaches a feed.
+  Before this work `apply` stamped every row with the round's arrival time, and decision 5 changed that at [`AnchorPoller.ts:133`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/feeds/anchor/AnchorPoller.ts).
+  `failed` paused only on an `HttpStatusError` whose status is 403, 418 or 429, at [`errors.ts:1`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/shared/errors.ts), and decision 6 added a second case at [`AnchorPoller.ts:190`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/feeds/anchor/AnchorPoller.ts).
+- The orchestrator hands a feed and a poller only the markets that share a cluster with another venue, at [`orchestrator.ts:214`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/orchestrator.ts).
+  So a GUSD or USD1 perpetual, which sits outside the quote family at [`quoteFamily.ts:3`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/engine/cluster/quoteFamily.ts), never reaches a feed.
 
 ## Decisions
 
@@ -39,7 +39,7 @@ That split is what lets an adapter land without running.
 3. `VenueConnectorOptions` gains `ignoreCcxtTakerPpm`.
    When it is true, no market's CCXT fee is compared with the registry, because CCXT's number describes orders the registry rate does not.
    MEXC is the one user, since CCXT reads the per contract web and app rate and API orders pay 800 ppm, see [`mexc/fees.md`](../profiles/mexc/fees.md) section 9.
-   The orchestrator constructs `VenueConnector` directly at [`orchestrator.ts:208`](../../server/src/orchestrator.ts), so a registry option replaces the subclass override the comment at [`connector.ts:32`](../../server/src/ccxt/connector.ts) used to anticipate.
+   The orchestrator constructs `VenueConnector` directly at [`orchestrator.ts:208`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/orchestrator.ts), so a registry option replaces the subclass override the comment at [`connector.ts:32`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/ccxt/connector.ts) used to anticipate.
 4. `VenueConnectorOptions` gains `contractSize`, which pins every market's size.
    Gemini is the one user.
    Its books are in base units, and CCXT copies the price tick into `contractSize` on the day its catalog scrape succeeds, see [`gemini/rest.md`](../profiles/gemini/rest.md) section 2.
@@ -173,9 +173,9 @@ That split is what lets an adapter land without running.
   Either needs a second anchor writer beside `AnchorPoller`, while the REST rounds fit the existing class with one optional field.
   Bitstamp's channel stays the upgrade path if its ticker proves too coarse.
 - **One Gemini request per tick in rotation.**
-  At one request a second a leg ages 6 s between reads, past the 5 s skew limit at [`anchorReading.ts:4`](../../server/src/engine/opportunity/anchorReading.ts).
+  At one request a second a leg ages 6 s between reads, past the 5 s skew limit at [`anchorReading.ts:4`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/engine/opportunity/anchorReading.ts).
 - **Rewriting cached rows on every round.**
-  `Engine.updateAnchor` measures `movePpm` against the previous write at [`Engine.ts:413`](../../server/src/engine/Engine.ts), so writing the same numbers again resets the move to 0 and hides a real one.
+  `Engine.updateAnchor` measures `movePpm` against the previous write at [`Engine.ts:413`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/engine/Engine.ts), so writing the same numbers again resets the move to 0 and hides a real one.
   A market is written only on the round that read it.
 - **Awaiting Gemini's funding call inside the round.**
   A 3.8 s reply would hold the round's writes back by that much.

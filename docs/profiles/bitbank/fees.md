@@ -125,7 +125,7 @@ Without credentials, loadMarkets returned 62 spot markets, 0 swaps, 62 active, P
 | `XRP/JPY` and 60 other markets | 0.0012 | -0.0002 |
 
 So CCXT reports 1,200 ppm for a typical pair and 1,000 ppm for BTC/JPY, which matches the fee page exactly.
-The engine's connector keeps only markets with `type === 'swap'` and `swap === true`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 195 to 202, so bitbank contributes no market and the connector logs "no usable swap markets", at line 51.
+The engine's connector keeps only markets with `type === 'swap'` and `swap === true`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 195 to 202, so bitbank contributes no market and the connector logs "no usable swap markets", at line 51.
 
 ## 9. Recommended registry values
 
@@ -133,7 +133,7 @@ None, because bitbank cannot join the engine as a perpetual leg.
 
 If a later design adds spot legs, `takerPpm` can stay unset so the per market CCXT value applies, since that value is read live from the venue and already differs by pair.
 `ccxtTakerPpm` would then be 1,200, with BTC/JPY at 1,000 as the known exception.
-Every bitbank market is quoted in JPY or BTC, which the quote family does not merge with USD, USDC or USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a bitbank market would only ever pair with another JPY or BTC market.
+Every bitbank market is quoted in JPY or BTC, which the quote family does not merge with USD, USDC or USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a bitbank market would only ever pair with another JPY or BTC market.
 
 ## 10. Source ledger
 

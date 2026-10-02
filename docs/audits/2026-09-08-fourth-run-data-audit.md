@@ -211,17 +211,17 @@ Outside the five standing basis pairs and without a coinbase leg there are 138 r
 
 References are to the working tree of 2026-09-08.
 
-- The age cap close on the tick path rediscovers the same route in the same call, [`OpportunityManager.ts:55-95`](../../server/src/engine/opportunity/OpportunityManager.ts), and [`OpportunityManager.spec.ts:268`](../../server/src/engine/opportunity/OpportunityManager.spec.ts) asserts it.
+- The age cap close on the tick path rediscovers the same route in the same call, [`OpportunityManager.ts:55-95`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts), and [`OpportunityManager.spec.ts:268`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.spec.ts) asserts it.
   That is the chain of section 3 item 6.
-- Nothing reads `writtenAt` and `recvTs` is only tested for zero, [`Engine.ts:183-192`](../../server/src/engine/Engine.ts) and [`OpportunityManager.ts:413`](../../server/src/engine/opportunity/OpportunityManager.ts).
+- Nothing reads `writtenAt` and `recvTs` is only tested for zero, [`Engine.ts:183-192`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/Engine.ts) and [`OpportunityManager.ts:413`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts).
   Every book channel is change driven, measured on binance depth20 at 100 ms as zero frames in 12 seconds on ISRGUSDT and no identical consecutive frames on BNCUSDT, so a quiet leg and a dead leg look the same for as long as the socket stays up.
-- The sweep and the one sided close carry no closing sample, [`OpportunityManager.ts:429-469`](../../server/src/engine/opportunity/OpportunityManager.ts), so `netPpmAtClose` and the close edge are the last leg tick.
-- Touch sizes and each leg's far side are computed on every sample and dropped by [`conversion.ts`](../../server/src/db/conversion.ts), which writes none of the twelve fields in [`types.ts:85-107`](../../server/src/engine/opportunity/types.ts).
-- The comment on `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts:15`](../../server/src/engine/cluster/ClusterIndexBuilder.ts) claims twenty levels cover the 0.5 percent band on the finest tick books, and section 3 item 5 shows it does not.
+- The sweep and the one sided close carry no closing sample, [`OpportunityManager.ts:429-469`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts), so `netPpmAtClose` and the close edge are the last leg tick.
+- Touch sizes and each leg's far side are computed on every sample and dropped by [`conversion.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/db/conversion.ts), which writes none of the twelve fields in [`types.ts:85-107`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/types.ts).
+- The comment on `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts:15`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.ts) claims twenty levels cover the 0.5 percent band on the finest tick books, and section 3 item 5 shows it does not.
   Bybit sends 50 levels and okx 400, and the block keeps 20.
-- `Engine.updateBook` writes the depth before the quote is validated, [`Engine.ts:133-148`](../../server/src/engine/Engine.ts), so a rejected top leaves the ladder new and the touch old for that leg.
+- `Engine.updateBook` writes the depth before the quote is validated, [`Engine.ts:133-148`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/Engine.ts), so a rejected top leaves the ladder new and the touch old for that leg.
   Zero quotes were rejected in this run, so no row is affected yet.
-- `Engine.applyQuote` returns before discovery when the top prices repeat even though the block was rewritten, [`Engine.ts:186-191`](../../server/src/engine/Engine.ts), so a region that drains below the touch between top ticks is never sampled.
+- `Engine.applyQuote` returns before discovery when the top prices repeat even though the block was rewritten, [`Engine.ts:186-191`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/Engine.ts), so a region that drains below the touch between top ticks is never sampled.
 - The inverse contract path is latent and wrong.
   ccxt reports binance COIN-M contract sizes in USD, and `sizeMul` would call one BTCUSD_PERP contract 100 coins, but the code audit found a linear twin that `marketRank` prefers for all 42 inverse contracts, so no row is affected today.
 - Binance ICXUSDT is `SETTLING` since 2026-08-26 and still publishes an index and a mark 1 percent above the market.
@@ -230,7 +230,7 @@ References are to the working tree of 2026-09-08.
 ## 6. Data hygiene
 
 - Six jobs from the third run, ids 2425 to 2430, still carry `roundTripPpm` and fail with `Unknown argument roundTripPpm` at every boot, 30 error lines across the false start and the run.
-  [`scripts/redis-flush.sh`](../../scripts/redis-flush.sh) exists and was not run.
+  [`scripts/redis-flush.sh`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/scripts/redis-flush.sh) exists and was not run.
 - 598 `Opportunity found` lines in the run against 597 rows.
   The missing one is SOPH bybit-binance, found at 06:23:13.786 at 6,433 ppm and closed by the shutdown at 06:23:18.246 after 4,460 ms and 201 ticks.
   Its write is BullMQ job 3032, still waiting in `bull:opportunity-closed:wait` with its data intact.
@@ -247,7 +247,7 @@ Each item is a check with the query or probe that settles it.
 Run them in this order and record the numbers next to the third and fourth run values.
 
 1. The stale queue is empty.
-   Boot the server once so the worker drains job 3032 into the table, because [`scripts/redis-flush.sh`](../../scripts/redis-flush.sh) refuses while a job waits and its `--force` would discard that episode.
+   Boot the server once so the worker drains job 3032 into the table, because [`scripts/redis-flush.sh`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/scripts/redis-flush.sh) refuses while a job waits and its `--force` would discard that episode.
    Then run the flush to clear the six failed jobs, and after the start confirm zero `opportunity_write_failed` events in the first minute.
    The Prisma error text sits in the `error` attribute and not in the log body, so search the event name or the attribute.
 2. Every found episode is written.

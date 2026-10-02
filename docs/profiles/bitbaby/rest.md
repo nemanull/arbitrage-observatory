@@ -79,7 +79,7 @@ No field marks a contract as halted or delisting, so the list appears to hold on
 
 It does not.
 CCXT 4.5.68 has no Bitbaby class, and neither does CCXT master, see [`fees.md`](./fees.md) section 8.
-The engine's catalog is `loadMarkets` from CCXT filtered to active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 195 to 202, so Bitbaby cannot enter it without a custom catalog loader.
+The engine's catalog is `loadMarkets` from CCXT filtered to active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 195 to 202, so Bitbaby cannot enter it without a custom catalog loader.
 If one were written, these are the mappings it would need.
 
 | engine field | Bitbaby source | note |
@@ -112,7 +112,7 @@ If one were written, these are the mappings it would need.
 No call returns index, mark and funding for every contract at once.
 `public_market_info` rejects `{}`, a `symbol` and a list of ids with code `200004` `Invalid parameter`, and an unknown id returns `"data": null`, so a round over 358 contracts is 358 requests.
 The socket's ticker channel carries every contract on one connection, but its worst silence per contract was a median 10.0 and 11.4 s, p90 25.5 and 32.0 s, and at most 48.2 and 53.0 s in two 60 s runs, and 180 and 197 of 358 contracts went more than 10 s without a frame, P3.
-The engine refuses an anchor reading older than 10 s at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5, so the ticker would leave about half the catalog unjudged.
+The engine refuses an anchor reading older than 10 s at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5, so the ticker would leave about half the catalog unjudged.
 
 ### Row mapping
 
@@ -214,7 +214,7 @@ The socket's ping carries whole Unix seconds, which is no finer.
 A recommendation for a later design, not a decision.
 
 No REST poller fits the engine as it stands.
-The anchor poller expects one bulk reply per round at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 103, and Bitbaby has none.
+The anchor poller expects one bulk reply per round at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 103, and Bitbaby has none.
 
 | option | what it takes | why it falls short |
 |---|---|---|

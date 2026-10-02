@@ -160,7 +160,7 @@ No WebSocket feed is recommended, and none is possible.
 |---|---|---|
 | socket feed | none | `/ws/time` carries no market data, and its book requests go unanswered, sections 2 and 4 |
 | book source if the venue were ever wanted | REST `GET /api/trades/buy/<pair>` and `/api/trades/sell/<pair>` per pair, no faster than once a second | each list is served from a one second edge cache, see [`rest.md`](./rest.md) section 5 |
-| deflate | keep `perMessageDeflate: false`, as [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 does | the server does not negotiate it anyway |
+| deflate | keep `perMessageDeflate: false`, as [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 does | the server does not negotiate it anyway |
 | `maxSilenceMs` | not applicable | a socket kept only for `state` would need a ping at least every 60 s |
 
 The venue is spot only and has no CCXT class, so it cannot join the engine as a perpetual leg in any shape.

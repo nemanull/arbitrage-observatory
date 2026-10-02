@@ -40,7 +40,7 @@ The certificate transparency log lists 12 host names and 2 wildcards under `coin
 No catalog call was readable.
 `GET https://futuresopenapi.coinup.io/fapi/v1/contracts` answered 403 challenge, P1.
 CCXT 4.5.68 has no CoinUp class, and CCXT master on 2026-09-22 has none either, see [`fees.md`](./fees.md) section 8.
-So there is no `market.id`, `contractSize`, `linear` or `active` to map, and the engine's catalog path, `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, has nothing to load.
+So there is no `market.id`, `contractSize`, `linear` or `active` to map, and the engine's catalog path, `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, has nothing to load.
 
 What CoinGecko shows instead, P2.
 
@@ -115,7 +115,7 @@ Depth limits, level order and caching are Not verified.
 
 No limit was reachable or readable.
 The only error this host saw is the challenge in section 1, which carries no `Retry-After`.
-The engine treats 403 as a rate limit, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, and pauses the anchor poller for `rateLimitPauseMs` when no `Retry-After` comes, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 193.
+The engine treats 403 as a rate limit, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, and pauses the anchor poller for `rateLimitPauseMs` when no `Retry-After` comes, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 193.
 Against this venue a poller would pause and retry forever without one reading.
 
 ## 7. Server time and clock offset

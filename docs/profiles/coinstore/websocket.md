@@ -243,14 +243,14 @@ A recommendation for a later design, not a decision, and only if the venue is ev
 | snapshot | after the first frame of a symbol, `GET https://futures.coinstore.com/api/v1/market/depth?tradeType=linearPerpetual&symbol=<id>&gear=<tickSize>`, `resetBook`, store `lastDepthId`, buffering frames meanwhile | no snapshot on the socket, and a REST read before the subscription missed a push on 3 of 4 symbols in one run |
 | delta | keep only `gear` equal to `tickSize`. Drop a frame whose `lastDepthId` is not above the REST id, then apply when `previousDepthId === last + 1` and store `lastDepthId` | the `recipe` run bridged exactly on 4 of 4 symbols |
 | resync | on a gap, `resync` and fetch the REST book again after the resubscribe | the engine's path, plus the REST read the socket cannot replace |
-| decoding | tell text from binary by the first byte, `{` or `P` for text and `0x0a` for a `BaseWsDTO`, since `VenueFeed` hands `handleMessage` a `Buffer` without the binary flag, see [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 200 to 209. Decode protobuf with the schema of S2 | protobufjs is not a server dependency |
+| decoding | tell text from binary by the first byte, `{` or `P` for text and `0x0a` for a `BaseWsDTO`, since `VenueFeed` hands `handleMessage` a `Buffer` without the binary flag, see [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 200 to 209. Decode protobuf with the schema of S2 | protobufjs is not a server dependency |
 | keepalive | text `PING` every 10 s | what the web app does, and a socket silent for 30 s is closed |
 | `maxSilenceMs` | 30,000 | most books push every 3 to 6 s, one pushed nothing in 45 s, and `PONG` counts as traffic |
 | sizes | `Number()` of the string, in coins, with a `contractSize` of 1 | section 4 |
-| deflate | keep `perMessageDeflate: false`, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 | the server does not negotiate it |
+| deflate | keep `perMessageDeflate: false`, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 | the server does not negotiate it |
 
 The push cadence of about 1 s on the busiest books, and 3 to 6 s on most, is the limit no feed shape removes.
-A book the venue batches for one to six seconds can be that stale on arrival, while the engine waits only `MIN_CROSS_AGE_MS`, 100 ms, before it opens a cross, see [`OpportunityManager.ts`](../../../server/src/engine/opportunity/OpportunityManager.ts) line 15.
+A book the venue batches for one to six seconds can be that stale on arrival, while the engine waits only `MIN_CROSS_AGE_MS`, 100 ms, before it opens a cross, see [`OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/OpportunityManager.ts) line 15.
 
 ## 9. Source ledger
 

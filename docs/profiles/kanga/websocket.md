@@ -124,7 +124,7 @@ A feed reads only `data[String(pricePrecision)]`.
 ### Level window
 
 The exact key held 30 levels on every busy market, so the socket carries 30 levels per side.
-That covers the engine's 20, at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
+That covers the engine's 20, at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
 A coarse grouping holds fewer: `NEAR-USDT` held 2, 4, 15 and 30 bid levels under keys `"0"` to `"3"` in P1, and 2, 5, 23 and 30 in the rerun.
 
 ### Size unit
@@ -239,7 +239,7 @@ Kanga has no perpetual, so none of this is needed for the engine as it stands.
 | URL plan | one socket per market at `wss://ws.kanga.global/socket.io/?EIO=4&transport=websocket` | only the last subscription on a socket keeps updating, section 4 |
 | markets per connection | 1 | same reason. 245 USD-family markets with volume would need 245 sockets, and only ten parallel sockets were tested |
 | handshake | on the `0` packet send `40`, on the `40{...}` answer send `42["subscribe market","<rawMarketId>"]` | Socket.IO needs the namespace connect before any event |
-| subscribe frames | none from `getSubscribeFrames`, the packets above are sent from `handleMessage` | `VenueFeed` sends every subscribe frame through `JSON.stringify`, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, which would quote a raw Socket.IO packet |
+| subscribe frames | none from `getSubscribeFrames`, the packets above are sent from `handleMessage` | `VenueFeed` sends every subscribe frame through `JSON.stringify`, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, which would quote a raw Socket.IO packet |
 | keepalive | answer every `2` with `3`, and send nothing on a timer | the server pings every 3 s and closes a socket that misses one pong by 5 s |
 | `maxSilenceMs` | 10,000 | pings arrive every 3 s and count as traffic, while a live `BTC-USDT` went 25 s without a push in P5 and `KNG-USDC` sent only its snapshot in 30 s in P6 |
 | routing | `JSON.parse(text.slice(2))`, event in element 0, market in element 2 | Socket.IO event packet |

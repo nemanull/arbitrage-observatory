@@ -232,7 +232,7 @@ Were a spot feed ever wanted for research, the wire would support this shape.
 | URL plan | one socket, `wss://ws-api.exmo.com:443/v1/public` | 24 pairs fit one subscribe frame |
 | channel | `spot/order_book_updates:<rawMarketId>` | the only channel with a snapshot and deltas |
 | subscribe frame | `{"id": 1, "method": "subscribe", "topics": ["spot/order_book_updates:BTC_USDC", …]}` | one acknowledgement per topic |
-| keepalive | none needed beyond the automatic pong, and a client protocol ping every 20 s as a liveness probe | the server pings every 30 s, and `VenueFeed` counts pings and pongs as traffic at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98 |
+| keepalive | none needed beyond the automatic pong, and a client protocol ping every 20 s as a liveness probe | the server pings every 30 s, and `VenueFeed` counts pings and pongs as traffic at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98 |
 | `maxSilenceMs` | 75,000 | two missed server pings, since a quiet book sends nothing for minutes |
 | snapshot | `event === "snapshot"`: `resetBook` | documented replace semantics |
 | delta | `event === "update"`: set each level by price, delete on `"0"` | documented, not seen on the wire |

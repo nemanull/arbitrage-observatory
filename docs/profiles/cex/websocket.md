@@ -130,14 +130,14 @@ So a CEX.IO book is up to about one second old by construction, before any netwo
 ### Size unit against CCXT `contractSize`
 
 The size is the amount in the base currency, the same number the REST book reports, see the REST comparison above.
-CCXT reports `contractSize` as `undefined` on all 898 markets, and the connector turns a missing contract size into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 175 and lines 188 to 194, so the unit would convert correctly.
+CCXT reports `contractSize` as `undefined` on all 898 markets, and the connector turns a missing contract size into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 175 and lines 188 to 194, so the unit would convert correctly.
 
 ### One-sided and empty books
 
 `COW-USD` answered with `"bids": []` and 20 asks, and every one of its 32 increments carried `"bids": []`.
 50 of 898 pairs had no `bestBid` in `get_ticker` in both catalog runs, and none lacked a `bestAsk`, see [`rest.md`](./rest.md) section 2.
 `COW` is one of the 19 assets whose purchases stopped on 2026-09-21 ahead of delisting, see [`fees.md`](./fees.md) section 7.
-The engine's `resetBook` hands both arrays to `OrderBook.reset` without a length check, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 263 to 278, so an empty side is accepted.
+The engine's `resetBook` hands both arrays to `OrderBook.reset` without a length check, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 263 to 278, so an empty side is accepted.
 
 ### Idle repeats
 
@@ -270,7 +270,7 @@ If a later design adds spot legs, the feed would look like this.
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one plan, `wss://trade.cex.io/api/spot/ws-public` | one socket serves every pair |
-| channel | `order_book_subscribe` per `rawMarketId` | snapshot on subscribe, a strict `seqId` chain, 20 levels matches the engine's `depthLevels` of 20 at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61 |
+| channel | `order_book_subscribe` per `rawMarketId` | snapshot on subscribe, a strict `seqId` chain, 20 levels matches the engine's `depthLevels` of 20 at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61 |
 | markets per connection | 30 to start, a larger slice untested | 30 ran with 0 gaps at 30 frames a second |
 | subscribe frames | one frame per pair, `{"e": "order_book_subscribe", "oid": "<ms>_<n>_order_book_subscribe", "data": {"pair": "BTC-USD"}}`, paced under 100 a minute for the whole IP | one pair per request at 1 point, and an overrun closes the socket. The 792 `USD`, `USDT` and `USDC` pairs would take about 8 minutes to subscribe, and so would a full reconnect |
 | keepalive | `{"e": "ping"}` every 5 s | the documented tolerance is 10 s, the wire's about 60 s |

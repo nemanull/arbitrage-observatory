@@ -160,7 +160,7 @@ Whether new orders were accepted then was not checked.
 
 The mexc class loads Ourbit's catalog unchanged once two public hosts are overridden, see [`rest.md`](./rest.md) section 2.
 So `market.taker` then equals whatever Ourbit's catalog publishes per contract, and on 2026-09-22 that was the VIP 0 taker.
-The connector compares CCXT's number with `ccxtTakerPpm` or, when that is unset, with the market's own `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 32 to 38.
+The connector compares CCXT's number with `ccxtTakerPpm` or, when that is unset, with the market's own `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 32 to 38.
 
 ## 9. Recommended registry values
 
@@ -181,7 +181,7 @@ ourbit: {
 `takerPpm: 400` is the published VIP 0 taker, S2, S3 and S4, and it pins the rate against a later per contract change in the catalog.
 `ccxtTakerPpm` stays unset, because the catalog rate that CCXT reads is 400 ppm, and the connector then expects 400.
 If Ourbit changes a contract's `takerFeeRate`, for example for a zero fee promotion, the connector's warning fires, which is the watch this venue needs.
-The `id` and `name` overrides matter, because the connector keys the venue by the exchange id, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 91, and the mexc default would collide with a MEXC registration.
+The `id` and `name` overrides matter, because the connector keys the venue by the exchange id, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 91, and the mexc default would collide with a MEXC registration.
 The private hosts stay on `api.mexc.com` in this construction, which is harmless while no private call is made, and a later execution stage would have to override them too.
 
 ## 10. Source ledger

@@ -127,12 +127,12 @@ The rule works on the strings as sent.
 
 No window is kept.
 The book built from the snapshot and the deltas held up to 1,047 levels on one side, and a level far from the touch changes like any other, P7.
-The engine's `publish` takes `topBids(levels)` and `topAsks(levels)` from the book, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 280 to 294, so a full depth book is cut to 20 levels there.
+The engine's `publish` takes `topBids(levels)` and `topAsks(levels)` from the book, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 280 to 294, so a full depth book is cut to 20 levels there.
 
 ### Size unit against CCXT `contractSize`
 
 The unit is the base currency, as on any spot book.
-CCXT sets `contractSize` to `undefined` for every market, at `server/node_modules/ccxt/js/src/btcmarkets.js` line 545, and the connector turns a missing size into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 191, which is correct for a spot book.
+CCXT sets `contractSize` to `undefined` for every market, at `server/node_modules/ccxt/js/src/btcmarkets.js` line 545, and the connector turns a missing size into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 191, which is correct for a spot book.
 REST level 2 summed per price agreed with the socket book: on ETH-BTC 29 of 33 sizes were equal with the REST reply 564 ms older than the socket book, and on BTC-AUD 27 of 40 with the REST reply 3,151 ms older, since the REST full book is cached, P6 and [`rest.md`](./rest.md) section 5.
 
 ### One-sided and empty books
@@ -253,7 +253,7 @@ Named for a future execution stage, from S1, not probed.
 ## 8. Recommended feed shape
 
 A recommendation for a later design that admits spot legs, not a decision.
-Today the connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202, so it drops all 51 BTC Markets markets and logs `no usable swap markets; skipping the venue` at line 51 before any feed starts.
+Today the connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202, so it drops all 51 BTC Markets markets and logs `no usable swap markets; skipping the venue` at line 51 before any feed starts.
 
 | item | recommendation | reason |
 |---|---|---|

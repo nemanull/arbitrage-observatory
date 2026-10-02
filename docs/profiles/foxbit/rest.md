@@ -61,7 +61,7 @@ They are the only markets in the USD, USDC and USDT settlement family, see [`../
 | prediction markets | not loaded, since `fetchMarkets` sends no `category` | same file, line 454 |
 | pairs listed twice | none | P1 |
 
-The engine keeps only active swaps, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and logs `no usable swap markets; skipping the venue` when none is left, at lines 50 to 53.
+The engine keeps only active swaps, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and logs `no usable swap markets; skipping the venue` when none is left, at lines 50 to 53.
 So the engine would skip Foxbit at boot.
 
 ### Size unit, pairs listed twice, and price scale
@@ -134,7 +134,7 @@ On a 429 the documentation adds `x-fb-rate-limit-retry-after` in seconds and thi
 ```
 
 No 429 was provoked, so its shape on the wire is Not verified.
-The header is not the standard `Retry-After`, which [`../../../server/src/feeds/anchor/AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) reads, so a Foxbit poller would fall back to its fixed pause.
+The header is not the standard `Retry-After`, which [`../../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) reads, so a Foxbit poller would fall back to its fixed pause.
 
 | request | status | body |
 |---|---|---|
@@ -153,7 +153,7 @@ The engine stamps book frames on arrival, so the offset does not enter any readi
 ## 8. Recommended poller shape
 
 None.
-Foxbit publishes no index, mark or funding, so it has no anchor to poll, and a route with a Foxbit leg would be refused at open for want of a mark, see [`../../../server/src/engine/cluster/types.ts`](../../../server/src/engine/cluster/types.ts) and [`../../implemented/2026-09-15-five-venue-research-design.md`](../../implemented/2026-09-15-five-venue-research-design.md) section "What the engine needs from a venue".
+Foxbit publishes no index, mark or funding, so it has no anchor to poll, and a route with a Foxbit leg would be refused at open for want of a mark, see [`../../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) and [`../../implemented/2026-09-15-five-venue-research-design.md`](../../implemented/2026-09-15-five-venue-research-design.md) section "What the engine needs from a venue".
 If a spot leg is ever designed, its anchor has to come from another venue's index.
 The catalog needs no fast poll: `markets` is cached for one minute at the edge.
 

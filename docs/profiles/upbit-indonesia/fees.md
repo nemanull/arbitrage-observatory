@@ -112,7 +112,7 @@ CCXT therefore understates the Indonesian taker by 800 ppm on IDR pairs and by 2
 
 ## 9. Recommended registry values
 
-Upbit Indonesia cannot be registered today, because the connector keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203, and it has none.
+Upbit Indonesia cannot be registered today, because the connector keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203, and it has none.
 If a spot leg is ever added, these are the values.
 
 | field | value | reason |

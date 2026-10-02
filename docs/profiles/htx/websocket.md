@@ -118,7 +118,7 @@ The order held on every frame, and a feed still applies deltas by price.
 
 The server keeps the stream at 20 levels per side, or 150.
 A book maintained from the snapshot and every delta never held more than 20 levels on any of the 150 streams, and a level leaving the window arrives with size 0, as the `STEEM-USDT` delta in section 6 shows.
-The engine holds 20 levels per side by default, at [`../../../server/src/engine/Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so `size_20` covers it and `size_150` leaves room.
+The engine holds 20 levels per side by default, at [`../../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so `size_20` covers it and `size_150` leaves room.
 
 ### Size unit against CCXT `contractSize`
 
@@ -172,7 +172,7 @@ Because a suspended contract is acknowledged and never served, the feed has to n
 | subscription limits | 40 subscriptions per second, and "the WS request connection should not go over 30 normally" in the order push section | 60 in one burst accepted. 150 streams on one socket ran with 0 gaps |
 | throughput | | 150 USDT-M perpetuals, every other one by 24 h turnover: median 457 and 535 frames per second, peak 634 and 977, about 93 and 111 KB per second compressed, about 205 bytes compressed and 330 bytes decompressed per frame |
 
-The engine refuses permessage-deflate at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, because the gzip is inside the frame.
+The engine refuses permessage-deflate at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, because the gzip is inside the frame.
 `VenueFeed` hands `handleMessage` the raw `Buffer`, at line 209, so a subclass can gunzip it before parsing, and no feed in the engine does so today.
 At the second `batch` rate, 535 frames per 150 streams per second at 18 µs, the gunzip adds about 10 ms of loop time per second per 150 streams, on top of the parse.
 

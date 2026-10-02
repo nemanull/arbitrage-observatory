@@ -212,7 +212,7 @@ A recommendation for a later design, not a decision.
 | channel | `market_<subSymbol>_depth_step0`, with `subSymbol` = `e_` + lower case base + `usdt` from `rawMarketId` `E-<BASE>-USDT` | the rule held on 266 of 266 |
 | markets per connection | 133, two connections for the 266 active contracts | 266 on one socket ran at 532 frames per second with every channel served, and halving it leaves headroom that no published limit settles |
 | subscribe frames | one `{"event":"sub","params":{"channel":…,"cb_id":…}}` per market | one channel per frame is the only shape probed |
-| decode | gunzip every binary frame before `JSON.parse` | every frame is gzip, and permessage-deflate stays refused as the engine does at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 |
+| decode | gunzip every binary frame before `JSON.parse` | every frame is gzip, and permessage-deflate stays refused as the engine does at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 |
 | keepalive | answer each `{"ping":<n>}` with `{"pong":<n>}`, and send nothing else | the server drives the ping, and an unanswered socket survived 100 s, so answering is insurance rather than a proven need |
 | `maxSilenceMs` | 5,000 | every active contract pushes every 500 ms, so ten missed pushes is a dead socket |
 | routing | `channel.slice(7, channel.lastIndexOf('_depth_step0'))` gives `subSymbol`, mapped back to `rawMarketId` | the channel wraps the socket symbol |

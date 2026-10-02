@@ -60,7 +60,7 @@ Whether it is being delisted or hidden is Not publicly specified.
 ### How a catalog would map it
 
 CCXT has no Coinstore class, in 4.5.68 or in master, see [`fees.md`](./fees.md) section 8.
-The engine's catalog is `venue.loadMarkets()` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, so Coinstore needs a catalog loader outside CCXT, which is a code change.
+The engine's catalog is `venue.loadMarkets()` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, so Coinstore needs a catalog loader outside CCXT, which is a code change.
 
 | engine field | instrument field | note |
 |---|---|---|
@@ -72,7 +72,7 @@ The engine's catalog is `venue.loadMarkets()` at [`connector.ts`](../../../serve
 | taker | `takerRate` | 0.0006 on 49 of 58, 0.0004 on 9 |
 
 No base is listed twice in the instrument list.
-`1000PUMPUSDT` has base `1000PUMP`, so it is quoted per 1,000 PUMP and would need a price scale, see [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+`1000PUMPUSDT` has base `1000PUMP`, so it is quoted per 1,000 PUMP and would need a price scale, see [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 The list also holds equity and pre-listing names such as `TSLAUSDT`, `AAPLUSDT`, `NVDAONUSDT`, `MUUSDT`, `SAMSUNGUSDT`, `OPENAIUSDT` and `ANTHROPICUSDT`, and short tickers such as `TUSDT`, `BZUSDT` and `REUSDT`, which need a check against other venues before any pairing.
 
 ## 3. Anchor
@@ -105,7 +105,7 @@ The engine's `AnchorRow` columns, read from one `index` frame and the funding hi
 | `fundingIntervalHours` | none on the wire | 8 on every symbol from the funding history | constant 8, or the spacing of the last two `fundingTime` values |
 | `nextFundingAt` | `nextFundRateTime` | Unix ms, `1790150400000` is 2026-09-23 08:00 UTC | none |
 
-[`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) calls `fetchRound` once per interval, at lines 56 and 103, and every venue implements it with REST calls.
+[`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) calls `fetchRound` once per interval, at lines 56 and 103, and every venue implements it with REST calls.
 A Coinstore round would instead read the last `index` frame per symbol from a socket the poller keeps open, which is a second code change.
 
 ## 4. Anchor semantics

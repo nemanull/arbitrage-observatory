@@ -139,7 +139,7 @@ A REST request always answers.
 
 Both were proposed and neither is built.
 
-A per venue `quoteTtlMs` in [`../../server/src/venues/registry.ts`](../../server/src/venues/registry.ts), set for coinbase only, closing an episode whose coinbase leg has not spoken within the window.
+A per venue `quoteTtlMs` in [`../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/5a2b2ba0d8ec069b21ed2f2ead7c0cb81639f4b3/server/src/venues/registry.ts), set for coinbase only, closing an episode whose coinbase leg has not spoken within the window.
 This is cheap and it is a guess about time rather than a reading of the book.
 
 Switching the coinbase feed from `ticker` to `level2`, which is change driven and gives a maintained top of book.

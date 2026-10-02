@@ -132,7 +132,7 @@ So `market.taker` cannot be read for any MAX market, and `ccxtTakerPpm` has no s
 ## 9. Recommended registry values
 
 None.
-MAX lists no perpetual, and the connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203.
+MAX lists no perpetual, and the connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203.
 The connector also loads every venue through a CCXT class, and MAX has none, so it could not be registered even for spot without a hand written catalog loader.
 
 If a later design adds spot legs and a loader, the fee would be `takerPpm: 1_600`, the VIP 0 taker of S1 and P1, with no `ccxtTakerPpm`.

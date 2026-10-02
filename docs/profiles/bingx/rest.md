@@ -139,7 +139,7 @@ Whether any BingX index includes BingX's own perpetual is Not verified, because 
 So the mark follows the perpetual whenever the last trade and the basis average sit on the same side of the index, with no cap.
 On 2026-09-23 the mark sat more than 1 % from the index on 9 of 1,036 rows in the first run and 11 of 1,037 in the second, P2.
 `ONE-USDT` read mark 0.0031420 against index 0.0054160, 42 % below, and `UPHOOD-USDT` read mark 0.5185 against index 0.4713, 10 % above.
-`ONE|USDT` is already in `DENIED_PAIRS` at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 11.
+`ONE|USDT` is already in `DENIED_PAIRS` at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 11.
 
 ### Funding
 

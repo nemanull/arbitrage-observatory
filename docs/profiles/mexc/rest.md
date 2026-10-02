@@ -28,7 +28,7 @@ Where MEXC's origin servers sit is an inference this probe cannot make, and it i
 A rerun at 18:52 UTC resolved each host to two other addresses in the same 23.218.239.0/24 range, so the edge addresses rotate.
 `www.mexc.com` answered `curl` and Node `fetch` with HTTP 403 "Access Denied" on documentation pages, while both API hosts answered normally.
 
-Latency at 07:11 to 07:13 on 2026-09-15, in milliseconds, with Node's global `fetch` as [`../../../server/src/feeds/anchor/AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 222 uses it.
+Latency at 07:11 to 07:13 on 2026-09-15, in milliseconds, with Node's global `fetch` as [`../../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) line 222 uses it.
 Cold is the first request to that host in the process, and warm is five later requests one second apart on the kept connection, two for the catalog.
 
 | host | call | cold ms | warm min / med / max ms | decoded bytes | wire bytes and encoding |
@@ -79,7 +79,7 @@ So an empty book whose `timestamp` does not advance is the sign of a contract th
 
 ### Active perpetuals by settlement asset
 
-CCXT 4.5.68 `loadMarkets` at 07:09, filtered exactly like [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, took 1,588 ms and returned 3,166 markets, 1,184 of them active swaps.
+CCXT 4.5.68 `loadMarkets` at 07:09, filtered exactly like [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 188 to 194, took 1,588 ms and returned 3,166 markets, 1,184 of them active swaps.
 
 | settlement | linear | active swaps |
 |---|---|---:|
@@ -125,7 +125,7 @@ For the 10 inverse contracts `contractSize` is USD per contract, 100 on BTC_USD 
 | case | finding | label |
 |---|---|---|
 | One pair in several of USDT, USDC, USD | 76 pairs at 07:09, for example `BTC_USDT`, `BTC_USDC`, `BTC_USD` | Probed |
-| Engine choice among them | USDT before USDC before USD, by [`../../../server/src/engine/cluster/quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 12 to 17 | Code |
+| Engine choice among them | USDT before USDC before USD, by [`../../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/quoteFamily.ts) lines 12 to 17 | Code |
 | USD1 contracts | quote `USD1`, a cluster family of its own, so `BTC_USD1` never pairs with another venue's BTC USDT market | Probed, Code |
 | Bases scaled in the name | `1000BONK_USDT`, `1000RATS_USDT`, `1000BTT_USDT`, `1000000BABYDOGE_USDT`, `1000000MOG_USDT` | Probed |
 | Bases scaled by contract size only | `PEPE_USDT` at 10,000,000 per contract and `SHIB_USDT` at 1,000, both priced per coin | Probed |
@@ -307,7 +307,7 @@ It returned 20 entries, each `{cts, asks, bids, version}` with one changed level
 | Delisted symbol | detail code 1001 "Contract not exists", depth success with an empty frozen book | Probed | section 2 |
 | Error envelope | `{"success": false, "code": <int>, "message": <string>}` | Published, Probed | S1, P6 |
 
-[`../../../server/src/shared/errors.ts`](../../../server/src/shared/errors.ts) line 1 pauses only on HTTP 403, 418 and 429.
+[`../../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/shared/errors.ts) line 1 pauses only on HTTP 403, 418 and 429.
 A MEXC error with HTTP 200 and `success` false would not pause the poller, so a later poller has to check `success` and `code` itself.
 
 ## 7. Server time and clock offset

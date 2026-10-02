@@ -309,7 +309,7 @@ It only applies if MGBX grants consent for automated access, see [`rest.md`](./r
 | sizes | `Number()` of the string, times `contractSize` | scientific notation appears in snapshots |
 | deflate | keep `perMessageDeflate: false` | the server does not negotiate it anyway |
 
-The engine's `VenueFeed` opens one socket per endpoint plan with no headers, at [`VenueFeed.ts`](../../../old_ts_server/src/feeds/book/VenueFeed.ts) line 81, so 267 plans of one market each fit its shape, and MGBX asked for no header.
+The engine's `VenueFeed` opens one socket per endpoint plan with no headers, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/588ff41a174ff565d0f3cefb68eeff414959a5f0/old_ts_server/src/feeds/book/VenueFeed.ts) line 81, so 267 plans of one market each fit its shape, and MGBX asked for no header.
 267 sockets to one host were not tested, only 30.
 
 ## 9. Source ledger

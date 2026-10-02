@@ -177,7 +177,7 @@ Because the server never refuses a channel, the feed has to notice a stream with
 | server ping | Not publicly specified | none, neither a protocol ping nor an application ping, on any socket |
 | forced disconnect | Not publicly specified | none in 75 s |
 | maintenance notice | Not publicly specified | none |
-| compression | gzip inside each binary data frame, S1 | gzip inside the frame on every data frame. A client that offered permessage-deflate got `sec-websocket-extensions: permessage-deflate` back, W5. The engine refuses deflate at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and the frames stay gzip either way |
+| compression | gzip inside each binary data frame, S1 | gzip inside the frame on every data frame. A client that offered permessage-deflate got `sec-websocket-extensions: permessage-deflate` back, W5. The engine refuses deflate at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and the frames stay gzip either way |
 | handshake | | 255 to 924 ms to open from this host |
 | subscription limits | Not publicly specified | none reached at 213 channels |
 | throughput | | 213 perpetuals on one socket: 426 frames per second at the median in both runs, peak 462 and 493, 435 and 437 KB per second on the wire, 1,178 and 1,185 KB per second of JSON after gunzip, 1,064 and 1,065 bytes per frame on the wire and 2,884 and 2,885 after gunzip, 42 and 43 µs gunzip plus `JSON.parse` per frame at the median and 145 and 168 µs at p99, W3 |
@@ -244,7 +244,7 @@ A recommendation for a later design, not a decision.
 | channel | `market_e_<base lowercase>usdt_depth_step0`, built from `rawMarketId` by dropping the `E-` prefix and the hyphens and lowercasing | the only documented book channel |
 | markets per connection | 213, every active contract | 213 ran on one socket with every contract delivering, and no cap is published |
 | subscribe frames | one frame per channel, `{"event":"sub","params":{"channel":…,"cb_id":…}}` | one channel per frame is the documented shape, and a burst of 213 was served |
-| decode | `gunzipSync` of every binary frame before `JSON.parse`, in `handleMessage`, which already receives a `Buffer` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 209 | the data is gzip inside the frame. This is the change the design flags for compression inside the frame |
+| decode | `gunzipSync` of every binary frame before `JSON.parse`, in `handleMessage`, which already receives a `Buffer` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 209 | the data is gzip inside the frame. This is the change the design flags for compression inside the frame |
 | routing | a map from channel name to `rawMarketId`, built at subscribe time | the channel lowercases the contract and drops its hyphens |
 | snapshot | every frame: `resetBook` with the first 20 of `asks` and of `buys`, then `publish` | every frame is a whole book |
 | sequence | none | no id exists. A per contract gap far above 500 ms is the only loss signal |

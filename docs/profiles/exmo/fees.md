@@ -119,7 +119,7 @@ No index, mark or perpetual funding rate exists, see [`rest.md`](./rest.md) sect
 ## 9. Recommended registry values
 
 None.
-EXMO lists no perpetual, so the engine's catalog path, which keeps only active swap markets at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203, would find nothing.
+EXMO lists no perpetual, so the engine's catalog path, which keeps only active swap markets at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203, would find nothing.
 The platform is also winding down, closed to new users and quoting every pair about 10 % off its reference.
 If a spot leg were ever wanted for research, `takerPpm` would be 10,000 and `ccxtTakerPpm` 10,000, because CCXT reads the per pair wire value, which today equals the published 1 %.
 

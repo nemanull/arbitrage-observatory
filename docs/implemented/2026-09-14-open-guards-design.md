@@ -39,27 +39,27 @@ From the research above.
 1. A leg whose index or mark moved more than `MAX_ANCHOR_MOVE_PPM` between its last two polls makes the pair unreadable.
    The reader returns a new issue, `anchor_moving`, discovery refuses the route with it, and a sample carrying it closes nothing, like every other unreadable sample.
    `MAX_ANCHOR_MOVE_PPM` is 1,000, on the larger of the index move and the mark move, compared raw and not normalised by the time between the polls.
-   Built at [`server/src/engine/opportunity/anchorReading.ts:46`](../../server/src/engine/opportunity/anchorReading.ts), with the constant at `:6`.
+   Built at [`server/src/engine/opportunity/anchorReading.ts:46`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/opportunity/anchorReading.ts), with the constant at `:6`.
 2. The anchor block carries the move.
-   `ClusterAnchor` at [`server/src/engine/cluster/types.ts:35`](../../server/src/engine/cluster/types.ts) carries `movePpm`, one number per slot.
-   `Engine.updateAnchor` writes it at [`server/src/engine/Engine.ts:413`](../../server/src/engine/Engine.ts) from the slot's previous index and mark before it overwrites them, through `anchorMovePpm` at `:582`.
+   `ClusterAnchor` at [`server/src/engine/cluster/types.ts:35`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/cluster/types.ts) carries `movePpm`, one number per slot.
+   `Engine.updateAnchor` writes it at [`server/src/engine/Engine.ts:413`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/Engine.ts) from the slot's previous index and mark before it overwrites them, through `anchorMovePpm` at `:582`.
    The move is the absolute difference over the previous value, in ppm, so 100 to 101 reads exactly 10,000.
    A slot polled once has nothing to compare against and reads as an unbounded move until its second poll lands, so the first poll after boot or after a market appears refuses the route.
-   The refusal log carries both legs' moves, at [`server/src/engine/opportunity/OpportunityManager.ts:114`](../../server/src/engine/opportunity/OpportunityManager.ts), so the next audit reads the refused move instead of reconstructing it from row timelines.
+   The refusal log carries both legs' moves, at [`server/src/engine/opportunity/OpportunityManager.ts:114`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/opportunity/OpportunityManager.ts), so the next audit reads the refused move instead of reconstructing it from row timelines.
    A first poll shows as an infinite move there.
 3. A leg without a mark makes the pair unreadable.
-   The reader returns `anchor_no_mark` when either slot's mark is not positive, checked before the arithmetic, at [`anchorReading.ts:38`](../../server/src/engine/opportunity/anchorReading.ts).
-   The fallback that measured a markless leg over its index is gone from `readLeg` at `:73`, and `AnchorLeg.markPremium` at [`server/src/engine/opportunity/types.ts:18`](../../server/src/engine/opportunity/types.ts) is a number and never null.
-   `markOrNull` left [`server/src/db/conversion.ts`](../../server/src/db/conversion.ts), which writes both marks at `:86`, since a route that opened always has them.
+   The reader returns `anchor_no_mark` when either slot's mark is not positive, checked before the arithmetic, at [`anchorReading.ts:38`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/opportunity/anchorReading.ts).
+   The fallback that measured a markless leg over its index is gone from `readLeg` at `:73`, and `AnchorLeg.markPremium` at [`server/src/engine/opportunity/types.ts:18`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/opportunity/types.ts) is a number and never null.
+   `markOrNull` left [`server/src/db/conversion.ts`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/db/conversion.ts), which writes both marks at `:86`, since a route that opened always has them.
    The columns stay nullable for the rows written before this date, and their comments in `schema.prisma` say so.
 4. The coinbase poller reads Coinbase International Exchange.
-   [`server/src/venues/coinbase/anchor.ts`](../../server/src/venues/coinbase/anchor.ts) makes one call to `GET https://api.international.coinbase.com/api/v1/instruments`, keys each perpetual by its symbol plus `-INTX`, skips spot, delisted and quoteless entries, and writes the index, the mark, `predicted_funding` as the upcoming rate, the interval from nanoseconds, and the next settlement on the hour.
+   [`server/src/venues/coinbase/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/venues/coinbase/anchor.ts) makes one call to `GET https://api.international.coinbase.com/api/v1/instruments`, keys each perpetual by its symbol plus `-INTX`, skips spot, delisted and quoteless entries, and writes the index, the mark, `predicted_funding` as the upcoming rate, the interval from nanoseconds, and the next settlement on the hour.
    It polls every 2 s, because a round takes 0.5 to 0.7 s and the first after a reconnect up to 5 s.
-   Built at [`server/src/venues/coinbase/anchor.ts:7`](../../server/src/venues/coinbase/anchor.ts), with the cadence at `:14`.
+   Built at [`server/src/venues/coinbase/anchor.ts:7`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/venues/coinbase/anchor.ts), with the cadence at `:14`.
    The tick-quantised INTX index is accepted, since the fresh premium is the touch over the mark and both sit on the tick grid.
 5. A route whose profitable region at open holds less than `MIN_EDGE_NOTIONAL` is refused.
    `MIN_EDGE_NOTIONAL` is 1,000 quote units, the first checkpoint of the detection recipe in [`../bestiary/thin-book.md`](../bestiary/thin-book.md).
-   The measure is `edge.notional` from `walkLadders` at [`server/src/engine/opportunity/OpportunityManager.ts:145`](../../server/src/engine/opportunity/OpportunityManager.ts), what buying the whole profitable region costs after fees, and a null edge is refused too.
+   The measure is `edge.notional` from `walkLadders` at [`server/src/engine/opportunity/OpportunityManager.ts:145`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/opportunity/OpportunityManager.ts), what buying the whole profitable region costs after fees, and a null edge is refused too.
    The refusal reason is `thin_book`, reported through `reportRejection` at `:150` with the region's notional, average edge and size, after the fresh gate at `:121`.
    The walk now runs before the four size reads so the refusals sit together, and the open log line lost its no-depth branch, since the edge is never null past the floor.
    This reverses the decision of 2026-09-07 that the ladder walk is a measurement and not a gate.
@@ -68,7 +68,7 @@ From the research above.
    Inside the reader the order is missing, skewed, stale, no mark, moving.
    Each check is one condition, and none of them adds a branch to the lifecycle.
 7. Nothing changes in the close rules.
-   `closeReasonFor` at [`server/src/engine/opportunity/OpportunityLifecycle.ts:300`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) keeps its order, and a moving or markless sample is an unreadable sample that closes nothing, so a route that opened calmly rides a crash on the raw rule and the age cap.
+   `closeReasonFor` at [`server/src/engine/opportunity/OpportunityLifecycle.ts:300`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/opportunity/OpportunityLifecycle.ts) keeps its order, and a moving or markless sample is an unreadable sample that closes nothing, so a route that opened calmly rides a crash on the raw rule and the age cap.
 
 ## Rejected alternatives
 

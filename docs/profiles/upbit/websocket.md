@@ -117,7 +117,7 @@ An unsupported count widens it back to 30: `KRW-ETH.20` sent 30 in W6 and W7, an
 ### Size unit against CCXT `contractSize`
 
 Sizes are in the base currency: `KRW-BTC` `ask_size` `0.00077720` at `1.16542E8` is 0.0007772 BTC offered at 116,542,000 KRW, W12.
-CCXT leaves `contractSize` undefined on every Upbit market, at `server/node_modules/ccxt/js/src/upbit.js` line 548, and the connector reads a missing contract size as 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 194.
+CCXT leaves `contractSize` undefined on every Upbit market, at `server/node_modules/ccxt/js/src/upbit.js` line 548, and the connector reads a missing contract size as 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 194.
 In W2 and W3 every REST book read of `KRW-BTC`, `KRW-XRP` and `KRW-USDS` matched the socket frame with the same `timestamp` level for level, 12 of 12.
 The REST book was 0 to 200 ms behind the newest socket frame at the moment of the read.
 W1 compared keys in order and so reported a mismatch, because REST writes `bid_price` first, and it is not counted.
@@ -246,7 +246,7 @@ Upbit cannot join today, because the connector keeps only swap markets, see [`fe
 | channel | `orderbook`, codes with no suffix, no `level` | 30 raw levels covers the engine's 20 |
 | markets per connection | all tracked pairs, or slices of a few hundred | 855 pairs ran on one socket at 795 frames a second with every snapshot served, and nothing larger exists |
 | subscribe frames | exactly one per connection: `[{"ticket": "<uuid>"}, {"type": "orderbook", "codes": [...]}, {"format": "DEFAULT"}]` | a second frame replaces the first subscription |
-| keepalive | send the text `PING` once after the subscribe, and a protocol ping every 10 s | a socket with no traffic dies at about 60 s. The `UP` cycle was only seen on an unsubscribed socket, and whether a client ping resets the server's idle timer is Not verified, so the pong, which the silence watch counts at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98, is the heartbeat that is certain |
+| keepalive | send the text `PING` once after the subscribe, and a protocol ping every 10 s | a socket with no traffic dies at about 60 s. The `UP` cycle was only seen on an unsubscribed socket, and whether a client ping resets the server's idle timer is Not verified, so the pong, which the silence watch counts at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98, is the heartbeat that is certain |
 | `maxSilenceMs` | 25,000 | two missed pongs, and a quiet pair can go the whole 40 s run without a book frame, so the book stream cannot be the heartbeat |
 | routing | `frame.code` is the `rawMarketId` | the stream is keyed by the pair id |
 | every frame | drop elements whose price or size is 0, then `resetBook` with the 30 levels | whole book frames, zero padded sides |

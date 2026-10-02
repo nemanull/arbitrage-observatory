@@ -54,8 +54,8 @@ No perpetual appears in any bitbank catalog, and the count of active perpetuals 
 
 `market.id` equals the `spot/pairs` `name`, the REST path segment in `/{pair}/depth`, the `pair` field in `/tickers`, and the room suffix on the socket, on 62 of 62 pairs.
 No pair is listed twice.
-The engine keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 195 to 202, so bitbank yields zero markets and the connector skips the venue.
-Even in a spot mode, every bitbank quote is JPY or BTC, which the quote family does not merge with USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a bitbank market could only cluster with another JPY or BTC market.
+The engine keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 195 to 202, so bitbank yields zero markets and the connector skips the venue.
+Even in a spot mode, every bitbank quote is JPY or BTC, which the quote family does not merge with USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a bitbank market could only cluster with another JPY or BTC market.
 A spot filter would also need `stop_order` from `info`, since CCXT marks suspended pairs active.
 
 ## 3. Anchor

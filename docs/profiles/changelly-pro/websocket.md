@@ -111,7 +111,7 @@ None is documented and no frame carries one.
 ### Level window
 
 `orderbook/full` has no window, and the maintained book reached 301 bids and 188 asks on `BTCUSDT_PERP`.
-The engine keeps 20 levels per side at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so a feed keeps the whole book and publishes the top.
+The engine keeps 20 levels per side at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so a feed keeps the whole book and publishes the top.
 A book maintained from the snapshot and every update never crossed, 0 crossed states over all updates.
 
 ### Size unit against CCXT `contractSize`
@@ -157,7 +157,7 @@ Because an unknown symbol is acknowledged as a success with an empty list, the f
 
 | item | documented | probed |
 |---|---|---|
-| keepalive | server protocol ping every 30 s, S1 | pings about every 30 s, at 30.8 to 31.2 s, 60.9 to 61.3 s and 91.1 to 91.5 s. `ws` answers them by default, and [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98 count a ping as traffic |
+| keepalive | server protocol ping every 30 s, S1 | pings about every 30 s, at 30.8 to 31.2 s, 60.9 to 61.3 s and 91.1 to 91.5 s. `ws` answers them by default, and [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98 count a ping as traffic |
 | silence the server tolerates | Not publicly specified | a socket with no subscription that answered pings stayed open for the full 95.8 and 96.2 s with 0 frames. One that did not answer was closed at 60.5 and 60.6 s with code 4002 "Ping pong timeout." |
 | forced disconnect | Not publicly specified | none in any run |
 | maintenance notice | Not publicly specified | none seen |
@@ -266,7 +266,7 @@ A recommendation for a later design, not a decision.
 | expired contract | skip catalog rows whose `status` is not `working` | `LUNAUSDT_PERP` subscribes and serves an empty book |
 | receive time | stamp on arrival, never from `t` | the engine's rule |
 | sizes | `Number()` of the string | coins, `contractSize` 1 |
-| deflate | keep `perMessageDeflate: false`, as [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 does | the server does not negotiate it anyway |
+| deflate | keep `perMessageDeflate: false`, as [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 does | the server does not negotiate it anyway |
 
 ## 9. Source ledger
 

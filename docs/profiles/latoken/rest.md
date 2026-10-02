@@ -59,7 +59,7 @@ BTC/USDT showed a 24 h volume of 0, a best bid of 77,000 and a best ask of 79,00
 
 `market.id` does not match any symbol the socket or the REST book uses.
 The socket destination is `/v1/book/<baseId>/<quoteId>`, see [`websocket.md`](./websocket.md) section 3, and the REST book accepts either the tags or the currency ids, section 5.
-So a feed would key on `<baseId>/<quoteId>`, not on CCXT's `market.id`, and the engine's `rawMarketId` contract at [`../../../server/src/engine/cluster/types.ts`](../../../server/src/engine/cluster/types.ts) line 11 would need that mapping.
+So a feed would key on `<baseId>/<quoteId>`, not on CCXT's `market.id`, and the engine's `rawMarketId` contract at [`../../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 11 would need that mapping.
 The 1,245 CCXT symbols are all distinct, so no pair is listed twice.
 No price scale applies, since the market is spot.
 
@@ -146,8 +146,8 @@ The spread follows the reply time spread, so the clocks agree to within a few te
 
 ## 8. Recommended poller shape
 
-No anchor poller is recommended, because LATOKEN has no index, mark or funding, and the engine refuses a route whose mark is 0, as [`../../../server/src/engine/cluster/types.ts`](../../../server/src/engine/cluster/types.ts) line 34 says.
-The engine's catalog would also find 0 active swaps and skip the venue, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 51.
+No anchor poller is recommended, because LATOKEN has no index, mark or funding, and the engine refuses a route whose mark is 0, as [`../../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34 says.
+The engine's catalog would also find 0 active swaps and skip the venue, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 51.
 
 If a spot leg were ever designed, these would be the REST pieces.
 

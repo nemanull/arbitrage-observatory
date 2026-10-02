@@ -331,7 +331,7 @@ Treat the binance stream as unavailable until it is probed again, and poll.
 
 ## In the engine
 
-The block lives on every cluster as `anchor`, one slot per venue, in [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts).
+The block lives on every cluster as `anchor`, one slot per venue, in [`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/engine/cluster/types.ts).
 
 | column | meaning |
 |---|---|
@@ -348,17 +348,17 @@ It is computed when a reading is taken, the way the fee multipliers are applied 
 A leg read at open carries three of them.
 The touch premium is the book price the trade uses over the index, the mark premium is the mark over the index, and the fresh premium is that book price over the mark.
 
-`Engine.updateAnchor` in [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) writes a slot from one poll and is not a tick.
+`Engine.updateAnchor` in [`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/engine/Engine.ts) writes a slot from one poll and is not a tick.
 It opens nothing, it closes nothing, and a dead book socket leaves the slot alone because the socket never wrote it.
 
-The poll is [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts), one timer per venue that fetches the venue's bulk reply and writes every tracked market with the reply's arrival time as `ts`.
-It is the REST twin of the book feed in [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts), and each venue's `anchor.ts` beside its feed maps the venue's reply into rows.
+The poll is [`../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/feeds/anchor/AnchorPoller.ts), one timer per venue that fetches the venue's bulk reply and writes every tracked market with the reply's arrival time as `ts`.
+It is the REST twin of the book feed in [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/feeds/book/VenueFeed.ts), and each venue's `anchor.ts` beside its feed maps the venue's reply into rows.
 Once a second is the cadence, because on 2026-09-10 no venue changed its index or mark faster than that over 90 one second samples, and the published funding rate changed once or twice.
 Bybit polls every two seconds, because its 630 KB reply took up to 850 ms to download at one hertz.
 Coinbase polls every two seconds as well, since the International Exchange reply takes 0.5 to 0.7 s and up to 5 s after a reconnect.
 Kraken's absolute rate is divided by the mark, and its hourly settlement on the hour is derived, since the venue publishes no next funding time.
 
-The reader at open is [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
+The reader at open is [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/engine/opportunity/anchorReading.ts).
 It reads the three premiums on each leg and factors the cross into the three ratios of the section above, so that in fractions one plus the net edge equals one plus the index gap, times one plus the carried part, times one plus the fresh edge.
 The index gap is the sell leg's index over the buy leg's after the venue price scales, and it is the structural part that funding never closes.
 The carried part is the accepted premiums' gap, one plus the sell leg's mark premium over one plus the buy leg's, and it is what funding is pricing and closes over hours.
@@ -397,5 +397,5 @@ The readings at open, peak and close are on the row as the fresh and standing ed
 - SOPH and CP premiums, predicted and realised rates, and the 08:00 regime change: sections 2a, 2b and 9 of [`../audits/2026-09-08-fourth-run-data-audit.md`](../audits/2026-09-08-fourth-run-data-audit.md).
 - The skew trap: the same audit, section 9.
 - Bulk endpoint counts, the bybit subscription test and the silent binance streams: probes on 2026-09-09 from 05:41 UTC over the following fifteen minutes.
-- The engine block: [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) and [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts).
+- The engine block: [`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/engine/cluster/types.ts) and [`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/fb90209ee5a95bf766eff17aff6e4be654a0fbd4/server/src/engine/Engine.ts).
 - The work: [issue #3](https://github.com/nemanull/arbitrage-observatory/issues/3).

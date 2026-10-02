@@ -53,7 +53,7 @@ Without a slug or symbol it answers 400 `value must contain at least one of symb
 
 It does not.
 No CCXT class exists for BitDelta in 4.5.68 or in current master, see [`fees.md`](./fees.md) section 8.
-A connector would have to build the catalog itself, and the engine's catalog path, `loadMarkets` filtered by `isActiveSwapMarket` at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196, has no BitDelta markets to filter.
+A connector would have to build the catalog itself, and the engine's catalog path, `loadMarkets` filtered by `isActiveSwapMarket` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196, has no BitDelta markets to filter.
 
 ### Symbols
 
@@ -100,7 +100,7 @@ The one number per contract is a two-sided quote and its mid.
 |---|---|---|
 | key | `symbol` | six letters, section 2 |
 | `index` | none | Not publicly specified |
-| `mark` | none | the engine reads a mark of 0 as "the venue publishes none" and refuses the route at open, [`types.ts`](../../../server/src/engine/cluster/types.ts) line 34 |
+| `mark` | none | the engine reads a mark of 0 as "the venue publishes none" and refuses the route at open, [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34 |
 | `fundingRate` | none. The per side funding fee is a daily holding charge that is negative for both sides, not a rate that longs pay to shorts | |
 | `fundingIntervalHours` | 24, from the page's text only | [`fees.md`](./fees.md) section 6 |
 | `nextFundingAt` | 00:00 UTC or 12:00 UTC, the page's two tooltips disagree | [`fees.md`](./fees.md) section 6 |
@@ -169,7 +169,7 @@ The `Date` header agreed to the second.
 ## 8. Recommended poller shape
 
 None.
-No call returns an index, a mark or a funding rate, so every `AnchorRow` would carry a mark of 0 and the engine would refuse every BitDelta route at open, as [`types.ts`](../../../server/src/engine/cluster/types.ts) line 34 describes.
+No call returns an index, a mark or a funding rate, so every `AnchorRow` would carry a mark of 0 and the engine would refuse every BitDelta route at open, as [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34 describes.
 The per side funding fee could be read once a day from 90 calls to `futures/market/pair`, but it is a holding charge on both sides and not a rate between longs and shorts, so it does not fit `fundingRate`.
 
 ## 9. Source ledger

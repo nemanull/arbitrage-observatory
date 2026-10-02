@@ -136,7 +136,7 @@ The settlement instant itself was not captured, and the numbers above come from 
 | the fee page CCXT names | `https://support.global.hashkey.com/hc/en-us/articles/13199900083612-HashKey-Global-Fee-Structure` | `hashkey.js` line 189. It redirects to a 403 challenge page, and the help centre API answers `{"error":"RecordNotFound"}` for id 13199900083612, so the article is gone. S1 is its current replacement |
 
 The CCXT constant is 600 ppm and equals the published VIP 0 perpetual taker.
-The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 29 to 31.
+The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 29 to 31.
 
 ## 9. Recommended registry values
 

@@ -59,7 +59,7 @@ Six offline BTC-quoted pairs still carry a `leverage-ratio` of 2 to 5.
 | `taker`, `maker` | 0.002, and 0 for OMG | line 563 |
 | pair listed twice | none among the active markets | P1 |
 
-Because every market is `spot`, the connector's swap filter at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202 keeps none of them.
+Because every market is `spot`, the connector's swap filter at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202 keeps none of them.
 `loadMarkets` took 707 and 481 ms in two runs, and it also reads the currency list.
 
 ### Size unit, pairs listed twice, and price scale

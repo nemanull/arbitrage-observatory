@@ -181,7 +181,7 @@ No error names the stream it refers to, so a feed that must know which subscribe
 What resets the 60 s timer was not isolated.
 The two closes fit a rule of 60 s without a frame in either direction, and a socket that only receives stayed open, so a ping every 15 s keeps a socket alive under either reading.
 No socket with pings was held past 60 s, so that last point is an inference.
-The engine opens sockets without a `User-Agent` header and without deflate, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and both work here.
+The engine opens sockets without a `User-Agent` header and without deflate, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and both work here.
 
 ## 6. Captured frames
 

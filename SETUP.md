@@ -7,76 +7,70 @@ The project overview is in [README.md](./README.md).
 
 | Component | Version | Notes |
 | --- | --- | --- |
-| Node | 24 or newer | The compiled server is CommonJS and loads CCXT, whose dependency chain reaches an ESM-only module, so it relies on `require(esm)`. |
-| pnpm | 11 | Declared as `packageManager`, so Corepack selects it automatically. |
-| Docker | any current release | Postgres, Redis and SigNoz run in containers. |
+| Rust | stable, 1.88 or newer | The server crate uses edition 2024 and its `let` chains, and it was built with 1.98. |
+| Docker | any current release | Postgres and the optional SigNoz stack run in containers. |
+| Node and pnpm | Node 24, pnpm 11 | Only for the placeholder frontend, the infrastructure scripts and the probe scripts. pnpm is declared as `packageManager`, so Corepack selects it. |
 
 No exchange account and no API key are needed.
-Every feed the engine reads is public.
+Every feed the server reads is public.
 
 ## Install
 
 ```bash
-pnpm install
 cp server/.env.example server/.env
-cp app/.env.example app/.env
+pnpm install          # the frontend and the root scripts only
 ```
-
-`pnpm install` generates the Prisma client as a postinstall step, so a fresh clone builds with no further commands.
 
 ## Infrastructure
 
 ```bash
-pnpm infra:up         # Postgres, Redis and SigNoz, waits until healthy
+pnpm infra:up         # Postgres and SigNoz, waits until healthy
 pnpm infra:down       # stop
 pnpm infra:logs       # follow logs
 pnpm infra:reset      # stop and delete all stored data
 ```
 
-Postgres listens on `localhost:5532` and Redis on `localhost:6390`, both bound to loopback.
-The ports are shifted off their defaults so they do not collide with other projects on the same host.
-Override them with `POSTGRES_PORT` and `REDIS_PORT`.
+Postgres listens on `localhost:5532`, bound to loopback.
+The port is shifted off its default so it does not collide with other projects on the same host.
+Override it with `POSTGRES_PORT`.
 
 SigNoz is the heaviest container in the set and is optional.
 To run without it:
 
 ```bash
-docker compose up -d --wait postgres redis
+docker compose up -d --wait postgres
 ```
 
 ## Database
 
-There is one database, so these work from the repository root and from `server/`.
+The schema is the SQL under [`server/migrations/`](./server/migrations/), applied in file name order.
+The server does not migrate on boot.
 
 ```bash
-pnpm prisma:generate      # regenerate the Prisma client
-pnpm prisma:push          # apply schema.prisma directly, no migration files
-pnpm prisma:migrateDev    # create and apply a migration
-pnpm prisma:migrateDeploy # apply existing migrations
-pnpm prisma:studio        # browse the data
+for f in server/migrations/*.sql; do
+  psql postgresql://observatory:observatory@localhost:5532/observatory -v ON_ERROR_STOP=1 -f "$f"
+done
 ```
 
-The client is generated into `server/src/db/generated/prisma/` and is committed alongside the server source.
+The file names follow the `<version>_<name>.sql` layout that `sqlx migrate run --source server/migrations` also reads, for anyone who has `sqlx-cli` installed.
 
 ## Running
 
 ```bash
-pnpm dev:server       # the engine, http://localhost:3000
-pnpm dev:app          # the placeholder frontend, http://localhost:5173
-pnpm dev              # both, in parallel
+cd server
+cargo run --release
 ```
 
-The engine starts its feeds on boot.
-The first lines of the log give the cluster count, the active venues and the denied pairs, followed by one line per feed as it subscribes.
-Every subsequent stage transition is logged with the market it processed, because almost all of the work happens in background jobs and a terminal is not a reliable record of it.
+The server reads `server/.env` from the directory it starts in, and starts its feeds on boot.
+The first lines of the log give each venue's catalog, the cluster count and the markets each venue streams, followed by one line per socket as it opens.
+Every later stage transition is logged with the market it processed, because almost all of the work happens in background tasks and a terminal is not a reliable record of it.
 
-Three HTTP routes report and control the run.
+One `SIGINT` or `SIGTERM` stops the run cleanly.
+The feeds stop first, every open episode closes with the reason `shutdown`, and the writer drains its queue to Postgres before the process exits.
+A second signal exits at once, for a stop that hangs on a database that does not answer.
 
-| Route | Effect |
-| --- | --- |
-| `GET /status` | The current run: whether it is live, when it started, the cluster count and the market count per venue. |
-| `GET /start` | Start the feeds if they are stopped. |
-| `GET /stop` | Stop the feeds and flush any open episode. |
+The server has no HTTP surface.
+A run is started by starting the process and ended by signalling it.
 
 ## Reading the data
 
@@ -84,28 +78,39 @@ There is no user interface.
 Stored episodes are read directly.
 
 ```bash
-pnpm prisma:studio                                    # browse the tables
 psql postgresql://observatory:observatory@localhost:5532/observatory
 ```
 
-Logs, traces and metrics are exported over OTLP to a local SigNoz at http://localhost:8180, which accepts any email and password because the container registers nothing outbound.
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` to an empty value in `server/.env` to run without exporting.
+Logs are exported over OTLP to a local SigNoz at http://localhost:8180, which accepts any email and password because the container registers nothing outbound.
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to an empty value in `server/.env` to keep the logs on the console only.
 Setup and upgrade notes are in [infra/signoz/README.md](./infra/signoz/README.md).
 
 ## Checks
 
+From `server/`:
+
 ```bash
-pnpm build            # both packages
-pnpm test             # 30 suites, 389 tests, no database required
-pnpm lint             # read-only
-pnpm lint:fix         # the rewriting form
-pnpm --filter server run typecheck
+cargo test                                   # 478 tests, no database and no internet access
+cargo build --release
 ```
 
-The test suite touches no external service.
-It runs with `--forceExit` for a reason, explained in [server/README.md](./server/README.md).
+Three groups of tests are ignored by default, because they reach the real venues.
 
-Anything can also be run per package with `pnpm --filter server <script>`.
+```bash
+LIVE_VENUES=binance,okx cargo test live_catalog -- --ignored --nocapture
+LIVE_VENUES=binance LIVE_SECONDS=120 cargo test --release live_smoke -- --ignored --nocapture
+cargo test --release load_replay -- --ignored --nocapture
+```
+
+`live_catalog` prints each venue's markets for a parity check against another catalog, and `live_smoke` streams every market of each venue and fails on a market with no book, a crossed top, a closed socket or a frame that does not parse.
+`load_replay` records the live venues and replays the recording as copies of them through the feeds and the engine, and its method and results are in [`2026-10-01-rust-load-replay.md`](./docs/research/2026-10-01-rust-load-replay.md).
+
+The frontend has its own checks, run from the repository root:
+
+```bash
+pnpm lint
+pnpm build
+```
 
 ## Configuration
 
@@ -114,17 +119,18 @@ Anything can also be run per package with `pnpm --filter server <script>`.
 | Variable | Purpose |
 | --- | --- |
 | `DATABASE_URL` | Postgres connection string. |
-| `REDIS_URL` | Redis connection string for the BullMQ write queue. |
-| `PORT` | HTTP port, default 3000. |
-| `NODE_ENV` | Standard Node environment flag. |
+| `RUST_LOG` | Console log filter, for example `info` or `info,server::engine=debug`. |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP collector endpoint, empty to disable exporting. |
-| `OTEL_SERVICE_NAME` | Service name attached to exported telemetry. |
+| `OTEL_SERVICE_NAME` | Service name attached to exported logs. |
+| `OTEL_LOG_LEVEL` | What reaches SigNoz, independent of the console. |
 
 ## Adding a venue
 
 Ten venue adapters exist and five are active.
-Activating one of the remaining five is a checklist rather than new code, and it is written out in [docs/implemented/2026-09-15-five-venue-adapters-plan.md](./docs/implemented/2026-09-15-five-venue-adapters-plan.md).
+The active set is `ACTIVE_VENUES` in [`orchestrator.rs`](./server/src/orchestrator.rs), so activating one of the other five is one line there once its checks pass.
 
-A new venue needs a directory under `server/src/venues/` holding a book feed, an anchor poller and its types, plus an entry in `server/src/venues/registry.ts`.
-The shared behaviour lives in [`VenueFeed.ts`](./server/src/feeds/book/VenueFeed.ts) and [`AnchorPoller.ts`](./server/src/feeds/anchor/AnchorPoller.ts), so an adapter supplies only what differs.
+A new venue is one module under `server/src/venues/`: `<id>.rs` holds the book feed and the anchor poll, `<id>/markets.rs` reads the venue's catalog, `<id>/anchor.rs` parses its reference prices, and `<id>/tests.rs` replays its captured frames.
+It also needs one arm in `load_venue` and one in `start_venue` in [`venues/mod.rs`](./server/src/venues/mod.rs).
+The shared behaviour lives in [`venue_feed.rs`](./server/src/feeds/venue_feed.rs) and [`anchor_poller.rs`](./server/src/feeds/anchor_poller.rs), so an adapter supplies only what differs: the plan, the subscribe frames, the ping, and how one frame changes its books.
 Capture the venue's real frames with a probe under `scripts/probes/` before writing the adapter, and record what they contain under `docs/profiles/`.
+The catalog parity and live smoke steps the last ten adapters went through are tasks 12, 13 and 20 of [`2026-10-01-rust-venue-adapters-plan.md`](./docs/implemented/2026-10-01-rust-venue-adapters-plan.md).

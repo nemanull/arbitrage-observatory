@@ -109,7 +109,7 @@ No public call returns an index, a funding interval in bulk, or a next settlemen
 | `AnchorRow` column | field | note |
 |---|---|---|
 | key | the `prices` key, `B-BTC_USDT` | filter to the active list, since 37 keys are inactive |
-| `index` | none | CoinDCX publishes none. The engine divides by the index at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 58, so a zero index cannot stand in |
+| `index` | none | CoinDCX publishes none. The engine divides by the index at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 58, so a zero index cannot stand in |
 | `mark` | `mp`, a JSON number | never 0 on 541 keys |
 | `fundingRate` | `efr`, a JSON number, a fraction per interval | equals Binance's upcoming rate on 504 of 504 |
 | `fundingIntervalHours` | `funding_frequency` of the per pair details call | 504 calls, so a slow refresh |

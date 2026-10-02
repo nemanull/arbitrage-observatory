@@ -66,7 +66,7 @@ The documentation says the reply is cached for about 30 s, S1.
 | precision | `step_size` and `tick_size` as amount and price precision | `BTC/USDT` 0.00001 and 0.01 |
 | `loadMarkets` time | 670 and 568 ms, one request | |
 
-The engine's connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, so it would load 0 P2B markets.
+The engine's connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, so it would load 0 P2B markets.
 
 ### Pairs listed twice and price scale
 

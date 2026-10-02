@@ -24,8 +24,8 @@ The table was wiped before the run and holds 745 rows with `openedAt` from 15:18
 ## 1. Reading a row
 
 Every stored price already carries the taker fee.
-[`ClusterIndexBuilder.ts:84-85`](../../server/src/engine/cluster/ClusterIndexBuilder.ts) multiplies a bid by `1 - takerPpm / 1e6` and an ask by `1 + takerPpm / 1e6`.
-[`OpportunityManager.ts:93`](../../server/src/engine/opportunity/OpportunityManager.ts) then reads `netPpm = (highestBid / lowestAsk - 1) * 1e6`.
+[`ClusterIndexBuilder.ts:84-85`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.ts) multiplies a bid by `1 - takerPpm / 1e6` and an ask by `1 + takerPpm / 1e6`.
+[`OpportunityManager.ts:93`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts) then reads `netPpm = (highestBid / lowestAsk - 1) * 1e6`.
 So a net reading is the edge on the first unit after one fill on each leg, and a raw price is recovered by dividing the stored one by its multiplier.
 
 Row 16, `S|USDT`, route binance-coinbase, fees 500 and 400 ppm:
@@ -41,13 +41,13 @@ The episode closed as spread_collapsed, and the row's `roundTripPpm` reads 68,08
 
 ## 2. roundTripPpm measures the last jump, not a profit
 
-[`conversion.ts:39-44`](../../server/src/db/conversion.ts) computes `netPpmAtOpen - netPpmAtClose - 2 * (both taker fees)`.
+[`conversion.ts:39-44`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/db/conversion.ts) computes `netPpmAtOpen - netPpmAtClose - 2 * (both taker fees)`.
 Both readings carry the same fee term, so the subtraction cancels it, and the four fills of a round trip are charged once.
 The fee handling is right.
 The wrong part is the sides.
 The formula treats the ask venue's ask as the price received when unwinding there, and the bid venue's bid as the price paid to unwind on the other side.
 A real unwind sells into the ask venue's bid and buys from the bid venue's ask, so the formula overstates by each venue's own width at the closing tick.
-The schema comment at [`schema.prisma:111-113`](../../server/prisma/schema.prisma) already calls the column an upper bound for this reason.
+The schema comment at [`schema.prisma:111-113`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/prisma/schema.prisma) already calls the column an upper bound for this reason.
 
 On a tight book the error is noise.
 On a thin book the width can be the whole number.
@@ -63,7 +63,7 @@ It is negative on the episodes that held for five minutes, because the age cap c
 
 Recommendation: remove the column.
 It is derived from the row, so nothing is lost.
-References are the schema lines above, [`migration.sql:69`](../../server/prisma/migrations/20260906150000_init/migration.sql), the converter, [`OpportunityManager.spec.ts:520`](../../server/src/engine/opportunity/OpportunityManager.spec.ts), the column table row at [`2026-08-19-schema-rework-design.md:91`](../implemented/2026-08-19-schema-rework-design.md), and the generated client under `server/src/db/generated/`.
+References are the schema lines above, [`migration.sql:69`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/prisma/migrations/20260906150000_init/migration.sql), the converter, [`OpportunityManager.spec.ts:520`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.spec.ts), the column table row at [`2026-08-19-schema-rework-design.md:91`](../implemented/2026-08-19-schema-rework-design.md), and the generated client under `server/src/db/generated/`.
 The column was removed later the same day, from the schema, the init migration, the converter, the spec, the generated client and the local database.
 
 ## 3. Four rows, four classes
@@ -186,11 +186,11 @@ All at 2026-09-06 UTC, all endpoints public and unauthenticated.
 | did it last | durationMs, ticks | yes | yes |
 | is the quote current | per venue liveness | no | bybit re-sends every 3 s, okx every 60 s, kraken 1 per s, binance on change only, coinbase on trades only |
 | how much size sat at the price | top-of-book sizes | no | yes, every feed sends them and drops them |
-| what would the unwind cost | each leg's own other side | no | yes, [`types.ts:33-34`](../../server/src/engine/cluster/types.ts) holds both sides of every market |
+| what would the unwind cost | each leg's own other side | no | yes, [`types.ts:33-34`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/types.ts) holds both sides of every market |
 | what is the edge at 1k, 5k, 20k dollars | depth | no | no, needs a snapshot or a depth channel |
 
-Sizes are parsed and discarded at each feed's `submit` call, for example [`binance/types.ts:9-11`](../../server/src/venues/binance/types.ts) and [`coinbase/types.ts:6-7`](../../server/src/venues/coinbase/types.ts).
-The feed hands the engine a `NormalizedQuote` from [`ws/types.ts:27-32`](../../server/src/feeds/book/types.ts) through [`VenueFeed.ts:162-164`](../../server/src/feeds/book/VenueFeed.ts).
+Sizes are parsed and discarded at each feed's `submit` call, for example [`binance/types.ts:9-11`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/binance/types.ts) and [`coinbase/types.ts:6-7`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/coinbase/types.ts).
+The feed hands the engine a `NormalizedQuote` from [`ws/types.ts:27-32`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/feeds/book/types.ts) through [`VenueFeed.ts:162-164`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/feeds/book/VenueFeed.ts).
 
 ## 7. Has a capturable opportunity been recorded
 
@@ -208,24 +208,24 @@ Sizes come from a read-only code map of 2026-09-06 and are not commitments.
    Files in section 2.
    A drop-column migration keeps this run's rows and follows the additive rule of the schema rework design, while editing the init migration forces `prisma migrate reset --force` on every database that applied it.
    Size S.
-2. Add `MIN_EPISODE_MS = 1_000` next to `MIN_NET_PPM` at [`OpportunityManager.ts:18`](../../server/src/engine/opportunity/OpportunityManager.ts).
+2. Add `MIN_EPISODE_MS = 1_000` next to `MIN_NET_PPM` at [`OpportunityManager.ts:18`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts).
    Every close path, tick at `:217`, feed down at `:357`, sweep at `:389` and shutdown, funnels into `closeOpportunity` at `:403`, so the gate sits there between the map delete and `enqueueClosed` at `:440` and returns true without writing.
-   The `opportunity_closed` log needs a `written` flag, and the `opportunities_written` count in [`OpportunityWorker.ts`](../../server/src/engine/opportunity/OpportunityWorker.ts) stays the only write count.
+   The `opportunity_closed` log needs a `written` flag, and the `opportunities_written` count in [`OpportunityWorker.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityWorker.ts) stays the only write count.
    Existing close specs open at 1,000 ms and close at 2,000 ms or later, so a strict comparison keeps them green.
    This removes 438 of 745 rows.
    Size S.
 3. Record top-of-book sizes and each leg's own width.
-   Add `bidSize` and `askSize` to `NormalizedQuote` and to each feed's `submit`, to the cluster arrays allocated in [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts), and six scalars on the row for open, peak and close.
+   Add `bidSize` and `askSize` to `NormalizedQuote` and to each feed's `submit`, to the cluster arrays allocated in [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.ts), and six scalars on the row for open, peak and close.
    Width per leg is `cluster.ask[i] / cluster.bid[i] - 1` and needs no size.
    Record, do not gate, so the ranking can filter in SQL.
    A size-only change must not count as a tick.
    Size M.
 4. Coinbase: `level2` or off.
    Coinbase's own docs say the ticker channel is not sufficient for best bid and ask, and the three routes with the highest peaks over one second are all coinbase legs.
-   Until `level2` lands, disabling the venue in [`registry.ts`](../../server/src/venues/registry.ts) removes the stale class outright.
+   Until `level2` lands, disabling the venue in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/registry.ts) removes the stale class outright.
 5. Confirmation snapshot at `MIN_EPISODE_MS`.
-   No HTTP client exists in `src/` apart from ccxt, which is used at boot only through [`connector.ts:13`](../../server/src/ccxt/connector.ts) and [`registry.ts:14`](../../server/src/venues/registry.ts).
-   ccxt implements `fetchOrderBook` for all five venues, and the 1 s sweep timer at [`orchestrator.ts:108-111`](../../server/src/orchestrator.ts) is the once-per-episode hook.
+   No HTTP client exists in `src/` apart from ccxt, which is used at boot only through [`connector.ts:13`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/ccxt/connector.ts) and [`registry.ts:14`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/registry.ts).
+   ccxt implements `fetchOrderBook` for all five venues, and the 1 s sweep timer at [`orchestrator.ts:108-111`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/orchestrator.ts) is the once-per-episode hook.
    Shape: a `BookFetcher` injected into the engine, a pending promise set mirroring `pendingWrites`, no await on the tick path, results applied only while `closedAt` is null, a new close reason `quote_stale` when the snapshot shows no cross, and nullable columns for touch sizes, widths and net ppm at fixed notionals.
    Kraken's 600 ms ccxt limiter queues an opening burst, okx sizes are in contracts, and coinbase INTX `product_book` without credentials is unverified.
    Size L.

@@ -103,7 +103,7 @@ The engine does not read `precision.amount`.
 Book sizes are contracts of `contractMultiplier` coins, and CCXT's `contractSize` is that multiplier, so the engine's size multiplier is right for every contract, see [`websocket.md`](./websocket.md) section 4.
 
 Ten pairs are listed twice once the quote family folds `USDC` into `USDT`: `BTC`, `ETH`, `SOL`, `DOGE`, `XRP`, `LTC`, `ADA`, `LINK`, `UNI` and `SUI`.
-[`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 13 to 17 rank `USDT` before `USDC`, so every USDC-M contract is ranked out and the venue trades USDT-M only.
+[`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 13 to 17 rank `USDT` before `USDC`, so every USDC-M contract is ranked out and the venue trades USDT-M only.
 
 31 contracts carry a base that differs from their own index token.
 
@@ -293,7 +293,7 @@ The recommended feed takes its snapshot from the socket and needs no REST book, 
 | `indexPriceComponents?symbol=NOPEUSDT` | 200 | `{}` |
 | `/api/v1/nope` | 404 | `<html><body><h2>404 Not found</h2></body></html>` |
 
-The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 194 and [`errors.ts`](../../../server/src/shared/errors.ts) line 1.
+The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 194 and [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1.
 Toobit documents 403 for its firewall and 429 for its limit, so both land in that pause, and the documented reset header is absent today.
 A mark reply with an empty body would fail to parse, so a poller has to treat a non-JSON 200 as a failed round.
 

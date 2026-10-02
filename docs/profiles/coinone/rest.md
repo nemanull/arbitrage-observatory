@@ -81,14 +81,14 @@ It changes whenever the row is rewritten, and in the first run many pairs shared
 CCXT indexes markets by `id`, so two pairs that share an `id` collide in its id lookup.
 Neither the socket nor any REST path uses it: the socket routes on `target_currency`, and CCXT's own `fetchOrderBook` builds its path from `market.quote` and `market.base`, at lines 521 to 524.
 `baseId` matched the `markets` reply's `target_currency` on 363 of 363 pairs, and no base was renamed by CCXT's currency map.
-The engine takes `market.id` as `rawMarketId`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 170, so a spot design would have to key Coinone on `baseId` instead.
+The engine takes `market.id` as `rawMarketId`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 170, so a spot design would have to key Coinone on `baseId` instead.
 
 The fixed `1e-4` precision disagrees with the venue: BTC trades in steps of `0.00000001` BTC and 10,000 KRW.
 CCXT's API table still lists `range_units` at line 148, which the changelog removed on 2024-12-19, S5, yet `GET /public/v2/range_units` still answered `success` with a table in both runs.
 
 ### Size unit, pairs listed twice, and price scale
 
-Sizes are base coins, since this is spot, and CCXT's undefined `contractSize` becomes 1 in the connector, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 175, which is correct here.
+Sizes are base coins, since this is spot, and CCXT's undefined `contractSize` becomes 1 in the connector, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 175, which is correct here.
 No pair is listed twice, and no price scale applies.
 
 ## 3. Anchor

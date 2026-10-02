@@ -107,8 +107,8 @@ CCXT has no class for the Pionex international venue either, so no sibling class
 ## 9. Recommended registry values
 
 None today.
-The registry builds each venue from a CCXT class, `createExchange: () => new ccxt.<id>()`, at [`registry.ts`](../../../server/src/venues/registry.ts) lines 40, 50, 56, 65 and 77, and Webot has none.
-The connector also keeps only markets with `type === 'swap'`, `swap === true` and `active !== false`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202, and logs `no usable swap markets; skipping the venue` at line 51 when none remain.
+The registry builds each venue from a CCXT class, `createExchange: () => new ccxt.<id>()`, at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) lines 40, 50, 56, 65 and 77, and Webot has none.
+The connector also keeps only markets with `type === 'swap'`, `swap === true` and `active !== false`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202, and logs `no usable swap markets; skipping the venue` at line 51 when none remain.
 Webot would contribute zero markets.
 
 If a later design ever admits spot legs, `takerPpm` would be 5,000 from S1.

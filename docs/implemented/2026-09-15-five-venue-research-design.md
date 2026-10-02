@@ -25,38 +25,38 @@ A researcher answers every item for every perpetual family the venue lists.
 
 ### 1. Catalog
 
-- The catalog is `loadMarkets` from CCXT 4.5.68, filtered to active swaps, at [`../../server/src/ccxt/connector.ts`](../../server/src/ccxt/connector.ts) lines 71 and 188 to 194.
-- `market.id` becomes `rawMarketId`, and it must be the symbol exactly as the socket and the anchor reply spell it, at [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) line 11.
-  A mismatch is silent except for one warning per symbol, at [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) lines 170 to 189.
-- `base`, `quote`, `linear` and `contractSize` come straight from the CCXT market, and a missing or non-positive contract size becomes 1, at [`../../server/src/ccxt/connector.ts`](../../server/src/ccxt/connector.ts) lines 149 to 186.
-  Book sizes are multiplied by the contract size, so the unit the socket reports must match the unit CCXT's `contractSize` describes, at [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) line 56.
-- A venue contributes one market per pair, and a venue listing two contracts on one pair picks one with `marketFilter`, at [`../../server/src/ccxt/types.ts`](../../server/src/ccxt/types.ts) lines 14 to 21.
+- The catalog is `loadMarkets` from CCXT 4.5.68, filtered to active swaps, at [`../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 71 and 188 to 194.
+- `market.id` becomes `rawMarketId`, and it must be the symbol exactly as the socket and the anchor reply spell it, at [`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/types.ts) line 11.
+  A mismatch is silent except for one warning per symbol, at [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/book/VenueFeed.ts) lines 170 to 189.
+- `base`, `quote`, `linear` and `contractSize` come straight from the CCXT market, and a missing or non-positive contract size becomes 1, at [`../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 149 to 186.
+  Book sizes are multiplied by the contract size, so the unit the socket reports must match the unit CCXT's `contractSize` describes, at [`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/types.ts) line 56.
+- A venue contributes one market per pair, and a venue listing two contracts on one pair picks one with `marketFilter`, at [`../../server/src/ccxt/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/types.ts) lines 14 to 21.
   USD, USDC and USDT are one settlement family, see [`../implemented/2026-09-06-quote-family-design.md`](../implemented/2026-09-06-quote-family-design.md).
-- A contract quoted per 10 or per 1000 units needs a price scale, at [`../../server/src/engine/cluster/clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts) lines 14 to 23.
+- A contract quoted per 10 or per 1000 units needs a price scale, at [`../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/clusterOverrides.ts) lines 14 to 23.
 - A ticker that names a different token on another venue needs a `DENIED_PAIRS` line, at the same file, lines 7 to 12.
 
 ### 2. Fees
 
-- `takerPpm` in [`../../server/src/venues/registry.ts`](../../server/src/venues/registry.ts) overrides CCXT's per market `taker`, and `ccxtTakerPpm` declares the CCXT constant the connector should expect, at [`../../server/src/ccxt/connector.ts`](../../server/src/ccxt/connector.ts) lines 29 to 31 and 154.
+- `takerPpm` in [`../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/venues/registry.ts) overrides CCXT's per market `taker`, and `ccxtTakerPpm` declares the CCXT constant the connector should expect, at [`../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 29 to 31 and 154.
 - The registry comments cite the CCXT source line of that constant, so the research records it for each venue.
 - The engine models a taker cross at the base retail tier, so the VIP 0 perpetual taker is the number that matters, and the full perpetual tier table is context.
 
 ### 3. Book feed
 
-- A venue subclass implements `planEndpoints`, `getSubscribeFrames`, `startKeepalive` and `handleMessage`, and sets `maxSilenceMs`, at [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) lines 22 and 316 to 322.
+- A venue subclass implements `planEndpoints`, `getSubscribeFrames`, `startKeepalive` and `handleMessage`, and sets `maxSilenceMs`, at [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/book/VenueFeed.ts) lines 22 and 316 to 322.
 - Permessage deflate is refused on every socket, at line 77, so a venue that forces compression, or compresses inside the frame, has to be flagged.
 - The subclass keeps a book with `resetBook`, `setBid`, `setAsk` and `publish`, and on a sequence gap it calls `resync`, which terminates the socket and resubscribes, at lines 192 to 244.
   So the feed needs a snapshot on subscribe, a per symbol sequence rule, or both.
-- The engine holds `depthLevels` per side, 20 by default, at [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) line 61, so a depth channel of at least 20 levels is wanted.
-- The Bybit feed at [`../../server/src/venues/bybit/bybit.ts`](../../server/src/venues/bybit/bybit.ts) is the reference shape: one URL per family, a slice of markets per connection sized by the venue's cap, an application ping, a gap check on the update id.
+- The engine holds `depthLevels` per side, 20 by default, at [`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/Engine.ts) line 61, so a depth channel of at least 20 levels is wanted.
+- The Bybit feed at [`../../server/src/venues/bybit/bybit.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/venues/bybit/bybit.ts) is the reference shape: one URL per family, a slice of markets per connection sized by the venue's cap, an application ping, a gap check on the update id.
 
 ### 4. Anchor
 
-- A poller returns one `AnchorRow` per tracked market, keyed by `rawMarketId`, from a bulk reply, at [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts) line 242 and [`../../server/src/feeds/anchor/types.ts`](../../server/src/feeds/anchor/types.ts).
-- The row is `index`, `mark`, `fundingRate` as a fraction for the upcoming settlement, `fundingIntervalHours` and `nextFundingAt` in Unix ms, at [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) lines 32 to 49.
+- A poller returns one `AnchorRow` per tracked market, keyed by `rawMarketId`, from a bulk reply, at [`../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) line 242 and [`../../server/src/feeds/anchor/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/types.ts).
+- The row is `index`, `mark`, `fundingRate` as a fraction for the upcoming settlement, `fundingIntervalHours` and `nextFundingAt` in Unix ms, at [`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/types.ts) lines 32 to 49.
   A mark of 0 means the venue publishes none, and the route is refused at open.
-- The poll runs once a second by default, stamps each reading on arrival, and pauses on 403, 418 and 429 using `Retry-After` when present, at [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts) lines 34, 103 to 106 and 188 to 191, and [`../../server/src/shared/errors.ts`](../../server/src/shared/errors.ts) line 1.
-- The reader refuses two legs read more than 5 s apart, a reading older than 10 s, and an index or mark that moved more than 1,000 ppm in one poll, at [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
+- The poll runs once a second by default, stamps each reading on arrival, and pauses on 403, 418 and 429 using `Retry-After` when present, at [`../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) lines 34, 103 to 106 and 188 to 191, and [`../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/shared/errors.ts) line 1.
+- The reader refuses two legs read more than 5 s apart, a reading older than 10 s, and an index or mark that moved more than 1,000 ppm in one poll, at [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
   So a reply slower than about 2 s, or a venue that republishes slower than a few seconds, has to be flagged.
 - Two index and mark shapes have already produced false rows.
   A mark whose premium the venue caps reads a capped leg as fresh.

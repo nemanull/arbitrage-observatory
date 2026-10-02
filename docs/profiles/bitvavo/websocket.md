@@ -151,7 +151,7 @@ A snapshot with fewer levels than the book leaves the feed blind to deeper level
 | `XRP-EUR` | not set | `"248.125696"` | `"248.125696"` | XRP |
 
 The unit is the base currency, and CCXT leaves `contractSize` undefined on a spot market, at `server/node_modules/ccxt/js/src/bitvavo.js` line 503.
-The engine's connector reads a missing contract size as 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 175 and lines 188 to 194, which is the right multiplier here.
+The engine's connector reads a missing contract size as 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 175 and lines 188 to 194, which is the right multiplier here.
 
 ### One-sided and empty books
 
@@ -277,7 +277,7 @@ Bitvavo has no perpetual, so the engine would not load it today, and this shape 
 | markets per connection | 50 | 437 markets ran on one socket with 0 gaps, but the engine's `resync` terminates the socket and every market on it then needs a new `getBook`, at one weight point each. 50 bounds one resync to 50 of the 1,000 points a minute |
 | subscribe frames | `{"action": "subscribe", "channels": [{"name": "book", "markets": [ … ]}]}` per slice, then `{"action": "getBook", "requestId": <n>, "market": <id>}` per market | a whole slice costs one point, S7 |
 | snapshot pacing | at most 5 `getBook` a second across all sockets, so a cold start of 437 markets takes about 90 s and 437 points | an unauthenticated IP over 1,000 points a minute is blocked for 15 minutes, S6 |
-| keepalive | a protocol ping every 15 s | the server's own ping comes only every 50 s, and pings and pongs count as traffic at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98. `getTime` works too and costs a point |
+| keepalive | a protocol ping every 15 s | the server's own ping comes only every 50 s, and pings and pongs count as traffic at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98. `getTime` works too and costs a point |
 | `maxSilenceMs` | 45,000 | three missed pongs. A quiet market went 51 s without an event, so book events alone cannot feed the silence watch |
 | routing | `event === 'book'` by `market`, `action === 'getBook'` by `response.market` | the market id is CCXT's `market.id` |
 | snapshot | `resetBook` from the `getBook` reply, drop buffered events with nonce at or below its nonce, apply the rest | section 4 |

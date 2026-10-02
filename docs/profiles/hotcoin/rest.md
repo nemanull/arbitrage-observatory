@@ -57,7 +57,7 @@ The documented example lacks `assetCategory`, `liquidationTime`, `underlying` an
 
 ### How a loader would map it
 
-CCXT has no class, so this is the mapping a direct loader would need, set against what [`connector.ts`](../../../server/src/ccxt/connector.ts) takes from a CCXT market.
+CCXT has no class, so this is the mapping a direct loader would need, set against what [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) takes from a CCXT market.
 
 | engine field | Hotcoin field | evidence |
 |---|---|---|

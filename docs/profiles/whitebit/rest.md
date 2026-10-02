@@ -104,9 +104,9 @@ Book sizes and volumes are in base coins, and CCXT's `contractSize` is not a mul
 | REST book, `PEPE_PERP` | the best bid read `"306000000"` at `0.00000489`, a multiple of the 1,000,000 step, about 1,500 USDT |
 | socket against REST | 40 of 40 top sizes equal at the same prices on `BTC_PERP`, in two runs, see [`websocket.md`](./websocket.md) section 4 |
 
-The engine multiplies book sizes by `contractSize`, at [`types.ts`](../../../server/src/engine/cluster/types.ts) line 56.
+The engine multiplies book sizes by `contractSize`, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 56.
 With CCXT's value it would read the `BTC_PERP` touch as 0.000013 BTC and the `PEPE_PERP` bid as 306 trillion PEPE.
-A registry `contractSize: 1`, as Gemini already uses in [`registry.ts`](../../../server/src/venues/registry.ts), corrects all 304.
+A registry `contractSize: 1`, as Gemini already uses in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts), corrects all 304.
 The 13 perpetuals with a negative `stockPrec`, where CCXT's error is a factor of 10 to 1,000,000 upward, are `ADA_PERP`, `GRT_PERP`, `MOODENG_PERP`, `CETUS_PERP`, `RSR_PERP`, `PENGU_PERP` and `ANIME_PERP` at 10, `TURBO_PERP` at 100, `SHIB_PERP` at 1,000, `NEIRO_PERP` at 10,000, `BONK_PERP` and `FLOKI_PERP` at 100,000, and `PEPE_PERP` at 1,000,000.
 
 ### Pairs, tickers and price scale
@@ -114,7 +114,7 @@ The 13 perpetuals with a negative `stockPrec`, where CCXT's error is a factor of
 Every perpetual settles in USDT, so the quote family has nothing to fold and no pair is listed twice.
 WhiteBIT names its perpetuals by the plain base, and `PEPE_PERP` quotes the coin price of 0.000004889 rather than a thousand-coin price, so no price scale was needed on the markets read.
 A full price scale survey against the running venues was not done.
-`BB_PERP` names BounceBit and `QNT_PERP` names Quant in `index_name`, matching binance and bybit for the two `DENIED_PAIRS` entries at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 8 and 10, and a ticker collision survey was not done.
+`BB_PERP` names BounceBit and `QNT_PERP` names Quant in `index_name`, matching binance and bybit for the two `DENIED_PAIRS` entries at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 8 and 10, and a ticker collision survey was not done.
 
 ## 3. Anchor
 
@@ -142,7 +142,7 @@ The premium index socket channel pushes the same mark, index, rate and next sett
 | `nextFundingAt` | `next_funding_rate_timestamp` | decimal string of Unix milliseconds, `"1790121600000"` is 2026-09-23 00:00 UTC | `Number()` |
 
 No `mark_price` was empty and no `index_price` was `"0"` on the 397 rows of any read, or on any of the 60 polls, in four runs.
-The empty-mark case matters, because the engine takes a mark of 0 as "no mark" and refuses the route, at [`types.ts`](../../../server/src/engine/cluster/types.ts) lines 32 to 49.
+The empty-mark case matters, because the engine takes a mark of 0 as "no mark" and refuses the route, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) lines 32 to 49.
 `funding_cap` and `funding_floor` are in the same row, see [`fees.md`](./fees.md) section 6.
 
 CCXT's `fetchFundingRates` reads the same call at `server/node_modules/ccxt/js/src/whitebit.js` line 3401, but it looks for `markPrice` and `indexPrice` at lines 3484 and 3485, keys the reply does not carry.
@@ -212,7 +212,7 @@ So consecutive polls can be served from snapshots of different ages, which the 1
 A 5 s step allows at most 12 changes a minute, and the third run's 14 include two reversals.
 On the socket, the number of perpetuals whose index changed between two pushes had a median of 0 in both runs, with a maximum of 105 and 132, so the whole table refreshes in one step every tenth push.
 A one second poll therefore returns the same anchor about four times in five, and a change carries up to 5 s of movement.
-The reader stamps each reading on arrival, so a value up to 5 s old passes its 10 s age limit, and the 1,000 ppm move guard judges 5 s of movement at once, or a reversal of it, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
+The reader stamps each reading on arrival, so a value up to 5 s old passes its 10 s age limit, and the 1,000 ppm move guard judges 5 s of movement at once, or a reversal of it, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
 
 ### Funding
 
@@ -269,7 +269,7 @@ The recommended feed takes its snapshot from the socket and needs no REST book, 
 | `/nope` | 404 | empty |
 | `/collateral/markets` | 451 | `{"errors":[],"message":"Margin trading is not available in your country.","success":false}` |
 
-The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 187 to 193 and [`errors.ts`](../../../server/src/shared/errors.ts) line 1.
+The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 187 to 193 and [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1.
 A WhiteBIT poller should also log a 451 and a 503 in full, since those are the documented refusals for region and maintenance.
 
 ## 7. Server time and clock offset

@@ -7,6 +7,10 @@ Arbitrage Observatory is a research platform for measuring whether cross-venue a
 It maintains a live order book for most perpetual markets on five centralised exchanges, identifies price gaps that remain profitable after both taker fees, and records each one as an episode.
 An episode is the whole life of a gap rather than a snapshot of it, so a stored row carries the per-tick price series, the depth on both sides, and the reference prices each venue published while the gap was open.
 
+The server is written in Rust.
+It was rewritten from TypeScript between 2026-09-23 and 2026-10-01 to read every socket in parallel, because the single Node event loop was the one structural limit on adding venues.
+Measured on one laptop, it keeps up with 300,000 WebSocket messages a second from 63 venues, the top of what the 60 venues that fit the engine are projected to send in a market-wide crash.
+
 The system is read-only.
 It holds no API credentials, contains no order placement path, and has never submitted an order.
 Every profit figure in this repository is arithmetic over a stored price series rather than a fill.
@@ -16,6 +20,8 @@ Every profit figure in this repository is arithmetic over a stored price series 
 Five runs have been audited, 3,187 stored rows between them.
 None has been shown to represent capturable profit.
 The table was cleared between several of those runs, so the figure is the sum of the audited runs rather than a lifetime total.
+All five ran on the TypeScript server, and the Rust server carries the same gates.
+Its first run has not been audited yet.
 
 The most recent audited run reflects the current gate set.
 It ran for 16 hours and 46 minutes across 694 clusters on five venues, refused 3,155,976 attempts to open a route, and stored 66 rows.
@@ -54,8 +60,8 @@ The engine has never produced a confirmed true positive, so "no capturable row w
 Separating them requires a replay against a dislocation known to have been real, which is the next piece of work.
 
 No gate reads the age of a price.
-Every venue adapter parses the exchange timestamp off the frame and then discards it, so a stale quote and a current one are indistinguishable at the gate.
-That omission accounts for thirty of the 66 surviving rows.
+Every venue stamps its frames, and the engine judges a book by when it arrived rather than by when the venue says it was true, so a stale quote and a current one are indistinguishable at the gate.
+That omission accounts for thirty of the 66 surviving rows, and the Rust rewrite has not closed it yet.
 
 Coverage is partial and varies by run.
 The fifth run streamed 659 of Bybit's 852 perpetual markets, 652 of Binance's 782, 434 of OKX's 479, 247 of Kraken's 275 and 124 of Coinbase's 131.
@@ -76,7 +82,7 @@ They are catalogued in [docs/bestiary/](./docs/bestiary/), one file per class, e
 ## Method
 
 A route must clear every gate below before a row opens.
-The thresholds are defined in [`OpportunityManager.ts`](./server/src/engine/opportunity/OpportunityManager.ts) and [`anchorReading.ts`](./server/src/engine/opportunity/anchorReading.ts).
+The thresholds are defined in [`opportunity_manager.rs`](./server/src/engine/opportunity/opportunity_manager.rs) and [`anchor_reading.rs`](./server/src/engine/opportunity/anchor_reading.rs).
 Most were chosen rather than derived, and the two that were sized against a measurement name that measurement in a comment.
 
 | Gate | Threshold | Rationale |
@@ -112,38 +118,71 @@ The full breakdown is in [`2026-09-15-binance-realtime-depth.md`](./docs/researc
 ## Architecture
 
 ```
-venue WebSocket          one book feed per venue, 20 levels a side, sequence checked
-    |
-ClusterIndexBuilder      markets trading the same asset grouped into one cluster,
-    |                    with USD, USDC and USDT treated as one settlement asset
-Engine                   flat Float64Array per cluster, best bid and best ask
-    |                    recomputed per frame, taker fees folded into multipliers
+venue WebSocket          one task per socket, spread over every core, each keeping
+    |                    the whole book of its markets, sequence checked
+bounded channel          4,096 updates of 20 levels a side, and a full channel
+    |                    coalesces each market to its newest book
+engine thread            flat arrays per cluster, best bid and best ask recomputed
+    |                    per update, taker fees folded into multipliers
 OpportunityManager       the gates above, one recorded reason per refusal
     |
 OpportunityLifecycle     open routes sampled per tick, carrying the ladder walk
     |                    and the reference reading on every sample
-BullMQ and Postgres      the closed episode written as one row with its full series
+writer and Postgres      the closed episode written as one row with its full series
 ```
 
-Holding each cluster in flat typed arrays, with taker fees folded into multipliers once at build time, makes judging a frame arithmetic over a contiguous block rather than a lookup.
-[`2026-09-07-depth-stream-scaling.md`](./docs/research/2026-09-07-depth-stream-scaling.md) measures the path at 26.2 microseconds of process CPU per message without deflate.
-The handler accounts for 12.5 of those microseconds, and parsing for 73 percent of the handler.
+A socket task owns its connection, its parsing and the books of its markets, and waits on nothing but its socket.
+The engine is one OS thread fed by a single bounded channel, so every judgement runs in arrival order and the clusters have one owner and need no lock.
+Markets trading the same asset are grouped into one cluster, with USD, USDC and USDT treated as one settlement asset, and each cluster holds its venues' books in flat arrays with taker fees folded into multipliers once at build time.
+Judging an update is then arithmetic over a contiguous block rather than a lookup.
 
 A separate REST poller reads what each venue believes about its own market roughly once a second: the index, the mark and the funding rate.
 Bybit and Coinbase poll every two seconds instead, because a one hertz round does not complete against either.
 Without those figures a dislocation cannot be distinguished from a basis, which is what the first four runs established.
 
-The stored schema is [`schema.prisma`](./server/prisma/schema.prisma).
+The stored schema is the SQL in [`server/migrations/`](./server/migrations/).
+
+## Performance
+
+All figures come from one laptop, an Intel Core i7-12700H with 6 performance and 8 efficiency cores and 32 GB, shared with a browser and a VM.
+The method, every stage and the projection's 60 rows are in [`2026-10-01-rust-load-replay.md`](./docs/research/2026-10-01-rust-load-replay.md).
+
+**Measured capacity.**
+60 s of frames recorded from nine live venues were replayed as seven copies of each, 63 venues with 30,891 markets on 287 sockets, through the same socket, book and engine code a run uses, over local sockets without TLS.
+
+| Messages a second | MB a second | Books applied a second | Socket side | Engine thread | Worst lag | Result |
+| ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 147,952 | 48.9 | 135,837 | 1.8 cores | 19% of a core | 7 ms | kept up |
+| 300,542 | 98.8 | 276,236 | 3.7 cores | 36% of a core | 5 ms | kept up |
+| 385,225 | 129.9 | 352,949 | 4.6 cores | 50% of a core | 25 ms | queue full in 2 of 6,000 samples |
+| 570,586 | 191.9 | 506,157 | 6.2 cores | 70% of a core | 141 ms | engine saturated in bursts, 3% coalesced |
+| 1,104,860 | 370.2 | 504,470 | 11.8 cores | 91% of a core | 220 ms | every message read, half coalesced |
+
+A stage kept up when every message was handled, no replay server fell behind, the engine queue never filled and the worst lag stayed under 100 ms.
+All twelve stages between 132,000 and 300,000 messages a second kept up, over five recordings.
+The three faster stages ran at the lowest priority beside the rest of the laptop, so they are lower bounds.
+The one engine thread is the limit.
+Past about 385,000 messages a second the socket tasks keep reading and hand the engine each market's newest book instead of every intermediate one, so the lag stays bounded rather than growing, and the socket side read every message up to 1.1 million a second.
+
+**Projected load.**
+The 60 venues that fit the engine list 18,607 perpetuals and are projected to send about 64,000 messages a second at the hours they were probed, 40 MB a second and 3.5 TB a day.
+A market-wide crash multiplies that three to 4.7 times, to 193,000 to 302,000 messages a second, which is inferred from the fifth run's crash rather than measured.
+
+**Live.**
+The first Rust run streams 2,094 markets on the five active venues and applied 534 million books in its first ten hours, 14,557 a second on average and 36,710 in its busiest minute, on under half a core and 62 MB of memory.
 
 ## Scope
 
 - Five venues run live: Binance, Bybit, OKX, Kraken Futures and Coinbase.
-  Five further adapters are written, tested and registered but not activated: Gate, Bitget, MEXC, Bitstamp and Gemini.
+  Coinbase International has shown every perpetual as paused since 09:00:29 UTC on 2026-10-01, so Coinbase contributes no book until a feed for its replacement host exists.
+- Five further adapters are written, tested and registered but not activated: Gate, Bitget, MEXC, Bitstamp and Gemini.
+  None of those five exchanges permits a US operator to trade its perpetuals, so observation is available from this host and execution is not.
+- A survey of 172 venues, the 151 of CoinGecko's ranking, Hyperliquid and 20 from CoinMarketCap's derivatives ranking, found 50 more whose perpetuals fit the engine as it stands or with a named change.
+  With the ten adapters they are the 60 venues of the performance section.
 - [`app/`](./app/) is the stock Vite starter page, with only its title and manifest touched.
-  No interface has been built and the engine does not require one, so stored episodes are read through Prisma Studio, `psql` or SigNoz.
-- The HTTP surface is three routes that report and control a run, not an API over the data.
-- None of those five additional exchanges permits a US operator to trade its perpetuals.
-  Observation is available from this host and execution is not.
+  No interface has been built and the engine does not require one, so stored episodes are read through `psql` or SigNoz.
+- The server has no HTTP surface.
+  A run starts with the process and ends on a signal, which flushes every open episode first.
 
 ## Documentation
 
@@ -153,8 +192,8 @@ Documentation is the larger part of this project, and every file in it is indexe
 | --- | --- |
 | [docs/audits/](./docs/audits/) | One file per audited run, oldest first, each citing the audit before it. The newest describes current behaviour. |
 | [docs/bestiary/](./docs/bestiary/) | One file per mechanism by which an arbitrage reading can be wrong. |
-| [docs/research/](./docs/research/) | Probes and feasibility studies, including a measurement of 12.48 million book deltas across four venues with zero sequence gaps. |
-| [docs/profiles/](./docs/profiles/) | 25 venue profile documents across ten exchanges, each built from captured frames rather than vendor documentation. |
+| [docs/research/](./docs/research/) | Probes and feasibility studies, including a measurement of 12.48 million book deltas across four venues with zero sequence gaps, the 172 venue survey, and the load replay of the Rust server. |
+| [docs/profiles/](./docs/profiles/) | Venue profiles for 184 venues, each built from captured frames rather than vendor documentation. |
 | [docs/implemented/](./docs/implemented/) | Reconciled designs and plans for work that has shipped. |
 
 Open work is tracked in [GitHub issues](https://github.com/nemanull/arbitrage-observatory/issues) and in [docs/BACKLOG.md](./docs/BACKLOG.md).
@@ -162,10 +201,10 @@ Open work is tracked in [GitHub issues](https://github.com/nemanull/arbitrage-ob
 ## Repository
 
 ```
-server/     the engine, NestJS and TypeScript, compiled with tsgo
+server/     the engine, a Rust crate
 app/        placeholder frontend, an unmodified Vite starter
-docs/       research, designs, run audits and the failure catalogue
-scripts/    23 probe scripts, the raw evidence behind the research, plus a Redis helper
+docs/       research, designs, run audits, venue profiles and the failure catalogue
+scripts/    379 probe scripts, the raw evidence behind the research and the profiles
 infra/      a vendored SigNoz stack for local observability
 ```
 
@@ -175,12 +214,12 @@ Working conventions are in [AGENTS.md](./AGENTS.md), and the documentation tree 
 ## Status
 
 Active, and the question is open.
-The engine sustains a full day of streaming, the gate set holds, and each run so far has exposed a class of false positive the previous gates did not cover.
+The fifth run streamed for 16 hours and 46 minutes, the first Rust run has streamed for more than ten, the gate set holds, and each audited run has exposed a class of false positive the previous gates did not cover.
 
 The current conclusion is that additional gates cannot settle the question on their own.
 No stored row records whether a taker would have been filled, so the next step is a closed-loop replay that produces that label.
 
-Continuous integration runs the typecheck, the linters, the 389 unit tests and both builds on every push, and needs no database or network access to do it.
+Continuous integration runs the server's 478 tests and the frontend's lint and build on every push, and needs no database and no venue to do it.
 
 ## License
 

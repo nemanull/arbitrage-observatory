@@ -127,7 +127,7 @@ The settlement instant itself was not captured, so whether the last estimate equ
 | the 7 `c…USD` COIN-M contracts | `undefined` | `undefined` | not in the legacy list |
 
 The class default is `taker: 0.001` and `maker: 0.001` at `server/node_modules/ccxt/js/src/phemex.js` lines 311 to 318, and no market reports it, P1.
-The engine's connector drops a market with no taker fee unless the registry sets `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 162 to 166.
+The engine's connector drops a market with no taker fee unless the registry sets `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 162 to 166.
 So without a registry `takerPpm`, every USDT-M market would be skipped.
 
 ## 9. Recommended registry values

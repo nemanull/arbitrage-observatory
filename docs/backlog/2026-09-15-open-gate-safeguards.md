@@ -20,7 +20,7 @@ The engine holds five numbers per venue per pair, the bid, the ask, their sizes 
 
 A second shape runs underneath the first.
 The anchors were given a full set of provenance guards and the books were given none.
-[`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) refuses an anchor that is missing, one whose two legs were read more than `ANCHOR_SKEW_MS` apart, one older than `ANCHOR_MAX_AGE_MS`, and one that moved more than `MAX_ANCHOR_MOVE_PPM` since the previous poll.
+[`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts) refuses an anchor that is missing, one whose two legs were read more than `ANCHOR_SKEW_MS` apart, one older than `ANCHOR_MAX_AGE_MS`, and one that moved more than `MAX_ANCHOR_MOVE_PPM` since the previous poll.
 The books, which are the data that actually sets `netPpm`, get `recvTs[i] <= 0` at OpportunityManager.ts:321 and :345.
 The pattern was invented, sized in [`../research/2026-09-14-open-guard-sizing.md`](../research/2026-09-14-open-guard-sizing.md) and applied to the once per second REST data, while the millisecond WebSocket data kept a binary flag.
 
@@ -102,7 +102,7 @@ Kraken's own spread on those markets is 0.40 to 0.70 percent, which is the same 
 
 The far sides are computed and thrown away.
 OpportunityManager.ts:197 and :198 compute `highestBidLegAsk` and `lowestAskLegBid`, the other side of each leg's own book, fee adjusted.
-They are carried onto the `Opportunity` object, tracked at open, peak and close, and then dropped at the database boundary, because [`../../server/src/db/conversion.ts`](../../server/src/db/conversion.ts) writes neither.
+They are carried onto the `Opportunity` object, tracked at open, peak and close, and then dropped at the database boundary, because [`../../server/src/db/conversion.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/db/conversion.ts) writes neither.
 No gate compares either of them to the claimed edge.
 A route whose sell leg is 0.7 percent wide and whose edge is 0.6 percent is not an opportunity, and that comparison is two divisions on a line where both numbers already sit.
 
@@ -124,7 +124,7 @@ Size: S for the own spread test and the resting size test, M for the saturated m
 ESPORTS 2798 opened 802 ms after its socket was reseeded and died when that socket closed 206 ms later.
 1000LUNC 2792 opened 84 ms before its socket closed and has one sample.
 
-Everything needed is already on `SingleSocketConnection` in [`../../server/src/feeds/book/types.ts`](../../server/src/feeds/book/types.ts), which holds `lastMessageAt`, `attempt` and the accepted market set.
+Everything needed is already on `SingleSocketConnection` in [`../../server/src/feeds/book/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/feeds/book/types.ts), which holds `lastMessageAt`, `attempt` and the accepted market set.
 None of it is exposed to the engine, so no refusal path can take a transport input.
 `markStale` fires only on a socket close, and the silence watch is per connection with ping and pong counting as traffic, on connections carrying 30 to 250 markets.
 So a single stalled symbol on an otherwise busy socket is invisible to both.
@@ -170,7 +170,7 @@ Size: L, and it should wait until the first three classes are gone.
 ## 7. Two latent problems found while reading
 
 `ClusterDepth.writtenAt` has a comment that promises a check nobody wrote.
-[`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts) line 29 reads "A reader refuses depth older than the episode it judges".
+[`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/types.ts) line 29 reads "A reader refuses depth older than the episode it judges".
 There is no such reader.
 The field is written at Engine.ts:371, zeroed at Engine.ts:263, and read by no non-test line.
 `walkLadders` never touches it, so `thin_book` and every edge sample can be computed from a depth block written arbitrarily long ago.

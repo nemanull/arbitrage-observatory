@@ -30,7 +30,7 @@ CRO also sits inside the 18:37 flash crash, where the audit measures kraken legs
 
 The gate these rows passed is one line.
 `OpportunityManager.ts:139` refuses a route whose fresh edge is under `MIN_NET_PPM`, which is 5,000 at `OpportunityManager.ts:8`, and logs it as a standing basis.
-The fresh edge is built from each leg's fresh premium, the touch divided by that venue's mark, at [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) line 84.
+The fresh edge is built from each leg's fresh premium, the touch divided by that venue's mark, at [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts) line 84.
 
 Take the BAT row apart on its own arithmetic.
 The kraken leg is the buy leg and its fresh premium is 0.074 over 0.07477, which is -10,298 ppm.
@@ -103,12 +103,12 @@ The engine reads `mark` as a number and never asks how it was made.
 ```
 
 Kraken's ticker carries the mark and the index, not the rule that produced them, so the two cases arrive as the same field with a plausible value in it.
-The two readings that would expose the clamp, the index and the mark premium over it, are both in hand at [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) line 83, and they are spent on the index gap and the carried factor without ever being compared to a band.
+The two readings that would expose the clamp, the index and the mark premium over it, are both in hand at [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts) line 83, and they are spent on the index gap and the carried factor without ever being compared to a band.
 
 ## Why it is worse than publishing no mark at all
 
 The engine already refuses a leg whose venue publishes no mark.
-[`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) lines 37 to 39 return `anchor_no_mark` when either leg's mark is zero or less, before any premium is computed.
+[`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts) lines 37 to 39 return `anchor_no_mark` when either leg's mark is zero or less, before any premium is computed.
 That refusal exists because a markless leg turns the fresh gate back into the raw gate, which once opened nine rows on a resting order 1.7 percent under the coinbase index.
 So the system has a correct answer for an absent reference and no answer at all for a broken one.
 
@@ -157,7 +157,7 @@ BAT's kraken leg came out 1.03 percent away from its own mark against a cap of 1
 
 The band is not a field.
 The tickers reply the poller reads, typed at `server/src/venues/krakenfutures/types.ts:33`, carries the mark and the index and no band, because the cap is a venue rule rather than a per market number, so it has to live as a constant.
-[`../../server/src/venues/registry.ts`](../../server/src/venues/registry.ts) is where the other per venue constants live, as optional fields of `VenueConnectorOptions` at [`../../server/src/ccxt/types.ts`](../../server/src/ccxt/types.ts) line 18, next to `takerPpm` and `contractSize`.
+[`../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/registry.ts) is where the other per venue constants live, as optional fields of `VenueConnectorOptions` at [`../../server/src/ccxt/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/ccxt/types.ts) line 18, next to `takerPpm` and `contractSize`.
 A `markPremiumCapPpm` of 10,000 on the `krakenfutures` entry, left undefined where no cap is published, would follow the path `takerPpm` already takes onto every `Market` at `server/src/ccxt/connector.ts:162` and `:173`, and the reader would have it in hand.
 MEXC is the one venue where that shape changes, because there the band arrives per contract in the catalog and the constant would be a field name instead of a number.
 
@@ -196,7 +196,7 @@ It will grow with the venue list rather than with volume, because the survey abo
 - The two rows and their kraken marks: section 2c of [`../audits/2026-09-15-fifth-run-data-audit.md`](../audits/2026-09-15-fifth-run-data-audit.md), with the full lines in section 9.
 - The live kraken books: the 01:05 UTC probe of 2026-09-16 listed in section 8 of the same document.
 - The refusal counts and the gates in force: section 0 of the same document.
-- The markless refusal and the premiums: [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) lines 37 to 39, 83 and 84.
+- The markless refusal and the premiums: [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts) lines 37 to 39, 83 and 84.
 - The fresh gate: `server/src/engine/opportunity/OpportunityManager.ts:139` with `MIN_NET_PPM` at line 8.
 - The proposed repair and its size: section 3 of [`../backlog/2026-09-15-open-gate-safeguards.md`](../backlog/2026-09-15-open-gate-safeguards.md).
 - The caps on other venues: [`../research/2026-09-15-five-venue-integration.md`](../research/2026-09-15-five-venue-integration.md) section 5, and section 4 of [`../profiles/mexc/rest.md`](../profiles/mexc/rest.md).

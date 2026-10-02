@@ -116,7 +116,7 @@ The books look like one market maker's ladder: several pairs quoted exactly 6,00
 
 Read at the last frame of each run.
 The largest touch level in either run was 34.40 USDT, on the LDO ask in the first run.
-The engine refuses to open a route whose profitable region holds under 1,000 quote units, `MIN_EDGE_NOTIONAL` at [`OpportunityManager.ts`](../../../server/src/engine/opportunity/OpportunityManager.ts) line 9, and no INEX side held that much near its touch.
+The engine refuses to open a route whose profitable region holds under 1,000 quote units, `MIN_EDGE_NOTIONAL` at [`OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/OpportunityManager.ts) line 9, and no INEX side held that much near its touch.
 
 ### Size unit
 
@@ -225,7 +225,7 @@ A feed on it would need the items below, and the first is something no current f
 |---|---|---|
 | decode | `inflateSync` on every binary frame before `JSON.parse` | every data frame is a zlib stream |
 | book | `resetBook` on every frame | whole books, no deltas and no sequence |
-| silence | `maxSilenceMs` of 45,000, counting protocol pings as traffic, as [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97 already does | pings every 15 s, and a quiet pair can go 60 s without a book |
+| silence | `maxSilenceMs` of 45,000, counting protocol pings as traffic, as [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97 already does | pings every 15 s, and a quiet pair can go 60 s without a book |
 | unserved pair | log a pair with no book 10 s after its ack | unknown pairs are acked as success |
 
 ## 9. Source ledger

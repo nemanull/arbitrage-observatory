@@ -89,7 +89,7 @@ The engine keeps active swaps, so it would load 358 markets: 353 USDT-M and 5 co
 
 Five pairs are listed twice, once per family: `BTC`, `ETH`, `DOGE`, `XRP` and `TRX` each have a USDT-M and a coin-M perpetual.
 CCXT gives the coin-M contract `contractSize` 100 or 10 with `linear` false, and those are US dollars of face value, so the engine would read 100 contracts as 10,000 BTC.
-The engine's one market per pair rule needs a `marketFilter` that keeps `linear` markets, see [`../../../server/src/ccxt/types.ts`](../../../server/src/ccxt/types.ts).
+The engine's one market per pair rule needs a `marketFilter` that keeps `linear` markets, see [`../../../server/src/ccxt/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts).
 
 No base carries a `1000` or other multiplier prefix, and HTX expresses small prices through `contract_size` instead, so no price scale is needed.
 
@@ -249,7 +249,7 @@ No `Retry-After` header appeared on any reply.
 
 Errors arrive as HTTP 200 with `status` `error`, spelled `err-code` on market calls and `err_code` with a number on API calls.
 S1 names code 1032 "The number of access exceeded the limit." for a rate limit, and lists HTTP 429 "too many requests" in its WebSocket error table, and neither was provoked here.
-A 1032 in a 200 body is the case [`../../../server/src/shared/errors.ts`](../../../server/src/shared/errors.ts) line 17 describes for MEXC.
+A 1032 in a 200 body is the case [`../../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 17 describes for MEXC.
 
 ## 7. Server time and clock offset
 

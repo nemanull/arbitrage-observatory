@@ -42,7 +42,7 @@ The spot VIP 0 rates are these.
 The published schedule and the catalog disagree.
 All 263 rows of `/api/v2/spot/public/symbols` carry `"takerFeeRate":"0.001"` and `"makerFeeRate":"0.001"`, for TRY and USDT pairs alike, while the help center charges a USDT taker 0.12 % and a TRY taker 0.20 %.
 The published schedule is what an account is charged according to the venue, and the catalog field is what a generic parser would read.
-Only USDT pairs sit in the engine's quote family, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 4 and 5, so 1,200 ppm is the number that would matter.
+Only USDT pairs sit in the engine's quote family, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 4 and 5, so 1,200 ppm is the number that would matter.
 
 ## 3. Coverage matrix
 
@@ -119,7 +119,7 @@ It is not a CCXT class for CoinTR, and the 0.001 it reports is the catalog field
 ## 9. Recommended registry values
 
 None.
-The engine's catalog is `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79 with the predicate at lines 199 and 200, and CoinTR has no swap to contribute.
+The engine's catalog is `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79 with the predicate at lines 199 and 200, and CoinTR has no swap to contribute.
 If a spot leg is ever modelled, `takerPpm` should be 1,200 for USDT pairs, the published VIP 0 taker, and not the catalog's 1,000.
 `ccxtTakerPpm` stays unset, because no CCXT class exists to declare a constant for.
 

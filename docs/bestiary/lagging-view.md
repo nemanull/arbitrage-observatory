@@ -112,7 +112,7 @@ A lagging view survives that test by construction, which is the next section.
 
 ## The minimum cross age selects for the worst book
 
-`MIN_CROSS_AGE_MS` is 100 at line 14 of [`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts), and line 243 refuses a cross younger than that.
+`MIN_CROSS_AGE_MS` is 100 at line 14 of [`../../server/src/engine/opportunity/OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityManager.ts), and line 243 refuses a cross younger than that.
 It works, and it removed the flicker class, which was 21 of 39 rows in the previous run and is 2 of 66 here.
 
 It also has a perverse edge, because the test asks whether the same cross was still on screen 100 ms later, and it asks that of the engine's own clock.
@@ -126,22 +126,22 @@ Every active venue ships an exchange timestamp on every book frame, and every on
 
 | venue | field | what the venue calls it | where |
 |---|---|---|---|
-| binance | `E`, `T` | event time, matching engine time | [`../../server/src/venues/binance/types.ts`](../../server/src/venues/binance/types.ts) lines 5 and 6 |
-| bybit | `ts`, `cts` | publish time, matching engine time | [`../../server/src/venues/bybit/types.ts`](../../server/src/venues/bybit/types.ts) lines 14 and 15 |
-| okx | `ts` | venue send time | [`../../server/src/venues/okx/types.ts`](../../server/src/venues/okx/types.ts) line 12 |
-| krakenfutures | `timestamp` | milliseconds, on the snapshot and on every delta | [`../../server/src/venues/krakenfutures/types.ts`](../../server/src/venues/krakenfutures/types.ts) lines 7 and 20 |
-| coinbase | `timestamp`, `event_time` | RFC 3339 frame and level times | [`../../server/src/venues/coinbase/types.ts`](../../server/src/venues/coinbase/types.ts) lines 23 and 4 |
+| binance | `E`, `T` | event time, matching engine time | [`../../server/src/venues/binance/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/binance/types.ts) lines 5 and 6 |
+| bybit | `ts`, `cts` | publish time, matching engine time | [`../../server/src/venues/bybit/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/bybit/types.ts) lines 14 and 15 |
+| okx | `ts` | venue send time | [`../../server/src/venues/okx/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/okx/types.ts) line 12 |
+| krakenfutures | `timestamp` | milliseconds, on the snapshot and on every delta | [`../../server/src/venues/krakenfutures/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/krakenfutures/types.ts) lines 7 and 20 |
+| coinbase | `timestamp`, `event_time` | RFC 3339 frame and level times | [`../../server/src/venues/coinbase/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/coinbase/types.ts) lines 23 and 4 |
 
 The coinbase type says so in a trailing comment of its own: "unused because recvTs is the local clock".
 
 The local clock is the only clock a book ever gets.
-`publish` in [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) defaults its `now` to `Date.now()` at line 283, and `resetBook` does the same at line 267.
+`publish` in [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) defaults its `now` to `Date.now()` at line 283, and `resetBook` does the same at line 267.
 No venue adapter overrides `publish` and none passes a `now` of its own, so the stamp is always the moment the handler ran.
 
-That stamp becomes `cluster.recvTs`, declared at line 61 of [`../../server/src/engine/cluster/types.ts`](../../server/src/engine/cluster/types.ts), and every line that reads it compares it to zero.
-[`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) line 190 asks whether the slot is live, and lines 469 and 471 ask whether the value is finite and above zero.
-[`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) line 311 closes a row as `feed_down` when either leg is at zero.
-[`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts) lines 321 and 345 skip a slot at zero while picking the best bid and the best ask.
+That stamp becomes `cluster.recvTs`, declared at line 61 of [`../../server/src/engine/cluster/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/cluster/types.ts), and every line that reads it compares it to zero.
+[`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/Engine.ts) line 190 asks whether the slot is live, and lines 469 and 471 ask whether the value is finite and above zero.
+[`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityLifecycle.ts) line 311 closes a row as `feed_down` when either leg is at zero.
+[`../../server/src/engine/opportunity/OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityManager.ts) lines 321 and 345 skip a slot at zero while picking the best bid and the best ask.
 
 Zero means the venue never spoke or its socket is down, and every other value is treated as equally current.
 No line computes `now` minus `recvTs`, and no line compares one leg's `recvTs` against the other's.
@@ -210,5 +210,5 @@ Every edge column on all 30 rows measures the distance between two clocks rather
 - The misreading of the edge columns: section 4, item 1 of the same document.
 - The proposed repairs: section 5, items 1 and 4 of the same document.
 - Clock agreement and frame arrival delay: section 1 of [`../research/2026-09-15-binance-realtime-depth.md`](../research/2026-09-15-binance-realtime-depth.md).
-- The local stamp: [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) lines 267 and 283.
+- The local stamp: [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) lines 267 and 283.
 - The unread exchange timestamps: the five `types.ts` files under [`../../server/src/venues/`](../../server/src/venues/).

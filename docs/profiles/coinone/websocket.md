@@ -110,13 +110,13 @@ None is documented, and no frame carries one.
 | REST `orderbook` | best first, descending | best first, ascending |
 
 The documentation's own example shows the socket asks descending, S2.
-The engine's `OrderBook.reset` inserts each level through `setLevel`, which keeps its own order, at [`OrderBook.ts`](../../../server/src/feeds/book/OrderBook.ts) line 17, so a feed passes the arrays as they come.
+The engine's `OrderBook.reset` inserts each level through `setLevel`, which keeps its own order, at [`OrderBook.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/OrderBook.ts) line 17, so a feed passes the arrays as they come.
 
 ### Level window
 
 The window is 16 levels per side, fixed, with no deeper option on the socket.
 The REST book also stops at 16, with `size` limited to 5, 10, 15 or 16, see [`rest.md`](./rest.md) section 5.
-The engine holds 20 levels per side by default, `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, so a Coinone book would fill 16 of them.
+The engine holds 20 levels per side by default, `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, so a Coinone book would fill 16 of them.
 
 ### Size unit against CCXT `contractSize`
 
@@ -126,7 +126,7 @@ The engine holds 20 levels per side by default, `DEPTH_LEVELS` at [`ClusterIndex
 | `BTC`, second run | undefined | bid `"0.0159"` at 116,460,000 | `"0.0159"` | BTC |
 
 Sizes are base coins, since this is spot.
-CCXT sets `contractSize` to undefined for every market at `server/node_modules/ccxt/js/src/coinone.js` line 438, and the connector turns that into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 175.
+CCXT sets `contractSize` to undefined for every market at `server/node_modules/ccxt/js/src/coinone.js` line 438, and the connector turns that into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 175.
 In both runs the last socket frame and a REST read carried the same `id`, `1790133830889001` and `1790134217263001`, and all 16 bid and 16 ask levels were equal in price and size.
 
 ### One-sided and empty books

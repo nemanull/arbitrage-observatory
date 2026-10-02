@@ -57,7 +57,7 @@ The instruments reply carries no listing time and no funding fields.
 | `contractSize` | `volumeMultiple`, line 678 | 1 on 845 |
 | `taker`, `maker` | `fees.trading`, lines 209 and 210 | 0.001 on 845, see [`fees.md`](./fees.md) section 8 |
 
-`loadMarkets` took 1,077 and 1,237 ms and returned 2,211 markets, of which 845 are swaps that pass the connector's filter at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+`loadMarkets` took 1,077 and 1,237 ms and returned 2,211 markets, of which 845 are swaps that pass the connector's filter at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 The connector maps `id`, `linear` and `contractSize` at lines 157 to 176 of the same file.
 
 ### Size unit, pairs listed twice, and price scale
@@ -67,7 +67,7 @@ The connector maps `id`, `linear` and `contractSize` at lines 157 to 176 of the 
 - LBank renames a ticker that collides and shows the common name in `symbolAlias`.
   CCXT keys `base` on `baseCurrency`, so the contract LBank shows as `EDGE` is base `EDGEX` in the catalog and cannot cluster with another venue's `EDGE`.
   The listing is 36 such contracts, a possible missed match and never a false one.
-- `BBUSDT`, `QNTUSDT` and `ONEUSDT` are listed, and all three bases are already in `DENIED_PAIRS` at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 7 to 12.
+- `BBUSDT`, `QNTUSDT` and `ONEUSDT` are listed, and all three bases are already in `DENIED_PAIRS` at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 7 to 12.
 - 13 symbols start with a digit, among them `1000SATSUSDT`, `1000LUNCUSDT`, `1000BTTCUSDT`, `1000XECUSDT`, `1000WOJAKUSDT`, `1000000BABYDOGEUSDT` and `10001000SATSUSDT`.
   CCXT keeps the prefix in `base`, as `1000SATS`, so these cluster only with a venue that uses the same prefix, and no `PRICE_SCALE` line is needed unless one does not.
 - TradFi contracts, stocks, indices and commodities such as `HK50USDT`, `METASTOCKUSDT`, `GOLDUSDT` and `XTIUSDT`, sit in the same list and the same product group.
@@ -116,7 +116,7 @@ Whether any basket is LBank's own perpetual cannot be checked, which leaves the 
 The index is published in steps of about 5 s.
 `BTCUSDT`'s index changed on 12 of 59 intervals in each of three one second poll runs, while `lastTime` changed on 42 or 43.
 The socket ticker agreed, 9 index changes in 44 frames.
-It is rounded to the contract's tick, so one tick on `CTKUSDT` at 0.1317 is a move of 759 ppm, close to the reader's 1,000 ppm per poll limit at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6.
+It is rounded to the contract's tick, so one tick on `CTKUSDT` at 0.1317 is a move of 759 ppm, close to the reader's 1,000 ppm per poll limit at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6.
 
 ### Mark
 

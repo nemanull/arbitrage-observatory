@@ -116,7 +116,7 @@ In the captured IOTX frame the bid `["0.003888","3743","3743","14.552784"]` has 
 
 ### Level window
 
-The server always sends 40 levels per side at the finest step, which covers the engine's 20 at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
+The server always sends 40 levels per side at the finest step, which covers the engine's 20 at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
 IOTX, the quietest stream probed, also held 40 on both sides of every frame.
 Coarser steps aggregate the book, for example `market_e_btcusdt_depth_1` sent levels at whole dollars in exploration.
 
@@ -176,7 +176,7 @@ Because an unserved channel gets no reply at all, the feed has to notice a strea
 | throughput, 358 ticker streams on one socket | 215 and 237 frames per second, 74 and 81 KB per second compressed, P6 |
 
 In the batch, compression cut the wire from 1,550 to 604 KB per second and from 1,470 to 574 KB in the rerun, about 2.6 times, at the cost of an inflate per frame.
-The engine refuses permessage-deflate at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, because the uncompressed mode is plain text.
+The engine refuses permessage-deflate at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, because the uncompressed mode is plain text.
 
 ## 6. Captured frames
 

@@ -62,7 +62,7 @@ The survey brief quotes CoinMarketCap's derivatives ranking the same day at 28 p
 
 It does not.
 CCXT 4.5.68 lists no CrypFine id, and the current master has no `crypfine.ts`, see [`fees.md`](./fees.md) section 8.
-The engine's catalog is `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, so CrypFine would need a hand-written catalog loader, the named change in the verdict.
+The engine's catalog is `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, so CrypFine would need a hand-written catalog loader, the named change in the verdict.
 
 ### Size unit, pairs listed twice, and price scale
 
@@ -84,8 +84,8 @@ No pair is listed twice in CoinMarketCap's table.
 | WebSocket `usdt/ticker.all`, S7 | `indexPrice` | `markPrice` | `fundingRate` | absent | absent | refused |
 
 No REST call returns the index.
-The funding rate is per contract only, so 31 contracts at 3 calls per second would take about 10 s per round, over the engine's 10 s age limit at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5.
-The only bulk source of all three prices is the WebSocket ticker topic, which the engine's REST [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) does not consume.
+The funding rate is per contract only, so 31 contracts at 3 calls per second would take about 10 s per round, over the engine's 10 s age limit at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5.
+The only bulk source of all three prices is the WebSocket ticker topic, which the engine's REST [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) does not consume.
 The funding interval and next settlement are not in any reply, and would come from the documented fixed schedule of 00:00, 08:00 and 16:00 UTC, see [`fees.md`](./fees.md) section 6.
 The `funding_rate`, `ticker_one` and `depth` calls all describe `instrument_id` as a "Contract abbreviation, such as BTC, ETH, BCH, BSV", while their replies and the socket topics spell the contract `BTC-SWAP`, S5, S6 and S13, so the parameter form would have to be settled on the wire.
 
@@ -140,7 +140,7 @@ CoinMarketCap's pair table on 2026-09-23 at 06:12 UTC shows an index basis betwe
 | 504 | "does not mean that the request failed, but is unknown" | S16 |
 | refusal seen here | HTTP 403, `text/html`, 4,547 bytes of Cloudflare block page, no `cf-mitigated` header, no `Retry-After` | P1 |
 
-The engine counts 403 as a rate limit, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, and pauses on it at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 194.
+The engine counts 403 as a rate limit, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, and pauses on it at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 194.
 So a poller aimed at this host would pause, retry and pause again without end.
 
 ## 7. Server time and clock offset

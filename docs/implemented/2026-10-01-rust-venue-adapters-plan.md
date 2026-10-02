@@ -10,7 +10,7 @@ This work does not:
 - start gate, bitget, mexc, bitstamp or gemini, so `ACTIVE_VENUES` keeps its five ids,
 - add exchange timestamps, kernel stamps or a lag gate, which are items 1, 2 and 4 of [`2026-09-17-rust-rewrite-requirements.md`](../backlog/2026-09-17-rust-rewrite-requirements.md),
 - change the engine, the opportunity code or the runtimes beyond `price_scale` and the test only harness of decision 15,
-- touch [`old_ts_server/`](../../old_ts_server/), CI, the database schema or the migrations,
+- touch [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server), CI, the database schema or the migrations,
 - commit anything, because the user commits.
 
 ## Status
@@ -109,7 +109,7 @@ Each task writes `server/src/venues/<id>.rs`, `server/src/venues/<id>/anchor.rs`
 ### 12. Catalog parity for the five
 
 - Run `LIVE_VENUES=binance,bybit,okx,krakenfutures,coinbase cargo test live_catalog -- --ignored --nocapture`.
-- On the same minute, dump CCXT 4.5.68's `loadMarkets` for each venue the way [`connector.ts`](../../old_ts_server/src/ccxt/connector.ts) built markets, with the filters, fees and pinned sizes of [`registry.ts`](../../old_ts_server/src/venues/registry.ts).
+- On the same minute, dump CCXT 4.5.68's `loadMarkets` for each venue the way [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/ccxt/connector.ts) built markets, with the filters, fees and pinned sizes of [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/venues/registry.ts).
   CCXT 4.5.68 sits in the pnpm store under `node_modules/.pnpm/`, and its `dist/ccxt.cjs` loads with a plain `require`.
 - Diff id, base, quote, linear and contract size.
   The expected differences are the four denied markets, and the two scaled okx markets differ only in `price_scale`.

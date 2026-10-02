@@ -134,7 +134,7 @@ A settlement instant was not captured, because spot has none.
 
 ## 9. Recommended registry values
 
-None today, because CEX.IO lists no perpetual and the connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+None today, because CEX.IO lists no perpetual and the connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 Registering CEX.IO as it stands would load 898 spot markets, keep 0, and skip the venue with "no usable swap markets", at the same file line 51.
 
 If a later design adds spot legs on the USD family, the entry would read as follows.
@@ -147,7 +147,7 @@ cex: {
 ```
 
 `takerPpm` is required, not optional, for this venue.
-Without it `toMarket` finds no taker on any market and skips all of them, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 162 to 166.
+Without it `toMarket` finds no taker on any market and skips all of them, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 162 to 166.
 The four reduced rate stablecoin pairs would carry 100 ppm, which the registry cannot express per market today.
 
 ## 10. Source ledger

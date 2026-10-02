@@ -56,7 +56,7 @@ The 41 TWD markets summed 460,776,958 TWD, led by `usdttwd` at 235,068,694.
 ### How CCXT maps it
 
 It does not, because CCXT 4.5.68 has no MAX class, and neither does CCXT master of 2026-09-22, see [`fees.md`](./fees.md) section 8.
-The connector builds every venue from a CCXT class's `loadMarkets`, filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203, so MAX would load nothing.
+The connector builds every venue from a CCXT class's `loadMarkets`, filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203, so MAX would load nothing.
 For a hand written loader, the facts it would need are these.
 
 | field | MAX |
@@ -78,7 +78,7 @@ No market is quoted per 10 or per 1,000 units.
 
 MAX publishes no index, mark or funding for a perpetual, because it lists none.
 No anchor poller is recommended.
-An `AnchorRow` for MAX would have a mark of 0, and the reader refuses such a route at open with `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38.
+An `AnchorRow` for MAX would have a mark of 0, and the reader refuses such a route at open with `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38.
 
 MAX does publish one reference price, the M-wallet index.
 

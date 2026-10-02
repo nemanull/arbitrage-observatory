@@ -74,7 +74,7 @@ The engine takes one market per pair, so a `marketFilter` has to choose, see sec
 Four contracts carry a 1000 multiplier in the base itself: `1000SHIBUSDT`, `1000PEPEUSDT`, `1000LUNCUSDT` and `1000CHEEMSUSDT`, whose `base_currency` is `1000SHIB` and so on with `contract_size` 1.
 They cluster only with venues that name the base the same way, so no price scale is needed.
 
-`ANTHROPICUSDT` is a live TradFi contract at 2,118.76 USDT, while OKX's `ANTHROPIC-USDT-SWAP` read a mark of 218.36 from `GET https://www.okx.com/api/v5/public/mark-price?instType=SWAP&instId=ANTHROPIC-USDT-SWAP` at 03:42 UTC, which the engine scales by 10 at [`../../../server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 21.
+`ANTHROPICUSDT` is a live TradFi contract at 2,118.76 USDT, while OKX's `ANTHROPIC-USDT-SWAP` read a mark of 218.36 from `GET https://www.okx.com/api/v5/public/mark-price?instType=SWAP&instId=ANTHROPIC-USDT-SWAP` at 03:42 UTC, which the engine scales by 10 at [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 21.
 The two sit about 3 % apart on a synthetic pre-listing price, a standing basis rather than a cross.
 Of the four tickers in `DENIED_PAIRS`, `BBUSDT`, `ONUSDT` and `ONEUSDT` are `Delisted` here and `QNTUSDT` is `Trading` with zero volume.
 

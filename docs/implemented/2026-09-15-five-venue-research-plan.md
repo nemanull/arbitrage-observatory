@@ -10,7 +10,7 @@ Implements [`2026-09-15-five-venue-research-design.md`](./2026-09-15-five-venue-
 
 This work does not:
 
-- Add a venue to [`../../server/src/venues/registry.ts`](../../server/src/venues/registry.ts), write a feed or a poller, or change any code under `server/` or `app/`.
+- Add a venue to [`../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/venues/registry.ts), write a feed or a poller, or change any code under `server/` or `app/`.
 - Open an account, call an authenticated endpoint, subscribe a private channel, or place an order.
 - Probe faster than a venue's published public limit, or hold a socket longer than a probe needs.
 - Record deposit, withdrawal, card, staking or spot fee tables beyond one line naming the official lookup.

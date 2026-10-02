@@ -269,7 +269,7 @@ A recommendation for a later design, not a decision.
 | seed | after subscribing, `GET /api/v1/depth?symbol=<id>&limit=1000` for each market at 5 per second, deltas buffered until the reply, then the alignment of section 4 | the stream sends no snapshot. The engine has no REST seeding path in any feed today, so this is new code in `VenueFeed` or in the Backpack subclass |
 | REST level order | read bids from the end of the array | REST bids are ascending |
 | price keys | `Number()` of the price, never the string | REST and socket format the same price differently |
-| keepalive | leave `ws` answering server pings, and send a protocol ping every 15 s | `VenueFeed` counts ping and pong as traffic, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98, and a quiet book went 30 s without a frame |
+| keepalive | leave `ws` answering server pings, and send a protocol ping every 15 s | `VenueFeed` counts ping and pong as traffic, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98, and a quiet book went 30 s without a frame |
 | `maxSilenceMs` | 45,000 | three missed client pongs |
 | delta | apply only when `U === last + 1`, then store `u`. A size of zero deletes | documented rule, 0 gaps observed |
 | resync | a gap, or a delta before the seed lands: reseed that one market from REST while buffering. With today's `resync`, terminate and reseed the slice | the documentation asks for a REST requery, and one market's gap need not cost the slice |

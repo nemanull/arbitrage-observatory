@@ -78,9 +78,9 @@ The engine keys the socket and the anchor by `rawMarketId`, and BTSE spells the 
 | pairs listed twice | none. Each `baseCurrency` appears once among the perpetuals |
 | thousand-unit bases | `1KPEPE`, `1KSHIB`, `1KFLOKI`, `1KBONK` and `1KCAT` quote a price per 1,000 tokens, `1KPEPE` at an index of 0.00493. CCXT keeps the base as `1KPEPE`, since `commonCurrencies` is empty at line 585, so these match no other venue's `1000PEPE` or `PEPE` and simply stay unclustered |
 | renamed base | `TRUMP-PERP-USDT` has `baseCurrency` `TRUMPSOL`, so it will not cluster with `TRUMP` elsewhere |
-| stock and commodity bases | 80 perpetuals whose base is a stock or commodity ticker. `GAS` is "Natural Gas" and `QNT` is "Quantinuum Inc.", while elsewhere those tickers name NEO's GAS token and Quant. `QNT|USDT` is already in `DENIED_PAIRS` at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 10, and `GAS` is not |
+| stock and commodity bases | 80 perpetuals whose base is a stock or commodity ticker. `GAS` is "Natural Gas" and `QNT` is "Quantinuum Inc.", while elsewhere those tickers name NEO's GAS token and Quant. `QNT|USDT` is already in `DENIED_PAIRS` at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 10, and `GAS` is not |
 
-A `marketFilter` that keeps `info.category === 'CRYPTO'` removes every stock and commodity base at once, see [`types.ts`](../../../server/src/ccxt/types.ts) line 23.
+A `marketFilter` that keeps `info.category === 'CRYPTO'` removes every stock and commodity base at once, see [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) line 23.
 
 ## 3. Anchor
 
@@ -218,7 +218,7 @@ The markets book accepts both spellings of the symbol.
 | rate limit headers on a 200 | none. The reply headers were `cache-control`, `cf-cache-status`, `cf-ray`, `content-encoding`, `content-type`, `date`, `server`, `vary` and `x-request-id` | P1 errors |
 
 No limit was provoked, so the 429 body and the `Retry-After` format are Not verified.
-The format matters, because the poller at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 269 reads an all-digit header as seconds, and a Unix timestamp read that way would pause the poller for decades.
+The format matters, because the poller at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 269 reads an all-digit header as seconds, and a Unix timestamp read that way would pause the poller for decades.
 
 | request | status | body |
 |---|---|---|

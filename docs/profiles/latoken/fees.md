@@ -160,7 +160,7 @@ CCXT fetches a user's real rate only through `fetchTradingFee`, which defaults t
 ## 9. Recommended registry values
 
 LATOKEN cannot join the engine as a perpetual leg, so no registry entry is recommended.
-The connector would find 0 active swap markets and skip the venue, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202.
+The connector would find 0 active swap markets and skip the venue, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202.
 If a spot leg were ever modelled, the values would be `takerPpm: 5900`, the level 1 taker of S1 and P1, and `ccxtTakerPpm: 4900`, citing `server/node_modules/ccxt/js/src/latoken.js` line 210, because CCXT reports the level 2 rate.
 An exclusive pair would need its own 9,800 ppm, or a deny line, until the page and the wire agree.
 

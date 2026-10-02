@@ -71,7 +71,7 @@ The quietest visible contract, `IRYS-SWAP-USDT`, reported about 1.45 million USD
 
 ### How a catalog maps it
 
-CCXT has no Echobit class, see [`fees.md`](./fees.md) section 8, so the engine's catalog path through `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 cannot run.
+CCXT has no Echobit class, see [`fees.md`](./fees.md) section 8, so the engine's catalog path through `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 cannot run.
 A hand written catalog would map each visible row as follows.
 
 | engine field | source | check on the wire |
@@ -129,7 +129,7 @@ The website itself reads mark and index the same way, one contract at a time fro
 
 A REST poll of every visible contract needs 1 funding call and 248 kline calls per round.
 The documented budget for market data is 1,200 GET per 60 s (S3), so a full round takes at least 12.45 s.
-That is over the reader's 10 s limit, `ANCHOR_MAX_AGE_MS` at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5, so a one second REST anchor can cover about nine contracts at most.
+That is over the reader's 10 s limit, `ANCHOR_MAX_AGE_MS` at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5, so a one second REST anchor can cover about nine contracts at most.
 
 ### Row mapping
 
@@ -205,7 +205,7 @@ That reading is an inference from the field names and the two behaviours above, 
 | `ETH-SWAP-USDT` | 7 and 12 | 10 and 17 | 363 and 109 ppm | 36 and 109 ppm |
 | `ENA-SWAP-USDT` | 20 and 20 | 26 and 22 | 1,006 and 965 ppm | 549 and 780 ppm |
 
-The ENA mark moved 1,006 ppm in one poll in run 2, over `MAX_ANCHOR_MOVE_PPM` of 1,000 at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6.
+The ENA mark moved 1,006 ppm in one poll in run 2, over `MAX_ANCHOR_MOVE_PPM` of 1,000 at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6.
 On the socket, `indexKline_1m` pushed 31 frames in 30 s and `markKline_1m` 14 and 18, see [`websocket.md`](./websocket.md) section 2.
 
 ## 5. REST book snapshot
@@ -253,13 +253,13 @@ The engine stamps on arrival, so neither matters to it.
 ## 8. Recommended poller shape
 
 A recommendation for a later design, not a decision.
-The shape of the current pollers, one bulk call a second as in [`anchor.ts`](../../../server/src/venues/gate/anchor.ts), does not fit, because mark and index exist only per contract.
+The shape of the current pollers, one bulk call a second as in [`anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/gate/anchor.ts), does not fit, because mark and index exist only per contract.
 
 | item | recommendation | reason |
 |---|---|---|
 | mark and index | subscribe `markKline_1m` and `indexKline_1m` for every visible `indexId` on the market socket, and keep the last `c` of each with its arrival time | the only way to hold 124 marks and indices fresh. A REST round of 248 kline calls takes at least 12.45 s at the documented budget |
 | funding | subscribe `fund_rates` on `wss://uapi.echobit.com/uapi/ws/inform`, or poll `www.echobit.com/mainapi/contract/fund/rates` once a second | the socket is documented and pushes all 200 rows every 2 s. The REST call is the website's own and undocumented |
-| anchor source | a named change: an anchor fed by these subscriptions instead of `fetchRound` over REST, or a `fetchRound` that reads their last values | `AnchorPoller` expects one REST round per tick at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 103 |
+| anchor source | a named change: an anchor fed by these subscriptions instead of `fetchRound` over REST, or a `fetchRound` that reads their last values | `AnchorPoller` expects one REST round per tick at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 103 |
 | interval | the socket pace, mark every 1 to 2 s and index about every second | section 4 |
 | row mapping | section 3, key `symbolId`, joined to `indexId` through the catalog | |
 | skip | rows whose `showState` is false, and the `TUSDT` simulation rows | 74 hidden rows still carry funding, 12 of them at `-0.02` |

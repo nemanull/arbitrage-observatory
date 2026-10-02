@@ -103,7 +103,7 @@ That is 2,000 ppm on 383 pairs and 1,000 ppm on `USDT_USD` and `USDC_USDT`, and 
 ## 9. Recommended registry values
 
 None.
-The engine's catalog keeps active swaps only, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and Gate US lists none.
+The engine's catalog keeps active swaps only, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and Gate US lists none.
 If Gate US ever joins as a spot leg, `takerPpm` has to come from the fee page read in a browser session that the site serves, because the catalog field and a CCXT class built on it would report 2,000 ppm whatever the schedule says.
 
 ## 10. Source ledger

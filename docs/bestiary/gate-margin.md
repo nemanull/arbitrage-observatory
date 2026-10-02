@@ -45,7 +45,7 @@ On every SIREN row the bybit bid sat 0.57 to 1.06 percent over the bybit mark wh
 
 ## The mechanism
 
-The open gate is one comparison in [`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts).
+The open gate is one comparison in [`../../server/src/engine/opportunity/OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts).
 `MIN_NET_PPM` is 5,000 at line 8, and line 139 refuses a cross whose fresh edge falls under it.
 The fresh edge itself is one division per leg, each book against its own venue's mark, at anchorReading.ts:61.
 There is no margin, no hysteresis and no second sample.
@@ -177,8 +177,8 @@ SIREN still crossed raw by 8,669 ppm and read -2,094 fresh, CVC and LSK crossed 
 - Every row of the class with its raw, fresh, region, closed loop and refusal count: section 9 of the same document.
 - The refusal totals and the gate values in force: section 0 of the same document.
 - The live reads that show each route still standing: section 8 of the same document.
-- The gate, the discarded count and the pair keyed pending cross: [`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts) lines 8, 40, 139, 251, 293 and 306.
-- The fresh edge itself: [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) line 61.
-- The poll cadence behind the four second figure: [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts) line 7, [`../../server/src/venues/bybit/anchor.ts`](../../server/src/venues/bybit/anchor.ts) line 10 and [`../../server/src/venues/coinbase/anchor.ts`](../../server/src/venues/coinbase/anchor.ts) line 14.
+- The gate, the discarded count and the pair keyed pending cross: [`../../server/src/engine/opportunity/OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts) lines 8, 40, 139, 251, 293 and 306.
+- The fresh edge itself: [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts) line 61.
+- The poll cadence behind the four second figure: [`../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/feeds/anchor/AnchorPoller.ts) line 7, [`../../server/src/venues/bybit/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/bybit/anchor.ts) line 10 and [`../../server/src/venues/coinbase/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/coinbase/anchor.ts) line 14.
 - The repair, sized and ordered: [`../backlog/2026-09-15-open-gate-safeguards.md`](../backlog/2026-09-15-open-gate-safeguards.md) sections 2 and 9.
 - The stored rows: `ArbitrageOpportunity` ids 2755 to 2820, fifth run, local database.

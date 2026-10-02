@@ -36,7 +36,7 @@ Two rules, in opposite directions, and both are deliberate.
 
 **A feed drops a one sided quote.**
 Every venue feed refuses to pass it to the engine.
-Kraken's spec states it plainly in [`../../server/src/venues/krakenfutures/krakenfutures.spec.ts`](../../server/src/venues/krakenfutures/krakenfutures.spec.ts).
+Kraken's spec states it plainly in [`../../server/src/venues/krakenfutures/krakenfutures.spec.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/venues/krakenfutures/krakenfutures.spec.ts).
 
 ```ts
 it('ignores a zero sided and a one sided book', () => {
@@ -48,7 +48,7 @@ it('ignores a zero sided and a one sided book', () => {
 });
 ```
 
-The same test exists for bybit in [`../../server/src/venues/bybit/bybit.spec.ts`](../../server/src/venues/bybit/bybit.spec.ts) and for okx in [`../../server/src/venues/okx/okx.spec.ts`](../../server/src/venues/okx/okx.spec.ts).
+The same test exists for bybit in [`../../server/src/venues/bybit/bybit.spec.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/venues/bybit/bybit.spec.ts) and for okx in [`../../server/src/venues/okx/okx.spec.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/venues/okx/okx.spec.ts).
 
 **The depth block accepts an empty side.**
 Decision 5 of [`../implemented/2026-09-06-depth-block-design.md`](../implemented/2026-09-06-depth-block-design.md) says an empty side is accepted, because a one sided book is a fact worth holding.
@@ -75,7 +75,7 @@ So the last good two sided quote stays sitting in `bid[v]` and `ask[v]`, with a 
 ```
 
 The buy side has genuinely left the market.
-The engine keeps quoting a price that no longer exists, and the episode runs until `MAX_OPPORTUNITY_AGE_MS`, which is five minutes, in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts).
+The engine keeps quoting a price that no longer exists, and the episode runs until `MAX_OPPORTUNITY_AGE_MS`, which is five minutes, in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/OpportunityLifecycle.ts).
 
 This is a third way to hold a dead price, alongside the trade driven channel in [`stale-quote.md`](./stale-quote.md) and the throttled channel it mentions.
 It is worse than both in one respect.

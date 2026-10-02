@@ -1,46 +1,42 @@
 # server
 
-The engine.
-NestJS and TypeScript, running headless, with three HTTP routes that report and control the run.
-Part of the root pnpm workspace, so `pnpm install` is run from the repository root.
+The engine, a Rust crate that runs headless.
+It streams every venue's order books, judges each cross against the gates in the root [README.md](../README.md), and writes every closed episode to Postgres.
 
-Installation and configuration are in [SETUP.md](../SETUP.md).
+Installation, configuration and the commands for a run are in [SETUP.md](../SETUP.md).
 
 ```bash
 cp .env.example .env
-pnpm dev              # watch mode, http://localhost:3000
+cargo run --release
 ```
 
-## Compiler
+## Layout
 
-Builds use **tsgo** (`@typescript/native-preview`, the native Go TypeScript
-compiler) instead of `tsc`.
-
-| Script | What it does |
+| Path | What it holds |
 | --- | --- |
-| `pnpm build` | `clean` + `tsgo -p tsconfig.build.json` |
-| `pnpm dev` | `tsgo --watch` + `node --watch dist/main.js`, in parallel |
-| `pnpm typecheck` | `tsgo --noEmit` |
-| `pnpm start` | `node dist/main.js` |
-| `pnpm build:tsc` | fallback build via `nest build` (classic tsc) |
-| `pnpm start:dev` | fallback watch via `nest start --watch` (classic tsc) |
+| [`src/main.rs`](./src/main.rs) | Boot: telemetry, the TLS provider, the Postgres pool, the writer task and the orchestrator. |
+| [`src/orchestrator.rs`](./src/orchestrator.rs) | Loads each active venue's catalog, builds the cluster index, starts the engine thread, the feeds, the pollers and the sweeper, and stops them on a signal. |
+| [`src/engine/`](./src/engine/) | The cluster index, the engine and its book and anchor writes, and under `opportunity/` the gates, the episode lifecycle, the ladder walk, the anchor reading and the writer. |
+| [`src/feeds/`](./src/feeds/) | The shared runtimes every venue plugs into: one task per book socket in `venue_feed.rs`, the order book, and the REST anchor poller in `anchor_poller.rs`. |
+| [`src/venues/`](./src/venues/) | One module per venue, each with its catalog loader, book feed, anchor parse and tests, plus the shared catalog and wire parsing. |
+| [`migrations/`](./migrations/) | The schema, as SQL applied in file name order. |
 
-Notes:
+## Threads
 
-- tsgo does emit `emitDecoratorMetadata`, which Nest's dependency injection requires.
-  Verified by `__metadata("design:paramtypes", ...)` in the emitted output.
-- Jest still compiles through `ts-jest` on the regular `typescript` package.
-  tsgo is the build and watch path only.
-- TypeScript 7 removed `baseUrl` and now requires an explicit `rootDir`, so both are set accordingly in the tsconfigs.
+Every socket and every poller is a task on one tokio runtime, which runs a worker thread per logical CPU.
+A socket task owns its connection, its frame parsing and the books of its markets, and it waits on nothing but its socket.
+
+The engine is one OS thread named `engine`.
+It reads one bounded channel of 4,096 updates, applies each book to its cluster's flat arrays, and runs the gates on every quote change.
+When that channel is full a socket task keeps reading and applying frames, and sends each waiting market once with its newest book, so a slow engine sees fewer and fresher updates rather than a queue of old ones.
+
+Closed episodes go to a writer task over a channel of 1,024, which inserts them in batches of 64 and retries a failed batch.
 
 ## Tests
 
 ```bash
-pnpm test        # 30 suites, 389 tests, no Docker and no database needed
+cargo test                                   # 478 tests, plus 3 ignored ones
 ```
 
-The jest script passes `--forceExit`, which is not cosmetic.
-`app.module.spec.ts` compiles the real `AppModule`, and BullMQ dials Redis at whatever `REDIS_URL` holds the moment the queue is constructed.
-The spec points it at an address that does not answer, and Nest's `close` returns before that dial gives up, so the event loop stays alive after the last assertion.
-The queue and the worker are stubbed to keep the dial out of the way, and the flag covers what is left.
-Removing it means the suite passes and then hangs.
+No test needs a database or the network, except the three ignored groups that `SETUP.md` lists, which reach the real venues.
+[`src/pipeline_tests.rs`](./src/pipeline_tests.rs) drives the real engine thread from two fake venues on local sockets, and each venue's `tests.rs` replays frames captured from that venue.

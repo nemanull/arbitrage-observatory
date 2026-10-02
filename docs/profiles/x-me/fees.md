@@ -130,7 +130,7 @@ So there is no `market.taker` to report and no source line to cite.
 | `takerPpm` | 600 | the regular user USDT-M perpetual taker of 0.060 %, S1 |
 | `ccxtTakerPpm` | none | no CCXT class exists, section 8 |
 
-The registry cannot hold x.me as it stands, since the connector's catalog is CCXT's `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68.
+The registry cannot hold x.me as it stands, since the connector's catalog is CCXT's `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68.
 A catalog built from `GET /fapi/v1/contracts` would have to replace it, see [`rest.md`](./rest.md) section 2.
 
 ## 10. Source ledger

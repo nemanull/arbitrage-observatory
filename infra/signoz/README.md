@@ -1,6 +1,6 @@
 # SigNoz
 
-Local observability backend for logs, traces, and metrics.
+Local observability backend for the server's logs.
 It exists so that a failure in a background job is still readable hours later, when nobody was watching the terminal.
 
 ## Running it
@@ -8,21 +8,21 @@ It exists so that a failure in a background job is still readable hours later, w
 SigNoz is part of the root [`docker-compose.yaml`](../../docker-compose.yaml), so it starts with everything else.
 
 ```
-pnpm infra:up      # Postgres, Redis, and SigNoz
+pnpm infra:up      # Postgres and SigNoz
 pnpm infra:down    # stop
 pnpm infra:logs    # tail every container
 ```
 
-Only Postgres and Redis are needed to run the server.
-To skip SigNoz on a constrained machine, start those two by name instead.
+Only Postgres is needed to run the server.
+To skip SigNoz on a constrained machine, start Postgres by name instead.
 
 ```
-docker compose up -d --wait postgres redis
+docker compose up -d --wait postgres
 ```
 
 ## Where things listen
 
-Every port is bound to `127.0.0.1` and shifted off its default, matching the Postgres and Redis convention in the root compose file.
+Every port is bound to `127.0.0.1` and shifted off its default, matching the Postgres convention in the root compose file.
 
 | What | URL | Override |
 | --- | --- | --- |

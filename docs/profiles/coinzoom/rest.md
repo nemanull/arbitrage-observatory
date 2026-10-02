@@ -64,7 +64,7 @@ A loader would take `rawMarketId` from `instruments` `symbol`, which is the sock
 ### How CCXT maps it
 
 It does not, because CCXT 4.5.68 and the current master have no CoinZoom class, see [`fees.md`](./fees.md) section 8.
-The engine builds its catalog from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68, 79 and 196 to 201, so CoinZoom would need a hand written catalog even as a spot venue.
+The engine builds its catalog from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68, 79 and 196 to 201, so CoinZoom would need a hand written catalog even as a spot venue.
 
 ### Size unit, pairs listed twice, and price scale
 
@@ -145,7 +145,7 @@ Error shapes, from P4, both runs:
 | `GET /marketwatch/ticker` with no `User-Agent` | 403 | Cloudflare HTML page |
 
 A poller would treat 403 as the `User-Agent` rule first and a block second, since both come back as the same Cloudflare page.
-The engine's poller pauses on 403, 418 and 429, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1 and [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 189 to 192, for 60 s when no `Retry-After` comes, at line 9, which would suit the documented ban risk.
+The engine's poller pauses on 403, 418 and 429, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1 and [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 189 to 192, for 60 s when no `Retry-After` comes, at line 9, which would suit the documented ban risk.
 
 ## 7. Server time and clock offset
 

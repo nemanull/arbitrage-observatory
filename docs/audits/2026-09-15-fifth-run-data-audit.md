@@ -114,7 +114,7 @@ The row opened 413 ms after that bid was gone.
 The process was not stalled.
 Between 18:37:10 and 18:37:16 eight to twelve rows were open, and no gap of 150 ms passed without a sample from one of them, the longest silence being 157 ms at 18:37:16.410.
 Each socket was late by its own amount, which is a per socket backlog and not a blocked loop.
-Where the time went cannot be read from this run, because every frame from every venue carries an exchange timestamp and `publish` in [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) stamps the book with `Date.now()` instead.
+Where the time went cannot be read from this run, because every frame from every venue carries an exchange timestamp and `publish` in [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/7b6b081cc91f677e8f86fc9119954a75d3a2951c/server/src/feeds/book/VenueFeed.ts) stamps the book with `Date.now()` instead.
 
 The binance sockets broke under the burst.
 `binance#linear#0` reconnected 146 times and `binance#linear#1` 47 times between 18:37:15.302 and 18:56:46.739, a median of 2.8 s apart, each followed by the four subscribe acknowledgements a median 1.8 s later, while connections 2 and 3 never reconnected.
@@ -241,7 +241,7 @@ That is under five dollars.
 4. `closeReason` of `fresh_edge_collapsed` on 25 of 32 rows.
    It names the poll that landed, not a convergence, and the raw cross read 4,204 to 21,974 on those closing samples.
 5. `edgeNotionalAtOpen` on a kraken leg.
-   It is one maker's quote counted at face value, with that venue's own spread of 0.40 to 0.70 percent missing from the row, because [`../../server/src/db/conversion.ts`](../../server/src/db/conversion.ts) writes neither far side.
+   It is one maker's quote counted at face value, with that venue's own spread of 0.40 to 0.70 percent missing from the row, because [`../../server/src/db/conversion.ts`](https://github.com/nemanull/arbitrage-observatory/blob/7b6b081cc91f677e8f86fc9119954a75d3a2951c/server/src/db/conversion.ts) writes neither far side.
 
 ## 5. Order of repair, proposed
 

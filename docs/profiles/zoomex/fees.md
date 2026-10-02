@@ -125,7 +125,7 @@ The engine models a taker at the base retail tier, so none of these change the r
   Issue #26609 "zoomex support" has been open since 2025-08-08, S15.
 - Zoomex's API copies Bybit's v5 market API under another path prefix, so the CCXT `bybit` class loads the Zoomex catalog once its host and path prefix are replaced, P1 `ccxt` and [`rest.md`](./rest.md) section 2.
   Loaded that way, `market.taker` is 0.0006 and `market.maker` is 0.0001 on all 701 swaps, because the instruments reply carries no fee and CCXT falls back to constants at `server/node_modules/ccxt/js/src/bybit.js` lines 2219 and 2220.
-- The taker constant equals Zoomex's standard taker by coincidence, since it is Bybit's old non-VIP rate, as the Bybit entry of [`registry.ts`](../../../server/src/venues/registry.ts) notes at lines 47 and 48.
+- The taker constant equals Zoomex's standard taker by coincidence, since it is Bybit's old non-VIP rate, as the Bybit entry of [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) notes at lines 47 and 48.
   It is wrong for the 73 Innovation Zone contracts, which charge 0.0011.
   The maker constant 0.0001 is wrong for every contract, since Zoomex charges 0.0002.
 

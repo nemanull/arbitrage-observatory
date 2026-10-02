@@ -119,7 +119,7 @@ There is no CCXT market and so no `contractSize`, and a contract size of 1 is th
 A `stopped` pair, `klay_krw`, answered the subscribe with success and one snapshot with empty `bids` and `asks`, whose `data.timestamp` `1789456789897` is 2026-09-15 07:19:49 UTC, 7.8 days old.
 Nothing followed it in 60 s.
 No one-sided book was seen, so what a book with one empty side sends is Not verified.
-The engine's `resetBook` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 263 accepts an empty side.
+The engine's `resetBook` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 263 accepts an empty side.
 
 ### Idle repeats
 
@@ -241,15 +241,15 @@ They use `wss://ws-api.digitalx.miraeasset.com/v2/private`, with the `X-KAPI-KEY
 
 A recommendation for a later design, not a decision.
 Digital X cannot join as a perpetual leg, since it has none.
-The shape below is what a KRW spot feed would look like if a later design ever adds spot legs, and that design would also need a catalog without CCXT and a KRW quote outside the USD, USDC and USDT family of [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
+The shape below is what a KRW spot feed would look like if a later design ever adds spot legs, and that design would also need a catalog without CCXT and a KRW quote outside the USD, USDC and USDT family of [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
 
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one plan, `wss://ws-api.digitalx.miraeasset.com/v2/public` | one product family |
-| channel | `orderbook` with no `level` | 30 levels per side covers the engine's 20 of `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17 |
+| channel | `orderbook` with no `level` | 30 levels per side covers the engine's 20 of `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17 |
 | markets per connection | all launched pairs, 193 on 2026-09-23 | 193 ran on one socket at about 150 frames per second, and no cap is published |
 | subscribe frame | `[{"method":"subscribe","type":"orderbook","symbols":["btc_krw", …]}]`, with a `requestId` so success is acknowledged | a failure is reported even without `requestId`, but a success is not |
-| keepalive | none from the client | the server pings every 30 s, and `VenueFeed` counts a ping as traffic at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98 |
+| keepalive | none from the client | the server pings every 30 s, and `VenueFeed` counts a ping as traffic at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98 |
 | `maxSilenceMs` | 90,000 | three missed server pings, and `tdrop_krw` sent nothing after its snapshot for 120 s, so the pings must count as traffic |
 | routing | `type === 'orderbook'`, key `symbol` | control messages have `status` and no `type` |
 | every frame | `resetBook` with the frame's levels, then `publish` | every frame is the whole top 30 |

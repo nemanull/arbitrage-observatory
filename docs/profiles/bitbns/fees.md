@@ -106,7 +106,7 @@ The price band is not what the wire shows.
 CCXT 4.5.68 has no BitBNS perpetual market.
 `describe()` sets `'swap': false` and `'future': false` at `server/node_modules/ccxt/js/src/bitbns.js` lines 32 and 33, and `features.swap` carries the comment "todo: implement swap methods" at line 204.
 `fetchMarkets` reads only `order/fetchMarkets` and stamps every row `'type': 'spot'`, lines 262 to 355.
-So `loadMarkets` returned 224 spot markets and 0 swaps, and the connector's `isActiveSwapMarket` filter at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 196 keeps none of them, P1.
+So `loadMarkets` returned 224 spot markets and 0 swaps, and the connector's `isActiveSwapMarket` filter at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 196 keeps none of them, P1.
 
 For spot, `market.taker` and `market.maker` are 0.0025 on all 224 markets, from the flat `fees.trading` block at `bitbns.js` lines 141 to 148, with the taker at line 146, P1.
 That is 2,500 ppm, and it matches the fee page's spot VIP 0 rate of 0.25 %, S1.

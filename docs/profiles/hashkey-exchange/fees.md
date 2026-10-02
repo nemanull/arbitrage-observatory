@@ -145,7 +145,7 @@ Its fee constants are HashKey Global's and do not describe HashKey Exchange, who
 ## 9. Recommended registry values
 
 None.
-HashKey Exchange lists no live perpetual, so there is nothing for [`registry.ts`](../../../server/src/venues/registry.ts) to register.
+HashKey Exchange lists no live perpetual, so there is nothing for [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) to register.
 If a later design wanted HK spot through CCXT, the values would be `takerPpm: 2900` from S4, and `ccxtTakerPpm: 1200` for the `hashkey` class pointed at `api-pro.hashkey.com`, the constant at `hashkey.js` line 282.
 The registry would also have to keep the connector from loading `BBTCUSD-PERPETUAL` as an active swap, because CCXT marks it `active: true`.
 

@@ -53,14 +53,14 @@ The `status` value seen was `running`, and the other values are Not publicly spe
 | `linear`, `active`, `contractSize`, `taker`, `maker` | `undefined` | P1, see [`fees.md`](./fees.md) section 8 |
 | `precision`, `limits` | empty objects | P1 |
 
-The engine's connector keeps only markets with `type` `swap`, `swap` true and `active` not false, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202.
+The engine's connector keeps only markets with `type` `swap`, `swap` true and `active` not false, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202.
 Paymium's one market fails that filter, so the connector would log `no usable swap markets; skipping the venue` at line 51.
 
 `market.id` `"eur"` against the socket and the anchor: the socket carries no symbol, see [`websocket.md`](./websocket.md) section 3, and there is no anchor.
 The REST depth names its market `"BTC-EUR"`.
 The depth path accepts `eur`, `btc` and `BTC-EUR` and returns the same book for all three, with `"market":"BTC-EUR"`, P1 to P3.
 
-`contractSize` against the book unit: the book `amount` is BTC, and a missing contract size becomes 1 at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, which is correct.
+`contractSize` against the book unit: the book `amount` is BTC, and a missing contract size becomes 1 at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194, which is correct.
 
 No pair is listed twice, since there is one pair.
 Its quote is EUR, which is outside the USD, USDC and USDT settlement family of [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md), so even a spot design would find no counterpart quoted in the same currency on the perpetual venues.

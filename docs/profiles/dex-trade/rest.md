@@ -62,7 +62,7 @@ The scale of each integer on the socket comes from these three fields, and they 
 
 It does not.
 CCXT has no Dex-Trade class in 4.5.68 or in the current master, see [`fees.md`](./fees.md) section 8.
-The engine's catalog is CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68, 79 and 196 to 202, so Dex-Trade would need a catalog loader of its own even for spot.
+The engine's catalog is CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68, 79 and 196 to 202, so Dex-Trade would need a catalog loader of its own even for spot.
 For such a loader, `pair` is the name the REST calls take, the socket room is `book_<id>`, and the size unit is base currency, see [`websocket.md`](./websocket.md) section 4.
 
 ### Overlap with perpetual venues

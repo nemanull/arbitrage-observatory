@@ -147,7 +147,7 @@ The settlement instant itself was not captured, and no probe waited for one.
 | what `market.taker` reports on a swap without credentials | `undefined` on 18 of 18 swap markets. The explicit `undefined` overrides the exchange default when CCXT merges `fees.trading` into the market at `server/node_modules/ccxt/js/src/base/Exchange.js` lines 3732 to 3735. | Probed, CCXT 4.5.68, both runs |
 | spot markets | `0.0009` on every spot market, from the exchange default, against the published 0.2000 % | Probed |
 
-The connector turns an undefined taker into `null` and drops the market when the registry sets no `takerPpm`, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 162 to 166.
+The connector turns an undefined taker into `null` and drops the market when the registry sets no `takerPpm`, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 162 to 166.
 So Poloniex yields no market at all unless the registry sets `takerPpm`.
 With `takerPpm` set, the connector skips the CCXT comparison because the CCXT number is `null`, at line 120.
 

@@ -111,7 +111,7 @@ Without credentials, loadMarkets returned 56 markets, all spot, 0 swaps and 0 fu
 
 So CCXT is right for the three main pairs and understates the taker of 38 pairs by 2,000 ppm.
 `market.active` is `undefined` on every market, at line 286, and `contractSize` is `undefined`, at line 290, P1.
-The engine's connector keeps only markets with `type === 'swap'` and `swap === true`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203, so Zaif contributes no market and the connector logs "no usable swap markets", at line 51.
+The engine's connector keeps only markets with `type === 'swap'` and `swap === true`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203, so Zaif contributes no market and the connector logs "no usable swap markets", at line 51.
 
 ## 9. Recommended registry values
 
@@ -119,7 +119,7 @@ None, because Zaif cannot join the engine as a perpetual leg.
 
 If a later design adds spot legs, `takerPpm` cannot be one number, since the fee page charges 1,000 ppm on three pairs and 3,000 ppm on 38.
 `ccxtTakerPpm` would be 1,000, the constant at `zaif.js` line 104, and a per pair override of 3,000 would be needed for every pair other than `btc_jpy`, `eth_jpy` and `eth_btc`.
-Every Zaif market is quoted in JPY, BTC or a Zaif token, which the quote family does not merge with USD, USDC or USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a Zaif market would only ever pair with another JPY or BTC market.
+Every Zaif market is quoted in JPY, BTC or a Zaif token, which the quote family does not merge with USD, USDC or USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a Zaif market would only ever pair with another JPY or BTC market.
 
 ## 10. Source ledger
 

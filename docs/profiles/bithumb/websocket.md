@@ -101,7 +101,7 @@ The REST book `GET /v1/orderbook` uses the same unit shape, see [`rest.md`](./re
 ### Level window
 
 At most 15 levels per side, S3, and every one of the 493 first frames carried 15 units in both batch runs.
-A `.30` suffix still gave 15, so the socket cannot reach the engine's 20 levels, see [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+A `.30` suffix still gave 15, so the socket cannot reach the engine's 20 levels, see [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 The REST book returns 30 levels for a single market, and the legacy `orderbooksnapshot` sent 30.
 
 ### Size unit against CCXT `contractSize`

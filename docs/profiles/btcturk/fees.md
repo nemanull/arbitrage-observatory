@@ -129,7 +129,7 @@ The CCXT constant is below the published Level 1 rate on both quote families: 90
 ## 9. Recommended registry values
 
 None today.
-The connector keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and BtcTurk has none, so the venue would load zero markets.
+The connector keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and BtcTurk has none, so the venue would load zero markets.
 If a spot leg is ever modelled, `takerPpm` 1,400 for the USDT pairs and `ccxtTakerPpm` 900, because the CCXT constant is stale against S1.
 
 ## 10. Source ledger

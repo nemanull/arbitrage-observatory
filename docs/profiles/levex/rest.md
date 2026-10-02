@@ -202,7 +202,7 @@ Book frames carry a nanosecond `timestamp`, and arrival minus that timestamp was
 ## 8. Recommended poller shape
 
 No poller is recommended.
-[`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) fetches a JSON reply over HTTP at line 224, and LeveX answers no public REST call from this host.
+[`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) fetches a JSON reply over HTTP at line 224, and LeveX answers no public REST call from this host.
 The only bulk anchor source is a socket stream that LeveX does not publish as an API, and both LeveX agreements forbid scripts that monitor the site, see [`fees.md`](./fees.md) section 1.
 
 If LeveX ever publishes an API, the probe suggests:

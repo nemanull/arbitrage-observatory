@@ -66,7 +66,7 @@ There is no USDT, USDC or coin-margined perpetual.
 ### How CCXT 4.5.68 maps it
 
 It does not, since CCXT 4.5.68 has no GMO Coin class, and neither does CCXT master, see [`fees.md`](./fees.md) section 8.
-The open pull request ccxt/ccxt#27965 types every row as spot and maps both `BTC` and `BTC_JPY` to `BTC/JPY`, so the engine's swap filter at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203 would keep none of them.
+The open pull request ccxt/ccxt#27965 types every row as spot and maps both `BTC` and `BTC_JPY` to `BTC/JPY`, so the engine's swap filter at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203 would keep none of them.
 
 A hand-written catalog would read as follows.
 
@@ -81,7 +81,7 @@ A hand-written catalog would read as follows.
 ### Pairs listed twice, quote family and price scale
 
 Every leverage symbol has a spot twin with the same base and quote, `BTC` beside `BTC_JPY`, and only the leverage one is the perpetual-like product.
-The engine's quote family joins USD and USDC to USDT and nothing else, at [`../../../server/src/engine/cluster/quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
+The engine's quote family joins USD and USDC to USDT and nothing else, at [`../../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
 A JPY market would therefore form its own cluster key, such as `BTC|JPY`, which no active venue shares, so it would never meet a USDT perpetual.
 No price scale is needed, since every price is quoted per one coin.
 
@@ -103,7 +103,7 @@ The leverage product has no funding: it charges a fixed 0.04 % a day on every po
 |---|---|---|
 | key | `symbol` | |
 | `index` | none | the venue publishes no index |
-| `mark` | none, so 0 | the engine refuses a route with a mark of 0 as `anchor_no_mark`, at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
+| `mark` | none, so 0 | the engine refuses a route with a mark of 0 as `anchor_no_mark`, at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
 | `fundingRate` | none | the leverage fee is a fixed cost to both sides, not a rate between them |
 | `fundingIntervalHours` | none | a fee interval of 24 h exists, [`fees.md`](./fees.md) section 6 |
 | `nextFundingAt` | none | the fee is booked at 06:00 JST, 21:00 UTC, each day |

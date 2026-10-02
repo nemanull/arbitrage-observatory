@@ -61,7 +61,7 @@ No REST call was refused on grounds of region.
 | `contractSize` | undefined, line 552 | the engine's `toContractSize` would read it as 1, which is right for a spot volume in the base currency |
 | `taker`, `maker` | from the exchange level `fees.trading`, see [`fees.md`](./fees.md) section 8 | 0.001 and 0 |
 
-The connector keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+The connector keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 So `loadVenue` would find zero markets for Luno and skip the venue, at lines 49 to 52.
 
 ### The USD settlement family and pairs listed twice
@@ -112,7 +112,7 @@ The one bulk market call is `GET https://api.luno.com/api/1/tickers`.
 | `timestamp` | "Unix timestamp in milliseconds of the tick", S1 | the time of the last change to that book, not the reply time. `SOLXRP` kept one value through each 60 poll run and read up to 76 s and 221 s old |
 
 The reply was 21,960 to 21,977 bytes.
-Nothing in it can fill an `AnchorRow`, whose `mark` of 0 refuses a route at open with `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 36 to 38, and a route with no anchor row at all is refused earlier as `anchor_missing`, at lines 25 to 27.
+Nothing in it can fill an `AnchorRow`, whose `mark` of 0 refuses a route at open with `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 36 to 38, and a route with no anchor row at all is refused earlier as `anchor_missing`, at lines 25 to 27.
 So a Luno leg could never pass the open gate in the engine's current shape.
 
 ## 4. Anchor semantics

@@ -125,7 +125,7 @@ The class declares no `fees` block of its own and no `fetchTradingFees`, so the 
 
 ## 9. Recommended registry values
 
-BTCBOX should not be added to [`registry.ts`](../../../server/src/venues/registry.ts), because it lists no perpetual, the connector keeps only active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 199 to 201, and every market is quoted in JPY.
+BTCBOX should not be added to [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts), because it lists no perpetual, the connector keeps only active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 199 to 201, and every market is quoted in JPY.
 
 If a spot stage ever takes it:
 

@@ -26,7 +26,7 @@ With the `wamp` subprotocol offered, the server echoes `wamp` and sends a WAMP w
 [0, "2bbce2191f9fe96f7217575290de7105", 1, "ChainEXWamp/v0.1"]
 ```
 
-Without a subprotocol, the way [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 opens a socket, the server answers 101 with no protocol, sends no welcome, and still delivers every subscribed topic.
+Without a subprotocol, the way [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 opens a socket, the server answers 101 with no protocol, sends no welcome, and still delivers every subscribed topic.
 That socket received 2 `order`, 2 `order-delete` and 4 chart events and 3 pings in 26 s, and 4 `order`, 2 `order-delete` and 6 `MARKET_SUMMARY` events and 3 pings in the rerun, P5.
 `push.chainex.io` resolved to the same three Cloudflare addresses as the REST host, see [`rest.md`](./rest.md) section 1.
 
@@ -98,7 +98,7 @@ The web client handles a `trade` message, S2, and whether a partial fill also se
 ### Sequence and gap rule
 
 None exists.
-No payload carries a sequence, an update id or an order id, so a lost event is invisible and cannot trigger `resync` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 296.
+No payload carries a sequence, an update id or an order id, so a lost event is invisible and cannot trigger `resync` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 296.
 The only recovery is a periodic REST reseed.
 
 ### Checksum
@@ -230,7 +230,7 @@ If a spot book feed were ever wanted, this is the shape the capture supports, as
 | delta | `order` adds `amount` at `price` on `order`'s side, `order-delete` subtracts it, and a level at 0 is deleted | 46 of 48 REST comparisons matched over two runs |
 | resync | reseed from REST every 30 s, and whenever a `MARKET_SUMMARY` touch disagrees with the local touch | no sequence exists to detect a gap |
 | keepalive | none sent, `ws` answers the server's pings | the server pings every 8 s |
-| `maxSilenceMs` | 30,000 | [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97 counts a ping as traffic, and 30 s is three missed pings plus margin |
+| `maxSilenceMs` | 30,000 | [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97 counts a ping as traffic, and 30 s is three missed pings plus margin |
 | receive time | stamp on arrival, never from `time` | `time` is seconds, and on `order-delete` it is the placement time |
 | deflate | keep `perMessageDeflate: false` | the server offers it only when asked |
 

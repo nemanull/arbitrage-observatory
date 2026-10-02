@@ -24,7 +24,7 @@ One socket carries every channel and symbol.
 CCXT Pro uses the same URL and sends the same `Origin` header, at `server/node_modules/ccxt/js/src/pro/blockchaincom.js` lines 29 and 33 to 40.
 `ws.blockchain.info` resolved to 104.16.117.55 and 104.16.118.55 on 2026-09-23, see [`rest.md`](./rest.md) section 1.
 
-The engine opens every socket as `new WebSocket(plan.url, { perMessageDeflate: false })` with no header option, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81.
+The engine opens every socket as `new WebSocket(plan.url, { perMessageDeflate: false })` with no header option, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81.
 A feed for this venue would therefore need the handshake options to carry an `Origin` header, which no current venue needs.
 
 ## 2. Channel matrix for public market data

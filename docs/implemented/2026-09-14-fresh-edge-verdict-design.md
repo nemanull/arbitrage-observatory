@@ -43,29 +43,29 @@ It closed neither hole.
 1. A route opens only on a readable verdict.
    When `readAnchorPair` returns `anchor_missing`, `anchor_skewed` or `anchor_stale`, discovery refuses the route and reports the refusal with the issue as its reason.
    A poller outage therefore produces no rows, not unjudged rows.
-   Built at [`server/src/engine/opportunity/OpportunityManager.ts:103`](../../server/src/engine/opportunity/OpportunityManager.ts), with the issue added to `RejectionReason` at `:13`.
+   Built at [`server/src/engine/opportunity/OpportunityManager.ts:103`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/OpportunityManager.ts), with the issue added to `RejectionReason` at `:13`.
 2. An open route closes when its fresh edge falls under `CLOSURE_NET_PPM`.
    The new close reason is `fresh_edge_collapsed`.
    A sample whose anchors cannot be read does not close the route, and the raw cross, the feed and the age cap still close it.
    The order in `closeReasonFor` is `feed_down`, `spread_collapsed`, `fresh_edge_collapsed`, `age_cap`.
-   Built at [`server/src/engine/opportunity/OpportunityLifecycle.ts:300`](../../server/src/engine/opportunity/OpportunityLifecycle.ts), and `updateOpportunity` passes the sample's anchor at `:213`.
+   Built at [`server/src/engine/opportunity/OpportunityLifecycle.ts:300`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/OpportunityLifecycle.ts), and `updateOpportunity` passes the sample's anchor at `:213`.
 3. The index quarantine is removed.
    A cross the index gap explains already fails the fresh gate, so the watch only ever added the refusal of a fresh edge that sits on top of an index gap.
    A perp to perp trade moves no coins, so that fresh edge can still close.
    `watchIndexGap`, `skipsQuarantined`, `IndexWatch` and the five quarantine constants are gone from `OpportunityManager`, which is 258 lines.
 4. `writtenAt` is the time the poll reply arrived, not the round start.
-   Built at [`server/src/feeds/anchor/AnchorPoller.ts:105`](../../server/src/feeds/anchor/AnchorPoller.ts).
+   Built at [`server/src/feeds/anchor/AnchorPoller.ts:105`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/feeds/anchor/AnchorPoller.ts).
    The round start still drives the pause check and `fetchRound`.
 5. `ANCHOR_SKEW_MS` is 5,000.
    Indexes move slowly, and the fabricated gaps in the fourth run audit came from reads three minutes apart.
    `ANCHOR_MAX_AGE_MS` stays at 10,000.
-   Built at [`server/src/engine/opportunity/anchorReading.ts:4`](../../server/src/engine/opportunity/anchorReading.ts).
+   Built at [`server/src/engine/opportunity/anchorReading.ts:4`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/anchorReading.ts).
 6. The engine types carry the invariant.
    `Observation.anchor` and `Opportunity.anchorAtOpen` are an `AnchorPair` and never null, and `anchorIssue` leaves both types.
-   The `anchorIssueAtOpen` column and the `AnchorIssue` enum stay in the schema for earlier rows, and new rows write the column as null ([`server/src/db/conversion.ts:99`](../../server/src/db/conversion.ts)).
+   The `anchorIssueAtOpen` column and the `AnchorIssue` enum stay in the schema for earlier rows, and new rows write the column as null ([`server/src/db/conversion.ts:99`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/db/conversion.ts)).
 7. `fresh_edge_collapsed` is a new value of the `OpportunityCloseReason` enum, added by a migration.
    The close rule needs no schema, but the row stores its label, and Postgres refuses a label the enum does not list.
-   Built at [`server/prisma/schema.prisma:78`](../../server/prisma/schema.prisma) and [`server/prisma/migrations/20260914120000_fresh_edge_close/migration.sql`](../../server/prisma/migrations/20260914120000_fresh_edge_close/migration.sql).
+   Built at [`server/prisma/schema.prisma:78`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/prisma/schema.prisma) and [`server/prisma/migrations/20260914120000_fresh_edge_close/migration.sql`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/prisma/migrations/20260914120000_fresh_edge_close/migration.sql).
    The migration is not applied by this work.
 
 ## Rejected alternatives

@@ -56,7 +56,7 @@ No NonKYC class exists, see [`fees.md`](./fees.md) section 8.
 | `market.id` | equals the REST `symbol` on 139 of 139, and it is the socket topic prefix and the `/v1/public/futures` key |
 | `contractSize` | 1 on all 139, `woofipro.js` line 570. Book sizes are in the base asset, see [`websocket.md`](./websocket.md) section 4 |
 | `linear` | true on all 139, settle USDC |
-| `active` | `undefined` on all 139, `woofipro.js` line 566, so the connector's `market.active !== false` keeps every row, including the 59 builder-listed ones, [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203 |
+| `active` | `undefined` on all 139, `woofipro.js` line 566, so the connector's `market.active !== false` keeps every row, including the 59 builder-listed ones, [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203 |
 | unified symbol | `BASE/USDC:USDC`, built from the second and third parts of the id, so a builder suffix is dropped, `woofipro.js` lines 541 to 551 |
 | pairs listed twice | none on 2026-09-23 UTC, since no builder-listed market shares a base with a shared one |
 | `BTC/USDC:USDC` | `id` `PERP_BTC_USDC`, amount precision 0.00001, price precision 0.1, equal to `base_tick` and `quote_tick` |
@@ -228,7 +228,7 @@ The bulk reply is about 5 GB a day at one hertz.
 | S5 | Orderly, Funding Rate | https://orderly.network/docs/introduction/trade-on-orderly/perpetual-futures/funding-rate | 2026-09-22 | Orderly Network | 15 s premium sampling, schedule, section 4 |
 | S6 | Orderly Public Info API, Overview and Orderbook | https://orderly.network/docs/build-on-omnichain/public-info-api/overview | 2026-09-22 | Orderly Network | `/v1/public/query`, weights, the 1,200 per minute pool, sections 5 and 6 |
 | S7 | CCXT 4.5.68 `woofipro.js` | `server/node_modules/ccxt/js/src/woofipro.js` | 2026-09-22 | CCXT | host line 153, `parseMarket` lines 541 to 570, section 2 |
-| S8 | CCXT 4.5.68 connector | [`connector.ts`](../../../server/src/ccxt/connector.ts) | 2026-09-22 | this repository | `isActiveSwapMarket` lines 196 to 203, section 2 |
+| S8 | CCXT 4.5.68 connector | [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) | 2026-09-22 | this repository | `isActiveSwapMarket` lines 196 to 203, section 2 |
 | S9 | NonKYC REST API 1.3.0 | https://api.nonkyc.io/openapi.json | 2026-09-22 | Nonkyc.io | spot-only API, section 1 |
 | P1 | `rest-probe.mjs catalog`, runs at 04:49, 05:04 and 05:07 UTC on 2026-09-23 | [`rest-probe.mjs`](../../../scripts/probes/venues/nonkyc/rest-probe.mjs) | 2026-09-22 | this host, Canadian VPN exit | sections 1, 2 and 4 |
 | P2 | `rest-probe.mjs anchor` at 04:49 to 04:50 UTC, rerun at 05:07 to 05:08 UTC | [`rest-probe.mjs`](../../../scripts/probes/venues/nonkyc/rest-probe.mjs) | 2026-09-22 | this host, Canadian VPN exit | sections 3 and 4 |

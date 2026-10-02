@@ -65,7 +65,7 @@ No pair is listed twice.
 
 It does not.
 CCXT 4.5.68 has no Buda class, so there is no `market.id`, `contractSize`, `linear` or `active` to compare, see [`fees.md`](./fees.md) section 8.
-The engine's catalog is `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, and the registry builds the CCXT instance at [`registry.ts`](../../../server/src/venues/registry.ts) line 29, so Buda would need a hand written catalog even for spot.
+The engine's catalog is `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, and the registry builds the CCXT instance at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29, so Buda would need a hand written catalog even for spot.
 
 ### Size unit and the settlement family
 
@@ -104,7 +104,7 @@ The reference prices it does publish are these.
 ## 4. Anchor semantics
 
 None of the anchor semantics apply.
-With no mark, a Buda leg would read as mark 0, and the reader refuses such a route as `anchor_no_mark` at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38, see [`fees.md`](./fees.md) section 9 for the rest of the verdict.
+With no mark, a Buda leg would read as mark 0, and the reader refuses such a route as `anchor_no_mark` at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38, see [`fees.md`](./fees.md) section 9 for the rest of the verdict.
 
 ## 5. REST book snapshot
 

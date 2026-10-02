@@ -98,7 +98,7 @@ So `market.taker` cannot be read, and `ccxtTakerPpm` has no value.
 ## 9. Recommended registry values
 
 None.
-Bitexen cannot join the engine as a perpetual leg, and its one market is quoted in TRY, which the quote family does not merge with USDT, see [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
+Bitexen cannot join the engine as a perpetual leg, and its one market is quoted in TRY, which the quote family does not merge with USDT, see [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
 If a spot stage ever used it, `takerPpm` would be 3,000, the taker with KDV, and `ccxtTakerPpm` would stay unset because no CCXT class exists.
 
 ## 10. Source ledger

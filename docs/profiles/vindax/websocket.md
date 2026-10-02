@@ -130,7 +130,7 @@ A feed applies deltas by price and never by position.
 
 The deltas cover the whole book, not a window.
 The BTCUSDT book kept from a 100 level snapshot and the deltas held up to 101 and 106 levels on one side in the two book runs, P1, while the REST call caps at 100 levels, see [`rest.md`](./rest.md) section 5.
-Levels beyond the first REST snapshot's 100 appear only once they change, which does not matter for the engine's 20 levels at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+Levels beyond the first REST snapshot's 100 appear only once they change, which does not matter for the engine's 20 levels at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 
 ### Size unit
 
@@ -261,7 +261,7 @@ The engine takes perpetuals only, so nothing here is needed today.
 | resync | on a gap, a first frame with `U > lastUpdateId + 1`, or an `Invalid namespace` reply: `resync`, which terminates the socket and resubscribes, then reread REST | the engine's existing path, and the REST read costs 1 of the 50 counted requests per minute |
 | receive time | stamp on arrival | `E` is the server's batch time, and a frame covers about 1.1 to 1.6 s of changes |
 | sizes | `Number()` of the string, and `0` is a JSON number | mixed representation |
-| deflate | keep `perMessageDeflate: false` | the server does not negotiate it anyway, see [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 |
+| deflate | keep `perMessageDeflate: false` | the server does not negotiate it anyway, see [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 |
 
 The 1.1 to 1.6 s bundling means a change can wait that long before it reaches a Vindax feed, which is slow next to the venues the engine reads today.
 

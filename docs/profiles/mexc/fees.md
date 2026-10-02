@@ -52,7 +52,7 @@ MEXC publishes no VIP tier table for API orders in any page read, see section 4.
 
 ## 3. Coverage matrix
 
-Counts are CCXT 4.5.68 active swaps at 07:09 UTC, filtered exactly like [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194.
+Counts are CCXT 4.5.68 active swaps at 07:09 UTC, filtered exactly like [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/ccxt/connector.ts) lines 188 to 194.
 
 | product | present | detail | label | source |
 |---|---|---|---|---|
@@ -166,10 +166,10 @@ These are recommendations for a later design, not decisions.
 |---|---|---|
 | `takerPpm` | `800` | The API taker of 0.08 % since 2026-06-01 overrides every per contract rate for API orders, S6 |
 | `ccxtTakerPpm` | unset | CCXT reads a real per contract web and app rate, 0 to 1,000 ppm, so the connector's single constant check would warn on every market |
-| connector | override `isExpectedCcxtTakerPpm` to accept any CCXT value | [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 27 to 31 already names this case: "A venue that serves a real per market fee" |
+| connector | override `isExpectedCcxtTakerPpm` to accept any CCXT value | [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/ccxt/connector.ts) lines 27 to 31 already names this case: "A venue that serves a real per market fee" |
 | `marketFilter` | keep `market.info.apiAllowed === true` | 41 active swaps carried `apiAllowed` false at 07:09 UTC, and Innovation Zone pairs cannot be traded through the API, S5 |
 
-The 76 pairs that MEXC lists in more than one of USDT, USDC and USD need no filter, because [`../../../server/src/engine/cluster/quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 12 to 17 already rank USDT before USDC before USD.
+The 76 pairs that MEXC lists in more than one of USDT, USDC and USD need no filter, because [`../../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/quoteFamily.ts) lines 12 to 17 already rank USDT before USDC before USD.
 
 A registry comment should cite `server/node_modules/ccxt/js/src/mexc.js` line 1465 and the S6 announcement.
 The API rate has changed twice in two months, so the later design should re-read the API updates page before trusting 800 ppm, see [MEXC API updates](https://www.mexc.com/announcements/api-updates).

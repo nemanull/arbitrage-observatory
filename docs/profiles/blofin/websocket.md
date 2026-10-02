@@ -106,7 +106,7 @@ The order of levels inside an update is Not publicly specified, so a feed applie
 ### Level window
 
 The snapshot has 200 levels and nothing documents whether a level falling out of the 200 is sent as a deletion.
-The engine keeps 20 levels per side, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so a 200 level window is enough for it either way.
+The engine keeps 20 levels per side, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so a 200 level window is enough for it either way.
 
 ### Size unit against CCXT `contractSize`
 

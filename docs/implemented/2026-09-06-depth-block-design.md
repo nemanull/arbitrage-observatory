@@ -65,6 +65,6 @@ export type ClusterDepth = {
 
 ## Evidence
 
-- Layer 1 layout and the slot convention: `Cluster` in [`types.ts`](../../server/src/engine/cluster/types.ts), one entry per venue, and `createCluster` in [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts).
-- Slot resolution and quote validation that `updateDepth` mirrors: `updateQuote` and `validateQuote` in [`Engine.ts`](../../server/src/engine/Engine.ts).
+- Layer 1 layout and the slot convention: `Cluster` in [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/types.ts), one entry per venue, and `createCluster` in [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.ts).
+- Slot resolution and quote validation that `updateDepth` mirrors: `updateQuote` and `validateQuote` in [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/Engine.ts).
 - Level counts observed on live books on 2026-09-06, section 3 of [`2026-09-06-third-run-data-audit.md`](../audits/2026-09-06-third-run-data-audit.md): five binance levels covered about 13,500 dollars, and kraken's whole LAYER book had thirteen bids and six asks.

@@ -164,7 +164,7 @@ No pair was under maintenance, since all 35 had `maintain` false, so a paused pa
 
 | item | documented | probed |
 |---|---|---|
-| keepalive | Not publicly specified | the server sends a protocol ping every 1,000 ms. The `ws` library answers it by default. [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97 counts a ping as traffic |
+| keepalive | Not publicly specified | the server sends a protocol ping every 1,000 ms. The `ws` library answers it by default. [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97 counts a ping as traffic |
 | silence the server tolerates | Not publicly specified | a socket that never answered a ping was closed 60.0 s after its open, at 60,311 and 60,304 ms from creation after 60 pings, with code 1006 and no close frame, in both `session` runs. Sockets that answered pings stayed open for the whole 120 s and 75 s, whether their pair was busy or quiet |
 | forced disconnect | Not publicly specified | none in 120 s |
 | maintenance notice | Not publicly specified | none on the socket. A status page at `https://status.bitopro.com` answered 200 |

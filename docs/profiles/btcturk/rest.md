@@ -69,11 +69,11 @@ The reply carries `cache-control: public, max-age=30, s-maxage=30, must-revalida
 
 ### How the engine's catalog would map it
 
-- The connector keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, so BtcTurk would yield zero markets and be skipped at lines 50 to 53.
+- The connector keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, so BtcTurk would yield zero markets and be skipped at lines 50 to 53.
 - If spot were ever admitted, `market.id` is the right `rawMarketId`, because the socket's `PS` spells the pair the same way.
   The REST book also accepts `btcusdt` and `BTC_USDT`, section 6, but the socket is case sensitive.
 - Sizes are in the base asset on REST and on the socket, and an undefined `contractSize` becomes 1 at lines 188 to 194, which is right.
-- TRY is outside the quote family at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a TRY pair would form a cluster with no other venue in it.
+- TRY is outside the quote family at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a TRY pair would form a cluster with no other venue in it.
   Only the 189 USDT pairs could meet other venues.
 - No pair is listed twice against USDT, so no `marketFilter` is needed, and no price scale applies to a spot pair.
 

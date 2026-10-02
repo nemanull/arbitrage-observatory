@@ -31,7 +31,7 @@ All results are from the Canadian VPN exit that this laptop's traffic leaves thr
 | `gw-client-api-rest.trading.republic.com` | `104.18.24.137`, `104.18.25.137` | the origin answers JSON when the request carries a User-Agent, and Cloudflare answers 403 "Attention Required!" when it carries none | P2 |
 | `api.inx.co` | no address | | P1 |
 
-The User-Agent rule matters for the engine, because the `ws` package sends no User-Agent and neither does [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) at line 81.
+The User-Agent rule matters for the engine, because the `ws` package sends no User-Agent and neither does [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) at line 81.
 A request with no User-Agent got the Cloudflare block on both gateways in the two runs of P2 that tried it.
 
 ### Request time

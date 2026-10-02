@@ -74,7 +74,7 @@ The book and the order quantity are in base coins, not in contracts.
 The REST book's sizes are whole multiples of `contractVal` on every level in three runs, 400 of 400 on `BTCUSDT`, and the socket's sizes equal the REST sizes, see [`websocket.md`](./websocket.md) section 4.
 A `BTCUSDT` touch of `"2.5807"` is 2.58 BTC, and read as contracts of 0.0001 BTC it would be about 22 USDT on the best bid of the largest perpetual.
 CCXT sends `amount` as `quantity` unchanged, at line 2012, and the documentation gives `minOrderSize` in "base asset", S2.
-So CCXT's `contractSize` is not the unit of any number the engine reads, and the registry must pin `contractSize: 1`, the existing option at [`../../../server/src/ccxt/types.ts`](../../../server/src/ccxt/types.ts) line 22, read at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 175.
+So CCXT's `contractSize` is not the unit of any number the engine reads, and the registry must pin `contractSize: 1`, the existing option at [`../../../server/src/ccxt/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) line 22, read at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 175.
 
 No base is listed twice by id, but one token is listed twice under two ids.
 `牛来USDT` is displayed as `牛来OLDUSDT` and `NIULAIUSDT` is displayed as `牛来USDT`, and CCXT gives them the bases `牛来` and `NIULAI`.
@@ -140,7 +140,7 @@ In the same polls `time` took 60 distinct values, stepped by 816 to 1,195 ms, an
 So a reader that trusts `time` would take a minute old price as fresh.
 The ticker's mark matched `premiumIndex` on only 177 and 252 of 995 contracts when both were read inside a second, and on 677 in the run whose read fell about 2 s after the minute refresh.
 At 03:41 the `premiumIndex` BTC mark was `86903.5` while the ticker BTC mark read 0.2 s later was `86811.7`, 1,057 ppm apart.
-A poller on `premiumIndex` alone would also see each minute's move as one jump: 407 and 574 index or mark steps above 1,000 ppm in 117,410, all at the minute, which trips the reader's `MAX_ANCHOR_MOVE_PPM` at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6.
+A poller on `premiumIndex` alone would also see each minute's move as one jump: 407 and 574 index or mark steps above 1,000 ppm in 117,410, all at the minute, which trips the reader's `MAX_ANCHOR_MOVE_PPM` at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6.
 
 ### Index
 
@@ -164,7 +164,7 @@ On the socket, the AAPL ticker's `m` equalled its last trade `c` on 75 of 75 fra
 A mark that is the last trade carries nothing the book does not, and a TradFi route pairs such a mark with a frozen index.
 
 `mark` equalled `index` exactly on 32 to 37 crypto and 185 to 201 TradFi rows of `premiumIndex`.
-`ONEUSDT` is already in `DENIED_PAIRS` at [`../../../server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 11, and its WEEX mark sat 22 to 24 % below its index.
+`ONEUSDT` is already in `DENIED_PAIRS` at [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 11, and its WEEX mark sat 22 to 24 % below its index.
 
 ### Funding
 

@@ -1,6 +1,9 @@
 # Requirements the Rust rewrite inherits from the saturated loop
 
-Status: Not started.
+Status: In progress.
+The rewrite shipped on 2026-10-01 with the reader and engine split of items 3 and 5, a bounded engine queue of 4,096 and per market coalescing, and without exported queue metrics.
+A saturation replay in the spirit of item 6 ran on 2026-10-02, see [`../research/2026-10-01-rust-load-replay.md`](../research/2026-10-01-rust-load-replay.md), without the split into decrypt, parse and apply and without the lag metric and lagging state that items 3 and 4 still owe.
+Items 1, 2 and 4 are open.
 Recorded: 2026-09-17.
 Indexed in [BACKLOG.md](../BACKLOG.md).
 

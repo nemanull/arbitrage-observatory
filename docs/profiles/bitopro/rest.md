@@ -62,7 +62,7 @@ The one BTC pair is `eth_btc`, and the rest are TWD pairs.
 | amount precision | `1e-8`, from `basePrecision` at line 492 | CCXT never reads `amountPrecision`, the precision of the socket's book amounts after its first frame |
 | `taker` | 0.002 | the live VIP 0 taker, see [`fees.md`](./fees.md) section 8 |
 
-The engine's connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79, so it would take 0 BitoPro markets and skip the venue.
+The engine's connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79, so it would take 0 BitoPro markets and skip the venue.
 
 ### Pairs listed twice and the quote family
 
@@ -81,7 +81,7 @@ It publishes two reference prices, and neither is an index.
 | the ticker stream, see [`websocket.md`](./websocket.md) section 6 | `lastPriceUSD` and `lastPriceTWD` next to `lastPrice` | a conversion of the last trade, whose source rate is Not publicly specified |
 
 No call returns a mark, and no `AnchorRow` column has a source.
-A leg with a mark of 0 is refused at open, at [`types.ts`](../../../server/src/engine/cluster/types.ts) line 34 and [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 38.
+A leg with a mark of 0 is refused at open, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34 and [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 38.
 
 ## 4. Anchor semantics
 

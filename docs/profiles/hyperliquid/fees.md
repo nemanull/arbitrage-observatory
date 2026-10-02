@@ -12,7 +12,7 @@ Every number carries a source ledger row, a probe reference, or a CCXT file and 
 Probe numbers come from [`fees-probe.mjs`](../../../scripts/probes/venues/hyperliquid/fees-probe.mjs), run three times, at 06:32, 06:34 and 06:40 UTC.
 The first run lacked the `fee_scale` and `ccxt_dexes` tags, so those come from the second and third runs.
 Every number quoted below held in every run that measured it, unless a range is given.
-The TypeScript server this profile cites sat under [`old_ts_server/`](../../../old_ts_server/) when it was written, and the research plan places it under `server/ts/`.
+The TypeScript server this profile cites sat under [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server) when it was written, and the research plan places it under `server/ts/`.
 The socket is covered in [[`./websocket.md`](./websocket.md)](./websocket.md), the info calls and the anchor in [[`./rest.md`](./rest.md)](./rest.md), and the chain, the HIP-3 oracles and the venues that route to Hyperliquid in [[`../../research/2026-09-23-hyperliquid-dex.md`](../../research/2026-09-23-hyperliquid-dex.md)](../../research/2026-09-23-hyperliquid-dex.md).
 
 ## 1. Scope and freshness
@@ -226,7 +226,7 @@ Whether the `funding` field of an asset context is the rate for the coming hour 
 The CCXT constant is 450 ppm and matches the published tier 0 taker for validator-operated perpetuals.
 It is wrong for every HIP-3 market.
 It is five times the derived 90 ppm of a growth-mode market, and half the derived 900 ppm of a market outside growth mode at scale 1.0.
-The connector copies `market.id` into `rawMarketId`, at [`connector.ts`](../../../old_ts_server/src/ccxt/connector.ts) line 170, so on this venue it would store `"0"` where the socket says `BTC`, and every book would miss its market.
+The connector copies `market.id` into `rawMarketId`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) line 170, so on this venue it would store `"0"` where the socket says `BTC`, and every book would miss its market.
 
 ## 9. Recommended registry values
 
@@ -239,13 +239,13 @@ hyperliquid: {
 ```
 
 `takerPpm: 450` is the published tier 0 taker, S1, and the wire's `feeSchedule.cross`.
-`ccxtTakerPpm` stays unset, because CCXT's constant already equals 450 and the connector then expects 450, at [`connector.ts`](../../../old_ts_server/src/ccxt/connector.ts) line 38.
+`ccxtTakerPpm` stays unset, because CCXT's constant already equals 450 and the connector then expects 450, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) line 38.
 The `marketFilter` keeps the 178 validator-operated perpetuals and drops HIP-3, because a single `takerPpm` would misprice every HIP-3 market CCXT loads, 140 of the 148 live ones.
 
 Two named changes are needed before the venue can load at all, and neither is a registry value.
 
 1. `rawMarketId` must be the coin name, `market.info.name` or `market.baseName`, not `market.id`, because `market.id` is the numeric asset index, section 8.
-   Today the connector has no per venue hook for this at [`connector.ts`](../../../old_ts_server/src/ccxt/connector.ts) lines 157 to 177.
+   Today the connector has no per venue hook for this at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) lines 157 to 177.
 2. The six k-prefixed perps quote a thousand tokens and carry base `KPEPE` and the like, so they need a price scale in the cluster overrides or they stay out of every cluster.
 
 Adding HIP-3 later needs a per market taker, computed as 450 ppm times the scale factor and the growth factor of section 4, from the `deployerFeeScale` and `growthMode` that `allPerpMetas` publishes.

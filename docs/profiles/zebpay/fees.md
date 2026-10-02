@@ -124,9 +124,9 @@ The two liquidation numbers disagree and are both written.
 
 CCXT reads ZebPay's percent field as a fraction, so its taker is 100 times the real fee.
 The spot parser does the same, and `UNI/USDT` reports `taker` 0.45, P1.
-The connector compares each market's CCXT taker with one expected value at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 32 to 38 and 118 to 122.
+The connector compares each market's CCXT taker with one expected value at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 32 to 38 and 118 to 122.
 With two CCXT values on ZebPay, 60,000 and 100,000 ppm, one `ccxtTakerPpm` would leave 347 or 78 markets reported as unexpected.
-The option `ignoreCcxtTakerPpm` at [`../../../server/src/ccxt/types.ts`](../../../server/src/ccxt/types.ts) line 21 exists for a CCXT fee no single number describes.
+The option `ignoreCcxtTakerPpm` at [`../../../server/src/ccxt/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) line 21 exists for a CCXT fee no single number describes.
 
 ## 9. Recommended registry values
 

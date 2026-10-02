@@ -73,7 +73,7 @@ So every anchor row must be filtered by the catalog.
 
 ### What a catalog loader has to build
 
-The engine's catalog is CCXT `loadMarkets`, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 68, filtered to active swaps at lines 199 to 201.
+The engine's catalog is CCXT `loadMarkets`, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, filtered to active swaps at lines 199 to 201.
 OrangeX needs a loader of its own, which is the named change on the REST side.
 
 | market field | from | note |
@@ -87,7 +87,7 @@ OrangeX needs a loader of its own, which is the named change on the REST side.
 | taker | `taker_commission` | 0.0006 on all |
 
 Six contracts trade a multiple of the coin: `1000LUNC`, `1000SHIB`, `1000XEC`, `1MBABYDOGE`, `1000000MOG` and `1000CHEEMS`.
-They need a price scale to match other venues, at [`../../../server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+They need a price scale to match other venues, at [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 Four contracts have Chinese character names, such as `币安人生-USDT-PERPETUAL`, and they work on the socket like any other.
 No coin is listed twice, so `marketFilter` is not needed.
 `BB`, `QNT` and `ON` are listed, and all three are already in `DENIED_PAIRS` at the same file, lines 8 to 10.
@@ -157,7 +157,7 @@ No clamp on the mark was seen, since it sat as far as 32,258 ppm from the index 
 The large gaps include equity contracts read while US markets were closed, `GS`, `QCOM`, `CSCO` and `JPM`.
 For the engine this has two consequences.
 The mark over index premium is the perpetual's own basis at its last trade, not a smoothed fair price.
-A quiet contract's mark is its last trade, so it can sit still and then jump: `CHR-USDT-PERPETUAL` changed its mark 0, 2 and 2 times in 60 polls, and those jumps put it 4,673 and 4,608 ppm over its index, above the reader's 1,000 ppm per poll limit at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6.
+A quiet contract's mark is its last trade, so it can sit still and then jump: `CHR-USDT-PERPETUAL` changed its mark 0, 2 and 2 times in 60 polls, and those jumps put it 4,673 and 4,608 ppm over its index, above the reader's 1,000 ppm per poll limit at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6.
 
 ### Funding
 
@@ -234,7 +234,7 @@ The same call also works as a JSON-RPC POST body, `{"jsonrpc":"2.0","id":1,"meth
 | `get_instruments?currency=NOPE` | `"result":[]` |
 
 A poller cannot rely on the HTTP status, because every refusal seen came as 200.
-The engine's poller pauses on 403, 418 and 429, listed at [`../../../server/src/shared/errors.ts`](../../../server/src/shared/errors.ts) line 1, and on a `RateLimitReplyError` that a venue adapter throws for a limit reported inside a 200 body, at line 17 of the same file and [`../../../server/src/feeds/anchor/AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 192.
+The engine's poller pauses on 403, 418 and 429, listed at [`../../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, and on a `RateLimitReplyError` that a venue adapter throws for a limit reported inside a 200 body, at line 17 of the same file and [`../../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 192.
 OrangeX's limit reply is unknown, since no limit was reached, so an OrangeX poller should treat any body with `error` as a failed round.
 
 ## 7. Server time and clock offset

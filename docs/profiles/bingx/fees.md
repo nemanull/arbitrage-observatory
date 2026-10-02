@@ -159,7 +159,7 @@ CCXT reads the same constant whether or not credentials are present, since `pars
 | field | value | reason |
 |---|---|---|
 | `takerPpm` | 500 | the VIP 0 perpetual taker in S1 and S2, equal to the contract rows' `takerFeeRate` |
-| `ccxtTakerPpm` | leave unset | CCXT's 0.0005 at `bingx.js` line 170 equals `takerPpm`, so the check at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 33 to 39 passes without it |
+| `ccxtTakerPpm` | leave unset | CCXT's 0.0005 at `bingx.js` line 170 equals `takerPpm`, so the check at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 33 to 39 passes without it |
 
 The TradFi contracts may carry a different regional rate, see section 5, which is one more reason to filter them out, see [`rest.md`](./rest.md) section 8.
 

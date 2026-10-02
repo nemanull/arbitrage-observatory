@@ -56,7 +56,7 @@ A hand written catalog would take `rawMarketId` from `symbol`, which is exactly 
 `base` and `quote` are the upper case of `baseCurrency` and `quoteCurrency`.
 Sizes are base coins, so a contract size of 1 is the right value, see [`websocket.md`](./websocket.md) section 4.
 Every market is spot, and none is `linear` or a swap, so the connector's swap filter would keep none.
-The quote is KRW, which [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 does not map to the USDT family, so a KRW market would never cluster with a USDT perpetual of the same coin.
+The quote is KRW, which [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 does not map to the USDT family, so a KRW market would never cluster with a USDT perpetual of the same coin.
 
 ### Volume and activity
 

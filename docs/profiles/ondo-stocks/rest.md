@@ -41,7 +41,7 @@ The operator of this host is a US person and cannot obtain a key, see [`fees.md`
 ## 2. Catalog
 
 CCXT 4.5.68 has no class for this venue and neither does the CCXT master branch of 2026-09-22, see [`fees.md`](./fees.md) section 8.
-So there is no `loadMarkets` catalog, no `market.id`, no `contractSize` and no `linear` flag to map, and the swap filter at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203 would find nothing.
+So there is no `loadMarkets` catalog, no `market.id`, no `contractSize` and no `linear` flag to map, and the swap filter at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203 would find nothing.
 
 The venue's own catalog calls are key gated.
 
@@ -105,7 +105,7 @@ The nearest calls are the quote calls, S1.
 
 The documented refusal and the wire disagree.
 The docs promise a 401 with a reason code, and the wire gave a 403 from the gateway with no reason code.
-The engine treats 403, 418 and 429 as a rate limit, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, and pauses 60 s when no `Retry-After` comes, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 9 and 188 to 194.
+The engine treats 403, 418 and 429 as a rate limit, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, and pauses 60 s when no `Retry-After` comes, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 9 and 188 to 194.
 So a keyless poller would pause after every poll and never read a row.
 
 ## 7. Server time and clock offset

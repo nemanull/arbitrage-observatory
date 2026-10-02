@@ -148,7 +148,7 @@ Minting and redeeming run through the REST attestation calls and the issuer's sm
 
 None.
 The venue has no WebSocket, its gRPC stream needs a key issued after KYC onboarding that the operator of this host cannot pass, see [`fees.md`](./fees.md) section 1, and its only depth is a synthetic quote ladder with no sequence.
-A feed for it would not be a `VenueFeed` subclass, since [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) opens WebSocket sockets at line 81.
+A feed for it would not be a `VenueFeed` subclass, since [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) opens WebSocket sockets at line 81.
 
 ## 9. Source ledger
 

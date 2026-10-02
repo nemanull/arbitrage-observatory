@@ -109,7 +109,7 @@ Its symbols read `BTC-PERPUSDT` and its trade links read `https://www.tapbit.com
 
 ### How CCXT maps it
 
-No CCXT class exists, and the engine's catalog is a CCXT exchange instance, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 21 and 68.
+No CCXT class exists, and the engine's catalog is a CCXT exchange instance, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 21 and 68.
 A Tapbit catalog would have to be written by hand, and these are the fields it would map, all documented and none probed.
 
 | engine field | Tapbit field | note |
@@ -142,7 +142,7 @@ Pre-IPO contracts can be rebased, which divides the price by the rebase multipli
 
 All from S2, and all refused this host, P1 and W1.
 No REST call returns the index.
-The funding rate is per contract, so a round over 116 contracts at 3 calls per second takes about 39 s, which is outside the engine's 10 s reading age limit at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
+The funding rate is per contract, so a round over 116 contracts at 3 calls per second takes about 39 s, which is outside the engine's 10 s reading age limit at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
 No call or topic carries the funding interval or the next settlement time.
 
 ### Row mapping
@@ -227,7 +227,7 @@ The documented error body is `{"code": 10001, "msg": "Invalid Paramater."}`, S2.
 HTTP 504 "does not mean that the request failed, but is unknown", S25.
 
 The whitelist refusal is an HTTP 403 with an HTML body.
-The engine counts 403 as a rate limit, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, so a poller on a host outside the whitelist would pause and retry forever instead of failing.
+The engine counts 403 as a rate limit, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, so a poller on a host outside the whitelist would pause and retry forever instead of failing.
 
 ## 7. Server time and clock offset
 

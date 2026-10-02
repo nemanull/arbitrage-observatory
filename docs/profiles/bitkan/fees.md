@@ -36,7 +36,7 @@ Its 18 distinct Wayback captures, from 2022-05-19 to 2026-07-25, are single page
 
 The website loads the rates per user from `/proxy/v2/contract/account/fees`, which sits behind the same challenge, S9.
 Its fee page has separate "Binance Fee Rate" and "OKX Fee Rate" rows for futures, S8, so BitKan sets or passes on a rate per underlying venue.
-Binance's own USD-M VIP 0 taker is 0.05 %, 500 ppm, at `server/node_modules/ccxt/js/src/binance.js` line 1248 as cited in [`registry.ts`](../../../server/src/venues/registry.ts) line 38.
+Binance's own USD-M VIP 0 taker is 0.05 %, 500 ppm, at `server/node_modules/ccxt/js/src/binance.js` line 1248 as cited in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 38.
 Whether BitKan adds a markup to that rate is Not verified, so no BitKan number is recorded.
 
 ## 3. Coverage matrix

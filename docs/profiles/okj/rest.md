@@ -61,13 +61,13 @@ The `okx` class with `hostname` `api.okj.com` and `fetchMarkets` types `['spot']
 |---|---|---|
 | `market.id` | `BTC-JPY` | equal to `arg.instId` on the socket |
 | `symbol` | `BTC/JPY` | |
-| `type` | `spot`, `active` true | the engine keeps only `swap` markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202 |
+| `type` | `spot`, `active` true | the engine keeps only `swap` markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202 |
 | `precision` | amount `1e-8`, price `1` | equal to `lotSz` and `tickSz` of the instruments row |
 | `contractSize` | undefined | the socket sizes are base currency, so a multiplier of 1 would be right |
 | `taker` | 0.0015 | OKX's spot default, not OKJ's 0.0014 |
 | pair listed twice | none, one `instId` per pair | |
 
-The engine's quote family merges only USD and USDC into USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a JPY pair would form its own cluster and meet no other venue.
+The engine's quote family merges only USD and USDC into USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a JPY pair would form its own cluster and meet no other venue.
 
 ## 3. Anchor
 

@@ -132,7 +132,7 @@ No delisting charge is named in the pages read.
 | `market.taker` without credentials | 0.005 on `BTC/BRL` and every other 0.0025 / 0.005 BRL market, 0.0015 on `BTC/USDT` and the other USDT markets, 0 on the 18 zero fee markets | P1, `ccxt_loadMarkets` |
 | swap markets | 0 of 133, every market is `type: 'spot'`, `swap: false` | same file, lines 1642 and 1646, and P1 |
 
-The engine keeps only active swaps, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and skips a venue with none, at lines 50 to 53.
+The engine keeps only active swaps, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and skips a venue with none, at lines 50 to 53.
 So `loadMarkets` on Foxbit gives the engine nothing to track.
 
 ## 9. Recommended registry values

@@ -127,7 +127,7 @@ The settlement instant itself was not captured, and the numbers above come from 
 | current CCXT source, `ts/src` on the `master` branch | 112 entries at commit `1d8b674`, 2026-09-22 12:48 UTC, and none for Websea | S14 |
 
 No CCXT class exists, so there is no `market.taker` to report and no source line to cite.
-The engine builds its catalog from CCXT `loadMarkets`, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 68, so Websea needs a catalog path that does not go through CCXT before any fee value matters.
+The engine builds its catalog from CCXT `loadMarkets`, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, so Websea needs a catalog path that does not go through CCXT before any fee value matters.
 
 ## 9. Recommended registry values
 

@@ -8,7 +8,7 @@ Implements [`2026-09-22-venue-survey-design.md`](./2026-09-22-venue-survey-desig
 
 This work does not:
 
-- Add a venue to [`../../server/src/venues/registry.ts`](../../server/src/venues/registry.ts), write a feed or a poller, or change any code under `server/` or `app/`.
+- Add a venue to [`../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts), write a feed or a poller, or change any code under `server/` or `app/`.
 - Open an account, call an authenticated endpoint, subscribe a private channel, or place an order.
 - Probe faster than a venue's published public limit, hold sockets for more than about ten minutes per venue, or route around a geoblock.
 - Record deposit, withdrawal, card, staking or earn schedules beyond one line naming the official lookup.

@@ -150,7 +150,7 @@ The rate is a fraction per interval, so a 240 minute contract publishes a rate f
 
 The CCXT number is 550 ppm and equals the published VIP 0 perpetual taker.
 Because CCXT reads the reply rather than a literal, it follows WhiteBIT the day the default rate changes.
-The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 38.
+The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 38.
 
 ## 9. Recommended registry values
 

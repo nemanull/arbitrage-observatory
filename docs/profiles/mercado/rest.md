@@ -87,7 +87,7 @@ An unknown symbol is dropped silently, and a list of only unknown symbols return
 CCXT declares `fetchTickers` false, at `mercado.js` line 108.
 
 No anchor poller is recommended.
-An `AnchorRow` for this venue would have a mark of 0, and the reader refuses such a route with `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 36 to 38.
+An `AnchorRow` for this venue would have a mark of 0, and the reader refuses such a route with `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 36 to 38.
 
 ## 4. Anchor semantics
 

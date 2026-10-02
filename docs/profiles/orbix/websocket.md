@@ -122,7 +122,7 @@ A feed applies diff levels by price anyway, since a frame changes at most three.
 ### Level window
 
 The partial stream holds 5, 10 or 20 levels per side, and 50 and 100 are not served.
-The engine keeps 20 levels, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so `depth20` covers it exactly.
+The engine keeps 20 levels, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so `depth20` covers it exactly.
 The diff stream is not windowed, so a book built from it holds every level of the REST snapshot, 525 bids on `btc_thb`.
 
 ### Size unit
@@ -247,7 +247,7 @@ A recommendation for a later design, not a decision, since Orbix cannot join the
 | markets per connection | 1 | as above, so 104 sockets for every trading pair, or 36 for the two sided books of section 4 |
 | subscribe frames | none, the stream is in the URL | the URL form needs no client frame at all |
 | keepalive | a protocol ping, `socket.ping()`, every 20 s | a silent socket that never wrote was closed at about 60 s, and pings every 20 s held one for 120 s |
-| `maxSilenceMs` | 10,000 | frames arrive about ten times a second even on an empty book, and [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98 count pings and pongs as traffic too |
+| `maxSilenceMs` | 10,000 | frames arrive about ten times a second even on an empty book, and [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98 count pings and pongs as traffic too |
 | snapshot | `resetBook` on every frame whose `lastUpdateId` differs from the last one kept, then `publish` | repeats are the norm, 528 to 614 of about 620 frames a minute |
 | resync | none needed for this channel | there is no chain to break |
 | unserved stream | log a socket with no frame 5 s after the open | unknown, upper case and halted pairs open and stay silent |
@@ -256,7 +256,7 @@ A recommendation for a later design, not a decision, since Orbix cannot join the
 
 The multiplexed alternative is one `/ws/stream` socket with `SUBSCRIBE` frames of at most 80 `@depth@100ms` streams each, which stays under the roughly 2 KB frame limit.
 It needs a REST snapshot per pair, the rule `U === last`, and a resync that refetches the snapshot.
-The engine's [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) has no REST snapshot step today, and its `resync` at line 296 only terminates the socket, at line 314, for a reconnect.
+The engine's [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) has no REST snapshot step today, and its `resync` at line 296 only terminates the socket, at line 314, for a reconnect.
 It saves sockets, since only 12 to 14 of 104 pairs sent a diff in a minute.
 
 ## 9. Source ledger

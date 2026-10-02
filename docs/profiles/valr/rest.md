@@ -55,7 +55,7 @@ The 21 inactive `FUTURE` rows include `BTCUSDCPERP`, `ETHUSDCPERP`, `BTCZARPERP`
 ### How a catalog maps it, without CCXT
 
 CCXT 4.5.68 has no VALR class, so there is no `loadMarkets` and no CCXT `market` object.
-The engine's catalog path calls `loadMarkets` at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 68 and keeps active swaps at line 79, and the registry types `createExchange` as `() => ccxt.Exchange` at [`../../../server/src/venues/registry.ts`](../../../server/src/venues/registry.ts) line 29.
+The engine's catalog path calls `loadMarkets` at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 and keeps active swaps at line 79, and the registry types `createExchange` as `() => ccxt.Exchange` at [`../../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29.
 A VALR catalog therefore has to be written by hand from `/v1/public/pairs`, and the mapping it would use is below.
 
 | engine field | VALR source | check |
@@ -209,7 +209,7 @@ The Perps v1 `status` route also returns `serverTime`, but it needs a key, S1.
 
 A recommendation for a later design, not a decision.
 VALR cannot fill the `AnchorRow` the engine reads today, because it publishes no index.
-Every other venue's poller fills `index`, and the reader divides by it for `touchPremium` and `markPremium`, at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 82 and 83.
+Every other venue's poller fills `index`, and the reader divides by it for `touchPremium` and `markPremium`, at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 82 and 83.
 The open gate itself reads the mark, through `freshPremium` at line 84, so a poller without an index is a named change to the anchor contract, not a missing gate.
 
 | item | recommendation | reason |

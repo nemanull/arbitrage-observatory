@@ -105,7 +105,7 @@ The web app has a call named `GetCustomerMaintenanceFeeList`, S6, which is presu
 ## 9. Recommended registry values
 
 None.
-SAFEbit has no perpetual, no CCXT class, no documented WebSocket, and no index, mark or funding, so it cannot join [`registry.ts`](../../../server/src/venues/registry.ts) as a perpetual leg.
+SAFEbit has no perpetual, no CCXT class, no documented WebSocket, and no index, mark or funding, so it cannot join [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) as a perpetual leg.
 If the spot book were ever wanted as a reference, the taker would be `takerPpm: 5000` from S1, and `ccxtTakerPpm` would stay unset because no CCXT class exists to report one.
 
 ## 10. Source ledger

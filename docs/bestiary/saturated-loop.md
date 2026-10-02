@@ -23,7 +23,7 @@ A thread that reads a socket's whole backlog in one go and comes back 400 ms lat
 
 ## The book behind the row
 
-Sample stamps come from `publish` at [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) line 283, which is `Date.now()` when the frame was processed, so the samples of every row open at the same time are one trace of the thread's work.
+Sample stamps come from `publish` at [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) line 283, which is `Date.now()` when the frame was processed, so the samples of every row open at the same time are one trace of the thread's work.
 Taking each open row's leg changes between 18:37:11.5 and 18:37:16.5 and attributing each change to its venue gives 46 bundles of different venues, none overlapping, in a fixed cycle: okx, then kraken, then binance, then bybit.
 
 | pass, ms after 18:37:11.5 | okx bundle | kraken bundle | binance bundle | bybit bundle |
@@ -103,7 +103,7 @@ The only clock a book gets is `Date.now()` at processing, and the only test on i
 Under saturation every book's clock is late by that book's queue, and a cross is the difference between two queues.
 The minimum cross age of 100 ms is measured on the same clock in 400 to 600 ms steps, so every cross that survived one pass was confirmed.
 The anchor gate refused 232 opens in the 18:37 minute and went blind on the rows already open.
-The direct instrument, `nodejs.eventloop.utilization`, was exported to SigNoz every 30 s for the whole run by [`../../server/src/observability/otel.ts`](../../server/src/observability/otel.ts) and nobody read it.
+The direct instrument, `nodejs.eventloop.utilization`, was exported to SigNoz every 30 s for the whole run by [`../../server/src/observability/otel.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/observability/otel.ts) and nobody read it.
 
 ## How to detect it
 
@@ -142,4 +142,4 @@ The same loop lateness showed at 17:36 with no crash and no row, and binance clo
 - The reading of the sample clocks and the logs that placed the cause inside the process: [`../research/2026-09-17-fifth-run-loop-saturation.md`](../research/2026-09-17-fifth-run-loop-saturation.md).
 - The per message cost and the ceiling: [`../research/2026-09-07-depth-stream-scaling.md`](../research/2026-09-07-depth-stream-scaling.md) sections 1 and 2.
 - The rows, the tape fits and the reconnect counts: section 2a of [`../audits/2026-09-15-fifth-run-data-audit.md`](../audits/2026-09-15-fifth-run-data-audit.md).
-- The stamp: [`../../server/src/feeds/book/VenueFeed.ts`](../../server/src/feeds/book/VenueFeed.ts) line 283, and the read path in section 3 of the ceiling research.
+- The stamp: [`../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) line 283, and the read path in section 3 of the ceiling research.

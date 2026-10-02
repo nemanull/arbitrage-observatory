@@ -7,7 +7,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  check:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: server
+
+      # Unit tests only. The ignored tests reach the real venues and never run here.
+      - run: cargo test --locked
+
+  app:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,14 +38,8 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      # The server postinstall runs prisma generate, which needs no database.
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter server run typecheck
-
       - run: pnpm lint
-
-      # Unit tests only. Nothing here reaches Postgres, Redis or a venue socket.
-      - run: pnpm test
 
       - run: pnpm build

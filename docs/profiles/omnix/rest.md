@@ -91,7 +91,7 @@ A feed would key the book on `E-BTC-USDT` and build the channel name from it, se
 ### How CCXT maps it
 
 It does not.
-No CCXT class exists, so the engine's catalog path, `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, has nothing to call.
+No CCXT class exists, so the engine's catalog path, `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, has nothing to call.
 A custom catalog would set `rawMarketId` to `symbol`, `base` to `multiplierCoin`, `quote` to `USDT`, `linear` to true, and `contractSize` to `multiplier`.
 
 ### Size unit, pairs listed twice, and price scale
@@ -250,8 +250,8 @@ Every error came back as HTTP 200 with a JSON code.
 | `/fapi/v1/nope` | 200 | `{"code":"-1002","data":null,"msg":"您无权执行此请求。请求需要发送API Key，…","succ":false}`, "you are not authorised, send an API key" |
 | `/cmc/summary/NOPE-USDT` | 200 | an empty body |
 
-A poller would have to check `code` on a 200 itself, since `getJson` returns any 2xx body as data, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 233 to 242.
-The pause path keys on 403, 418 and 429, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, or on a `RateLimitReplyError` that a venue poller throws, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 191.
+A poller would have to check `code` on a 200 itself, since `getJson` returns any 2xx body as data, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 233 to 242.
+The pause path keys on 403, 418 and 429, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, or on a `RateLimitReplyError` that a venue poller throws, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 191.
 
 ## 7. Server time and clock offset
 
@@ -263,7 +263,7 @@ The ChainUP document's example says "China Standard Time", S7, and this venue re
 
 Not recommended.
 The index is frozen on 26 of the 39 contracts that could be checked and the mark is derived from it, so an anchor built on it would judge the BTC, ETH and SOL legs against a price 27 % to 36 % below the market.
-The engine's move guard would not catch it, because a frozen index never moves, see [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6.
+The engine's move guard would not catch it, because a frozen index never moves, see [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6.
 
 If the venue ever repairs its index, this is the shape that would fit.
 

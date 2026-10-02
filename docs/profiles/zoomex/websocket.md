@@ -298,7 +298,7 @@ It assumes the venue is kept at all, which [`rest.md`](./rest.md) section 8 ques
 
 | item | recommendation | reason |
 |---|---|---|
-| code | reuse [`bybit.ts`](../../../server/src/venues/bybit/bybit.ts) with the two URLs and the ping interval made parameters | same topics, frames, acks, ping and `u` rule |
+| code | reuse [`bybit.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/bybit.ts) with the two URLs and the ping interval made parameters | same topics, frames, acks, ping and `u` rule |
 | URL plan | `wss://stream.zoomex.com/v5/public/linear` for USDT-M, and the inverse URL only if an inverse market is ever kept | a socket serves one family |
 | markets | the four own books, `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `GMTUSDT`, if Bybit stays a venue | the other 693 are Bybit's book, section 4 |
 | channel | `orderbook.50.<rawMarketId>` | snapshot on subscribe, strict `u` chain, 50 levels covers the engine's 20 |

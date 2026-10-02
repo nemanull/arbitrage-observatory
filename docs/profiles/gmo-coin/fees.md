@@ -130,7 +130,7 @@ The open pull request would not give the engine a catalog even if merged.
 Its `ts/src/gmocoin.ts` at head `a5c8091` declares `'spot': true`, `'margin': false` and `'swap': false` in its `has` block, at lines 26 to 28.
 Its `parseMarket`, from line 285, builds every market as `'type': 'spot'` at line 313, with `taker` and `maker` from `takerFee` and `makerFee` at lines 323 and 324.
 It maps both `BTC` and `BTC_JPY` to the symbol `BTC/JPY`, lines 294 to 306, so the spot and leverage markets collide.
-The engine keeps only `type === 'swap'` markets, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203, so it would drop them all.
+The engine keeps only `type === 'swap'` markets, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203, so it would drop them all.
 
 ## 9. Recommended registry values
 
@@ -139,7 +139,7 @@ The engine keeps only `type === 'swap'` markets, at [`../../../server/src/ccxt/c
 | `takerPpm` | 0 on the five fee-free symbols, 300 on the other seven | S1 and `/v1/symbols`, P1 |
 | `ccxtTakerPpm` | not applicable | no CCXT class exists in 4.5.68 or master |
 
-The registry holds one `takerPpm` per venue entry, as at [`../../../server/src/venues/registry.ts`](../../../server/src/venues/registry.ts) line 46, so a per symbol fee would need 300 as the conservative value or a per market override.
+The registry holds one `takerPpm` per venue entry, as at [`../../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 46, so a per symbol fee would need 300 as the conservative value or a per market override.
 Neither matters until the blockers in [`rest.md`](./rest.md) section 8 are solved, since the venue cannot join the engine in its current shape.
 
 ## 10. Source ledger

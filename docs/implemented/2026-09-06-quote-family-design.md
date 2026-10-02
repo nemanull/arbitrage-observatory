@@ -32,18 +32,18 @@ The median best net reading was -245 ppm for the kraken clusters and -900 ppm fo
 
 - Spelling the family key USD.
   It is more honest about the kraken and coinbase legs, but it re-spells `DENIED_PAIRS` and every stored pair for no change in behaviour.
-- A market filter per venue in [`registry.ts`](../../server/src/venues/registry.ts), keeping linear USDT contracts only on binance, bybit and okx.
+- A market filter per venue in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/venues/registry.ts), keeping linear USDT contracts only on binance, bybit and okx.
   It follows the kraken pattern, but it needs three copies and drops a venue wherever it lists a coin only in USDC or as an inverse contract.
 - Mapping the quote in the key without the rank.
   Measured on the CCXT catalogs of 2026-09-06, the old keep-the-first-listed rule then leaves bybit on its USDC PERP contract for 65 pairs and okx on its inverse swap for 15, with BTC, ETH, XRP and BCH among them.
 
 ## Evidence
 
-- The key is built by `getPairFromRaw` in [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts) at line 240, which folds the quote through `clusterQuote`.
+- The key is built by `getPairFromRaw` in [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.ts) at line 240, which folds the quote through `clusterQuote`.
 - The rank decides between a venue's twins in `getPairMarkets` at line 217 of the same file.
-- The family map and the rank live in [`quoteFamily.ts`](../../server/src/engine/cluster/quoteFamily.ts) at lines 6 and 18.
-  They are kept out of [`clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts), which lists exceptions for specific pairs and markets, because the family is a rule for every venue.
-- The connector in [`connector.ts`](../../server/src/ccxt/connector.ts) at line 153 still copies the quote from CCXT unchanged, so `Market.quote` is what the venue says.
+- The family map and the rank live in [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/quoteFamily.ts) at lines 6 and 18.
+  They are kept out of [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/clusterOverrides.ts), which lists exceptions for specific pairs and markets, because the family is a rule for every venue.
+- The connector in [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/ccxt/connector.ts) at line 153 still copies the quote from CCXT unchanged, so `Market.quote` is what the venue says.
 
 Simulated on the live CCXT catalogs on 2026-09-06 with the same grouping the builder uses.
 The first row reproduces the 752 clusters the engine logged at boot, after the 4 denials.
@@ -65,10 +65,10 @@ After the merge no inverse or USDC contract is chosen on binance, bybit or okx.
 
 ## What shipped
 
-1. [`quoteFamily.ts`](../../server/src/engine/cluster/quoteFamily.ts): `QUOTE_FAMILY`, `clusterQuote` and `marketRank`.
-2. [`ClusterIndexBuilder.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.ts): the key folds the quote, and `getPairMarkets` keeps the better ranked twin at debug instead of the first listed at error.
-3. [`types.ts`](../../server/src/engine/cluster/types.ts): comments on `PairKey`, `Market.quote` and `Cluster`.
-4. [`ClusterIndexBuilder.spec.ts`](../../server/src/engine/cluster/ClusterIndexBuilder.spec.ts): four cases, the merge, the rank against listing order, a venue with nothing better than a twin, and a non-dollar quote.
+1. [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/quoteFamily.ts): `QUOTE_FAMILY`, `clusterQuote` and `marketRank`.
+2. [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.ts): the key folds the quote, and `getPairMarkets` keeps the better ranked twin at debug instead of the first listed at error.
+3. [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/types.ts): comments on `PairKey`, `Market.quote` and `Cluster`.
+4. [`ClusterIndexBuilder.spec.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/cluster/ClusterIndexBuilder.spec.ts): four cases, the merge, the rank against listing order, a venue with nothing better than a twin, and a non-dollar quote.
 5. [`WIKI.md`](../WIKI.md): the cluster definition.
 
 Not touched: the engine, the manager, the feeds, the connector, the schema and the app, none of which read the quote.

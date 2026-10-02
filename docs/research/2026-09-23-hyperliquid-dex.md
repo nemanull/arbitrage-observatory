@@ -14,9 +14,9 @@ The project only observes, so nothing here was signed, traded or sent to `/excha
 ## 0. Method
 
 Every probed number comes from [`dex-probe.mjs`](../../scripts/probes/venues/hyperliquid/dex-probe.mjs), run with `node --max-old-space-size=512`.
-The TypeScript server moved to [`old_ts_server/`](../../old_ts_server/) during the session, and `server/node_modules` went with the move, while ccxt and ws stayed in pnpm's store at the workspace root.
+The TypeScript server moved to [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server) during the session, and `server/node_modules` went with the move, while ccxt and ws stayed in pnpm's store at the workspace root.
 So the probe loads them from whichever of `server/`, `old_ts_server/` and pnpm's hoist directory has them.
-Code citations below point at [`old_ts_server/`](../../old_ts_server/), where the engine's TypeScript source is now.
+Code citations below point at [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server), where the engine's TypeScript source is now.
 
 | run | mode | what it did | info weight |
 |---|---|---|---|
@@ -89,7 +89,7 @@ The public API answers from a state about 0.2 s behind that stamp, measured two 
 `exchangeStatus` read 209 to 220 ms old at the median.
 `bbo` pushes arrived 248 to 282 ms after their block time at the median, and about 52 to 54 ms of that is the one-way network, half the median round trip.
 How much of that 0.2 s is commit, execution and the API server's own lag behind its node cannot be separated without running a node.
-The engine's anchor reader allows 5 s between two legs and 10 s of age, at [`anchorReading.ts`](../../old_ts_server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so a 0.2 s delay fits it with room.
+The engine's anchor reader allows 5 s between two legs and 10 s of age, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so a 0.2 s delay fits it with room.
 
 ## 2. The non-validator node as a data source
 
@@ -217,7 +217,7 @@ The live builder markets are equity, commodity, FX and index contracts, not cryp
 The CCXT file is `node_modules/.pnpm/ccxt@4.5.68_protobufjs@7.6.6/node_modules/ccxt/js/src/hyperliquid.js`, the same 4,939-line file the probe loaded from `server/node_modules` before the move.
 CCXT loads builder dexes by walking `perpDexs` from index 1 while the index is below `options.fetchMarkets.hip3.limit`, which defaults to 10, at lines 246 to 251 and 597.
 So it loads indexes 1 to 9 and skips `io`: P4 counted 318 active swaps, which is 178 main plus 109 `xyz` plus 27 `para` plus 4 `mkts`, and `io`'s 8 live markets were missing.
-CCXT marks a delisted builder market `active: false`, so the connector's filter at [`connector.ts`](../../old_ts_server/src/ccxt/connector.ts) line 201 drops the retired dexes.
+CCXT marks a delisted builder market `active: false`, so the connector's filter at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) line 201 drops the retired dexes.
 
 Two socket behaviours follow from the names, P3.
 Subscribing `bbo` to the retired `flx:TSLA` was acked in 106 to 308 ms and then silent, and the socket stayed open, in all three runs.
@@ -227,7 +227,7 @@ So one stale or mistyped builder coin takes down every book on its socket.
 
 ### 3.4 Ticker collisions
 
-The engine keys a cluster by `base|quote family`, at [`ClusterIndexBuilder.ts`](../../old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) line 284.
+The engine keys a cluster by `base|quote family`, at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) line 284.
 With CCXT's `XYZ-TSLA` bases, no builder market can cluster with any other venue.
 If the dex prefix were stripped to reach other venues' stock perps, these bare tickers would meet, P1.
 
@@ -241,7 +241,7 @@ If the dex prefix were stripped to reach other venues' stock perps, these bare t
 | one underlying, different names | `xyz:SP500` against `mkts:US500`, `xyz:GOLD` against Gate's `XAU_USDT` | | no cluster forms, a missed pair rather than a false row |
 | spot token names | 19 bare tickers such as `TSLA`, `NVDA`, `COIN` and `EUR` are also HyperCore spot tokens | spot | none, the engine reads swaps only |
 
-The BB and QNT identities are from S24, and the deny lines are at [`clusterOverrides.ts`](../../old_ts_server/src/engine/cluster/clusterOverrides.ts) lines 8 and 10.
+The BB and QNT identities are from S24, and the deny lines are at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/cluster/clusterOverrides.ts) lines 8 and 10.
 The first run's OKX `BB-USDT` and `QNT-USDT` index components were `Hyperliquid_Oracle BB/USD 7.7359` and `Hyperliquid_Oracle QNT/USD 50.527`, see [`2026-09-05-first-run-data-audit.md`](../audits/2026-09-05-first-run-data-audit.md) lines 113 to 119.
 Those prices match today's `xyz:BB` and `xyz:QNT` scale, so two of the engine's first ticker collisions were OKX stock perps priced off a HIP-3 deployer's oracle.
 The collision check ran against Hyperliquid's own names, the spot tokens and `DENIED_PAIRS` only, because this task calls no other venue.
@@ -294,10 +294,10 @@ The index and mark formulas as the anchor reads them are in [`rest.md`](../profi
 | USDC on HyperCore | "natively minted on the Hyperliquid L1", reached through Circle CCTP, with the legacy Arbitrum bridge under 10 % of supply | S5 |
 | builder collateral seen | USDC on `xyz`, `para`, `mkts`, `io` and the retired `abcd`, and USDH (token 360), USDE (235) and USDT0 (268) on the other retired dexes | P1 |
 | CCXT quote | `USDC` on every main perp, and the collateral name on a builder market | `hyperliquid.js` line 990, P4 |
-| engine quote family | USD and USDC sit under the USDT key | [`quoteFamily.ts`](../../old_ts_server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 |
+| engine quote family | USD and USDC sit under the USDT key | [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 |
 | spot pairs | 330, of which 313 quote USDC, 11 USDH, 5 USDT0 and 1 USDE | P1 |
 | spot naming | `PURR/USDC`, then `@<index>` for every other pair, and wrapped tokens such as `UBTC` show as `BTC` in the app | S16 |
-| spot in the engine | out of scope, the connector keeps swaps only | [`connector.ts`](../../old_ts_server/src/ccxt/connector.ts) lines 196 to 203 |
+| spot in the engine | out of scope, the connector keeps swaps only | [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) lines 196 to 203 |
 
 `BTC/USDC:USDC` lands on `BTC|USDT` and clusters with Binance `BTCUSDT`, like every USDC-margined venue under [`2026-09-06-quote-family-design.md`](../implemented/2026-09-06-quote-family-design.md).
 A builder dex on USDH, USDE or USDT0 would form a cluster of its own, because none of those names is in the family.
@@ -353,7 +353,7 @@ Named only, for a future execution stage.
 |---|---|---|
 | quote family | USDC-settled main perps land under the USDT key | none |
 | contract size and linearity | CCXT gives `contractSize` 1 and `linear` true on every market, `hyperliquid.js` lines 1040 and 1044 | none from this angle, see [`rest.md`](../profiles/hyperliquid/rest.md) for the size unit |
-| raw market id | | the connector stores `market.id` as `rawMarketId`, at [`connector.ts`](../../old_ts_server/src/ccxt/connector.ts) line 170, and Hyperliquid's `id` is the numeric asset id while the socket and info use `baseName`, so the Hyperliquid adapter must map `rawMarketId` from `baseName` |
+| raw market id | | the connector stores `market.id` as `rawMarketId`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) line 170, and Hyperliquid's `id` is the numeric asset id while the socket and info use `baseName`, so the Hyperliquid adapter must map `rawMarketId` from `baseName` |
 | builder dexes in the catalog | CCXT drops retired dexes as inactive, and its `XYZ-` bases cannot collide with anything | keep builder dexes out of the first integration with a `marketFilter` on `info.hip3`, because CCXT skips `io` and the prefixed bases never cluster anyway |
 | builder dexes later | | pass `options.fetchMarkets.hip3.dexes` explicitly, strip the prefix, add `STX\|USDT` to `DENIED_PAIRS` when `para` is in, pick one dex per ticker with `marketFilter`, and add an alias map for `GOLD`, `SP500` and their kin |
 | fresh gate on builder legs | the main dex's validator oracle is an external spot median, except for HYPE-like assets | refuse builder legs whose oracle runs internally: always on the pre-IPO names, and on `xyz` stocks from Friday 8 PM to Sunday 8 PM ET and on holidays |

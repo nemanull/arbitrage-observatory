@@ -104,7 +104,7 @@ The whole Exchange was documented as suspended for trading from 19 October 2025,
 
 ## 9. Recommended registry values
 
-No registry entry is recommended, because the engine takes only active swaps from CCXT, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79 and the `isActiveSwapMarket` filter at line 196, and this venue has none.
+No registry entry is recommended, because the engine takes only active swaps from CCXT, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79 and the `isActiveSwapMarket` filter at line 196, and this venue has none.
 Were a spot leg ever modelled, `takerPpm` would be 4,500 from section 2, and `ccxtTakerPpm` would stay unset, since CCXT reports no number for it to expect.
 
 ## 10. Source ledger

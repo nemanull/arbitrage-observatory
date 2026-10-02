@@ -79,7 +79,7 @@ CCXT maps only the spot list.
 `loadMarkets` returned 224 markets, all `type` `spot`, 0 swaps, and no pair listed twice, P1.
 `market.id` is the venue `id`, `BTC` for `BTC/INR` and `BTCUSDT` for `BTC/USDT`, with `uppercaseId` `BTC_USDT`, at `server/node_modules/ccxt/js/src/bitbns.js` lines 302 to 305.
 `linear` and `contractSize` are `undefined` on every market, lines 321 and 323.
-The connector keeps only active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 201, so it would log "no usable swap markets" and skip BitBNS.
+The connector keeps only active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 201, so it would log "no usable swap markets" and skip BitBNS.
 
 ### Keys, size unit, pairs listed twice, and price scale
 
@@ -95,7 +95,7 @@ The instrument list is the only place that joins them.
 Sizes on the perpetual socket read as base coins, see [`websocket.md`](./websocket.md) section 4, and `factor` is not a contract size.
 No pair is listed twice among the perpetuals.
 `1000SHIBUSDTP` is quoted per 1,000 SHIB: its index key 497 read 0.0061556667 while the SHIB key 146 read 0.0000061557, P5.
-It would need a price scale of 1,000 in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+It would need a price scale of 1,000 in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 
 ## 3. Anchor
 
@@ -114,7 +114,7 @@ The index socket leaves out `IC15USDTP` (`coin_id` 477) and `MATICUSDTP` (`coin_
 
 ### Row mapping
 
-Nothing maps cleanly to an `AnchorRow`, whose columns are at [`types.ts`](../../../server/src/engine/cluster/types.ts).
+Nothing maps cleanly to an `AnchorRow`, whose columns are at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts).
 
 | `AnchorRow` column | nearest field | problem |
 |---|---|---|
@@ -205,7 +205,7 @@ A REST book from either route can be minutes old, so it is not a resync source.
 | `api.bitbns.com` without a key | 403 | `{"data":null,"status":0,"error":"invalid api key","code":401}` |
 
 Errors on the public routes arrive as HTTP 200 with `status` 0, so a poller must read the body.
-A keyless call to `api.bitbns.com` returns 403, which [`errors.ts`](../../../server/src/shared/errors.ts) line 1 treats as a rate limit and would pause on.
+A keyless call to `api.bitbns.com` returns 403, which [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1 treats as a rate limit and would pause on.
 CCXT reads the `code` and `msg` fields in `handleErrors`, `bitbns.js` lines 1294 to 1313.
 
 ## 7. Server time and clock offset
@@ -219,7 +219,7 @@ The `timestamp` of a cached book is the cache's age and not the server clock.
 A recommendation for a later design, not a decision.
 No anchor poller is recommended.
 BitBNS publishes no REST index or mark, its funding is a per instrument history of settled rates, and its index is a socket that republishes every 5 s.
-If a BitBNS leg were ever wanted, the anchor would have to be a socket reader of `index_price_all` keyed by `coin_id`, with mark set equal to index, which the reader at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) cannot tell apart from a fresh mark.
+If a BitBNS leg were ever wanted, the anchor would have to be a socket reader of `index_price_all` keyed by `coin_id`, with mark set equal to index, which the reader at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) cannot tell apart from a fresh mark.
 The funding would come from 20 POSTs per 8 h to `fundingRateHistory`, taking the newest row, and `nextFundingAt` from the 00:00, 08:00 and 16:00 UTC schedule.
 `BNSUSDTP` would need a deny line for its self-referential index, and `1000SHIBUSDTP` a price scale of 1,000.
 

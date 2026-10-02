@@ -49,7 +49,7 @@ There is no perpetual in the catalog, and no call that lists one.
 
 ### How the engine's catalog would map it
 
-The engine's catalog is CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79.
+The engine's catalog is CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79.
 GroveX has no CCXT class and no swap, so it contributes no market, see [`fees.md`](./fees.md) section 8.
 For the record, the symbol would map cleanly.
 The REST `symbol` `btcusdt` is exactly the symbol inside the socket channel `market_btcusdt_depth_step0`.

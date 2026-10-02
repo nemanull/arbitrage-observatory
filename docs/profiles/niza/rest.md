@@ -68,7 +68,7 @@ CCXT has no Niza class, and `woofipro` reads the same Orderly catalog, see [`fee
 | unified symbol | `PERP_BTC_USDC` becomes `BTC/USDC:USDC`, and a builder market such as `PERP_AAPL_USDC_mythos` becomes `AAPL/USDC:USDC` with the suffix dropped |
 | `contractSize` | 1 on every market, `woofipro.js` line 570 |
 | `linear` | true on every market |
-| `active` | `undefined` on every market, `woofipro.js` line 566, so the connector's `market.active !== false` keeps all 139, [`connector.ts`](../../../server/src/ccxt/connector.ts) line 201 |
+| `active` | `undefined` on every market, `woofipro.js` line 566, so the connector's `market.active !== false` keeps all 139, [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 201 |
 | `taker` | 0.0005 on every market, `woofipro.js` line 318 |
 
 ### Size unit, pairs listed twice, and price scale
@@ -78,7 +78,7 @@ The socket's top ten levels per side of `PERP_ETH_USDC` equalled the REST book r
 No unified symbol appears twice on 2026-09-23.
 A builder could list a suffixed market on a base the shared list already has, and CCXT would then map both to one symbol, so the recommended `marketFilter` keeps only the shared pattern.
 CCXT keeps the prefix in the base, so `PERP_1000BONK_USDC` becomes `1000BONK/USDC:USDC` with base `1000BONK`, and likewise `1000PEPE` and `1000SHIB`.
-These cluster only with markets another venue also names `1000BONK`, and no price scale entry is needed for them in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts), whose `PRICE_SCALE` at lines 20 to 23 covers per 10 contracts.
+These cluster only with markets another venue also names `1000BONK`, and no price scale entry is needed for them in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts), whose `PRICE_SCALE` at lines 20 to 23 covers per 10 contracts.
 
 ## 3. Anchor
 

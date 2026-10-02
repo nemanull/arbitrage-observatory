@@ -144,7 +144,7 @@ The GitHub contents API refused this host with 403 "API rate limit exceeded" on 
 ## 9. Recommended registry values
 
 No registry entry is recommended.
-The engine builds its catalog from CCXT swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 200 to 201, and Kanga has neither a CCXT class nor a swap.
+The engine builds its catalog from CCXT swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 200 to 201, and Kanga has neither a CCXT class nor a swap.
 
 If Kanga spot were ever wired in through a custom catalog, the taker to model is 2,000 ppm, section 2.
 

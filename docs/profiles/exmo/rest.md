@@ -52,7 +52,7 @@ The 109 pairs of 2026-06-02, 86 of them against USDT, are all gone, see [`fees.m
 
 | engine need | CCXT | wire | match |
 |---|---|---|---|
-| perpetual catalog | 0 swap markets, `'swap': false` at `server/node_modules/ccxt/js/src/exmo.js` line 30 | no perpetual exists | the engine's active swap filter at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203 would find nothing |
+| perpetual catalog | 0 swap markets, `'swap': false` at `server/node_modules/ccxt/js/src/exmo.js` line 30 | no perpetual exists | the engine's active swap filter at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203 would find nothing |
 | `market.id` | `BTC_USDC`, the `pair_settings` key, lines 891 to 897 | REST keys and socket topics spell the pair the same way | 24 of 24, P1 and [`websocket.md`](./websocket.md) section 3 |
 | `contractSize` | `undefined`, line 926 | sizes are base currency quantities | the engine's fallback of 1 would be correct |
 | `linear` | `undefined`, line 922 | spot | not applicable |

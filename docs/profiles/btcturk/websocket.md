@@ -128,7 +128,7 @@ The window is 100 levels per side.
 The snapshot of every busy pair held 100 and 100, the maintained book never exceeded 100 on any side in either run, and on the three busy pairs the `CP` 1 count equalled the `CP` 3 count exactly: 512 and 512, 419 and 419, 417 and 417 in run 1, and 264, 192 and 138 of each in run 2.
 So a level entering the window pushes one out, and the one pushed out arrives as a `CP` 3 far from the touch, as in the delta of section 6.
 A side thinner than 100 levels holds what exists: `FLRTRY` held 52 and 53 bids in run 1, and `ORCATRY` 30 bids and 72 to 76 asks in run 2.
-The engine needs 20 levels, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so 100 is ample.
+The engine needs 20 levels, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so 100 is ample.
 
 ### Conflation
 
@@ -141,7 +141,7 @@ So the socket shows a book that can be about three quarters of a second old, and
 ### Size unit against CCXT `contractSize`
 
 The amount `A` is in the base asset, as the REST book is: `BTCUSDT` touch `["86673", "0.00863945"]` on the socket and `["86673", "0.00863945"]` on REST, run 2.
-CCXT reports `contractSize` undefined for these spot markets, see [`rest.md`](./rest.md) section 2, and the connector turns a missing contract size into 1 at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, which is the right multiplier.
+CCXT reports `contractSize` undefined for these spot markets, see [`rest.md`](./rest.md) section 2, and the connector turns a missing contract size into 1 at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194, which is the right multiplier.
 
 ### One-sided and empty books
 
@@ -166,7 +166,7 @@ The pair ticker is the opposite: 53 and 57 of its 79 frames in 60 s were identic
 | array `event`, object frame, type 999, text that is not JSON | no reply | the socket stays open |
 
 No closed pair existed to probe, because all 379 were `TRADING`.
-Because an unknown or wrong-case pair is acknowledged as success, the feed has to notice a pair with no snapshot on its own, which the engine's first book watch at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 169 already does.
+Because an unknown or wrong-case pair is acknowledged as success, the feed has to notice a pair with no snapshot on its own, which the engine's first book watch at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 169 already does.
 
 ## 5. Session
 
@@ -256,7 +256,7 @@ It only matters if a spot leg is ever modelled, since the venue has no perpetual
 | markets per connection | all 189 on one socket | 379 ran on one socket with 0 gaps at about 166 frames per second, and each open counts against 15 a minute |
 | subscribe frames | one frame per pair, `[151,{"type":151,"channel":"obdiff","event":"BTCUSDT","join":true}]` | an array `event` is ignored silently |
 | keepalive | none to send, and `startKeepalive` can be empty | the server pings every 15 s and `ws` answers, and a client that does not answer is closed at 45 s |
-| `maxSilenceMs` | 45,000 | three pings, which [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97 already counts as traffic. A quiet pair went 29.8 s without a book frame, so book frames alone cannot be the signal |
+| `maxSilenceMs` | 45,000 | three pings, which [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97 already counts as traffic. A quiet pair went 29.8 s without a book frame, so book frames alone cannot be the signal |
 | routing | `[type, model]`, then `model.PS` | the pair is in every book frame |
 | snapshot | type 431: `resetBook` with `BO` and `AO`, store `CS` | documented replace |
 | delta | type 432 with `CS === last + 1`: `CP` 0 and 1 set the amount, `CP` 3 removes the price, store `CS` | probed semantics, section 4 |

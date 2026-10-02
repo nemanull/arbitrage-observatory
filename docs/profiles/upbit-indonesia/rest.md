@@ -74,7 +74,7 @@ Without the option CCXT reads Upbit Korea, since its `hostname` is `api.upbit.co
 | `taker`, `maker` | 0.0025 on every pair | not the Indonesian rate, see [`fees.md`](./fees.md) section 8 |
 
 No pair is listed twice under one symbol, because each quote is its own pair.
-The connector keeps only swaps, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203, so it would keep none of these.
+The connector keeps only swaps, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203, so it would keep none of these.
 
 ## 3. Anchor
 

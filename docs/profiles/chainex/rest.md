@@ -62,7 +62,7 @@ CoinGecko's XRP/USDT volume of 2,392.71 USD on the same day matches the first, s
 
 It does not.
 CCXT 4.5.68 has no ChainEX class, and neither does the current CCXT master, see [`fees.md`](./fees.md) section 8.
-So there is no `market.id`, `contractSize`, `linear` or `active` to compare, and the engine's catalog path at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 has nothing to load.
+So there is no `market.id`, `contractSize`, `linear` or `active` to compare, and the engine's catalog path at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 has nothing to load.
 
 ### Symbol spellings
 
@@ -92,7 +92,7 @@ The only reference prices it publishes are per market fields of the summary.
 | `spread_price` | the mid of `top_bid` and `top_ask`, equal on every row checked | P1 |
 | `yesterday_price` | "Yesterday price refers to what the price was midnight UTC." | S1 |
 
-None of them can fill an `AnchorRow`, at [`types.ts`](../../../server/src/feeds/anchor/types.ts) line 4, whose `index`, `mark` and funding fields stand for a perpetual's reference prices and settlement, at [`types.ts`](../../../server/src/engine/cluster/types.ts) lines 42 to 49.
+None of them can fill an `AnchorRow`, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/types.ts) line 4, whose `index`, `mark` and funding fields stand for a perpetual's reference prices and settlement, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) lines 42 to 49.
 
 ## 4. Anchor semantics
 
@@ -137,7 +137,7 @@ Each level is `{"price": "1400164.60000000", "amount": "0.00020572", "total": "2
 | spread, tightest | 2 bps on ETH/ZAR in both scans, then 6 bps on XRP/USDT in both |
 | spread, widest | 16,364 bps on SAF/ZAR and ZARP/ZAR |
 
-The engine holds 20 levels per side, at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, and only one ChainEX book is that deep.
+The engine holds 20 levels per side, at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, and only one ChainEX book is that deep.
 
 ### The web backend's depth call
 
@@ -150,7 +150,7 @@ The public API is the cleaner source.
 
 "Please be aware that calls to the API are rate limited to 10 requests per second, any requests exceeding this rate will be met with a HTTP 503 response.", S1.
 The probes stayed at 4 requests per second or less and met no limit, so the 503 and whether it carries `Retry-After` are Not verified.
-The anchor poller's pause at [`errors.ts`](../../../server/src/shared/errors.ts) line 1 covers 403, 418 and 429, not 503.
+The anchor poller's pause at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1 covers 403, 418 and 429, not 503.
 
 | request | status | body |
 |---|---|---|

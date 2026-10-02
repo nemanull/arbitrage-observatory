@@ -161,7 +161,7 @@ The funding rate steps once a minute, which matches the "every minute" of S6.
 
 ### What the engine would read
 
-`markPremium` is mark over index minus one, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 83, so an AstralX leg would always read a mark premium of 0.
+`markPremium` is mark over index minus one, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 83, so an AstralX leg would always read a mark premium of 0.
 The carried factor at line 59 would then treat every AstralX leg as a venue that has accepted no premium, whatever OKX's mark says.
 The index gap at line 58 would compare OKX's mark, standing in for AstralX's index, against another venue's index.
 And the touch is OKX's touch, see [`websocket.md`](./websocket.md) section 4, so `freshPremium` at line 84 reproduces OKX's own fresh premium about 50 ms late.
@@ -215,7 +215,7 @@ The reasons, each covered above:
 | the terms exclude persons located in the United States | [`fees.md`](./fees.md) section 1 |
 
 If it were added anyway, the smallest shape is the funding call at 1 s for `fundingRate` and `nextSettleTime`, an interval of 8 h assumed where `lastSettleTime` is 0, and `index_price` and `mark_price` read from the book socket.
-That last part does not fit the REST `AnchorPoller`, whose `fetchRound` returns one bulk reply per round at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 245.
+That last part does not fit the REST `AnchorPoller`, whose `fetchRound` returns one bulk reply per round at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 245.
 The ticker call carries nothing the anchor needs.
 
 ## 9. Source ledger

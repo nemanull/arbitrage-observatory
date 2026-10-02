@@ -52,7 +52,7 @@ Two-sided spreads ran from 42 to 91,993 ppm, median 6,865 ppm, and median 6,883 
 
 It does not.
 CCXT 4.5.68 and CCXT master have no SAFEbit or Bitci class, see [`fees.md`](./fees.md) section 8.
-So there is no `market.id`, `contractSize`, `linear` or `active` to compare, and the engine's catalog path through `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 cannot load this venue.
+So there is no `market.id`, `contractSize`, `linear` or `active` to compare, and the engine's catalog path through `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 cannot load this venue.
 The spot book size is in base units, section 5, and a hand written catalog would key on `ticker_id`.
 
 ## 3. Anchor

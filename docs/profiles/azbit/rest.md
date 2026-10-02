@@ -54,7 +54,7 @@ Six contracts are quoted per 1,000 tokens, `1000PEPEUSDT`, `1000FLOKIUSDT`, `100
 ### How a catalog would map it
 
 CCXT 4.5.68 has no Azbit class, and the current CCXT master has none either, see [`fees.md`](./fees.md) section 8.
-The engine builds its catalog from CCXT `loadMarkets`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, so Azbit cannot enter the catalog without a class or a hand-built loader.
+The engine builds its catalog from CCXT `loadMarkets`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, so Azbit cannot enter the catalog without a class or a hand-built loader.
 A hand-built loader would map fields as follows.
 
 | engine field | Azbit source | note |
@@ -108,7 +108,7 @@ No reference price or basket is published either.
 |---|---|---|---|
 | key | `currencyPairCode` | string, `BTCUSDT` | none |
 | `index` | none | | 0 |
-| `mark` | none | | 0, so the engine refuses every route as `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
+| `mark` | none | | 0, so the engine refuses every route as `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
 | `fundingRate` | `fundingRate` | JSON number, a fraction per interval: `0.0000476` is 0.00476 % | none |
 | `fundingIntervalHours` | `fundingRateStartTimestamp`, `fundingRateFinishTimestamp` | ISO strings with no zone designator, documented as UTC: `"2026-09-23T00:00:00"` | difference in hours, after appending `Z` |
 | `nextFundingAt` | `fundingRateFinishTimestamp` | same | `Date.parse(value + 'Z')` |
@@ -193,7 +193,7 @@ A recommendation for a later design, not a decision, and the recommendation is n
 | URL | `https://data.azbit.com/api/futures/exchange-data/pairs` | the only call with funding fields, and it carries all 161 contracts |
 | interval | 1,000 ms if ever built | 1 of the 5 requests per second the endpoint allows, median 312 and 332 ms |
 | row mapping | section 3, key `currencyPairCode`, `index` and `mark` 0 | no index or mark exists |
-| effect | every Azbit route refused at open as `anchor_no_mark` | [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
+| effect | every Azbit route refused at open as `anchor_no_mark` | [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
 | skip | `IPUSDT`, `FIOUSDT` and `VINEUSDT`, active with no book, and `$BTC_TOP`, `TSLA`, `BRENT` and `EURUSD`, which are not crypto perpetuals | sections 2 and 5 |
 | rate limit pause | `Retry-After`, 1 s in the documented body | S2 |
 

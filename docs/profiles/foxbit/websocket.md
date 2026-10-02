@@ -124,7 +124,7 @@ That is an inference from the counts, and it does not touch the engine's 20 leve
 
 The socket and REST sizes were equal at every one of the 40 top levels in both runs, with the local book at exactly the REST `sequence_id`.
 The unit is the base currency.
-CCXT leaves `contractSize` undefined for every Foxbit market, at `server/node_modules/ccxt/js/src/foxbit.js` line 1651, and the engine turns a missing size into 1 at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 193.
+CCXT leaves `contractSize` undefined for every Foxbit market, at `server/node_modules/ccxt/js/src/foxbit.js` line 1651, and the engine turns a missing size into 1 at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 193.
 So the engine's size multiplier would be right for Foxbit books.
 
 ### One-sided and empty books

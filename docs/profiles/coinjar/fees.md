@@ -41,7 +41,7 @@ This host sits in Washington, which S7 lists as not yet served.
 ## 2. Quick answer
 
 The markets that matter to the engine are those quoted in USDT, USDC or USD, the settlement family of [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
-The engine ranks USDT first and USDC second at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) line 13.
+The engine ranks USDT first and USDC second at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) line 13.
 Every one of the 65 crypto bases has a USDT or USDC pair, 19 USDT and 46 USDC by that rank, so each would trade on a crypto-to-stablecoin pair, see [`rest.md`](./rest.md) section 2.
 
 | schedule | VIP 0 taker | VIP 0 maker | source |
@@ -140,8 +140,8 @@ The six BNB products are listed with no order on either side, see [`rest.md`](./
 ## 9. Recommended registry values
 
 None today.
-A registration needs a CCXT class, `createExchange: () => ccxt.Exchange`, at [`registry.ts`](../../../server/src/venues/registry.ts) line 29, and CoinJar has none.
-The connector also keeps only markets with `type === 'swap'`, `swap === true` and `active !== false`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203, and CoinJar lists no swap.
+A registration needs a CCXT class, `createExchange: () => ccxt.Exchange`, at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29, and CoinJar has none.
+The connector also keeps only markets with `type === 'swap'`, `swap === true` and `active !== false`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203, and CoinJar lists no swap.
 
 If a later design ever admits spot legs and writes a catalog without CCXT, the value would be `takerPpm: 600`, with no `ccxtTakerPpm`.
 The reason is that every crypto base the engine would pick trades on a USDT or USDC pair, at the crypto-to-stablecoin taker of 0.06 %, S1 to S4.

@@ -134,7 +134,7 @@ So there is no `market.taker` to read and no source line to cite.
 | `ccxtTakerPpm` | none | no CCXT class exists |
 | per contract taker | read `takerFee` from `symbol/list` if MGBX is ever added | 12 contracts charge 1,000 ppm and `mega_usdt` 50 ppm, P1 |
 
-A registry entry needs a catalog adapter first, because the connector reads markets through a CCXT class at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68.
+A registry entry needs a catalog adapter first, because the connector reads markets through a CCXT class at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68.
 
 ## 10. Source ledger
 

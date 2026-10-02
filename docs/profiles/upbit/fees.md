@@ -121,7 +121,7 @@ CCXT matches the base schedule and does not model the reserved order rate or the
 
 ## 9. Recommended registry values
 
-Upbit cannot be registered today, because the connector keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 201, and Upbit has none.
+Upbit cannot be registered today, because the connector keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 201, and Upbit has none.
 If a spot leg is ever added, these are the values.
 
 | field | value | reason |

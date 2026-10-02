@@ -62,13 +62,13 @@ The legacy `GET /public/ticker/ALL_KRW` and `ALL_BTC` list 480 and 13 markets as
 | renamed base | `ALT` becomes `ArchLoot`, line 274 | `KRW-ALT` | the only rename among the 493 |
 
 The engine could not use this catalog as it stands.
-Its connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196, and Bithumb has none, so the venue would load zero markets.
+Its connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196, and Bithumb has none, so the venue would load zero markets.
 `rawMarketId` would also have to be `${quote}-${id}` rather than `market.id`, since `BTC` names two markets and matches neither the socket nor the REST symbol.
 
 ### The quote currency
 
 Every liquid market quotes in KRW.
-The engine clusters markets by base and quote family, where only USD and USDC fold into USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, see [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
+The engine clusters markets by base and quote family, where only USD and USDC fold into USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, see [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
 KRW maps to itself, so a `BTC|KRW` cluster would hold Bithumb alone and could never pair with another venue.
 Comparing a KRW book with a USDT perpetual needs a KRW to USDT conversion.
 The only one on the venue is the `KRW-USDT` book, whose tick is 1 KRW at a price near 1,343 KRW, about 745 ppm per tick.

@@ -61,7 +61,7 @@ Sample values for `BTCUSD`: `tickSize` `"0.1"`, `stepSize` `"0.0000001"`, `minAm
 
 ### How the engine's catalog would map it
 
-There is no CCXT class, see [`fees.md`](./fees.md) section 8, so the engine's catalog, `loadMarkets` filtered to active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68, 79 and 196 to 203, returns nothing for OSL.
+There is no CCXT class, see [`fees.md`](./fees.md) section 8, so the engine's catalog, `loadMarkets` filtered to active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68, 79 and 196 to 203, returns nothing for OSL.
 A spot catalog would have to be read from `/api/v5/symbols` directly.
 
 | item | value |
@@ -70,7 +70,7 @@ A spot catalog would have to be read from `/api/v5/symbols` directly.
 | base and quote | `baseAsset` and `quoteAsset` |
 | size unit | base currency, so a contract size of 1, see [`websocket.md`](./websocket.md) section 4 |
 | active | `status === "1"` |
-| pairs one quote family would hold twice | `USDGOUSD`, `USDGOUSDC` and `USDGOUSDT` fold into one pair under [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6. No other base has two quotes in the USD, USDC and USDT family, and `BTCUSDGO`, `TRXHKD` and the other HKD pairs stay outside it |
+| pairs one quote family would hold twice | `USDGOUSD`, `USDGOUSDC` and `USDGOUSDT` fold into one pair under [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6. No other base has two quotes in the USD, USDC and USDT family, and `BTCUSDGO`, `TRXHKD` and the other HKD pairs stay outside it |
 | price scale | none needed, prices are per coin |
 
 The v4 `instrument` reply adds a price band.
@@ -139,7 +139,7 @@ The recommended socket delivers its own snapshot, so no REST book is needed, see
 | status on limit | 429, and 418 for a 60 s ban after 50 rejections in a minute, S6 | not reached |
 | `Retry-After` | "Both responses include a `Retry-After` header (in seconds)", S6 | absent on every reply read |
 
-The engine's poller pauses on 403, 418 and 429 and honours `Retry-After`, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1 and [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 238, which matches what S6 documents.
+The engine's poller pauses on 403, 418 and 429 and honours `Retry-After`, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1 and [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 238, which matches what S6 documents.
 
 | request | status | body |
 |---|---:|---|

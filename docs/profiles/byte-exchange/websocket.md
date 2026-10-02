@@ -29,7 +29,7 @@ The server refuses a handshake that carries no `Origin` header, and one whose or
 | `https://bexc.io` | 101 | |
 
 The 403 comes from the origin server behind Cloudflare, with CORS headers naming `https://v3.bexc.io`, in `ws-probe.mjs origin` at 03:22 and 03:45 UTC and by curl at 03:13 UTC.
-The engine opens sockets with `new WebSocket(plan.url, { perMessageDeflate: false })` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, with no headers, so a Byte feed needs that call to accept an `Origin` per endpoint plan.
+The engine opens sockets with `new WebSocket(plan.url, { perMessageDeflate: false })` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, with no headers, so a Byte feed needs that call to accept an `Origin` per endpoint plan.
 `engine-v3.bexc.io`, `api.bexc.io` and `bexc.io` all resolved to the same two Cloudflare addresses, see [`rest.md`](./rest.md) section 1.
 
 ## 2. Channel matrix for public market data
@@ -284,7 +284,7 @@ If a spot leg were ever wanted, this is the shape the probes support.
 
 | item | recommendation | reason |
 |---|---|---|
-| URL plan | `wss://engine-v3.bexc.io/ws`, with header `Origin: https://bexc.io` | the documented host, and the handshake is refused without the header, which needs a change to [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 |
+| URL plan | `wss://engine-v3.bexc.io/ws`, with header `Origin: https://bexc.io` | the documented host, and the handshake is refused without the header, which needs a change to [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 |
 | markets per connection | 30, after unsubscribing the ten defaults | the cap counts the defaults |
 | subscribe frames | one `{"action":"subscribe","symbol":<rawMarketId>}` per market, 200 ms apart | about 10 a second are accepted and nothing acknowledges a subscribe |
 | decode | `zlib.inflateRawSync` for a binary frame, UTF-8 for a text frame, then `JSON.parse`, reading keys by name | books arrive both ways and in two key orders, and inflate plus parse costs about 150 µs a frame |

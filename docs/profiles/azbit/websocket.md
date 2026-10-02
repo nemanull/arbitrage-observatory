@@ -232,7 +232,7 @@ If a feed were ever built, it would look like this.
 | URL plan | one plan, `wss://ws.azbit.com/futures/orderbooks-snapshots` | one perpetual family |
 | markets per connection | all, up to 161 | 161 pairs ran on one socket at a median of 240 and 289 frames per second |
 | subscribe frames | one frame, `{"Method":"subscribe","CurrencyPairs":["BTCUSDT", …]}` | acknowledged once for the whole list |
-| keepalive | protocol ping every 20 s | the server sent no ping, a socket with no traffic dies at about 60 s, and the pong counts as traffic in `VenueFeed` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 98 |
+| keepalive | protocol ping every 20 s | the server sent no ping, a socket with no traffic dies at about 60 s, and the pong counts as traffic in `VenueFeed` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 98 |
 | `maxSilenceMs` | 45,000 | two missed pongs, and a quiet pair can go 23.7 s without a frame, so only the pong keeps a socket of quiet pairs visibly alive |
 | routing | `currencyPairCode` is the `rawMarketId` | the pairs call spells it the same way |
 | snapshot | every frame: `resetBook` with the 20 levels | "Each frame replaces the whole client book" |
@@ -241,8 +241,8 @@ If a feed were ever built, it would look like this.
 | unserved pair | log a pair with no frame 30 s after the acknowledgement | unknown pairs and pairs with no Bybit book are acknowledged and silent |
 | receive time | stamp on arrival | the frame has no time |
 | sizes | base asset, contract size 1 | section 4 |
-| depth | 20 levels, which is the engine's `depthLevels` default at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61 | the channel's maximum |
-| deflate | keep `perMessageDeflate: false`, [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 | the server does not negotiate it anyway |
+| depth | 20 levels, which is the engine's `depthLevels` default at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61 | the channel's maximum |
+| deflate | keep `perMessageDeflate: false`, [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 | the server does not negotiate it anyway |
 
 ## 9. Source ledger
 

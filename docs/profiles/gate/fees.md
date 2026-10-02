@@ -202,7 +202,7 @@ The SDK's `funding_cap_ratio` formula does not reproduce that cap on most contra
 | the reply's own fee fields | ignored by CCXT | the code of `parseContractMarket`, lines 1603 to 1685, reads no fee field, and the fields appear only in its sample comment |
 
 The CCXT constant is 500 ppm and matches the published VIP 0 taker for USDT-M perpetuals.
-The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 29 to 31.
+The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 29 to 31.
 
 ## 9. Recommended registry values
 

@@ -84,7 +84,7 @@ Crypto deposits are free, and crypto and hryvnia withdrawal fees are on the fee 
 ## 9. Recommended registry values
 
 None.
-The engine builds every venue from a CCXT class, `createExchange` at [`../../../server/src/venues/registry.ts`](../../../server/src/venues/registry.ts) line 29, and keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 199 to 200.
+The engine builds every venue from a CCXT class, `createExchange` at [`../../../server/src/venues/registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29, and keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 199 to 200.
 BTC Trade UA has neither a class nor a swap market.
 If a spot leg were ever modelled, the taker would be 1,000 ppm, with no CCXT constant to declare.
 

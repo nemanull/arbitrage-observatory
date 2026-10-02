@@ -159,7 +159,7 @@ The futures socket needs a signed timestamp "within 60 seconds of server time", 
 
 No anchor poller is recommended.
 XBO publishes no index, no funding rate, no interval and no next settlement, and its only mark is on a socket that needs a key, section 3.
-Without a poller, an XBO leg is never written, so the reader returns `anchor_missing` and refuses the route at open, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 25 to 27.
+Without a poller, an XBO leg is never written, so the reader returns `anchor_missing` and refuses the route at open, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 25 to 27.
 The fresh premium the gate uses needs only the mark, at line 84 of the same file, so a keyed `tickers` feed could in principle supply it.
 The index gap and the carried premium at lines 58 and 59 need an index, which XBO does not publish.
 

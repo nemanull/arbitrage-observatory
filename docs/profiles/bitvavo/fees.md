@@ -150,7 +150,7 @@ Every market gets the category A constant, so a USDC market that is cheaper on t
 ## 9. Recommended registry values
 
 Bitvavo has no perpetual, so the engine's catalog would load no market from it and skip the venue.
-`isActiveSwapMarket` keeps only `type === 'swap'` markets at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203, and a venue with no market is skipped at lines 49 to 51.
+`isActiveSwapMarket` keeps only `type === 'swap'` markets at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203, and a venue with no market is skipped at lines 49 to 51.
 No registry entry is recommended.
 
 If the engine ever takes a spot leg, the values would be these.

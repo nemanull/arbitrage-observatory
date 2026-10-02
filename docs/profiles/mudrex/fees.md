@@ -123,7 +123,7 @@ If an Indian account ever makes it reachable, the values would be as follows.
 | field | value | reason |
 |---|---|---|
 | `takerPpm` | 590 | the Non-Alpha 500 ppm taker plus 18 % GST, which is what an Indian trader pays per fill |
-| `ccxtTakerPpm` | omit | CCXT's 0.00059 already equals `takerPpm`, so the connector's check at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 38 passes without it |
+| `ccxtTakerPpm` | omit | CCXT's 0.00059 already equals `takerPpm`, so the connector's check at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 38 passes without it |
 
 ## 10. Source ledger
 

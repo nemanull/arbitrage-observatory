@@ -67,10 +67,10 @@ The documented `entity` filter, tried with each of its nine values, returned no 
 | `market.id` | `market_symbol`, so `btcusd-perp` | line 689 |
 | `active` | `trading === 'Enabled'` | line 704 |
 | `linear` | `true` for every non-spot market | line 706 |
-| `contractSize` | `undefined` for every market, which the connector turns into 1 | line 708, and [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 180 to 186 |
+| `contractSize` | `undefined` for every market, which the connector turns into 1 | line 708, and [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 180 to 186 |
 | `taker` | 0.004 from the class constant | line 439, see [`fees.md`](./fees.md) section 8 |
 
-Filtered exactly like [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, CCXT 4.5.68 loaded 277 markets in 836 ms and kept 20 active swaps, all `USD` settled and `linear: true`, with none inactive.
+Filtered exactly like [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 188 to 194, CCXT 4.5.68 loaded 277 markets in 836 ms and kept 20 active swaps, all `USD` settled and `linear: true`, with none inactive.
 The second pass loaded the same 277 and 20 in 614 ms, and again found no `tick_size` or `exchange` field and no perpetual under any `entity` filter.
 
 | market | `id` | `symbol` | base / quote / settle | `contractSize` | `taker` | precision amount / price |
@@ -208,7 +208,7 @@ Beside Binance's own index for the same coins, read once a second for 60 s from 
 | AVAX | 1 | 2,271 | 33 | 1,607 |
 
 Bitstamp's AVAX index changed once in that minute, between 7.486 and 7.503, a single step of 2,271 ppm.
-That step alone exceeds the 1,000 ppm per poll limit at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6, and between steps the index stands still while the book moves.
+That step alone exceeds the 1,000 ppm per poll limit at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/opportunity/anchorReading.ts) line 6, and between steps the index stands still while the book moves.
 ASTER's index stood at 0.68721 for all 60 REST polls from 07:12 UTC.
 
 ### Mark
@@ -321,7 +321,7 @@ CCXT's comment at `server/node_modules/ccxt/js/src/bitstamp.js` line 24 still sa
 | `Retry-After` | not documented, and no rate limit header appeared on any probed reply | Not publicly specified |
 | WAF | the site answers non-browser page requests with an Imperva JavaScript challenge, the API paths did not | Probed |
 
-The engine pauses only on 403, 418 and 429, at [`../../../server/src/shared/errors.ts`](../../../server/src/shared/errors.ts) line 1.
+The engine pauses only on 403, 418 and 429, at [`../../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/shared/errors.ts) line 1.
 If Bitstamp answers a limit with HTTP 400 and `response_code: "400.002"`, the poller would not pause, which a later design has to handle.
 
 Error shapes, probed:

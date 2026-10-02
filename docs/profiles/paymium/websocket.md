@@ -120,7 +120,7 @@ Whether the bid side stops at 200 levels on the server is Not verified.
 
 `amount` is BTC.
 The REST depth and the socket agree to the last digit, since the kept book matched the REST book on every one of the top 20 levels in both runs.
-CCXT's BTC/EUR market has `contractSize` `undefined`, see [`rest.md`](./rest.md) section 2, and the connector turns a missing size into 1 at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, which is the right multiplier for BTC.
+CCXT's BTC/EUR market has `contractSize` `undefined`, see [`rest.md`](./rest.md) section 2, and the connector turns a missing size into 1 at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194, which is the right multiplier for BTC.
 
 ### One-sided, locked and empty books
 
@@ -233,7 +233,7 @@ The rows below describe what a BTC/EUR spot feed would need if a later design wa
 | parse | strip the Engine.IO and socket.io prefix up to the first `[`, then `JSON.parse` | the frame is not bare JSON |
 | deflate | keep `perMessageDeflate: false` | the server would negotiate it if offered |
 
-The VenueFeed base class opens the socket with `perMessageDeflate: false` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 and hands `handleMessage` the raw frame, as the Gate subclass shows, so the prefix handling fits inside a subclass.
+The VenueFeed base class opens the socket with `perMessageDeflate: false` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 and hands `handleMessage` the raw frame, as the Gate subclass shows, so the prefix handling fits inside a subclass.
 
 ## 9. Source ledger
 

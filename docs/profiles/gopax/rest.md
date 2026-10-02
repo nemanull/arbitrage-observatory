@@ -83,7 +83,7 @@ The live book spreads of the majors are in section 5.
 
 It does not.
 CCXT 4.5.68 has no GoPax class, and CCXT removed it in 2021, see [`fees.md`](./fees.md) section 8.
-The engine's catalog is `loadMarkets` filtered to active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203, so GoPax has no path into it today, and it has no swap to offer anyway.
+The engine's catalog is `loadMarkets` filtered to active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203, so GoPax has no path into it today, and it has no swap to offer anyway.
 
 If a custom catalog were written, the facts it would rest on are these.
 
@@ -99,7 +99,7 @@ If a custom catalog were written, the facts it would rest on are these.
 
 - The size unit is the base asset, and REST and socket sizes agreed on 20 of 20 levels per side on four pairs, see [`websocket.md`](./websocket.md) section 4.
 - All 11 USDC bases are also listed against KRW, for example `BTC-KRW` and `BTC-USDC`.
-- KRW is not in the engine's quote family, which joins USD, USDC and USDT only, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) line 5 and [`types.ts`](../../../server/src/engine/cluster/types.ts) line 1.
+- KRW is not in the engine's quote family, which joins USD, USDC and USDT only, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) line 5 and [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 1.
 - So a GoPax KRW book could only meet another KRW venue, and its USDC books are the only ones the quote family would place beside the USDT perpetuals.
 - No pair is quoted per 10 or per 1,000 units.
 
@@ -188,7 +188,7 @@ The rerun read 3.5 ms ahead, range 1.5 to 4 ms, with a median round trip of 176 
 
 None.
 GoPax has no index, mark or funding to poll, so no anchor poller is recommended.
-A GoPax leg would also have no anchor to judge a cross against, and the reader refuses a leg whose mark is 0 as `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38.
+A GoPax leg would also have no anchor to judge a cross against, and the reader refuses a leg whose mark is 0 as `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38.
 
 ## 9. Source ledger
 

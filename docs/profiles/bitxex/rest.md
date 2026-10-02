@@ -116,7 +116,7 @@ The `Date` headers agreed with the host clock to the second.
 
 None.
 The bulk ticker's `i` and `m` are the last price, the per symbol index and mark calls took 5 to 12 s each, the funding call returned nulls, and replies ranged up to 50 s or timed out at 60 s.
-The engine refuses a reading older than 10 s and two legs read more than 5 s apart, see `server/src/engine/opportunity/anchorReading.ts` in the TypeScript server, now under [`../../../old_ts_server/`](../../../old_ts_server/).
+The engine refuses a reading older than 10 s and two legs read more than 5 s apart, see `server/src/engine/opportunity/anchorReading.ts` in the TypeScript server, now under [`../../../old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/588ff41a174ff565d0f3cefb68eeff414959a5f0/old_ts_server).
 Every anchor row from this venue would be refused, and a route with no mark is refused at open.
 
 ## 9. Source ledger

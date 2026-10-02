@@ -103,7 +103,7 @@ No frame was crossed.
 
 ### Level window
 
-7 levels per side, fewer than the engine's 20, at [`../../../server/src/engine/Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+7 levels per side, fewer than the engine's 20, at [`../../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 The document's example also has 7.
 
 ### Size unit against CCXT `contractSize`

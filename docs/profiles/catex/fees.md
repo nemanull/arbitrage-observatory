@@ -94,7 +94,7 @@ So there is no `market.taker` to report and no source line to cite.
 ## 9. Recommended registry values
 
 None.
-Catex has no perpetuals, and the catalog at `server/src/ccxt/connector.ts` lines 196 to 203 keeps only active swaps, so the venue cannot enter [`registry.ts`](../../../server/src/venues/registry.ts) in its current shape.
+Catex has no perpetuals, and the catalog at `server/src/ccxt/connector.ts` lines 196 to 203 keeps only active swaps, so the venue cannot enter [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) in its current shape.
 If a spot stage ever uses it, the taker is 1,000 ppm at VIP 0 and 700 ppm with fees paid in CATT, and there is no CCXT constant to declare.
 
 ## 10. Source ledger

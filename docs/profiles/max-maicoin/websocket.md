@@ -253,7 +253,7 @@ If a later design adds spot legs, the shape the probes support is the following,
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one plan, `wss://max-stream.maicoin.com/ws` | one URL serves every market |
-| channel | `book`, depth 50 | snapshot on subscribe, an id chain, 50 levels covers the engine's 20 at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61 |
+| channel | `book`, depth 50 | snapshot on subscribe, an id chain, 50 levels covers the engine's 20 at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61 |
 | markets per connection | all 74 on one socket | 74 ran on one socket at a median 159 to 170 frames a second |
 | subscribe frames | frames of four markets, `{"action": "sub", "subscriptions": [{"channel": "book", "market": "<id>", "depth": 50}, …], "id": "<slice>"}`, one every 100 ms, 19 frames for 74 markets | four market frames gave no skip, and one 74 market frame gave 3 to 5 skipped first updates in two of three runs. Nineteen frames in 1.9 s stay under 20 a second and 200 a minute. Frames between 4 and 74 markets are untested |
 | keepalive | `{"action": "ping", "id": "<slice>"}` every 20 s | the socket dies after 60 s without traffic, and the `{"e":"pong"}` reply is a message frame the silence watch sees |
@@ -262,9 +262,9 @@ If a later design adds spot legs, the shape the probes support is the following,
 | snapshot | `e === "snapshot"`: `resetBook` from both arrays by price, store `li` and `v` | snapshot bids arrive worst first |
 | update before the snapshot | buffer it, then apply it after the snapshot by the same rule | documented step 2, and 3 such updates arrived in one 74 market run |
 | update | drop when `li <= stored`, apply when `fi <= stored + 1 <= li`, then store `li` | documented rule, 0 gaps in 2,339 updates of the two clean four market runs |
-| resync | `fi > stored + 1` or a different `v`: `unsub` and `sub` that one market, and fall back to `resync`, which terminates the socket and resubscribes, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 296, only if the market fails again | documented as resubscribe. The skips cluster on the first update after a snapshot, so a socket wide resync of every market could meet the same race again. The per market path is a change to the engine's resync, which today works per socket |
+| resync | `fi > stored + 1` or a different `v`: `unsub` and `sub` that one market, and fall back to `resync`, which terminates the socket and resubscribes, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 296, only if the market fails again | documented as resubscribe. The skips cluster on the first update after a snapshot, so a socket wide resync of every market could meet the same race again. The per market path is a change to the engine's resync, which today works per socket |
 | receive time | stamp on arrival, never from `T` | a snapshot's `T` is the last change, hours old on a quiet market |
-| deflate | keep `perMessageDeflate: false`, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 | the server negotiates deflate only when the client offers it |
+| deflate | keep `perMessageDeflate: false`, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 | the server negotiates deflate only when the client offers it |
 | depth | subscribe each market once at one depth | frames carry no depth, so a second depth on one socket interleaves |
 
 ## 9. Source ledger

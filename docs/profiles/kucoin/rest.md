@@ -97,14 +97,14 @@ Book sizes are lots of `multiplier` coins, and CCXT's `contractSize` is that mul
 The inverse rows carry `multiplier` -1, which S2 defines as "each XBTUSDM contract, correspond to 1 USD", and CCXT reports them as one coin per contract.
 
 No pair is listed twice inside CCXT's own keys.
-The quote family folds `USD` and `USDC` into `USDT`, so `BTC`, `ETH`, `SOL`, `XRP` and `SUI` each land on one pair two or three times, and [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 12 to 17 rank the USDT-M linear contract first.
+The quote family folds `USD` and `USDC` into `USDT`, so `BTC`, `ETH`, `SOL`, `XRP` and `SUI` each land on one pair two or three times, and [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 12 to 17 rank the USDT-M linear contract first.
 Every USDC-M and inverse perpetual therefore loses to a USDT-M twin, which is why [`fees.md`](./fees.md) section 9 filters to `settle === 'USDT'`.
 
 `OPENAIUSDTM` traded at 1,657.99 and `ANTHROPICUSDTM` at 2,121.96 at 22:07 UTC.
-That is the basis Gate uses and ten times okx's, whose two contracts carry a price scale of 10 in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
+That is the basis Gate uses and ten times okx's, whose two contracts carry a price scale of 10 in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
 Both are pre-market on KuCoin, with an index that is KuCoin's own perpetual, see section 4, so a poller skips them.
 
-The three tickers that `DENIED_PAIRS` denies for naming two tokens, at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 7 to 12, were checked against KuCoin's index baskets from the survey in section 4.
+The three tickers that `DENIED_PAIRS` denies for naming two tokens, at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 7 to 12, were checked against KuCoin's index baskets from the survey in section 4.
 `.KBBUSDT` averages Binance, Bybit, Bitget, Gate and MEXC spot, `.KQNTUSDT` averages Binance, KuCoin, MEXC, Bybit and Bitget spot, and `.KONUSDT` averages MEXC, Binance Futures, Gate and Binance Alpha.
 So KuCoin names Binance's token under all three, and the existing denials already cover the pairs.
 `.KALTUSDT` prices `ALT` on Binance, Gate, KuCoin, MEXC and Bybit spot within 0.3 % of each other, while CCXT renames the base of `ALTUSDTM` to `APTOSLAUNCHTOKEN`.
@@ -290,7 +290,7 @@ The recommended feed takes its snapshot from the socket and needs no REST book, 
 | `/api/v1/trade-statistics` | 400 | `{"code":"400001","msg":"Please check the header of your request for KC-API-KEY, KC-API-SIGN, KC-API-TIMESTAMP, KC-API-PASSPHRASE."}` |
 
 A poller must check `code` as well as the HTTP status, because KuCoin reports a bad request with HTTP 200.
-The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 194 and [`errors.ts`](../../../server/src/shared/errors.ts) line 1, which covers the documented 429.
+The engine's poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 194 and [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, which covers the documented 429.
 If KuCoin ever sends `429000` inside an HTTP 200 body, the poller has to throw `RateLimitReplyError` from the same file, lines 17 to 28, as the MEXC poller does.
 
 ## 7. Server time and clock offset

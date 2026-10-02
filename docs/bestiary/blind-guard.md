@@ -54,10 +54,10 @@ The question here is why a row built on a dead price ran five and a half seconds
 Each leg carries an anchor, meaning the venue's own index and mark, described in [`index-mark-and-premium.md`](./index-mark-and-premium.md).
 The fresh edge divides each book by its own anchor, so it measures the part of a cross that the two anchors do not already explain.
 
-A REST poller refreshes those anchors every 1,000 ms, and every 2,000 ms on bybit and coinbase, set by `DEFAULT_INTERVAL_MS` at [`../../server/src/feeds/anchor/AnchorPoller.ts`](../../server/src/feeds/anchor/AnchorPoller.ts) line 7 and by those two venue pollers.
-Every poll records how far that leg moved since the previous poll, at [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) line 413, taking the larger of the index move and the mark move.
+A REST poller refreshes those anchors every 1,000 ms, and every 2,000 ms on bybit and coinbase, set by `DEFAULT_INTERVAL_MS` at [`../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/feeds/anchor/AnchorPoller.ts) line 7 and by those two venue pollers.
+Every poll records how far that leg moved since the previous poll, at [`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/Engine.ts) line 413, taking the larger of the index move and the mark move.
 
-The guard is one branch in [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
+The guard is one branch in [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/anchorReading.ts).
 
 ```ts
   // On a fast tape the fresh edge measures one anchor's lag behind the other rather than the book.
@@ -82,9 +82,9 @@ Row 2795 took 164 book samples in that gap.
 
 The refusal reaches the open path as a string and the close path as nothing at all.
 
-On the open path, [`../../server/src/engine/opportunity/OpportunityManager.ts`](../../server/src/engine/opportunity/OpportunityManager.ts) line 123 says "No verdict, no row", and the string becomes a counted rejection with its own name.
+On the open path, [`../../server/src/engine/opportunity/OpportunityManager.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityManager.ts) line 123 says "No verdict, no row", and the string becomes a counted rejection with its own name.
 
-On the close path the same string is thrown away one line after it arrives, in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) line 196.
+On the close path the same string is thrown away one line after it arrives, in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/OpportunityLifecycle.ts) line 196.
 
 ```ts
 const anchor = typeof anchorRead === 'string' ? null : anchorRead;
@@ -150,8 +150,8 @@ Three rules, and none of them needs a measurement the process does not already h
    The string exists at line 196 and dies there.
 
 The third rule needs a schema change, and its shape is worth reading.
-[`../../server/prisma/schema.prisma`](../../server/prisma/schema.prisma) declares `AnchorIssue` at line 85 with three values, `anchor_missing`, `anchor_stale` and `anchor_skewed`.
-The engine's own type at [`../../server/src/engine/opportunity/types.ts`](../../server/src/engine/opportunity/types.ts) line 38 has five, because the guards added on 2026-09-14 introduced `anchor_no_mark` and `anchor_moving`, so the database cannot spell the two newest refusals at all.
+[`../../server/prisma/schema.prisma`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/prisma/schema.prisma) declares `AnchorIssue` at line 85 with three values, `anchor_missing`, `anchor_stale` and `anchor_skewed`.
+The engine's own type at [`../../server/src/engine/opportunity/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/9a66a035f7e50f35ea7b8772901bb2459828f6cb/server/src/engine/opportunity/types.ts) line 38 has five, because the guards added on 2026-09-14 introduced `anchor_no_mark` and `anchor_moving`, so the database cannot spell the two newest refusals at all.
 The only column of that type is `anchorIssueAtOpen` at line 192, and its doc comment says it exists for rows written before a route had to open on readable anchors.
 There is no column for a mid episode refusal and no enum value for the refusal that dominates the run, so detecting this failure means adding both.
 

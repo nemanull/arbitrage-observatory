@@ -56,7 +56,7 @@ The KRW tick table is stepped by price, from 1,000 KRW at 1,000,000 KRW and abov
 | `taker`, `maker` | 0.0005 on KRW pairs, 0.0025 on BTC and USDT pairs | lines 546 and 547, see [`fees.md`](./fees.md) section 8 |
 | renamed currency | `TON` becomes `Tokamak Network`, and no `TON` pair was listed | line 282, R1 |
 
-The connector keeps only markets with `type` `swap`, `swap` true and `active` not false, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 201, so it keeps none of Upbit's 855.
+The connector keeps only markets with `type` `swap`, `swap` true and `active` not false, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 201, so it keeps none of Upbit's 855.
 If it ever loaded spot, `active` would not track a delisting, because CCXT sets it to `true` whatever the venue says.
 Sizes are in the base currency, which matches the `contractSize` of 1 that the connector reads from `undefined`, see [`websocket.md`](./websocket.md) section 4.
 No pair needs a price scale.

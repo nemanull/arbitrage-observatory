@@ -71,14 +71,14 @@ Four bases carry a 1000 prefix, `1000BONK`, `1000MOG`, `1000PEPE` and `1000SHIB`
 
 The linear `contract_size` is in the base coin, and so is every book amount, so the amount is already coins and must not be multiplied by `contractSize`, see [`websocket.md`](./websocket.md) section 4.
 The inverse `contract_size` is in USD, "A contract_size of 10 on BTC-PERPETUAL therefore means 10 USD, not 10 BTC", S4.
-The engine multiplies book sizes by `contractSize`, so Deribit needs the registry's `contractSize: 1` pin, the same override Gemini uses in [`registry.ts`](../../../server/src/venues/registry.ts).
+The engine multiplies book sizes by `contractSize`, so Deribit needs the registry's `contractSize: 1` pin, the same override Gemini uses in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
 
 BTC and ETH are each listed twice, as `BTC_USDC-PERPETUAL` and `BTC-PERPETUAL`, and as `ETH_USDC-PERPETUAL` and `ETH-PERPETUAL`.
-The quote family ranks a linear contract before an inverse one at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) line 16, so the linear one would win anyway.
+The quote family ranks a linear contract before an inverse one at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) line 16, so the linear one would win anyway.
 A `marketFilter` of `linear === true` is still needed, because the `contractSize: 1` pin would read the inverse USD amounts as coins.
 
 Prices are per one unit of the base, and the 1000-prefixed bases are priced per thousand, as their name says.
-`OPENAI_USDC-PERPETUAL` marked 1,658 to 1,659 USDC, while OKX's `OPENAI-USDT-SWAP` already carries a price scale of 10 in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts), so the two need a scale check before they cluster, which this profile did not do.
+`OPENAI_USDC-PERPETUAL` marked 1,658 to 1,659 USDC, while OKX's `OPENAI-USDT-SWAP` already carries a price scale of 10 in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts), so the two need a scale check before they cluster, which this profile did not do.
 
 ## 3. Anchor
 
@@ -117,7 +117,7 @@ The per instrument `public/ticker` was current, but polling 129 of them each sec
 | `mark` | `mark_price` | JSON number, never 0 on 131 rows | none |
 | `fundingRate` | `current_funding` | JSON number, an 8 hour rate as a fraction: `0.00015788` is 0.015788 % per 8 h | none |
 | `fundingIntervalHours` | none on the wire | | the constant 8, the period the rate is expressed over |
-| `nextFundingAt` | none on the wire | | 0, which the engine treats as unknown at [`types.ts`](../../../server/src/engine/cluster/types.ts) line 38 |
+| `nextFundingAt` | none on the wire | | 0, which the engine treats as unknown at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 38 |
 
 `funding_8h` is not the upcoming rate.
 It is the funding realised over the trailing 8 hours: `public/get_funding_rate_value` over the last 8 h returned 5.016e-5 on BTC, against `funding_8h` of 5.043e-5 to 5.082e-5 in the summaries read in the minute before, and 5.343e-5 against 5.434e-5 to 5.451e-5 in the summaries read in the two minutes after, in the rerun.

@@ -113,7 +113,7 @@ CCXT's 2,000 ppm is twice the published 1,000 ppm taker and states a 2,000 ppm m
 ## 9. Recommended registry values
 
 None.
-The connector keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202, so BitTrade would contribute no market and be skipped with "no usable swap markets" at line 51.
+The connector keeps only active swap markets, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202, so BitTrade would contribute no market and be skipped with "no usable swap markets" at line 51.
 If a spot leg is ever built, the values would be `takerPpm: 1000` from S4 and S5, and `ccxtTakerPpm: 2000` from `bittrade.js` line 563.
 
 ## 10. Source ledger

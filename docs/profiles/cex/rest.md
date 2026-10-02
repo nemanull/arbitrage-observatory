@@ -55,7 +55,7 @@ Assets under a delisting notice stay in the catalog with no status to mark them.
 ### Pairs listed twice, and price scale
 
 The USD family holds 792 pairs on 297 bases, and 286 of those bases are listed against more than one of `USD`, `USDT` and `USDC`, 209 against all three.
-The engine takes one market per pair, so a spot integration would need a `marketFilter` that picks one quote per base, at [`types.ts`](../../../server/src/ccxt/types.ts) lines 14 to 16.
+The engine takes one market per pair, so a spot integration would need a `marketFilter` that picks one quote per base, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) lines 14 to 16.
 No pair is quoted per 10 or per 1000 units, since every spot price is per one unit of the base.
 
 ## 3. Anchor
@@ -69,7 +69,7 @@ S1 calls `last` the "Last indicative price", and on the wire it moves with the b
 It equalled `bestAsk` in each of the seven ticker rows printed during the probes, for example `"bestAsk":"86875.1","last":"86875.1"`, and 741 and 777 of 898 pairs changed `bestBid`, `bestAsk` or `last` between calls 31 s apart while `volume` stayed put on six of seven watched pairs.
 
 No anchor poller is recommended.
-An `AnchorRow` for CEX.IO would have a mark of 0, and the reader refuses such a route at open with `anchor_no_mark`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38.
+An `AnchorRow` for CEX.IO would have a mark of 0, and the reader refuses such a route at open with `anchor_no_mark`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38.
 
 ## 4. Anchor semantics
 
@@ -160,7 +160,7 @@ The cold requests read 225 and 249 ms, inflated by the handshake.
 
 None.
 CEX.IO publishes no index, mark or funding, and the engine refuses a route whose mark is 0, see section 3.
-The only bulk reference call, `get_ticker`, was served about twice a minute from this IP, while the reader refuses a reading older than 10 s, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5.
+The only bulk reference call, `get_ticker`, was served about twice a minute from this IP, while the reader refuses a reading older than 10 s, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5.
 If a later design adds spot legs, the book socket is the source of prices, and REST is needed only for `get_pairs_info` at start.
 
 ## 9. Source ledger

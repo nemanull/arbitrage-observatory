@@ -111,7 +111,7 @@ So `market.taker` cannot be read, and there is no source line to cite.
 ## 9. Recommended registry values
 
 None.
-The connector builds a venue from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68, 79 and 196 to 202, and Dex-Trade has neither a CCXT class nor a swap.
+The connector builds a venue from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68, 79 and 196 to 202, and Dex-Trade has neither a CCXT class nor a swap.
 If a spot stage ever adds it, `takerPpm` would be 2,000, the VIP 0 market order, and `ccxtTakerPpm` would stay unset because no CCXT constant exists.
 
 ## 10. Source ledger

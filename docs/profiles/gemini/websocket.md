@@ -327,7 +327,7 @@ A recommendation for a later design, not a decision.
 - Snapshot: mark every subscribed symbol as awaiting a snapshot on open, and treat its first `depthUpdate` as absolute levels through `resetBook`, whether or not the ack has arrived.
 - Deltas: apply when `U <= lastU < u`, drop when `u <= lastU`, and call `resync` when `U > lastU`, then set `lastU = u`.
 - Levels: sort nothing on apply, since `setBid` and `setAsk` key by price, and parse prices with `Number` because of the zero padding.
-- Keepalive: the server's 20 s protocol ping already refreshes `lastMessageAt` in [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 93, and an application `{"id":n,"method":"ping"}` every 20 s adds a reply the feed can see.
+- Keepalive: the server's 20 s protocol ping already refreshes `lastMessageAt` in [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/book/VenueFeed.ts) line 93, and an application `{"id":n,"method":"ping"}` every 20 s adds a reply the feed can see.
 - `maxSilenceMs`: 60,000, three missed server pings, because a quiet book stayed silent 28.4 s.
 - Resync: terminate and resubscribe as `VenueFeed.resync` does, or send the `depth` request method for one symbol, which the probe showed answers with a `lastUpdateId` book.
 

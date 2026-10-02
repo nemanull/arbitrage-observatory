@@ -121,7 +121,7 @@ The book size is in base units, and one contract is one base unit.
 `open_interest` 18.2696 times mark 77,244.69 equals `open_interest_notional` 1,411,229.5883 (Probed).
 The second pass found the same identity on all 13 perpetuals, as BTC 18.5719 times 76,002.811 gives 1,411,516.6055.
 The socket book equalled the REST `amount` on 33 of 33 BTC levels and 20 of 20 TRUMP levels, see [`websocket.md`](./websocket.md) section 4.6.
-The connector's fallback of 1 for an undefined contract size, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 180 to 186, is therefore correct.
+The connector's fallback of 1 for an undefined contract size, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 180 to 186, is therefore correct.
 
 ### 2.5 Pairs listed twice
 
@@ -134,15 +134,15 @@ The two symbols of a pair publish one order book (Probed).
 - The index differed slightly within some pairs, for example ETH 2480.176 and 2480.381, and HYPE 79.075273 and 79.087691.
 
 In the engine today the two do not collide.
-GUSD is not in the quote family at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a GUSD market sits in its own `BTC|GUSD` pair.
-No other venue lists a GUSD perpetual, and a pair with fewer than two markets makes no cluster, at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 143.
+GUSD is not in the quote family at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a GUSD market sits in its own `BTC|GUSD` pair.
+No other venue lists a GUSD perpetual, and a pair with fewer than two markets makes no cluster, at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/ClusterIndexBuilder.ts) line 143.
 So as the code stands only the six USDC perpetuals would join clusters, and TRUMP, which has no USDC twin, would join none.
 If GUSD were added to the family, both twins would land on one pair and `marketRank` would keep the USDC one, at `quoteFamily.ts` lines 13 to 17.
 
 ### 2.6 Price scale and ticker aliases
 
 No perpetual is quoted per 10 or per 1000 units, and every base is a plain ticker: AVAX, BTC, ETH, HYPE, SOL, TRUMP, XRP (Probed).
-None of these tickers is in `DENIED_PAIRS` at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 7 to 12.
+None of these tickers is in `DENIED_PAIRS` at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/cluster/clusterOverrides.ts) lines 7 to 12.
 Whether any of them names a different token on another venue was not checked.
 
 ## 3. Anchor
@@ -168,10 +168,10 @@ The anchor needs two per-symbol calls [R1] [R2] [R3].
 
 The funding call answered in 2.2 to 3.5 s on some symbols for whole minutes, and in 0.3 to 0.9 s on others, with the same symbol switching between the two over time (Probed).
 In the second pass none of 86 funding reads came back under a second, and they took 1.2 to 3.8 s (Probed).
-That is slower than the 2 s the reader can absorb, see [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
+That is slower than the 2 s the reader can absorb, see [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/engine/opportunity/anchorReading.ts) lines 4 to 6.
 
 Gemini lists 13 perpetuals, 7 GUSD and 6 USDC, and every anchor call names one symbol.
-At the engine's one second cadence, [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 34, a full round would cost these request rates against the published public limit of 120 per minute [R4].
+At the engine's one second cadence, [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) line 34, a full round would cost these request rates against the published public limit of 120 per minute [R4].
 
 | round each second | requests per minute | against 120 per minute |
 | --- | ---: | --- |
@@ -344,7 +344,7 @@ Errors as they came back (Probed).
 The second pass returned the same status and body on every row.
 
 The 404 with an empty body on an unknown funding symbol matters.
-`AnchorPoller.getJson` throws on it, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 230 to 237, so a delisted symbol inside a `Promise.all` round would fail every round.
+`AnchorPoller.getJson` throws on it, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) lines 230 to 237, so a delisted symbol inside a `Promise.all` round would fail every round.
 
 ## 7. Server time
 
@@ -365,7 +365,7 @@ A recommendation for a later design, not a decision.
 - The stamp should be the arrival of the `riskstats` reply, since the funding fields move once a minute.
 - Skip `r`, `funding_rate` and the current socket's `i`.
 
-The one-second, one-request-for-every-perpetual shape of [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) does not fit Gemini, because there is no bulk call, and a one second round of even the 6 USDC `riskstats` is three times the public limit, see section 3.1.
+The one-second, one-request-for-every-perpetual shape of [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/anchor/AnchorPoller.ts) does not fit Gemini, because there is no bulk call, and a one second round of even the 6 USDC `riskstats` is three times the public limit, see section 3.1.
 Two named changes would fit it.
 One is a per-symbol round-robin poller that keeps each symbol's own arrival stamp, which leaves most legs 5 to 7 s old and fights the 5 s skew limit.
 The other is a socket anchor on the archived v2 `mark_price` and `funding_amount` feeds, re-stamped on every frame and refreshed by `riskstats` when a symbol has sent no mark frame for a few seconds, because v2 omits frames when only the index moves.

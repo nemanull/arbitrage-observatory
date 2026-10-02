@@ -11,6 +11,8 @@ mod gemini;
 mod krakenfutures;
 #[cfg(test)]
 mod live_tests;
+#[cfg(test)]
+mod load_tests;
 mod mexc;
 mod okx;
 #[cfg(test)]

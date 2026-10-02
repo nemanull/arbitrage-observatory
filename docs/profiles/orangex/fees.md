@@ -138,7 +138,7 @@ So there is no CCXT source line to cite, and no `ccxtTakerPpm` to declare.
 | `takerPpm` | 600 | 0.06 % on the fee page, in two articles, and in `taker_commission` on every contract |
 | `ccxtTakerPpm` | unset | no CCXT class exists |
 
-A registry entry needs a catalog loader first, because the engine's catalog is CCXT `loadMarkets` at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 68, see [`rest.md`](./rest.md) section 8.
+A registry entry needs a catalog loader first, because the engine's catalog is CCXT `loadMarkets` at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, see [`rest.md`](./rest.md) section 8.
 
 ## 10. Source ledger
 

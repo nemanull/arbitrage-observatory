@@ -22,7 +22,7 @@ The API document gives an endpoint, two channel names and a Java client, and not
 
 One socket carries every market, TRY and USDT alike.
 `api4.bitlo.com` resolves to Cloudflare addresses, see [`rest.md`](./rest.md) section 1.
-The server accepts a client that asks for no subprotocol, which is how [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 opens sockets: `CONNECTED` came back and `/topic/market/*` delivered 102 frames in 5 s, and 74 in the rerun, W7.
+The server accepts a client that asks for no subprotocol, which is how [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 opens sockets: `CONNECTED` came back and `/topic/market/*` delivered 102 frames in 5 s, and 74 in the rerun, W7.
 
 ## 2. Channel matrix for public market data
 
@@ -234,7 +234,7 @@ A recommendation for the record, not a decision, since the venue is spot only an
 | markets per connection | every tracked market on one socket, 299 today | 0 gaps in two runs, at a peak of 44 frames per second |
 | seed | `GET /market/orderbook?market=<rawMarketId>` after subscribing, buffer deltas until it returns | no snapshot on the socket |
 | delta | apply only when `beginSequenceId === last + 1`, drop when `endSequenceId <= last` | 0 gaps observed, and the seed aligns at `sequenceId + 1` |
-| resync | on a gap, reseed that market from REST, or terminate the socket and resubscribe everything | the engine's `resync` terminates the socket, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 296, so every market would need a fresh REST seed |
+| resync | on a gap, reseed that market from REST, or terminate the socket and resubscribe everything | the engine's `resync` terminates the socket, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 296, so every market would need a fresh REST seed |
 | keepalive | send `"\n"` every 10 s | the server sends no ping and closes a socket silent both ways at 60.7 to 61.2 s, and 10 s is what kept one open |
 | `maxSilenceMs` | 60,000 | the server never answers the EOL, so only deltas count as traffic. The whole catalog socket went at most 940 ms without one at 03:49 UTC, and quiet hours were not probed |
 | unserved market | log a market whose REST seed body is empty | the socket never refuses a destination |

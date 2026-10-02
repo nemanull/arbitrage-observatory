@@ -13,7 +13,7 @@ Every probed number comes from [`rest-probe.mjs`](../../../scripts/probes/venues
 P1 is the first run of each mode, from 06:33 to 06:37 UTC, and P2 is the rerun, from 06:38 to 06:50 UTC.
 The probe held itself to 600 weight in any rolling minute, half the published budget, because the other Hyperliquid probes shared the address.
 Where the documentation and the wire disagree, both are written.
-The TypeScript server this profile cites sat under [`old_ts_server/`](../../../old_ts_server/) when it was written, and the research plan places it under `server/ts/`.
+The TypeScript server this profile cites sat under [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server) when it was written, and the research plan places it under `server/ts/`.
 Fees and who may trade are in [`fees.md`](./fees.md), the socket in [[`./websocket.md`](./websocket.md)](./websocket.md), and HyperCore blocks and the HIP-3 oracles in [[`../../research/2026-09-23-hyperliquid-dex.md`](../../research/2026-09-23-hyperliquid-dex.md)](../../research/2026-09-23-hyperliquid-dex.md).
 
 ## 1. Host and latency from this machine
@@ -44,7 +44,7 @@ Latency, one Node process per mode, with a kept connection after the first reque
 No reply was compressed.
 Node's `fetch` sends `accept-encoding`, and `curl --compressed` on `metaAndAssetCtxs` got `Content-Length: 72336` with no `content-encoding` in 0.295 s.
 The first-dex bulk call takes about 170 ms more than `exchangeStatus` over the same connection, which most likely is the server building the reply.
-No reply took over 2 s, so the reader's 5 s skew and 10 s age limits at [`anchorReading.ts`](../../../old_ts_server/src/engine/opportunity/anchorReading.ts) lines 4 and 5 are not at risk from this host.
+No reply took over 2 s, so the reader's 5 s skew and 10 s age limits at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/opportunity/anchorReading.ts) lines 4 and 5 are not at risk from this host.
 
 ## 2. Catalog
 
@@ -118,7 +118,7 @@ Which HIP-3 assets could join a cluster, and whose oracle each one follows, is t
 | `taker` | `fees.swap.taker`, the literal `0.00045` | lines 184 and 1007, see [`fees.md`](./fees.md) section 8 |
 | pacing | `rateLimit` 50 ms times an info cost of 20 is one call per second, so `loadMarkets` took 12.5 s in P1 and 12.7 s in P2 | lines 27, 163 and 4906 |
 
-Probed through the connector's filter, `type` swap, `swap` true and `active !== false`, at [`connector.ts`](../../../old_ts_server/src/ccxt/connector.ts) lines 196 to 203:
+Probed through the connector's filter, `type` swap, `swap` true and `active !== false`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) lines 196 to 203:
 
 | result | P1 and P2 alike |
 |---|---|
@@ -132,7 +132,7 @@ Probed through the connector's filter, `type` swap, `swap` true and `active !== 
 
 ### What the catalog needs changed
 
-- The connector copies `market.id` into `rawMarketId`, at [`connector.ts`](../../../old_ts_server/src/ccxt/connector.ts) line 170.
+- The connector copies `market.id` into `rawMarketId`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) line 170.
   On Hyperliquid that is the numeric asset index, while the info replies and the socket key everything by `name`.
   Hyperliquid needs `rawMarketId` from `market.info.name`, or no anchor row and no book would ever match a market.
 - Book sizes are coins of the underlying, because a contract is "1 unit of underlying spot asset", S7, and `l2Book` on `BTC` returned sizes such as `13.2533`.
@@ -236,7 +236,7 @@ Input 3 means the first-dex mark leans on the Binance, OKX, Bybit, Gate and MEXC
 By the formula, when only Hyperliquid's book moves, inputs 1 and 3 hold the median, so the move shows as a gap between Hyperliquid's book and its mark.
 The mark sat on the mid on quiet books: 28 of 30 polls on `NOT`, 11 on `kPEPE`, 5 on `DOGE` and 0 on `BTC` in P1.
 
-Two properties matter to the open guard at [`anchorReading.ts`](../../../old_ts_server/src/engine/opportunity/anchorReading.ts) line 6, which refuses an index or mark that moved more than 1,000 ppm in one poll.
+Two properties matter to the open guard at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/opportunity/anchorReading.ts) line 6, which refuses an index or mark that moved more than 1,000 ppm in one poll.
 A 1 s poll sees a whole 3 s move in one step, and P2 counted 14 of 5,162 live asset transitions over 1,000 ppm, on 11 assets, the largest 4,199 ppm.
 The price grid is coarse on cheap assets: the oracle and mark step is `10^-(6 - szDecimals)`, S9, which was under 1 ppm to 5,747 ppm of the price, median 19 ppm, and over 100 ppm on 39 of 178 live assets.
 On `HMSTR` (5,747 ppm), `NOT` (2,119), `MEME` (1,647) and `XAI` (1,245) a single step exceeds the guard, and `MEME` and `XAI` were among P2's 11.
@@ -302,7 +302,7 @@ The republish cadence of the index and mark is therefore about 3 s, which fits t
 
 | item | documented, S1 | probed, P1 and P2 |
 |---|---|---|
-| depth | at most 20 levels per side, which equals the engine's `DEPTH_LEVELS` of 20 at [`ClusterIndexBuilder.ts`](../../../old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) line 17 | 20 and 20 on `BTC`, `kPEPE`, `xyz:XYZ100`, `PURR/USDC` and `@107` |
+| depth | at most 20 levels per side, which equals the engine's `DEPTH_LEVELS` of 20 at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) line 17 | 20 and 20 on `BTC`, `kPEPE`, `xyz:XYZ100`, `PURR/USDC` and `@107` |
 | order | | bids descending and asks ascending on every read |
 | level | `{px, sz, n}`, `n` the number of orders | strings for `px` and `sz`, integer `n` |
 | aggregation | `nSigFigs` 2 to 5 or null, `mantissa` 1, 2 or 5 only with `nSigFigs` 5 | both accepted, and an aggregated reply adds a `spread` key |
@@ -341,7 +341,7 @@ The recommended feed takes its book from the socket, see [[`./websocket.md`](./w
 
 S13 documents only order and cancel errors, so these shapes come from the wire alone, and they held in both runs.
 An unknown dex, and an unknown coin on `fundingHistory`, is a 500 with a JSON `null` rather than a 4xx, so a poller that treats 5xx as transient would keep retrying it.
-The poller pauses on 403, 418 and 429 at [`AnchorPoller.ts`](../../../old_ts_server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 192, and which status Hyperliquid sends at its limit is unknown, so a Hyperliquid poller should also log any other non-200 in full.
+The poller pauses on 403, 418 and 429 at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 192, and which status Hyperliquid sends at its limit is unknown, so a Hyperliquid poller should also log any other non-200 in full.
 
 ## 7. Server time and clock offset
 
@@ -362,12 +362,12 @@ A recommendation for a later design, not a decision.
 | REST fallback | `POST https://api.hyperliquid.xyz/info` with `{"type":"metaAndAssetCtxs"}` | one call carries index, mark and rate for all 234 first-dex assets |
 | interval | 3,000 ms | the index and mark republish about every 3 s, and 20 weight every 3 s is 400 a minute, a third of the budget |
 | builder dexes | one more call per tracked dex, `{"type":"metaAndAssetCtxs","dex":"xyz"}` | at 3 s the first dex plus `xyz` is 800 a minute, and the five dexes with live assets would be 2,000, over budget |
-| request | a POST helper beside `getJson`, which sends a GET, at [`AnchorPoller.ts`](../../../old_ts_server/src/feeds/anchor/AnchorPoller.ts) lines 224 to 243 | every info call is a POST with a JSON body and `content-type: application/json`, or it gets 405 or 415 |
+| request | a POST helper beside `getJson`, which sends a GET, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/feeds/anchor/AnchorPoller.ts) lines 224 to 243 | every info call is a POST with a JSON body and `content-type: application/json`, or it gets 405 or 415 |
 | row mapping | section 3, key `universe[i].name` joined to `ctxs[i]` by index | contexts carry no name |
 | interval and next settlement | `fundingIntervalHours` 1, and `nextFundingAt` the next whole UTC hour after the arrival stamp | neither is in the context, and `predictedFundings` names the hour just settled |
 | skip | `isDelisted` true: 56 on the first dex and 143 on builder dexes | their mark and oracle are frozen and `midPx` is null |
 | flag | `HMSTR`, `NOT`, `MEME`, `XAI` | one price step exceeds the 1,000 ppm move guard |
-| rate limit pause | `rateLimitPauseMs` 60,000, the default at [`AnchorPoller.ts`](../../../old_ts_server/src/feeds/anchor/AnchorPoller.ts) line 9 | the budget is per minute and no `Retry-After` is documented |
+| rate limit pause | `rateLimitPauseMs` 60,000, the default at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/feeds/anchor/AnchorPoller.ts) line 9 | the budget is per minute and no `Retry-After` is documented |
 | catalog | `rawMarketId` from `market.info.name`, and the HIP-3 dex list set explicitly in CCXT | section 2 |
 
 At a 3 s interval the first-dex reply is about 2.1 GB a day, which the design treats as free.

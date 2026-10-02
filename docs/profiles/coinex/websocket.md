@@ -123,7 +123,7 @@ Not measured.
 | close | | a client close ended with 1006 in both runs, the server sent no close frame |
 
 The gzip inside every frame is the one protocol fact that would have mattered to the engine.
-[`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) refuses permessage-deflate, and a CoinEx subclass would have to gunzip each binary frame in `handleMessage` before parsing.
+[`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) refuses permessage-deflate, and a CoinEx subclass would have to gunzip each binary frame in `handleMessage` before parsing.
 
 ## 6. Captured frames
 

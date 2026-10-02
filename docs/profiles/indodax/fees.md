@@ -117,7 +117,7 @@ Indodax lists no perpetual, so it publishes no funding rate, interval, cap or se
 | item | CCXT 4.5.68 | wire or source |
 |---|---|---|
 | `market.taker` | `this.safeNumber(market, 'trade_fee_percent')` at `server/node_modules/ccxt/js/src/indodax.js` line 394 | a percent: 0.2 on 472 IDR pairs, 0.06 on 11 USDT pairs, 0.3 on `bonkusdt` |
-| what the connector would compute | `Math.round(taker * 1_000_000)` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 185 gives 200,000 ppm on IDR pairs, 60,000 on 11 USDT pairs and 300,000 on `bonkusdt`, P1 and P2 | the real taker is 2,000 and 600 ppm, so CCXT's number is 100 times too large |
+| what the connector would compute | `Math.round(taker * 1_000_000)` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 185 gives 200,000 ppm on IDR pairs, 60,000 on 11 USDT pairs and 300,000 on `bonkusdt`, P1 and P2 | the real taker is 2,000 and 600 ppm, so CCXT's number is 100 times too large |
 | `market.maker` | 0 on all 484 markets, P1 and P2, from the class default at line 185, since the market parser sets no maker | 0.1 % and 0.03 % on the wire |
 | class default | `'tierBased': false, 'percentage': true, 'maker': 0, 'taker': 0.003` at lines 183 to 186 | the schedule before 2023-08-22, S8 |
 | `market.percentage` | true, at line 400 | |
@@ -125,12 +125,12 @@ Indodax lists no perpetual, so it publishes no funding rate, interval, cap or se
 | CCXT Pro | no `pro/indodax.js` exists in 4.5.68 | |
 
 For `BTC/USDT`, CCXT reported `taker` 0.06 and `maker` 0 without credentials, P1 and P2.
-The literal is the percent that `/api/pairs` returns, read as a fraction, the same shape as the Coinbase constant that [`registry.ts`](../../../server/src/venues/registry.ts) lines 74 to 76 document.
+The literal is the percent that `/api/pairs` returns, read as a fraction, the same shape as the Coinbase constant that [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) lines 74 to 76 document.
 
 ## 9. Recommended registry values
 
 None today.
-The connector keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 200, and Indodax has none, so the venue would log "no usable swap markets" and be skipped.
+The connector keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 200, and Indodax has none, so the venue would log "no usable swap markets" and be skipped.
 
 If a spot leg on the USDT market is ever modelled, the numbers would be these.
 
@@ -139,7 +139,7 @@ If a spot leg on the USDT market is ever modelled, the numbers would be these.
 | `takerPpm` | 600, or 822 all-in on a buy and 2,922 all-in on a sale | the USDT market service taker, plus the CFX fee and the PPh of section 2 |
 | `ccxtTakerPpm` | 60,000 | what CCXT reports on the 11 USDT markets, a percent read as a fraction, line 394 |
 
-`bonkusdt` would report 300,000 and trip the connector's unexpected fee warning at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 140, which is one more reason to set `takerPpm` explicitly.
+`bonkusdt` would report 300,000 and trip the connector's unexpected fee warning at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 140, which is one more reason to set `takerPpm` explicitly.
 
 ## 10. Source ledger
 

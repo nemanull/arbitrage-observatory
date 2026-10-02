@@ -232,7 +232,7 @@ It is not recommended for the engine, which trades perpetuals, and the last rows
 | keepalive | CONNECT keepalive 30, PINGREQ every 15 s | the broker closes at one and a half keepalives without a ping |
 | `maxSilenceMs` | 45,000, with PINGRESP counted as traffic | an own book sent nothing for 90 s in the P3 rerun |
 | resync | a REST book per pair on every reconnect, and no periodic reseed beyond what the budget allows | there is no sequence, and the REST budget of 1,440 requests a day covers 215 pairs about 6 times a day |
-| engine change | `VenueFeed` sends every subscribe frame through `JSON.stringify` at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, so a Koinpark feed needs a path that sends binary packets and reassembles MQTT packets across frames | the server accepts only MQTT |
+| engine change | `VenueFeed` sends every subscribe frame through `JSON.stringify` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, so a Koinpark feed needs a path that sends binary packets and reassembles MQTT packets across frames | the server accepts only MQTT |
 | `liq: 1` pairs | do not treat as a venue book | they are Binance's book at 0.8 times the size, up to 10 s old |
 | deflate | keep `perMessageDeflate: false` | the server does not negotiate it |
 

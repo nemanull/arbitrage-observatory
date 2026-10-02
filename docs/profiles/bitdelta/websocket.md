@@ -233,7 +233,7 @@ They arrive on the same `/` namespace once the auth token is a user's token.
 ## 8. Recommended feed shape
 
 None.
-The engine's feed keeps `depthLevels` per side, 20 by default, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, and walks sizes on each level, and BitDelta sends one price per side with no size for its derivatives.
+The engine's feed keeps `depthLevels` per side, 20 by default, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, and walks sizes on each level, and BitDelta sends one price per side with no size for its derivatives.
 A feed could turn `prices_futures_v2` into a one level book only by inventing a size, and the quote's width, a median 4,566 ppm over 89 contracts, would dominate any cross it found.
 
 If a later design accepts a sizeless quote, this is what the wire supports.

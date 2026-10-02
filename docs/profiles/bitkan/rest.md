@@ -110,7 +110,7 @@ Mark equalled the nearest Binance poll rounded to BitKan's decimals on 86 of 121
 `prev_rate` equalled Binance's settled rate at 2026-09-23 00:00 UTC on both contracts, `0.00001021` for BTC and `0.00009373` for ETH.
 So the index basket, the mark formula, its clamps and the funding cap are Binance USD-M's.
 BitKan republishes the mark every 1.3 to 1.7 s median and at most 2.5 s apart, while Binance's REST premium index moves on a one second grid.
-The published rate is Binance's `lastFundingRate`, which the engine's Binance poller already reads as the upcoming rate, at [`anchor.ts`](../../../server/src/venues/binance/anchor.ts) line 40.
+The published rate is Binance's `lastFundingRate`, which the engine's Binance poller already reads as the upcoming rate, at [`anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/binance/anchor.ts) line 40.
 No settlement instant was captured.
 
 ## 5. REST book snapshot
@@ -135,7 +135,7 @@ That lag is transit plus clock offset, and the two cannot be separated without a
 
 None.
 There is no public anchor call to poll, and the socket's anchor numbers are Binance's.
-The engine already polls the same contracts through [`anchor.ts`](../../../server/src/venues/binance/anchor.ts).
+The engine already polls the same contracts through [`anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/binance/anchor.ts).
 
 ## 9. Source ledger
 

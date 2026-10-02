@@ -52,7 +52,7 @@ Its rows are exactly the 213 active contracts, with the same `multiplier` on all
 CCXT 4.5.68 has no FameEX class: `ccxt.exchanges` lists 104 ids and none contains `fame`, P1.
 The current CCXT master, commit `1d8b674434` of 2026-09-22, has no `fameex.ts` in `ts/src`, S11.
 Pull request 28154, "Add FameEX exchange (futures/swap)", opened 2026-03-16 and last updated 2026-09-13, is open and unmerged, S12.
-So the engine's catalog, which is `loadMarkets` of a CCXT class at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, has nothing to load.
+So the engine's catalog, which is `loadMarkets` of a CCXT class at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, has nothing to load.
 A hand-written catalog would map the rows as follows.
 
 | engine field | FameEX source | note |
@@ -69,7 +69,7 @@ A hand-written catalog would map the rows as follows.
 No pair is listed twice among the 246 rows, P1.
 `E-1000PEPE-USDT` and `E-1000SHIB-USDT` are priced per 1,000 tokens: their index read 0.00501835 and 0.00620811 at about 04:30 UTC on 2026-09-23, C3, and both have `multiplier` 1000, so one contract is 1,000,000 tokens.
 The inactive `E-PEPE-USDT` and `E-SHIB-USDT` remain in the list with status 0.
-A venue that lists plain PEPE would need a price scale entry against these, at [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 20.
+A venue that lists plain PEPE would need a price scale entry against these, at [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 20.
 The six contracts whose `multiplierCoin` is `USDT` are `E-BSB-USDT` (5), `E-BABA-USDT` (0.02), `E-PTB-USDT` (4000), `E-MEITUAN-USDT` (0.4), `E-KUAISHOU-USDT` (1) and `E-LGELECTRONICS-USDT` (0.02).
 What one of their contracts is worth in the base is Not verified, so a catalog should skip them.
 `E-KUAISHOU-USDT` also showed the largest mark to index gap of all, section 4.

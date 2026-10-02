@@ -96,7 +96,7 @@ Bitkub has no perpetual, so there is no funding rate, interval, cap or settlemen
 ## 9. Recommended registry values
 
 No registry entry is recommended.
-Bitkub has no swap market and no CCXT class, so the connector at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 64 to 68 and 200 to 201 would load nothing.
+Bitkub has no swap market and no CCXT class, so the connector at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 64 to 68 and 200 to 201 would load nothing.
 If a THB spot leg were ever built outside CCXT, `takerPpm` would be 2,500 for THB pairs and `ccxtTakerPpm` would stay unset.
 
 ## 10. Source ledger

@@ -226,12 +226,12 @@ Zaif cannot join the engine as a perpetual leg, so no feed is recommended today.
 |---|---|---|
 | URL plan | one plan per market, `wss://ws.zaif.jp/stream?currency_pair=<rawMarketId>` | the pair lives in the URL |
 | markets per connection | 1 | the stream serves one pair per socket |
-| connect stagger | `connectStaggerMs` 334, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 25 | the documented limit is about 4 connection starts per second per IP, and 3 per second ran clean |
+| connect stagger | `connectStaggerMs` 334, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 25 | the documented limit is about 4 connection starts per second per IP, and 3 per second ran clean |
 | subscribe frames | none, `getSubscribeFrames` returns `[]` | a client text frame closes the socket |
 | keepalive | `c.socket.ping()` every 20 s, as the Binance feed does at `server/src/venues/binance/binance.ts` line 92 | the server cuts a socket after 60 s with no traffic, and a quiet pair sends nothing for hours |
-| `maxSilenceMs` | 45,000 | two missed pongs. `VenueFeed` counts a pong as traffic at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 98 |
+| `maxSilenceMs` | 45,000 | two missed pongs. `VenueFeed` counts a pong as traffic at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 98 |
 | routing | the connection's single market, cross-checked against `currency_pair` | every push names its pair |
-| every push | `resetBook(pair, bids, asks)`, which publishes, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 263 to 278 | each push is a whole top-20 book |
+| every push | `resetBook(pair, bids, asks)`, which publishes, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 263 to 278 | each push is a whole top-20 book |
 | resync | none needed on data. Reconnect on close, and the first frame restores the book | no sequence exists, so no gap can be seen |
 | unserved market | expect the `book_unserved` warning for the nine pairs that never send a frame | the socket stays open and silent |
 | receive time | stamp on arrival, never from `timestamp` | the first frame of a quiet pair carries a timestamp hours old |

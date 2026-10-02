@@ -126,7 +126,7 @@ CCXT's 7,500 ppm is five times the real commission and almost twice the all-in 4
 
 ## 9. Recommended registry values
 
-The connector keeps only active swaps at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 195 to 201, and TokoCrypto has none, so the venue cannot be registered as a perpetual leg.
+The connector keeps only active swaps at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 195 to 201, and TokoCrypto has none, so the venue cannot be registered as a perpetual leg.
 If a spot leg is ever modelled, these are the values.
 
 | field | value | reason |

@@ -66,7 +66,7 @@ The probed column is empty of protocol facts because no socket opened, P5.
 Tokpie documents no WebSocket book channel, S1.
 So there is no snapshot on subscribe, no delta, no sequence and no checksum to describe.
 
-The engine's feed contract needs a socket that delivers a book, with a snapshot on subscribe or a per symbol sequence, through the abstract members at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 387 to 390 and the resync at line 296, and Tokpie offers neither.
+The engine's feed contract needs a socket that delivers a book, with a snapshot on subscribe or a per symbol sequence, through the abstract members at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 387 to 390 and the resync at line 296, and Tokpie offers neither.
 The nearest substitute is polling `GET /api_order_book_v2/?market=<pair>&depth=20`, which has no update id, lists both sides in descending price order, and returned 1, 1 and 2 distinct `ETH@USDT` books over three runs of 58 to 60 polls, see [`rest.md`](./rest.md) section 5.
 
 | property | documented | observed on the REST book |

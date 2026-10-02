@@ -114,7 +114,7 @@ The settlement instant itself was not captured, and no funding history call was 
 ## 9. Recommended registry values
 
 None.
-The venue cannot be registered in its current shape, because a registry entry is built on a CCXT class, `createExchange: () => ccxt.Exchange` at [`registry.ts`](../../../server/src/venues/registry.ts) line 29, and none exists.
+The venue cannot be registered in its current shape, because a registry entry is built on a CCXT class, `createExchange: () => ccxt.Exchange` at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 29, and none exists.
 If the access and catalog problems of [`rest.md`](./rest.md) section 8 were solved, `takerPpm` would be 600 from S1, and `ccxtTakerPpm` would stay unset.
 
 ## 10. Source ledger

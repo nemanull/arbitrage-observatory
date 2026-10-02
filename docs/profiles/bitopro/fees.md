@@ -113,7 +113,7 @@ Credit borrowing charges interest, whose rates and limits the fee page shows und
 ## 9. Recommended registry values
 
 None, because the venue has no perpetual.
-The connector keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79 through `isActiveSwapMarket` at line 196, and a venue with none is skipped with `no usable swap markets; skipping the venue` at line 51.
+The connector keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79 through `isActiveSwapMarket` at line 196, and a venue with none is skipped with `no usable swap markets; skipping the venue` at line 51.
 If a spot leg were ever modelled, `takerPpm` 2,000 and `ccxtTakerPpm` 2,000 would be right, since the constant CCXT reports equals the live VIP 0 taker.
 
 ## 10. Source ledger

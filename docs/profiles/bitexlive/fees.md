@@ -99,8 +99,8 @@ So there is no `market.taker` to read, and `ccxtTakerPpm` has no CCXT source lin
 
 ## 9. Recommended registry values
 
-None, because the venue should not enter [`registry.ts`](../../../server/src/venues/registry.ts).
-The engine's catalog keeps only active swap markets at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196, and Bitexlive has neither a swap market nor a CCXT class.
+None, because the venue should not enter [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
+The engine's catalog keeps only active swap markets at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196, and Bitexlive has neither a swap market nor a CCXT class.
 If a spot survey ever used it, `takerPpm` would be 1,000 from S2 and `ccxtTakerPpm` would stay unset.
 
 ## 10. Source ledger

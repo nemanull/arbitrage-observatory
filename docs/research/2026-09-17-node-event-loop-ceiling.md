@@ -33,21 +33,21 @@ Node executes JavaScript on one thread and drives its I/O from the same thread t
 In this server the following work all runs there, in the order a frame meets it.
 
 - Socket reads and TLS decryption, inside libuv's read callback and Node's `TLSWrap`, described in section 3.
-- WebSocket framing and unmasking in the `ws` package, which the feed opens at [`VenueFeed.ts:81`](../../server/src/feeds/book/VenueFeed.ts) with `perMessageDeflate: false`.
-- The feed's message entry at [`VenueFeed.ts:200`](../../server/src/feeds/book/VenueFeed.ts), which stamps `lastMessageAt`, resets the reconnect attempt at [`VenueFeed.ts:206`](../../server/src/feeds/book/VenueFeed.ts) and calls the venue's `handleMessage`.
-- `JSON.parse` on the frame text, at [`binance.ts:110`](../../server/src/venues/binance/binance.ts), [`bybit.ts:82`](../../server/src/venues/bybit/bybit.ts) and [`okx.ts:71`](../../server/src/venues/okx/okx.ts) for the three busiest venues.
-- The book apply, a snapshot reset or a delta merge into the feed's sorted book, then `publish` at [`VenueFeed.ts:283`](../../server/src/feeds/book/VenueFeed.ts), whose `now` parameter defaults to `Date.now()` at that moment.
-- `Engine.updateBook` at [`Engine.ts:115`](../../server/src/engine/Engine.ts), which writes the top of book and `recvTs` into the cluster arrays and calls `validate` at [`Engine.ts:202`](../../server/src/engine/Engine.ts).
-- The open gates, the discovery scan and the sample write in `recordSample` at [`OpportunityLifecycle.ts:226`](../../server/src/engine/opportunity/OpportunityLifecycle.ts), which runs on every book update that changes a top price in the pair's cluster.
-- The queue write of a closed row at [`OpportunityLifecycle.ts:476`](../../server/src/engine/opportunity/OpportunityLifecycle.ts), which serialises the row and hands it to the Redis client on this thread.
-- The anchor pollers' rounds, started by `setInterval` at [`AnchorPoller.ts:56`](../../server/src/feeds/anchor/AnchorPoller.ts), whose HTTP responses are read, decrypted and parsed on this thread as well.
-- The one second sweep at [`orchestrator.ts:22`](../../server/src/orchestrator.ts).
-- The OpenTelemetry exporters, which serialise logs, traces and metrics every 30 s per [`otel.ts:20`](../../server/src/observability/otel.ts).
+- WebSocket framing and unmasking in the `ws` package, which the feed opens at [`VenueFeed.ts:81`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) with `perMessageDeflate: false`.
+- The feed's message entry at [`VenueFeed.ts:200`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), which stamps `lastMessageAt`, resets the reconnect attempt at [`VenueFeed.ts:206`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) and calls the venue's `handleMessage`.
+- `JSON.parse` on the frame text, at [`binance.ts:110`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/binance/binance.ts), [`bybit.ts:82`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/bybit/bybit.ts) and [`okx.ts:71`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/okx/okx.ts) for the three busiest venues.
+- The book apply, a snapshot reset or a delta merge into the feed's sorted book, then `publish` at [`VenueFeed.ts:283`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), whose `now` parameter defaults to `Date.now()` at that moment.
+- `Engine.updateBook` at [`Engine.ts:115`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/Engine.ts), which writes the top of book and `recvTs` into the cluster arrays and calls `validate` at [`Engine.ts:202`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/Engine.ts).
+- The open gates, the discovery scan and the sample write in `recordSample` at [`OpportunityLifecycle.ts:226`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityLifecycle.ts), which runs on every book update that changes a top price in the pair's cluster.
+- The queue write of a closed row at [`OpportunityLifecycle.ts:476`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityLifecycle.ts), which serialises the row and hands it to the Redis client on this thread.
+- The anchor pollers' rounds, started by `setInterval` at [`AnchorPoller.ts:56`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/anchor/AnchorPoller.ts), whose HTTP responses are read, decrypted and parsed on this thread as well.
+- The one second sweep at [`orchestrator.ts:22`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/orchestrator.ts).
+- The OpenTelemetry exporters, which serialise logs, traces and metrics every 30 s per [`otel.ts:20`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/observability/otel.ts).
 - The `OpportunityWorker` that drains the queue, which is a provider of the same Nest application, so its job handling and its database writes also run here, although it never touches a cluster.
 - Garbage collection of everything the above allocates, whose pauses land on this thread.
 
 What does not run on it is short.
-The libuv threadpool carries DNS lookups and file system calls, and it would carry zlib inflation if permessage-deflate were negotiated, but deflate is refused at [`VenueFeed.ts:81`](../../server/src/feeds/book/VenueFeed.ts).
+The libuv threadpool carries DNS lookups and file system calls, and it would carry zlib inflation if permessage-deflate were negotiated, but deflate is refused at [`VenueFeed.ts:81`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts).
 TLS is not on the threadpool in Node, the record layer runs inside the event loop thread.
 
 ## 3. How a frame becomes a book
@@ -71,7 +71,7 @@ Each step names the function and where it was read.
 7. The `'data'` listener is `socketOnData` in `ws`'s [lib/websocket.js](https://github.com/websockets/ws/blob/8.21.1/lib/websocket.js), which calls `receiver.write(chunk)` and would call `socket.pause()` if that write returned false.
 8. The `Receiver` in [lib/receiver.js](https://github.com/websockets/ws/blob/8.21.1/lib/receiver.js) is a `Writable` whose `_write` pushes the chunk and runs `startLoop`.
    `startLoop` parses every complete frame in the buffered bytes and, with `allowSynchronousEvents` at its client default of true, emits `'message'` for each one synchronously, then calls the write callback.
-9. The `'message'` listener is the feed's `onMessage` at [`VenueFeed.ts:200`](../../server/src/feeds/book/VenueFeed.ts), then the venue's `handleMessage`, `JSON.parse`, the book apply, `publish`, `Engine.updateBook`, `validate`, and `recordSample` when a top price changed.
+9. The `'message'` listener is the feed's `onMessage` at [`VenueFeed.ts:200`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), then the venue's `handleMessage`, `JSON.parse`, the book apply, `publish`, `Engine.updateBook`, `validate`, and `recordSample` when a top price changed.
 
 Two consequences follow from the chain, and both were confirmed in the sources rather than assumed.
 
@@ -202,10 +202,10 @@ The bound below multiplies each cadence by the markets the fifth run streamed.
 
 | stream | markets streamed | cadence | frames per second if every market moves | source of the cadence |
 |---|---:|---|---:|---|
-| bybit `orderbook.50` | 659 | one frame per 20 ms per changed market | 32,950 | [`bybit.ts:18`](../../server/src/venues/bybit/bybit.ts) |
+| bybit `orderbook.50` | 659 | one frame per 20 ms per changed market | 32,950 | [`bybit.ts:18`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/bybit/bybit.ts) |
 | binance `@depth@0ms` | 652 | about one frame per 30 ms per active market | 21,733 | section 5.4 |
-| binance `@depth20@100ms` | 652 | ten frames a second per market | 6,520 | [`binance.ts:25`](../../server/src/venues/binance/binance.ts) |
-| okx `books` | 434 | one 400 level frame per 100 ms per changed market | 4,340 | [`okx.ts:12`](../../server/src/venues/okx/okx.ts) |
+| binance `@depth20@100ms` | 652 | ten frames a second per market | 6,520 | [`binance.ts:25`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/binance/binance.ts) |
+| okx `books` | 434 | one 400 level frame per 100 ms per changed market | 4,340 | [`okx.ts:12`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/okx/okx.ts) |
 | krakenfutures `book` | 247 | one delta per level change, unbounded | 2,700 at the quiet baseline | section 5.3 |
 | coinbase `level2` | 124 | per change | 237 at the quiet baseline | section 5.3 |
 
@@ -224,7 +224,7 @@ The home server's core is not the laptop's, so its ceiling is lower or higher by
 - It was the first run on the home server, the first with the minimum cross age of [`../plans/2026-09-15-minimum-cross-age-design.md`](../plans/2026-09-15-minimum-cross-age-design.md), and the first with the binance diff channel of [`../plans/2026-09-15-binance-realtime-depth-design.md`](../plans/2026-09-15-binance-realtime-depth-design.md).
 - The home server runs SigNoz and its ClickHouse on the same box as the process, so the telemetry stack competes for the same cores.
 - Its CPU model, core count and `tcp_rmem` are unknown, because the box did not answer on 2026-09-17.
-- The OpenTelemetry runtime instrumentation at [`otel.ts:60`](../../server/src/observability/otel.ts) exports `nodejs.eventloop.delay.min`, `.max`, `.mean`, `.stddev`, `.p50`, `.p90`, `.p99` and `nodejs.eventloop.utilization` every 30 s per [`otel.ts:20`](../../server/src/observability/otel.ts), per the [instrumentation-runtime-node README](https://github.com/open-telemetry/opentelemetry-js-contrib/blob/main/packages/instrumentation-runtime-node/README.md).
+- The OpenTelemetry runtime instrumentation at [`otel.ts:60`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/observability/otel.ts) exports `nodejs.eventloop.delay.min`, `.max`, `.mean`, `.stddev`, `.p50`, `.p90`, `.p99` and `nodejs.eventloop.utilization` every 30 s per [`otel.ts:20`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/observability/otel.ts), per the [instrumentation-runtime-node README](https://github.com/open-telemetry/opentelemetry-js-contrib/blob/main/packages/instrumentation-runtime-node/README.md).
   Those series exist for the whole run and nobody has read them.
 - The log export read for the research is 60,437 lines from the audited process, carries `attributes_string` only, and so holds no numeric attribute, which is why the poll durations and refusal numbers come from a second export of `attributes_number` read over ssh for the audit.
 - The rows were imported into the laptop table with an id offset of 2,754 and are ids 2755 to 2820, 66 rows, each matching an `opportunity_closed` line within 2 ms.
@@ -280,7 +280,7 @@ Pauses between the waves ran 79 to 272 s.
 ## 8. Measurement A: the pass structure from the sample clocks
 
 Method, from [`./2026-09-17-fifth-run-loop-saturation.md`](./2026-09-17-fifth-run-loop-saturation.md) sections 2 and 8.
-A sample is written on every book update that changes a top price in the pair's cluster, at [`OpportunityLifecycle.ts:226`](../../server/src/engine/opportunity/OpportunityLifecycle.ts), with `now` taken from `publish` at [`VenueFeed.ts:283`](../../server/src/feeds/book/VenueFeed.ts), which is `Date.now()` when the frame was processed.
+A sample is written on every book update that changes a top price in the pair's cluster, at [`OpportunityLifecycle.ts:226`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityLifecycle.ts), with `now` taken from `publish` at [`VenueFeed.ts:283`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), which is `Date.now()` when the frame was processed.
 The sample clock of an open row is therefore a trace of when the thread handled each venue's frames.
 A leg change is a sample where that leg's price differs from the previous sample, attributed to the leg's venue.
 A bundle is a run of changes with no gap over 30 ms.
@@ -339,10 +339,10 @@ Ordered, non overlapping bundles in a fixed cycle are the event loop of section 
 ## 9. Measurement B: the timers
 
 The anchor pollers are the process's only periodic clock that the log export preserves.
-Each poller starts a `setInterval` at its venue's interval at [`AnchorPoller.ts:56`](../../server/src/feeds/anchor/AnchorPoller.ts), one second by default and two seconds on bybit and coinbase.
-A tick that finds the previous round still in flight increments `skipped` at [`AnchorPoller.ts:90`](../../server/src/feeds/anchor/AnchorPoller.ts) and returns without starting a round.
-A round is one HTTP request for the venue's whole ticker set, with a 10 s timeout at [`AnchorPoller.ts:8`](../../server/src/feeds/anchor/AnchorPoller.ts), and its duration is measured from the tick's `Date.now()` to the reply's arrival.
-A summary line is written every 60 completed rounds per [`AnchorPoller.ts:11`](../../server/src/feeds/anchor/AnchorPoller.ts).
+Each poller starts a `setInterval` at its venue's interval at [`AnchorPoller.ts:56`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/anchor/AnchorPoller.ts), one second by default and two seconds on bybit and coinbase.
+A tick that finds the previous round still in flight increments `skipped` at [`AnchorPoller.ts:90`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/anchor/AnchorPoller.ts) and returns without starting a round.
+A round is one HTTP request for the venue's whole ticker set, with a 10 s timeout at [`AnchorPoller.ts:8`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/anchor/AnchorPoller.ts), and its duration is measured from the tick's `Date.now()` to the reply's arrival.
+A summary line is written every 60 completed rounds per [`AnchorPoller.ts:11`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/anchor/AnchorPoller.ts).
 
 So the spacing between two summaries is 60 intervals plus one interval for every tick that found a round in flight, plus the lateness of the timer itself.
 Over the run the spacing sits at a median of 60.0 s with a p90 of 60.3 to 61.1 s on the one second pollers, and at 120.0 s with a p90 of 120.2 to 121.9 s on the two second pollers.
@@ -380,8 +380,8 @@ The counts.
 The client's own idle kill fired once all day, on bybit at 11:15:38, and never on binance.
 
 The cycle anatomy.
-The reconnect delay is `RECONNECT_BASE_MS * 2 ** (attempt - 1)` capped at the maximum, plus a random jitter of up to 250 ms, at [`VenueFeed.ts:357`](../../server/src/feeds/book/VenueFeed.ts), which at attempt 1 is 500 to 750 ms and matches the observed 640 ms.
-The attempt resets to 0 on any received message at [`VenueFeed.ts:206`](../../server/src/feeds/book/VenueFeed.ts), and the connection URL already carries the first market's two streams, so data arrives before the subscribe acknowledgements and every reconnect line at [`VenueFeed.ts:372`](../../server/src/feeds/book/VenueFeed.ts) says attempt 1.
+The reconnect delay is `RECONNECT_BASE_MS * 2 ** (attempt - 1)` capped at the maximum, plus a random jitter of up to 250 ms, at [`VenueFeed.ts:357`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), which at attempt 1 is 500 to 750 ms and matches the observed 640 ms.
+The attempt resets to 0 on any received message at [`VenueFeed.ts:206`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), and the connection URL already carries the first market's two streams, so data arrives before the subscribe acknowledgements and every reconnect line at [`VenueFeed.ts:372`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) says attempt 1.
 The backoff never grew, and each closed socket had been served before it died.
 All four subscribe acknowledgements arrived within 20 ms of each other about 1.2 s after the socket opened.
 The next close came a median 0.92 s later, p10 0.46 s, p90 2.10 s.
@@ -391,7 +391,7 @@ The same shape ran for 8 to 11 cycles at 13:34, 13:39 and 14:35 with no crash an
 
 The local causes, excluded one by one from the feed code.
 
-- The silence watch terminates a socket after 240 s without a message per [`binance.ts:30`](../../server/src/venues/binance/binance.ts), logs `no traffic`, and cannot fire within a second of a socket that just received data.
+- The silence watch terminates a socket after 240 s without a message per [`binance.ts:30`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/binance/binance.ts), logs `no traffic`, and cannot fire within a second of a socket that just received data.
 - The 23 hour refresh retires a socket before binance's 24 hour cap, logs `retiring the socket`, and cannot fire on a socket a second old.
 - `stop()` logs `stopping` and sets `running` false, so no reconnect line could follow it.
 - The resync path that terminates a socket on a sequence gap is not used by the binance feed, which logs `book_desync` and drops the symbol's state instead.
@@ -402,7 +402,7 @@ Nothing local fits a silent close about a second after the acknowledgements.
 The far side closed the socket.
 
 What the logs cannot say is how.
-The close handler at [`VenueFeed.ts:95`](../../server/src/feeds/book/VenueFeed.ts) is `socket.on('close', () => this.onClose(c))`, which drops the close code and reason that `ws` passes.
+The close handler at [`VenueFeed.ts:95`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) is `socket.on('close', () => this.onClose(c))`, which drops the close code and reason that `ws` passes.
 A TCP reset after the upgrade is swallowed by `ws`, which destroys the socket and emits a plain close with the default code 1006.
 So a clean close frame from binance and a reset from anywhere on the path look identical in our logs, and "clean close" is not provable from this export.
 The absent close code is the gap, and it is one line to fill.
@@ -439,7 +439,7 @@ That the two dying sockets also carried the heaviest markets is plausible and no
 One more consequence for the logs: if binance sent a close frame, it could not be delivered until we read the socket, so our close timestamp is when the thread drained the socket, not when binance decided.
 
 What each cycle cost the engine.
-The close handler at [`VenueFeed.ts:217`](../../server/src/feeds/book/VenueFeed.ts) clears the timers, deletes 200 books and calls `markStale` at [`Engine.ts:245`](../../server/src/engine/Engine.ts) on the plan's 200 markets, which zeroes their `recvTs` and closes every route on them.
+The close handler at [`VenueFeed.ts:217`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) clears the timers, deletes 200 books and calls `markStale` at [`Engine.ts:245`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/Engine.ts) on the plan's 200 markets, which zeroes their `recvTs` and closes every route on them.
 The reopen costs a TLS handshake, four subscribe frames, and a burst of 200 fresh snapshots applied and published onto the already saturated loop.
 Each cycle leaves 200 markets with `recvTs` 0 for at least the 640 ms delay plus the 1.2 s to the acknowledgements, about 1.8 s.
 Four rows closed as `feed_down` at 18:37:15.302, 18:37:16.649, 18:37:40.737 and 18:41:25.439.
@@ -485,7 +485,7 @@ In a minute where ETH fell two percent and RAVE almost six, a leg two seconds st
 ## 12. Why no gate could see it
 
 - The book clock is ours.
-  [`VenueFeed.ts:283`](../../server/src/feeds/book/VenueFeed.ts) stamps the book with `Date.now()` at processing, [`Engine.ts:202`](../../server/src/engine/Engine.ts) hands that stamp to validation as `recvTs`, and the only checks on it are `recvTs <= 0` at [`OpportunityManager.ts:322`](../../server/src/engine/opportunity/OpportunityManager.ts) and [`OpportunityManager.ts:346`](../../server/src/engine/opportunity/OpportunityManager.ts), which skip a slot that has never been written or was marked stale.
+  [`VenueFeed.ts:283`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts) stamps the book with `Date.now()` at processing, [`Engine.ts:202`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/Engine.ts) hands that stamp to validation as `recvTs`, and the only checks on it are `recvTs <= 0` at [`OpportunityManager.ts:322`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityManager.ts) and [`OpportunityManager.ts:346`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/engine/opportunity/OpportunityManager.ts), which skip a slot that has never been written or was marked stale.
   A backlog shifts every book's clock by the backlog, and nothing compares one leg's clock to the other's or to the venue's.
 - The sample clock is the same clock.
   Every `sampleTsMs`, every duration and the minimum cross age of [`../plans/2026-09-15-minimum-cross-age-design.md`](../plans/2026-09-15-minimum-cross-age-design.md) were measured in half second steps during the windows.
@@ -515,7 +515,7 @@ Each limit below is tied to the measurement that showed it.
 4. No arrival timestamp exists.
    Section 3 shows that `net` exposes none, so every clock in the engine, `recvTs`, `sampleTsMs`, `openedAt`, `durationMs` and the cross age, is the processing clock, and section 12 shows what that cost.
 5. Timers are late by the same queueing delay.
-   Section 9 shows the anchor pollers' one second timer stretching to seven second rounds and 314 skipped ticks, and the sweep at [`orchestrator.ts:22`](../../server/src/orchestrator.ts) runs on the same timer phase, so the engine's clocks, its polls and its sweeps all degrade together and in proportion.
+   Section 9 shows the anchor pollers' one second timer stretching to seven second rounds and 314 skipped ticks, and the sweep at [`orchestrator.ts:22`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/orchestrator.ts) runs on the same timer phase, so the engine's clocks, its polls and its sweeps all degrade together and in proportion.
 6. The only honest instrument is event loop utilization.
    Section 6 shows it was exported every 30 s for the whole run and never read, and section 8 shows what it takes to reconstruct the same fact from sample clocks after the event.
 7. The margin is thin.
@@ -536,7 +536,7 @@ Sharding is out of scope for now by the decision recorded in [`./2026-09-17-fift
    Query `signoz_metrics` for `nodejs.eventloop.utilization`, `nodejs.eventloop.delay.p99`, `nodejs.eventloop.delay.max` and `v8js.gc.duration` from 18:30 to 19:00 on 2026-09-15, against 08:00 to 09:00 the same day as a baseline, and 17:30 to 17:40 for the pre crash load.
    Utilization near 1 and a delay in the hundreds of milliseconds in the crash minutes is the direct measurement of sections 4 and 8.
 2. The close codes.
-   Repair 4 of the audit: log the code and reason on the close handler at [`VenueFeed.ts:95`](../../server/src/feeds/book/VenueFeed.ts), one line, so a close frame and a reset stop looking the same.
+   Repair 4 of the audit: log the code and reason on the close handler at [`VenueFeed.ts:95`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), one line, so a close frame and a reset stop looking the same.
 3. The log export.
    The file the loop saturation research read is not on the laptop on 2026-09-17, so every per line figure in sections 7, 9 and 10 is carried from that document and was not re-derived here.
 4. The home server's hardware and kernel.
@@ -563,12 +563,12 @@ Sharding is out of scope for now by the decision recorded in [`./2026-09-17-fift
    `nodejs.eventloop.utilization` and `nodejs.eventloop.delay.max` over the run, with the crash minutes against the baseline, belong in the audit checklist.
    No code.
 4. Cut the largest stream.
-   The binance snapshot channel at [`binance.ts:25`](../../server/src/venues/binance/binance.ts) is about ten frames a second per market and exists to reseed the diffs.
+   The binance snapshot channel at [`binance.ts:25`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/venues/binance/binance.ts) is about ten frames a second per market and exists to reseed the diffs.
    `@depth20@500ms` drops about four fifths of it for a reseed that lands half a second later after a desync, of which the run had seven.
    One line.
    Measure it with the pipeline probe of section 5.3 before and after, and by the binance reconnect count on the next busy hour.
 5. The close code and the young socket rule.
-   Log the code and reason at [`VenueFeed.ts:95`](../../server/src/feeds/book/VenueFeed.ts), and hold a socket that closed inside the last few seconds as unhealthy until its second snapshot.
+   Log the code and reason at [`VenueFeed.ts:95`](https://github.com/nemanull/arbitrage-observatory/blob/627272be8be356aa40ee6194d0f709c3f00f8df9/server/src/feeds/book/VenueFeed.ts), and hold a socket that closed inside the last few seconds as unhealthy until its second snapshot.
    Size S.
    Measure it by the close codes on the next wave and by the count of rows that open within a second of a reseed.
 6. Pair shards.

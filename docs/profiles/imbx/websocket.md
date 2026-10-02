@@ -110,7 +110,7 @@ A crossed venue book is exactly the reading an arbitrage engine mistakes for an 
 ### Level window
 
 30 per side on every frame of every contract, including COPPER and NVDA, P2 and P3.
-That covers the engine's 20 levels at [`../../../server/src/engine/Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+That covers the engine's 20 levels at [`../../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 
 ### Size unit
 
@@ -242,11 +242,11 @@ A sketch for a later design, not a decision, and not a recommendation to build i
 | item | sketch | reason |
 |---|---|---|
 | URL plan | one plan, `wss://futuresws.imbx.io/kline-api/ws` | one family |
-| handshake | send a `User-Agent` header | the load balancer refuses a socket without one, and the engine opens sockets with only `{ perMessageDeflate: false }` at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, so this is a change to shared code |
+| handshake | send a `User-Agent` header | the load balancer refuses a socket without one, and the engine opens sockets with only `{ perMessageDeflate: false }` at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, so this is a change to shared code |
 | channel | `market_<subSymbol>_depth_step0` | the finest step, 30 levels |
 | markets per connection | 29, all of them | one socket carried all 29 at 66 frames per second |
 | subscribe frames | one `{"event": "sub", "params": {"channel": …, "cb_id": <subSymbol>}}` per market | the client sends one channel per frame |
-| decode | `zlib.gunzipSync` on the `Buffer` before `JSON.parse` in `handleMessage` | every frame is gzip inside, and `handleMessage` already receives a `Buffer` at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 209 |
+| decode | `zlib.gunzipSync` on the `Buffer` before `JSON.parse` in `handleMessage` | every frame is gzip inside, and `handleMessage` already receives a `Buffer` at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 209 |
 | keepalive | answer `{"ping": n}` with `{"pong": n}` inside `handleMessage`, and no timer in `startKeepalive` | an unanswered socket dies at 60 s |
 | `maxSilenceMs` | 30,000 | the server pings every 10 s once subscribed, and the ping counts as traffic |
 | routing | strip `market_` and `_depth_step0` from `channel` to get `subSymbol`, then map to the catalog key | three spellings of one contract |

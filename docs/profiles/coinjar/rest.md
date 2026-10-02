@@ -56,7 +56,7 @@ The product `id` is identical in the catalog, the Data API path and the socket t
 
 ### The USD settlement family
 
-The engine's quote family ranks USDT, then USDC, then USD, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) line 13.
+The engine's quote family ranks USDT, then USDC, then USD, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) line 13.
 70 bases have a market in that family, and the rank picks 19 USDT, 48 USDC and 3 USD markets, in P1.
 The 3 USD picks are `USDC-USD`, `GBPUSD` and `AUDUSD`, whose bases are not crypto, and 2 of the USDC picks are the stablecoins `USDT` and `DAI`.
 That leaves 65 crypto bases, 19 on USDT and 46 on USDC.
@@ -88,7 +88,7 @@ The only reference prices it publishes are these, all per product.
 No bulk call exists: `GET https://data.exchange.coinjar.com/products` answers 404, and the ticker takes one product id.
 A poll of every USD family pick would cost 70 calls a second.
 Nothing here can fill an `AnchorRow`, whose `index` and `fundingRate` have no source.
-A route with no anchor row is refused as `anchor_missing`, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 25 to 27, and a mark of 0 as `anchor_no_mark` at lines 37 to 39.
+A route with no anchor row is refused as `anchor_missing`, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 25 to 27, and a mark of 0 as `anchor_no_mark` at lines 37 to 39.
 So a CoinJar leg could never pass the open gate in the engine's current shape.
 
 ## 4. Anchor semantics

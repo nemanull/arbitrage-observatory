@@ -127,7 +127,7 @@ So `market.taker` cannot be read, and `ccxtTakerPpm` has no value.
 ## 9. Recommended registry values
 
 None.
-The venue lists no perpetual, the connector keeps only active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203, and every registry entry builds a CCXT class, as at [`registry.ts`](../../../server/src/venues/registry.ts) line 92 for Gate.
+The venue lists no perpetual, the connector keeps only active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203, and every registry entry builds a CCXT class, as at [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) line 92 for Gate.
 Figure Markets has no CCXT class to build, and six of its seven volatile bases stop trading on 2026-09-23 at 12:00 UTC.
 
 If a later design admitted spot legs and the venue kept a market worth trading, `takerPpm` would be 1,000 from the markets reply, and `ccxtTakerPpm` would stay unset because no CCXT class exists.

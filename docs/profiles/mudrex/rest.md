@@ -107,7 +107,7 @@ The socket's `markKline@1s` and ticker `mp` carry the mark faster, see [`websock
 Not publicly specified.
 Mudrex publishes no index value, no basket and no index formula.
 Its learn article describes an index only generically, as "Average of major exchange prices", S6.
-The engine's anchor reading divides one leg's index by the other's, at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 58, so a leg with no index cannot be judged.
+The engine's anchor reading divides one leg's index by the other's, at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 58, so a leg with no index cannot be judged.
 
 ### Mark
 
@@ -196,7 +196,7 @@ A recommendation for a later design, not a decision.
 | item | recommendation | reason |
 |---|---|---|
 | anchor poller | none | no public index, funding rate, interval or next settlement, section 3 |
-| mark alone | not from REST | the REST mark is the close of the last completed minute, 1 to 60 s old on arrival, while the engine stamps a reading on arrival and trusts it for 10 s, `ANCHOR_MAX_AGE_MS` at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5 |
+| mark alone | not from REST | the REST mark is the close of the last completed minute, 1 to 60 s old on arrival, while the engine stamps a reading on arrival and trusts it for 10 s, `ANCHOR_MAX_AGE_MS` at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5 |
 | catalog | none without a key | 401 on `/fapi/v1/futures`, and CCXT cannot load markets |
 | rate limit pause | 60,000 ms if ever used | the limit is counted per minute and no `Retry-After` is documented |
 

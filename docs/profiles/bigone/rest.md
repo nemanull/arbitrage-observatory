@@ -78,7 +78,7 @@ The TradFi launch article says "1 Futures = 0.1 TSLA", "0.01 XAU" and "1 XAG", S
 | 1,000,000 | 1, `PEPEUSDT` |
 
 Prices stay per coin whatever the multiplier: `PEPEUSDT` read an index of 0.000004955 and `DOGEUSDT` 0.103693.
-So no contract needs a price scale in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+So no contract needs a price scale in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 
 BTC and ETH are each listed twice, as the linear `BTCUSDT` and `ETHUSDT` and the inverse `BTCUSD` and `ETHUSD`.
 The inverse book counts contracts of 1 USD, see [`websocket.md`](./websocket.md) section 4, so a `marketFilter` that keeps `linear === true` is needed.
@@ -236,7 +236,7 @@ A size is in contracts, so the `BTCUSDT` touch of 4,104 is 4.104 BTC.
 | `GET /accounts` without a token | 403 | `{"anomaly":"anomaly.token/invalid"}` |
 
 The documentation's error shape `{"code": 40004, "message": "Unauthorized"}` belongs to the spot and wallet API, S1, and the contract API returned bare status codes instead.
-The engine's poller pauses on 403, 418 and 429, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1 and [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 192, and a public `instruments` call never returned any of them here.
+The engine's poller pauses on 403, 418 and 429, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1 and [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 192, and a public `instruments` call never returned any of them here.
 
 ## 7. Server time and clock offset
 
@@ -253,14 +253,14 @@ A recommendation for a later design, not a decision.
 | item | recommendation | reason |
 |---|---|---|
 | URL | `https://big.one/api/contract/v2/instruments` | one call, 42 KB, carries index, mark, rate and next settlement for all 99 contracts |
-| interval | 1,000 ms, the default at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 7 | medians of 190 to 293 ms and a max of 560 ms over 180 polls in three runs, 10 of the 500 per 10 s budget. The index moves every 5 s, so four of five polls repeat it, and a 1 s poll still catches each step within a second |
+| interval | 1,000 ms, the default at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 7 | medians of 190 to 293 ms and a max of 560 ms over 180 polls in three runs, 10 of the 500 per 10 s budget. The index moves every 5 s, so four of five polls repeat it, and a 1 s poll still catches each step within a second |
 | row mapping | section 3, key `symbol` | |
 | `fundingIntervalHours` | a static table seeded from S5 and from method 3 of section 3, 4 h for the 24 listed contracts and the five the formula found, 1 h for `SKRUSDT`, 8 h otherwise, replaced by the observed step of `nextFundingTime` once a settlement is seen | the API publishes no interval, and the announcement alone is incomplete |
 | skip | `BTCUSD` and `ETHUSD` | the market filter drops them anyway |
 | do not read | `nextFundingRate` as `fundingRate`, and `latestPrice` | the fixed rate for the upcoming settlement is `fundingRate` |
 | rate limit pause | `rateLimitPauseMs` 10,000 | the window is 10 s and no `Retry-After` is documented |
 | flag for the design | the mark is index plus funding basis | a BigONE leg's premium is at most the funding basis, the capped-mark shape of section 4 |
-| flag for the design | the index republishes every 5 s | a reading stamped on arrival can hold a value up to about 5 s old, and one 5 s step can be larger than the 1,000 ppm per poll the reader allows, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 6 |
+| flag for the design | the index republishes every 5 s | a reading stamped on arrival can hold a value up to about 5 s old, and one 5 s step can be larger than the 1,000 ppm per poll the reader allows, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 6 |
 
 The socket channel `instruments` carries the same rows and could replace the poll, see [`websocket.md`](./websocket.md) section 2.
 Its index still changes every 5 s, so it saves requests and not staleness.

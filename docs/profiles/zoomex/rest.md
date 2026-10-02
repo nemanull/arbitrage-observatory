@@ -168,7 +168,7 @@ The two replies were read in parallel, with server times up to 328 ms apart in r
 | `nextFundingAt` | `nextFundingTime` | string Unix ms: `"1790150400000"` is 2026-09-23 08:00 UTC | `Number()` |
 
 At 03:15 UTC the 368 contracts on 8 h read 08:00 UTC and the 329 on 4 h or 1 h read 04:00 UTC, P1 `anchor`.
-This is the row mapping of the existing Bybit poller at [`anchor.ts`](../../../server/src/venues/bybit/anchor.ts).
+This is the row mapping of the existing Bybit poller at [`anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/anchor.ts).
 
 ## 4. Anchor semantics
 
@@ -239,7 +239,7 @@ The inverse book answers the same way, with sizes in USD contracts.
 
 - "You are allowed to send 600 requests within a 5-second window per IP by default", S9.
 - Over the limit: HTTP 403 "access too frequent", and "you should terminate all HTTP sessions and wait for at least 10 minutes", S9.
-  The engine already pauses on 403, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1.
+  The engine already pauses on 403, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1.
 - The public replies carried no `X-Bapi-Limit` header, only `cache-control` and `traceid`, P1 `errors`.
   No limit was reached, so `Retry-After` was never seen.
 

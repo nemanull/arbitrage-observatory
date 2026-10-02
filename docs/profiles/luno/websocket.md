@@ -118,7 +118,7 @@ update, sequence ≠ last + 1  gap: close the socket and reconnect for a new sna
 ```
 
 The rule held on all 9,653 updates, with 0 gaps.
-On error or timeout "the client should close the connection and reconnect in order to reinitialise its state", S1, which is what the engine's `resync` does at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 296 to 315.
+On error or timeout "the client should close the connection and reconnect in order to reinitialise its state", S1, which is what the engine's `resync` does at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 296 to 315.
 
 ### Checksum
 
@@ -137,7 +137,7 @@ None is documented, and no frame carries one.
 
 None.
 The stream carries every order in the book.
-The engine keeps `depthLevels` per side, 20 by default, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so a feed would aggregate orders by price and hand over the best 20 levels.
+The engine keeps `depthLevels` per side, 20 by default, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so a feed would aggregate orders by price and hand over the best 20 levels.
 On `XBTZAR` that means holding about 18,600 orders to publish 40 levels.
 
 ### Size unit against CCXT `contractSize`

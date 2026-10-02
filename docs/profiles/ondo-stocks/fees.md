@@ -97,7 +97,7 @@ So `market.taker` does not exist for this venue.
 ## 9. Recommended registry values
 
 None.
-The venue has no CCXT class, no perpetual and no public market data, so it cannot be added to [`registry.ts`](../../../server/src/venues/registry.ts), and `takerPpm` and `ccxtTakerPpm` stay unset.
+The venue has no CCXT class, no perpetual and no public market data, so it cannot be added to [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts), and `takerPpm` and `ccxtTakerPpm` stay unset.
 
 ## 10. Source ledger
 

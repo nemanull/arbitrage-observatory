@@ -92,7 +92,7 @@ So there is no `market.taker` to report.
 ## 9. Recommended registry values
 
 None.
-SecondBTC lists no perpetual, so it has no place in [`registry.ts`](../../../server/src/venues/registry.ts) as the engine is built today.
+SecondBTC lists no perpetual, so it has no place in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) as the engine is built today.
 If a spot leg were ever added, `takerPpm` would be 2,000 from `tradeFeeTaker` under the percent reading, and `ccxtTakerPpm` would have no CCXT constant to declare.
 
 ## 10. Source ledger

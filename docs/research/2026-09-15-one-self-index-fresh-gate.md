@@ -32,7 +32,7 @@ It opened at 02:52:42.021, closed at 02:57:42.715 as `age_cap`, and took 272 sam
 | fresh, the two fresh premiums after fees | 5,380 |
 | standing, net minus fresh | 32,004 |
 
-The arithmetic of [`anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) reproduces every stored number from these inputs.
+The arithmetic of [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/6c7905700f42fc2fc473aa2e4bb288669c017275/server/src/engine/opportunity/anchorReading.ts) reproduces every stored number from these inputs.
 The gate saw 5,380 against `MIN_NET_PPM` of 5,000 and let the route through by 380 ppm.
 The whole fresh edge sits on the binance leg, whose bid stood 0.683 percent above the binance mark.
 
@@ -95,7 +95,7 @@ The okx leg stayed within 0.15 percent of its own mark on every line.
 
 The fresh series decayed as the mark caught up, but the perp kept rising to 0.0007160 at 02:58, so the mark never caught it inside the window.
 Fresh sat above 5,000 for most of the first two minutes, above 3,800 for the first three, and its lowest readable sample was 1,050 at 260 s, with 1,556 at close.
-`CLOSURE_NET_PPM` is 1,000 in [`OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts), so `fresh_edge_collapsed` never fired.
+`CLOSURE_NET_PPM` is 1,000 in [`OpportunityLifecycle.ts`](https://github.com/nemanull/arbitrage-observatory/blob/6c7905700f42fc2fc473aa2e4bb288669c017275/server/src/engine/opportunity/OpportunityLifecycle.ts), so `fresh_edge_collapsed` never fired.
 The raw cross never converged, with a minimum of 35,780 ppm and 37,256 at close.
 A taker who sold binance and bought okx at open and unwound at close would have paid about 1,000 ppm of fees plus two spreads for 128 ppm of cross movement.
 
@@ -110,7 +110,7 @@ The probe's limits named a fresh spike as a way in, and on this route the spike 
 ## 7. Options
 
 1. Refuse a leg whose index basket is only the venue's own perp, the way `anchor_no_mark` refuses a leg without a mark.
-   [`binance/anchor.ts`](../../server/src/venues/binance/anchor.ts) already rereads the funding interval table every hour, and the constituents call can ride that cycle, 564 requests at four in flight in under two minutes.
+   [`binance/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/6c7905700f42fc2fc473aa2e4bb288669c017275/server/src/venues/binance/anchor.ts) already rereads the funding interval table every hour, and the constituents call can ride that cycle, 564 requests at four in flight in under two minutes.
    Today the rule names one symbol, and it names the next one binance switches to itself without a hand edit.
 2. Put ONE back on `DENIED_PAIRS` by hand.
    One line, but it names the pair rather than the mechanism, which [`../bestiary/standing-basis.md`](../bestiary/standing-basis.md) records as the pattern that never shrank the class.

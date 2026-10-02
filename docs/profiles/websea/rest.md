@@ -47,7 +47,7 @@ The documentation defines `contract_size` as "Contract face value, i.e., USD val
 ### How a catalog would map it
 
 CCXT 4.5.68 has no Websea class, and neither has the current CCXT source, see [`fees.md`](./fees.md) section 8.
-So the engine's catalog path, `loadMarkets` at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 68, cannot load Websea, and a catalog would have to be built from `/v1/futures/symbols`.
+So the engine's catalog path, `loadMarkets` at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, cannot load Websea, and a catalog would have to be built from `/v1/futures/symbols`.
 
 | engine field | source | notes |
 |---|---|---|
@@ -208,7 +208,7 @@ Timestamps in ms on the sockets never arrived less than 89 ms old, see [`websock
 ## 8. Recommended poller shape
 
 A recommendation for a later design, not a decision.
-The engine's poller wants one bulk reply with a fresh index and a fresh mark, at [`../../../server/src/feeds/anchor/AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts), and Websea has no such reply.
+The engine's poller wants one bulk reply with a fresh index and a fresh mark, at [`../../../server/src/feeds/anchor/AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts), and Websea has no such reply.
 
 | item | recommendation | reason |
 |---|---|---|
@@ -222,7 +222,7 @@ The engine's poller wants one bulk reply with a fresh index and a fresh mark, at
 | rate limit pause | `rateLimitPauseMs` 10,000 | the window is 10 s and no `Retry-After` exists |
 | deny list input | the `500` variants and `XAUT` next to `XAU` | the same underlying under a second base name, section 2 |
 
-Without a fresh bulk index, the reader at [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 to 6 would judge Websea legs on a stale index, so the anchor is a blocker until the index comes from the socket or from a new REST call.
+Without a fresh bulk index, the reader at [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 to 6 would judge Websea legs on a stale index, so the anchor is a blocker until the index comes from the socket or from a new REST call.
 
 ## 9. Source ledger
 

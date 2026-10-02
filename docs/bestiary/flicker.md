@@ -66,7 +66,7 @@ It was not available for as long as it takes to route an order to a different ex
 
 ## Why the engine records it anyway
 
-`Engine.updateQuote` in [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts) treats every message as a tick.
+`Engine.updateQuote` in [`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/Engine.ts) treats every message as a tick.
 A tick that crosses opens an episode, and an episode that opens is written when it closes.
 Nothing in that path has an opinion about how long a price lasted.
 
@@ -91,7 +91,7 @@ There are two answers, and the cheap one is not the right one.
 
 ### The cheap answer, which is what will ship first
 
-A minimum episode age, `MIN_EPISODE_MS`, checked in `closeOpportunity` in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](../../server/src/engine/opportunity/OpportunityLifecycle.ts) before the row is queued.
+A minimum episode age, `MIN_EPISODE_MS`, checked in `closeOpportunity` in [`../../server/src/engine/opportunity/OpportunityLifecycle.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/OpportunityLifecycle.ts) before the row is queued.
 An episode shorter than the threshold is closed and not written.
 At 1,000 ms it removes 438 of the 745 rows and touches nothing else.
 

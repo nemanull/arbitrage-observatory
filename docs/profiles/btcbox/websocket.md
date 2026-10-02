@@ -133,7 +133,7 @@ They were not called.
 ## 8. Recommended feed shape
 
 No feed is recommended.
-The engine's book feed is a WebSocket subclass of `VenueFeed`, which opens every socket at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and BTCBOX has no socket to open.
+The engine's book feed is a WebSocket subclass of `VenueFeed`, which opens every socket at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and BTCBOX has no socket to open.
 A REST book poller would be a new feed type, and its book would carry no sequence and be only as fresh as the last poll.
 BTCBOX would not justify one, because it lists no perpetual and every market is quoted in JPY, outside the engine's USD, USDC and USDT quote family, see [`fees.md`](./fees.md) section 3.
 

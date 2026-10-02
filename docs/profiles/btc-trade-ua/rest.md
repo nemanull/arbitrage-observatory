@@ -155,7 +155,7 @@ The candle reply held 1,438 and 1,437 candles, on average 30 minutes apart and a
 ## 8. Recommended poller shape
 
 None.
-The venue has no perpetual, no index, no mark and no funding, so it has nothing for [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) to read, and template change 1 asks for no anchor poller on a spot venue.
+The venue has no perpetual, no index, no mark and no funding, so it has nothing for [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) to read, and template change 1 asks for no anchor poller on a spot venue.
 It also has no CCXT class, so the connector could not build its catalog, see [`fees.md`](./fees.md) section 9.
 If the spot book were ever wanted, it would be two REST calls per pair, no faster than the one second edge cache, and the four USDT pairs it could use did not trade in 24 h.
 

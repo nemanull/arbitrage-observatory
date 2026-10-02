@@ -50,8 +50,8 @@ The documented `contractType` field is absent from every row, although S2 lists 
 ### How CCXT 4.5.68 maps it
 
 CCXT has no Pionex class, see [`fees.md`](./fees.md) section 8.
-The engine loads its catalog through a CCXT exchange object, calling only `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 and keeping markets with `type` `swap`, `swap` true and `active` not false at lines 199 to 201.
-So a Pionex catalog needs a stand-in object with `id`, `name` and `loadMarkets`, which is exactly the shape the connector's own test stubs at [`connector.spec.ts`](../../../server/src/ccxt/connector.spec.ts) line 8.
+The engine loads its catalog through a CCXT exchange object, calling only `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 and keeping markets with `type` `swap`, `swap` true and `active` not false at lines 199 to 201.
+So a Pionex catalog needs a stand-in object with `id`, `name` and `loadMarkets`, which is exactly the shape the connector's own test stubs at [`connector.spec.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.spec.ts) line 8.
 The mapping it would need:
 
 | CCXT field | from | note |
@@ -68,7 +68,7 @@ The mapping it would need:
 
 `baseCurrency` differs from the symbol prefix on 17 rows, P1: `0G_USDT_PERP` is `ZEROG`, `1INCH_USDT_PERP` is `INCH`, `2Z_USDT_PERP` is `TWOZ`, `4_USDT_PERP` is `FOUR`, `AIA_USDT_PERP` is `DEAGENTAI`, `DATA_USDT_PERP` is `DATASPOT`, `EDEN_USDT_PERP` is `OPENEDEN`, `LIT_USDT_PERP` is `LIGHTER`, `NEIRO_USDT_PERP` is `NEIROCTO`, `PUMP_USDT_PERP` is `PUMPFUN`, `WTI_USDT_PERP` is `CL`, `XYZX_USDT_PERP` is `XYZ`, and five symbols are Chinese names such as `币安人生_USDT_PERP`, whose bases are `CNBARS`, `CNHJM`, `CNWTMLL`, `CNNL` and `CNLX`.
 A stand-in has to pick one of the two spellings for pairing, and these 17 rows are where a wrong pair or a missed pair would come from.
-The catalog also mixes crypto with tokenized stocks and ETFs whose symbols end in `X`, such as `AAPLX_USDT_PERP`, and commodities such as `XAU_USDT_PERP`, so a ticker that names a different asset on another venue needs a `DENIED_PAIRS` line, see [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 7.
+The catalog also mixes crypto with tokenized stocks and ETFs whose symbols end in `X`, such as `AAPLX_USDT_PERP`, and commodities such as `XAU_USDT_PERP`, so a ticker that names a different asset on another venue needs a `DENIED_PAIRS` line, see [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 7.
 No base and quote pair is listed twice among the 606 rows, P1.
 No symbol carries a `1000` prefix, and `PEPE_USDT_PERP`, `SHIB_USDT_PERP`, `BONK_USDT_PERP` and `FLOKI_USDT_PERP` are quoted per one coin, so no price scale is needed on the Pionex side.
 `USD_USDT_PERP` is in the catalog but absent from `indexes`, `tickers` and `bookTickers`, P1, so it has no anchor and should be skipped.

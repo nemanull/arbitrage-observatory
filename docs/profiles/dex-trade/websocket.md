@@ -111,7 +111,7 @@ The REST book lists `buy` best first, descending, and `sell` best first, ascendi
 
 There is no window.
 The socket reports changes anywhere in the book, and the local books above held 106 to 109 bids on `AVDOUSDT` and up to 70 asks on `BIMUSDT`, matching the full REST book level for level.
-The engine keeps 20 levels per side, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so a feed trims the full book it maintains.
+The engine keeps 20 levels per side, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so a feed trims the full book it maintains.
 
 ### Size unit against CCXT `contractSize`
 
@@ -231,7 +231,7 @@ Orders, balances and history are REST calls under `/v1/private/`, signed with a 
 ## 8. Recommended feed shape
 
 A recommendation for a later spot design, not a decision.
-The engine's feed base class does not fit this socket without a change, because it sends each subscribe frame as `JSON.stringify(frame)` on open, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 117 to 165, while Socket.IO needs the text `40` first and then `42`-prefixed events after the namespace answers.
+The engine's feed base class does not fit this socket without a change, because it sends each subscribe frame as `JSON.stringify(frame)` on open, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 117 to 165, while Socket.IO needs the text `40` first and then `42`-prefixed events after the namespace answers.
 
 | item | recommendation | reason |
 |---|---|---|
@@ -244,7 +244,7 @@ The engine's feed base class does not fit this socket without a change, because 
 | routing | `room` to `id` to `pair` from `GET /v1/public/symbols`, with `pair` as `rawMarketId` | the room names the numeric id |
 | snapshot | after the acknowledgement, `GET /v1/public/book?pair=<pair>` per pair, buffering frames until it lands, and read again when the first buffered frame is beyond its `sequenceId` plus 1 | the socket sends no snapshot, and the REST reply trailed the socket once per run |
 | delta | drop `sequenceId <= last`, apply `last + 1`, set on fields and delete on `{}` | 10 of 10 rebuilt books equalled REST |
-| resync | on `sequenceId > last + 1`, reload that pair's REST book. The engine's `resync` terminates the socket, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 296 to 315, which would also need a new REST snapshot for every pair | the documented rule is a reload, and a reconnect alone restores nothing |
+| resync | on `sequenceId > last + 1`, reload that pair's REST book. The engine's `resync` terminates the socket, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 296 to 315, which would also need a new REST snapshot for every pair | the documented rule is a reload, and a reconnect alone restores nothing |
 | unserved room | log a pair with no REST book or an empty one | every room is acknowledged, and 28 quiet pairs sent nothing for more than a minute |
 | sizes and prices | `rate / 10^rate_decimal`, `volume / 10^base_decimal`, per pair | integers scaled per pair |
 | receive time | stamp on arrival | the level `time` ran 79 to 146 ms before arrival |

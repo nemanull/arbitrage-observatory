@@ -232,10 +232,10 @@ Upbit Indonesia cannot join today, because the connector keeps only swap markets
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one plan, `wss://id-api.upbit.com/websocket/v1` | one URL serves every pair |
-| channel | `orderbook`, codes with no suffix, no `level` field | 30 levels covers the engine's 20 at [`../../../server/src/engine/Engine.ts`](../../../server/src/engine/Engine.ts) line 61, and `level` closes the socket |
+| channel | `orderbook`, codes with no suffix, no `level` field | 30 levels covers the engine's 20 at [`../../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, and `level` closes the socket |
 | markets per connection | all tracked pairs | 444 pairs ran on one socket at a median 436 to 444 frames a second with every snapshot served, twice, and nothing larger exists |
 | subscribe frames | exactly one per connection: `[{"ticket": "<uuid>"}, {"type": "orderbook", "codes": [...]}, {"format": "DEFAULT"}]` | a second frame replaces the first subscription |
-| keepalive | a protocol ping every 10 s | a socket with no traffic dies at about 61 s, a protocol ping every 20 s kept one open, and the pong is traffic for the silence watch at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 97 and 98 |
+| keepalive | a protocol ping every 10 s | a socket with no traffic dies at about 61 s, a protocol ping every 20 s kept one open, and the pong is traffic for the silence watch at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 97 and 98 |
 | `maxSilenceMs` | 25,000 | two missed pongs, and a quiet pair can go the whole 30 s run without a book frame, so the book stream cannot be the heartbeat |
 | routing | `frame.code` is the `rawMarketId` | the stream is keyed by the pair id |
 | every frame | decode the binary frame as UTF-8, drop units whose price or size is 0, then `resetBook` with the rest | whole book frames, zero padded sides, binary opcode |
@@ -245,7 +245,7 @@ Upbit Indonesia cannot join today, because the connector keeps only swap markets
 | deflate | keep `perMessageDeflate: false` | the server negotiates it only when asked |
 | headers | send no `Origin` header | an `Origin` request is limited to one per 10 s, S4 |
 
-The engine's socket open at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 already refuses deflate, and `raw.toString('utf8')` reads a binary frame the same way as a text frame.
+The engine's socket open at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 already refuses deflate, and `raw.toString('utf8')` reads a binary frame the same way as a text frame.
 
 ## 9. Source ledger
 

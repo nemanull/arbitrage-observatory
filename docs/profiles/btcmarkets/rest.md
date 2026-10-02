@@ -50,8 +50,8 @@ Each row carries `marketId`, `baseAssetName`, `quoteAssetName`, `minOrderAmount`
 | `taker`, `maker` | AUD markets 0.0085 and 0.0085, USDT and BTC markets 0.002 and -0.0005, see [`fees.md`](./fees.md) section 8 | R1 |
 | swap, future, option support | `'swap': false`, `'future': false`, `'option': false` | `btcmarkets.js` lines 30 to 32 |
 
-The connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202, so all 51 markets are dropped and the venue is skipped with `no usable swap markets; skipping the venue` at line 51.
-The size unit is the base currency on every market, which is what a missing `contractSize` of 1 describes, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 191.
+The connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202, so all 51 markets are dropped and the venue is skipped with `no usable swap markets; skipping the venue` at line 51.
+The size unit is the base currency on every market, which is what a missing `contractSize` of 1 describes, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 191.
 
 ### Settlement family and pairs listed twice
 

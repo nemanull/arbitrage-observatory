@@ -8,7 +8,7 @@ Coinbase International derivatives move to a Deribit powered gateway on 2026-09-
 This is a merger rather than a withdrawal.
 Coinbase International Exchange and Deribit combine into one platform, trading continues through the API, and Coinbase states that the existing CDP API key authenticates to the new gateway with no new credentials to create.
 The account side therefore needs nothing from this project, which places no orders and only reads prices.
-The feed in [`coinbase.ts`](../../old_ts_server/src/venues/coinbase/coinbase.ts), shipped on 2026-09-05, reads those instruments through Coinbase Advanced.
+The feed in [`coinbase.ts`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/venues/coinbase/coinbase.ts), shipped on 2026-09-05, reads those instruments through Coinbase Advanced.
 It therefore has a known expiry date four days after it was written.
 
 ## Finding
@@ -30,7 +30,7 @@ Both readings are consistent with the published wording.
 If the Advanced Trade socket keeps the perpetuals under renamed ids, nothing needs doing.
 `rawMarketId` comes from `loadMarkets()` on every boot, so a pure rename flows through once CCXT catches up.
 The risk in that branch is CCXT lag rather than Coinbase.
-The acknowledgement diff in [`coinbase.ts`](../../old_ts_server/src/venues/coinbase/coinbase.ts) is what makes that lag visible instead of silent.
+The acknowledgement diff in [`coinbase.ts`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/venues/coinbase/coinbase.ts) is what makes that lag visible instead of silent.
 
 If the Advanced Trade socket drops the perpetuals, the feed goes dead rather than wrong.
 The silence watchdog terminates and reconnects forever with backoff, `markStale` zeroes the venue's slots, and its clusters stop producing opportunities.

@@ -68,13 +68,13 @@ CoinGecko listed 224 perpetual pairs the same day, see [`fees.md`](./fees.md) se
 | `active` | `status === 'TRADING'` | 795 | 223 of 223 |
 | `settle` | the third part of the id | 788 and 789 | `USDT` on 223 of 223 |
 
-The engine keeps active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196, so all 223 would load.
+The engine keeps active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196, so all 223 would load.
 
 ### Pairs listed twice, price scale and tickers that mean something else
 
 No base and quote pair is listed twice, so no `marketFilter` is needed.
 No contract is quoted per 10 or per 1000 units, since `baseAssetMultiplier` is 1 everywhere and no base carries a `1000` prefix.
-Sub-cent tokens trade at their unit price, for example `PERP_DOGS_USDT` at an index of 0.00005112 and `PERP_HMSTR_USDT` at 0.000185, so a pair that another venue quotes per 1000 needs the cluster price scale of [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+Sub-cent tokens trade at their unit price, for example `PERP_DOGS_USDT` at an index of 0.00005112 and `PERP_HMSTR_USDT` at 0.000185, so a pair that another venue quotes per 1000 needs the cluster price scale of [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 The three bases that start with a digit, `1INCH`, `2Z` and `0G`, map unchanged.
 
 `PERP_EWT_USDT` had an index of 114.44 to 114.8 in both runs, while the Energy Web Token that other venues list as EWT trades near one dollar, so it is some other asset and needs a `DENIED_PAIRS` line before any venue lists EWT beside it.
@@ -234,7 +234,7 @@ The BTC REST book lagged the socket by up to 46.6 s, see [`websocket.md`](./webs
 | `fundingRate?symbol=PERP_NOPE_USDT` and `SPOT_BTC_USDT` | 500 | `{"success":false,"message":"no funding rate data for …"}` |
 | `/v3/public/nope` | 200 | `{"code":503,"message":"[GW] no upstream server"}` |
 
-The engine pauses only on 403, 418 and 429, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, so a poller must check `success` itself, since a gateway failure can arrive as HTTP 200.
+The engine pauses only on 403, 418 and 429, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, so a poller must check `success` itself, since a gateway failure can arrive as HTTP 200.
 
 ## 7. Server time and clock offset
 
@@ -248,7 +248,7 @@ A recommendation for a later design, not a decision.
 | item | recommendation | reason |
 |---|---|---|
 | URLs | `https://api.woox.io/v3/public/futures` and `https://api.woox.io/v3/public/fundingRate`, fetched in parallel each round | one call lacks the interval, section 3 |
-| interval | 1 s, the poller default at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 7 | 2 requests a second against 10 per endpoint, and replies took 117 to 216 ms |
+| interval | 1 s, the poller default at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 7 | 2 requests a second against 10 per endpoint, and replies took 117 to 216 ms |
 | row mapping | section 3, joined on `symbol` | |
 | skip | a row with `indexPrice` `null`, a row whose `nextFundingTime` is in the past, and a symbol missing from either reply | `PERP_SOLV_USDT` and `PERP_EWT_USDT`, section 2 |
 | `rateLimitPauseMs` | 1,000 | the limit window is one second and no `Retry-After` is documented, where the default is 60,000 at line 9 |

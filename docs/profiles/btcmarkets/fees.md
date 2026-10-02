@@ -151,7 +151,7 @@ The USDT value does not: the fee page puts USDT pairs on the tiered AUD and USDT
 ## 9. Recommended registry values
 
 None.
-BTC Markets lists no swap, so the connector drops all 51 markets at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202 and skips the venue before a fee is read.
+BTC Markets lists no swap, so the connector drops all 51 markets at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202 and skips the venue before a fee is read.
 If a later design admits spot legs, the values would be `takerPpm: 8500`, the VIP 0 rate of the AUD and USDT pairs, and `ccxtTakerPpm: 8500`, the constant CCXT reports for AUD markets at `btcmarkets.js` line 296.
 The four USDT markets would still report 2,000 ppm from CCXT, so they need the registry override, and the three BTC pairs would need their own flat 2,000 ppm.
 

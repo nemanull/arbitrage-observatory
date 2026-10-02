@@ -56,7 +56,7 @@ PointPay lists 172 of Bybit's 777 USDT perpetuals, and its blog of 15 September 
 
 ### How a catalog would map it
 
-No CCXT class exists, so the engine's `loadMarkets` path at [`connector.ts`](../../../server/src/ccxt/connector.ts) has nothing to load.
+No CCXT class exists, so the engine's `loadMarkets` path at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) has nothing to load.
 A catalog built by hand would map as follows.
 
 | engine field | PointPay source | value |
@@ -67,7 +67,7 @@ A catalog built by hand would map as follows.
 | `contractSize` | none published | 1, since sizes are base coin: `qtyStep` `0.001` on `BTCUSDT`, `100` on `1000BONKUSDT`. CCXT's `bybit` class sets 1 on every linear market at `server/node_modules/ccxt/js/src/bybit.js` line 2199 |
 | `active` | `pair_data.status` | `Trading` |
 | pair listed twice | none | 172 distinct pairs, one family |
-| price scale | none of its own | every symbol and base is spelled as on Bybit, `1000BONKUSDT` with base `1000BONK` included, so no entry in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) would differ from Bybit's |
+| price scale | none of its own | every symbol and base is spelled as on Bybit, `1000BONKUSDT` with base `1000BONK` included, so no entry in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) would differ from Bybit's |
 
 What `modificator` means is Not publicly specified, and it was 1 on every pair.
 
@@ -139,7 +139,7 @@ Whatever clamps apply are Bybit's.
 The formula, the interest rate of 0.01 % per 8 h, and the per contract cap are in [`fees.md`](./fees.md) section 6.
 The CoinGecko `funding_rate` equalled Bybit's ticker `fundingRate` on 172 of 172 rows in the first `anchor` run and 137 of 172 in the second, and `next_funding_rate_timestamp` equalled Bybit's `nextFundingTime` on 172 of 172 in both.
 The per pair `fundingRate` equalled Bybit's on 20, 19 and 18 of 20 reads in the three `mirror` runs.
-So the published rate is the `fundingRate` of Bybit's tickers call, the same field the engine's Bybit poller already reads as `fundingRate` at [`anchor.ts`](../../../server/src/venues/bybit/anchor.ts) line 67, with Bybit's semantics.
+So the published rate is the `fundingRate` of Bybit's tickers call, the same field the engine's Bybit poller already reads as `fundingRate` at [`anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/anchor.ts) line 67, with Bybit's semantics.
 The settlement instant was not captured.
 
 ### How often each number changed
@@ -152,7 +152,7 @@ The settlement instant was not captured.
 | Bybit's `tickers.BTCUSDT` over its socket, for reference | | 373 and 444 frames a minute | continuous |
 
 So `pair-data` is served from a cache refreshed about every 6 s, `full-pair-data` from one held at least 20 s, and the CoinGecko reply from one refreshed about every 30 to 60 s.
-The engine stamps a reading on arrival at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts), so a 6 s or 60 s old number would read as fresh, and the 10 s age limit at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5 would never see its age.
+The engine stamps a reading on arrival at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts), so a 6 s or 60 s old number would read as fresh, and the 10 s age limit at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5 would never see its age.
 
 ## 5. REST book snapshot
 
@@ -202,7 +202,7 @@ The recommendation is not to build a PointPay poller.
 
 | item | recommendation | reason |
 |---|---|---|
-| anchor source | Bybit's own bulk tickers call, which the engine already polls at [`anchor.ts`](../../../server/src/venues/bybit/anchor.ts) line 6 | every PointPay anchor number is Bybit's, and Bybit's call is fresh |
+| anchor source | Bybit's own bulk tickers call, which the engine already polls at [`anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/anchor.ts) line 6 | every PointPay anchor number is Bybit's, and Bybit's call is fresh |
 | if a PointPay poller were built | `GET /public/coingecko/futures/contracts` every 2 s, key `base_currency` + `target_currency` | the only call with all 172 rows |
 | its gaps | no mark, so the engine would refuse every route at open. No interval, so it would need `full-pair-data` once per pair. A cache of 30 to 60 s that the arrival stamp hides | sections 3 and 4 |
 | per pair mark | not viable | 172 `pair-data` calls a second is about 20 times the 500 per 60 s limit, and each reply is up to 6 s old |

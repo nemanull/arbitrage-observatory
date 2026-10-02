@@ -54,17 +54,17 @@ The 17 rows became 13 markets, because `BTC_JPY` and `ETH_BTC` appear in more th
 | `type`, `swap` | `swap`, true | `bitflyer.js` lines 303 and 316 |
 | `base`, `quote`, `settle` | `BTC`, `JPY`, `JPY` | P1 |
 | `linear`, `inverse` | true, false | `bitflyer.js` line 375 |
-| `contractSize` | undefined, which the engine turns into 1 at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194 | `bitflyer.js` line 379 |
+| `contractSize` | undefined, which the engine turns into 1 at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194 | `bitflyer.js` line 379 |
 | `active` | true, hard coded for every market | `bitflyer.js` line 373 |
 | `taker`, `maker` | 0, 0 | `bitflyer.js` lines 350 and 351 |
 | `precision`, `limits` | all undefined | P1 |
 
-The connector keeps it, since it is an active swap with a numeric taker, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 180 to 186 and 196 to 203.
+The connector keeps it, since it is an active swap with a numeric taker, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 180 to 186 and 196 to 203.
 The book size unit is BTC, which matches a `contractSize` of 1, see [`websocket.md`](./websocket.md) section 4.
 No pair is listed twice among perpetuals.
 
 The quote is the blocker.
-The engine folds USD and USDC into USDT and leaves every other quote as it is, at [`../../../server/src/engine/cluster/quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 10.
+The engine folds USD and USDC into USDT and leaves every other quote as it is, at [`../../../server/src/engine/cluster/quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 10.
 So `FX_BTC_JPY` would form a `BTC|JPY` cluster, and no other venue in the registry lists a JPY perpetual, so it would have no second leg.
 
 ## 3. Anchor
@@ -90,7 +90,7 @@ It puts the rate into `nextFundingRate`, line 1203, and leaves `fundingRate` und
 |---|---|---|---|
 | key | the product code `FX_BTC_JPY` | string | none |
 | `index` | none published | | 0, or a proxy, see below |
-| `mark` | none published | | 0, which refuses the route at open, [`../../../server/src/engine/opportunity/anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
+| `mark` | none published | | 0, which refuses the route at open, [`../../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 37 and 38 |
 | `fundingRate` | `current_funding_rate` | JSON number, a fraction per 8 h: `0.0001` is 0.01 % | none |
 | `fundingIntervalHours` | none published | | 8, a constant taken from the history |
 | `nextFundingAt` | `next_funding_rate_settledate` | UTC without a zone, `"2026-09-23T05:00:00"` | `Date.parse(value + 'Z')` |

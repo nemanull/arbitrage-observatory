@@ -92,7 +92,7 @@ The example prices are `0.01` for AAPL, so S1's samples are placeholders and not
 | text that is not JSON | Not publicly specified | `{"event_type":"error","data":{"msg":"Invalid command - JSON parse error"}}` and the socket stays open |
 | subscription limits | none published | not reachable without keys |
 
-The engine refuses permessage-deflate at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and Dinari accepts that.
+The engine refuses permessage-deflate at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and Dinari accepts that.
 
 ## 6. Captured frames
 

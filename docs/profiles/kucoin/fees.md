@@ -151,7 +151,7 @@ The S8 formula does not reproduce it on most contracts, so the formula is stale 
 | the unified account path | with `options.uta` true, `fetchUTAMarkets` sets `taker` from `makerFeeRate` and `maker` from `takerFeeRate`, which swaps them, and reads `contractSize` from `unitSize`. The default is false | `server/node_modules/ccxt/js/src/kucoin.js` lines 1617 to 1621 and 2149 to 2151 |
 
 The CCXT number is 600 ppm on every perpetual and matches the published VIP 0 taker.
-The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 33 to 39 and 120.
+The connector compares CCXT's number to `ccxtTakerPpm` or, when that is unset, to the market's own `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 33 to 39 and 120.
 
 ## 9. Recommended registry values
 

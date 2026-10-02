@@ -76,7 +76,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 
 ## 4. The book channel in detail
 
-`push.depth.full` at 20 levels is the channel this profile recommends, the same choice as the MEXC feed at [`../../../server/src/venues/mexc/mexc.ts`](../../../server/src/venues/mexc/mexc.ts) line 15.
+`push.depth.full` at 20 levels is the channel this profile recommends, the same choice as the MEXC feed at [`../../../server/src/venues/mexc/mexc.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/mexc/mexc.ts) line 15.
 
 ### Snapshot on subscribe
 

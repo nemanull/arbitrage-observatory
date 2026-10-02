@@ -55,7 +55,7 @@ The documentation example shows `alias` values for delivery futures such as `thi
 | `taker`, `maker` | `tFee`, `mFee`, lines 951 and 952 | `undefined` on 18 of 18, see [`fees.md`](./fees.md) section 8 | P1 |
 | load | 888 markets, 18 of them active swaps, in 909 and 779 ms | | P1 |
 
-The connector's filter keeps all 18, because each is `type` `swap`, `swap` true and `active` true, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+The connector's filter keeps all 18, because each is `type` `swap`, `swap` true and `active` true, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 The connector then drops every one of them unless the registry sets `takerPpm`, see [`fees.md`](./fees.md) section 8.
 
 ### Size unit, pairs listed twice, and price scale
@@ -75,7 +75,7 @@ The ticker's 24 hour quote volume divided by its contract volume and by the day'
 That check puts `1000PEPE_USDT_PERP` at 973.7 against a `ctVal` of 1,000, so its `ctVal` counts units of `1000PEPE`, the unit its price is quoted in.
 That reading is an inference from volume, and it means CCXT's base `1000PEPE` with `contractSize` 1,000 is consistent.
 No pair is listed twice.
-The two 1000x contracts carry `1000` in their CCXT base, `1000PEPE` and `1000SHIB`, so they cluster only with a venue whose base is spelled the same way and priced per 1,000 as well, and they need no price scale entry in [`../../../server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+The two 1000x contracts carry `1000` in their CCXT base, `1000PEPE` and `1000SHIB`, so they cluster only with a venue whose base is spelled the same way and priced per 1,000 as well, and they need no price scale entry in [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 
 The 24 hour quote volume summed to 13.48 million USDT over the 18 contracts in the first run, 4.86 million of it on BTC and 3.93 million on ETH.
 

@@ -59,7 +59,7 @@ No CCXT class exists, so the probe pointed the spot-only `gateeu` class at `http
 | `linear` | `undefined` for spot | same file, lines 1423 and 1424 |
 | `taker`, `maker` | 0.002 on 383 pairs, 0.001 on 2 | same file, lines 1396, 1397, 1426 and 1427 |
 
-The engine's catalog keeps active swaps only, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, so it would load 0 Gate US markets even with a class.
+The engine's catalog keeps active swaps only, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, so it would load 0 Gate US markets even with a class.
 
 ### Pairs listed twice, and price scale
 

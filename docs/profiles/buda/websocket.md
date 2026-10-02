@@ -75,7 +75,7 @@ A feed therefore seeds each book from REST `GET /markets/<id>/order_book`, see [
 `change` is `[side, price, amount]`, where `amount` is a signed change in the size at that price, "cambio de monto", S1, and not the new size.
 The wire confirms it: an `ETH-CLP` bid moving from 2,605,717.2 to 2,605,717.5 arrived as two frames with the same `ts`, `-2.0728224` at the old price and `2.07282216` at the new one.
 A level is gone when its running sum reaches zero.
-The engine's `OrderBook.setBid` and `setAsk` take an absolute size, at [`OrderBook.ts`](../../../server/src/feeds/book/OrderBook.ts) lines 32 to 38, and the class has no getter for one level's size, so a feed has to keep its own size per price to turn a change into a size.
+The engine's `OrderBook.setBid` and `setAsk` take an absolute size, at [`OrderBook.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/OrderBook.ts) lines 32 to 38, and the class has no getter for one level's size, so a feed has to keep its own size per price to turn a change into a size.
 Frames that share one `ts` came in groups of up to 4, and 6,370 of 14,175 groups in the first run held more than one frame, so one book event, like the move above, can arrive as several frames.
 
 ### Sequence and gap rule
@@ -262,13 +262,13 @@ A recommendation for a later design, not a decision, and moot while Buda lists n
 | snapshot | every `book-sync`: `resetBook` from `order_book` | venue snapshot every 178 to 179 s, bounds drift |
 | resync | an id chain break, or a level summed below zero: `resync`, then reseed from REST | the engine's existing terminate path, plus a reseed it does not have today |
 | keepalive | nothing to send. `ws` answers the server ping by default | the server closes a socket that misses one pong |
-| `maxSilenceMs` | 30,000 | three missed server pings, which refresh the silence watch at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97, while a quiet book is silent for up to 178 s |
+| `maxSilenceMs` | 30,000 | three missed server pings, which refresh the silence watch at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97, while a quiet book is silent for up to 178 s |
 | unserved market | log a market with no book after the seed | unknown channels are accepted and silent |
 | routing | `mk` is the `rawMarketId`, and the channel name is `mk` lower cased without the dash | |
 | receive time | stamp on arrival | `ts` is an event time |
 | deflate | keep `perMessageDeflate: false` | optional on this server |
 
-The named changes against the current engine are a REST seed on open and a per price size lookup, since [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) has no seed hook and [`OrderBook.ts`](../../../server/src/feeds/book/OrderBook.ts) takes absolute sizes only.
+The named changes against the current engine are a REST seed on open and a per price size lookup, since [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) has no seed hook and [`OrderBook.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/OrderBook.ts) takes absolute sizes only.
 
 ## 9. Source ledger
 

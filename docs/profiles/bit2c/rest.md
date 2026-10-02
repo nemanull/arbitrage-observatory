@@ -71,7 +71,7 @@ The four live pairs are hard coded at `server/node_modules/ccxt/js/src/bit2c.js`
 No pair is listed twice.
 Path segments are case insensitive: `btcnis` and `BTCNIS` returned the same ticker and book as `BtcNis`, in P1 and P3.
 Every live pair is quoted in NIS, which is outside the USD, USDC and USDT family of [`2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
-The engine's connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 203, so it would load an empty catalog and skip the venue, at lines 49 to 51.
+The engine's connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 203, so it would load an empty catalog and skip the venue, at lines 49 to 51.
 
 ## 3. Anchor
 

@@ -13,7 +13,7 @@ Where the documentation and the wire disagree, both are written, and the wire is
 All times are UTC, and the probe runs are listed as P1 to P8 in section 9.
 Fees and access are in [`fees.md`](./fees.md), the info API and the anchor in [`rest.md`](./rest.md), and HyperCore blocks, the node and the HIP-3 oracles in [`2026-09-23-hyperliquid-dex.md`](../../research/2026-09-23-hyperliquid-dex.md).
 The work follows [`2026-09-23-hyperliquid-research-plan.md`](../../plans/2026-09-23-hyperliquid-research-plan.md).
-The engine code cited is the TypeScript server, which moved during this session and sits at [`old_ts_server/`](../../../old_ts_server/) at the time of writing.
+The engine code cited is the TypeScript server, which moved during this session and sits at [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server) at the time of writing.
 CCXT 4.5.68 is cited from the root pnpm store, because `server/node_modules` was removed during the same session.
 
 ## 1. Endpoints
@@ -149,7 +149,7 @@ CCXT names the base `KPEPE`, so meeting another venue's `1000PEPE` or `PEPE` nee
 
 CCXT's `market.id` for a perp is the asset index as a string, `"0"` for `BTC` on the first dex, and 110,000 plus the coin's position for the first builder dex, at `node_modules/.pnpm/ccxt@4.5.68_protobufjs@7.6.6/node_modules/ccxt/js/src/hyperliquid.js` lines 737, 633 and 1023.
 The socket coin is CCXT's `market.baseName`, taken from the universe `name` at lines 992 and 1029.
-The engine uses `market.id` as `rawMarketId` at [`connector.ts`](../../../old_ts_server/src/ccxt/connector.ts) line 170, and `rawMarketId` must be the symbol exactly as the socket spells it, at [`types.ts`](../../../old_ts_server/src/engine/cluster/types.ts) line 11.
+The engine uses `market.id` as `rawMarketId` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/ccxt/connector.ts) line 170, and `rawMarketId` must be the symbol exactly as the socket spells it, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/cluster/types.ts) line 11.
 So Hyperliquid needs `rawMarketId` taken from `market.baseName` or `market.info.name`, and subscribing `"0"` as a coin would close the socket.
 
 ### HIP-3 coin names
@@ -163,7 +163,7 @@ CCXT turns `xyz:SP500` into the base `XYZ-SP500` at line 994, so a HIP-3 base ne
 
 The delisted `MATIC` sent `{"levels":[[],[]]}` on every push, 12 of 12 frames in each of P1 to P3, and `bbo` on `MATIC` was acknowledged and then silent for the 1.2 s the case waited, P4.
 No listed first-dex perp had an empty side in P5 or P6.
-The engine's `resetBook` at [`VenueFeed.ts`](../../../old_ts_server/src/feeds/book/VenueFeed.ts) line 263 accepts an empty side.
+The engine's `resetBook` at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/feeds/book/VenueFeed.ts) line 263 accepts an empty side.
 
 ### Idle repeats
 
@@ -376,12 +376,12 @@ A recommendation for a later design, not a decision.
 | sequence and resync | no gap rule, because every book frame is whole. Resync only on close or silence | no update id exists |
 | close right after subscribing | log every coin sent in the second before a close | an unknown coin gives no error message |
 | receive time | stamp on arrival, and keep `time` to judge the book's age | a `fast` snapshot is 0.26 to 0.87 s old on arrival and a default one up to 0.94 s, section 4 |
-| deflate | keep `perMessageDeflate: false`, at [`VenueFeed.ts`](../../../old_ts_server/src/feeds/book/VenueFeed.ts) line 81 | the server does not negotiate it |
+| deflate | keep `perMessageDeflate: false`, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/feeds/book/VenueFeed.ts) line 81 | the server does not negotiate it |
 | anchor | keep the REST poll of [`rest.md`](./rest.md) section 8 rather than `allDexsAssetCtxs` | `allDexsAssetCtxs` pushes about every 13.6 s, older than the reader's 10 s limit, and its contexts carry no coin name. `activeAssetCtx` is keyed by coin at 1 s but costs one subscription per coin, and on `BTC` its `markPx` and `oraclePx` each changed on 6 of 59 pushes in P3, while [`rest.md`](./rest.md) section 4 counted 8 and 6 changes over 29 one-second REST polls |
 
 The feed fits the engine's `VenueFeed` without a new base class.
-`planEndpoints` returns one plan, `getSubscribeFrames` returns one frame per stream, `startKeepalive` sends the ping, and `handleMessage` calls `resetBook` and `publish`, at [`VenueFeed.ts`](../../../old_ts_server/src/feeds/book/VenueFeed.ts) lines 263, 280 and 387 to 390.
-The `bbo` merge is new logic, and the engine's 20 levels at [`Engine.ts`](../../../old_ts_server/src/engine/Engine.ts) line 61 and [`ClusterIndexBuilder.ts`](../../../old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) line 17 would hold 5.
+`planEndpoints` returns one plan, `getSubscribeFrames` returns one frame per stream, `startKeepalive` sends the ping, and `handleMessage` calls `resetBook` and `publish`, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/feeds/book/VenueFeed.ts) lines 263, 280 and 387 to 390.
+The `bbo` merge is new logic, and the engine's 20 levels at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/Engine.ts) line 61 and [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/132aa9944b03f1c2dbc830f5ee205d2528779ea6/old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) line 17 would hold 5.
 A book that updates every block at full depth needs a non-validator node and the official order book server, S10, whose `l2book` takes `n_levels` up to 100 and whose `l4book` sends a snapshot and then order diffs by block.
 That route is weighed in [`2026-09-23-hyperliquid-dex.md`](../../research/2026-09-23-hyperliquid-dex.md).
 

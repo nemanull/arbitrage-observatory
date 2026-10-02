@@ -268,7 +268,7 @@ A recommendation for a later design, not a decision.
 | markets per connection | 200, two connections for 396 perpetuals | the cap is 400 channels, 396 ran clean on one socket, and CoinGecko already lists 401 |
 | subscribe frames | wait 1 s after the open, then one frame of up to 100 channels every 250 ms | the documented pro-rated rate limit, and a 100 channel frame was accepted |
 | keepalive | answer every `public/heartbeat` with `{"id": <same id>, "method": "public/respond-heartbeat"}` | an unanswered heartbeat closes the socket at the third one |
-| `maxSilenceMs` | 15,000 | protocol pings every 5 s and idle deltas every 5 s per quiet book, and `VenueFeed` counts a ping as traffic at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97 |
+| `maxSilenceMs` | 15,000 | protocol pings every 5 s and idle deltas every 5 s per quiet book, and `VenueFeed` counts a ping as traffic at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97 |
 | routing | `result.instrument_name` is the `rawMarketId`, `result.channel` is `book` or `book.update` | the stream name wraps the same id |
 | snapshot | `channel` `book`: `resetBook` and store `u` | replace semantics |
 | delta | apply only when `pu === last`, then store `u`, including for the idle delta | 0 gaps observed |

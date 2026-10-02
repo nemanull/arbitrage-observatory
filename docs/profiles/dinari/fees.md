@@ -93,12 +93,12 @@ Splits and mergers of the underlying stock are applied to the token as the docs 
 | class file | no `dinari.js` under `server/node_modules/ccxt/js/src/` |
 | current CCXT master | `ts/src` holds 105 `.ts` files at commit `1d8b674434fde39ef282988b066812adf8d19b9e` of 2026-09-22 12:48 UTC, and none matches `dinari` or `dshare`, S11 |
 
-So `market.taker` has no value to report, and the engine's catalog, `loadMarkets` filtered to active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, has nothing to load.
+So `market.taker` has no value to report, and the engine's catalog, `loadMarkets` filtered to active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, has nothing to load.
 
 ## 9. Recommended registry values
 
 None.
-Dinari should not be added to [`registry.ts`](../../../server/src/venues/registry.ts).
+Dinari should not be added to [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
 It lists no perpetual, has no CCXT class, and every documented market data call needs a paid partner key.
 If a spot stage ever wants it, `takerPpm` would be 0 plus a per order $0.20 that a ppm constant cannot hold, and `ccxtTakerPpm` would stay unset.
 

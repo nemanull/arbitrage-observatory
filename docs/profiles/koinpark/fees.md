@@ -98,7 +98,7 @@ So there is no `market.taker` to read.
 ## 9. Recommended registry values
 
 None.
-Koinpark has no perpetual, so it has nothing to put in [`registry.ts`](../../../server/src/venues/registry.ts).
+Koinpark has no perpetual, so it has nothing to put in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
 If the engine ever took spot legs, the number would be `takerPpm` 4,000 for the major pairs, from the fee page, with no `ccxtTakerPpm`, since no CCXT class exists.
 
 ## 10. Source ledger

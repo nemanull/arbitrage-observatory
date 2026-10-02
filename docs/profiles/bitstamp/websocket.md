@@ -11,7 +11,7 @@ Every probed number comes from [`../../../scripts/probes/bitstamp-ws-probe.mjs`]
 The runs are called run 1, run 2 and run 3 below.
 Its `spacing` mode also kept 30 s of raw BTC frames from 07:33 UTC, called the spacing capture.
 A 91 s rerun from 19:20 UTC, called the second pass, rechecked every structural row, and rates and cadences are one host on one date.
-Sockets were opened with `perMessageDeflate: false`, as the engine does at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 77.
+Sockets were opened with `perMessageDeflate: false`, as the engine does at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/feeds/book/VenueFeed.ts) line 77.
 
 ## 1. Endpoints
 
@@ -121,7 +121,7 @@ The probe counted 0 crossed `order_book_` frames on perpetuals in run 2 and in t
 
 ### Size unit against CCXT's contractSize
 
-CCXT sets `contractSize: undefined` for every Bitstamp market at `server/node_modules/ccxt/js/src/bitstamp.js` line 708, so the connector's `toContractSize` makes it 1, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 180 to 186.
+CCXT sets `contractSize: undefined` for every Bitstamp market at `server/node_modules/ccxt/js/src/bitstamp.js` line 708, so the connector's `toContractSize` makes it 1, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/ccxt/connector.ts) lines 180 to 186.
 The raw catalog field is `contract_size: "1.00000000"` on all 20 perpetuals, and the contract specifications page gives a contract value of "1 BTC", "1 ASTER" and so on.
 The socket reports amounts in base units.
 The probe compared the socket's `order_book_` frame nearest to a REST `order_book` read, 57 to 150 ms apart, at the same prices.
@@ -343,7 +343,7 @@ This is a recommendation for a later design, not a decision.
 | compression | refuse deflate as today, the server does not force it | section 5 |
 | control frames | log `bts:error`, and treat a silent market as a possible misspelled id, because an unknown lowercase symbol is acknowledged and never errors | section 3 |
 
-The Bybit shape at [`../../../server/src/venues/bybit/bybit.ts`](../../../server/src/venues/bybit/bybit.ts) fits with three differences.
+The Bybit shape at [`../../../server/src/venues/bybit/bybit.ts`](https://github.com/nemanull/arbitrage-observatory/blob/11c9ca51b511077317f4a095881c7fd96d5716c3/server/src/venues/bybit/bybit.ts) fits with three differences.
 Bitstamp needs no sequence check, one frame per channel instead of an argument array, and a first book that may arrive seconds late.
 
 `diff_order_book_[market]` is not recommended.

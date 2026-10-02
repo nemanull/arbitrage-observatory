@@ -123,9 +123,9 @@ The CCXT constants equal the tier 1 row of S1, so CCXT is right for a retail acc
 ## 9. Recommended registry values
 
 No registry entry is recommended.
-The connector keeps only markets whose `type` is `swap`, whose `swap` is true and whose `active` is not false, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 202, and all 1,451 CCXT markets of this venue are spot.
+The connector keeps only markets whose `type` is `swap`, whose `swap` is true and whose `active` is not false, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 202, and all 1,451 CCXT markets of this venue are spot.
 If a spot leg is ever modelled, `takerPpm` 7,000 and `ccxtTakerPpm` 7,000 would be the values, both from the tier 1 taker of S1 and the CCXT constant at line 187.
-The markets are also quoted in BRL, which the quote family does not join to USDT, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a BRL book would never share a cluster with a USDT perpetual.
+The markets are also quoted in BRL, which the quote family does not join to USDT, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a BRL book would never share a cluster with a USDT perpetual.
 
 ## 10. Source ledger
 

@@ -105,7 +105,7 @@ type = delta, u = last + 1 apply, last = data.u
 type = delta, u ≠ last + 1 gap: resync
 ```
 
-The rule is the one the engine's Bybit feed already applies at [`bybit.ts`](../../../server/src/venues/bybit/bybit.ts), and it held on every delta of every run, with 0 gaps.
+The rule is the one the engine's Bybit feed already applies at [`bybit.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/bybit.ts), and it held on every delta of every run, with 0 gaps.
 `data.seq` is Bybit's cross-sequence and is not needed for the gap rule.
 
 ### Checksum
@@ -243,10 +243,10 @@ If one were built anyway, it would be the Bybit feed with another URL.
 |---|---|---|
 | URL plan | `wss://ws-futures.pointpay.io/v5/public/linear` | the only futures socket, used by PointPay's own terminal |
 | channel | `orderbook.50.<rawMarketId>` | snapshot on subscribe, a strict `u` chain, 50 levels covers the engine's 20 |
-| markets per connection | 172, all listed perpetuals | one socket carried all 172 with 0 gaps. The engine's Bybit feed uses 200 per connection at [`bybit.ts`](../../../server/src/venues/bybit/bybit.ts) line 23 |
+| markets per connection | 172, all listed perpetuals | one socket carried all 172 with 0 gaps. The engine's Bybit feed uses 200 per connection at [`bybit.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/bybit.ts) line 23 |
 | subscribe frames | frames of up to 10 topics, `{"req_id": "<id>", "op": "subscribe", "args": [...]}` | 18 such frames were all acknowledged |
 | keepalive | `{"op": "ping"}` every 20 s | the terminal's own cadence, S2, and an idle socket dies at 61 s |
-| `maxSilenceMs` | 60,000 | a quiet book went 5.1 s without a frame, and the pong counts as traffic. The Bybit feed uses the same 60,000 at [`bybit.ts`](../../../server/src/venues/bybit/bybit.ts) line 30 |
+| `maxSilenceMs` | 60,000 | a quiet book went 5.1 s without a frame, and the pong counts as traffic. The Bybit feed uses the same 60,000 at [`bybit.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/bybit/bybit.ts) line 30 |
 | routing | `topic` after the second dot gives the `rawMarketId` | `orderbook.50.BTCUSDT` |
 | snapshot | `type === 'snapshot'`: `resetBook`, store `data.u` | |
 | delta | apply only when `data.u === last + 1` | 0 gaps observed |

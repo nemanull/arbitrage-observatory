@@ -9,7 +9,7 @@ The plan that ships it is [`2026-10-01-rust-venue-adapters-plan.md`](./2026-10-0
 
 Before this work the Rust server had the engine, the book feed runtime and the anchor poller runtime, and no venue.
 `load_venue` and `start_venue`, now at [`venues/mod.rs:51`](../../server/src/venues/mod.rs) and [`venues/mod.rs:67`](../../server/src/venues/mod.rs), matched on no venue, so the binary stopped at boot with zero venues loaded.
-The Nest server in [`old_ts_server/`](../../old_ts_server/) has ten adapters under `old_ts_server/src/venues/<id>/`, and it started five of them at [`orchestrator.ts:48`](../../old_ts_server/src/orchestrator.ts).
+The Nest server in [`old_ts_server/`](https://github.com/nemanull/arbitrage-observatory/tree/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server) has ten adapters under `old_ts_server/src/venues/<id>/`, and it started five of them at [`orchestrator.ts:48`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/orchestrator.ts).
 The Rust orchestrator already listed the same five at [`orchestrator.rs:18`](../../server/src/orchestrator.rs).
 
 The 2026-09-30 design of the Rust runtimes is no longer in the repository, so the code is the reference for the venue contract.
@@ -30,7 +30,7 @@ A venue is one value that implements two traits, and `start` at [`venues/mod.rs:
 
 ## What CCXT did for the Nest server
 
-The Nest connector at [`connector.ts:41`](../../old_ts_server/src/ccxt/connector.ts) called CCXT's `loadMarkets`, kept active swaps, applied the registry's `marketFilter`, and built each market from CCXT's unified fields.
+The Nest connector at [`connector.ts:41`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/ccxt/connector.ts) called CCXT's `loadMarkets`, kept active swaps, applied the registry's `marketFilter`, and built each market from CCXT's unified fields.
 CCXT has no Rust version, so each Rust adapter reads its venue's instruments call itself.
 The rules below were read from CCXT 4.5.68's source under `node_modules/.pnpm/ccxt@4.5.68_protobufjs@7.6.6/node_modules/ccxt/js/src/` on 2026-10-01, which is the version the Nest server ran.
 
@@ -51,7 +51,7 @@ Every code passes through CCXT's `safeCurrencyCode`, which uppercases the id and
 The base table maps `XBT` to `BTC` and `BCHSV` to `BSV`, which is how kraken's `PF_XBTUSD` clusters with every other BTC.
 The venue tables that touch a perpetual are binance `BCC` and `YOYO`, okx `AE`, coinbase `CGLD`, gate's twenty conflict names such as `GTC` to `GAMECOM`, bitget's six such as `TONCOIN` to `TON`, mexc's twenty one such as `GMT` to `GMTTOKEN` and `XBT` kept as `XBT`, and bitstamp `UST` to `USTC`.
 
-The registry filters and fees of [`registry.ts:34`](../../old_ts_server/src/venues/registry.ts) carry over unchanged.
+The registry filters and fees of [`registry.ts:34`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/venues/registry.ts) carry over unchanged.
 Kraken keeps linear contracts only, gate keeps linear USDT contracts, bitget keeps linear USDT and USDC contracts, mexc keeps `apiAllowed` contracts, and gemini pins every contract size to 1.
 
 A live CCXT dump of all ten venues on 2026-10-01 kept 804 binance, 873 bybit, 495 okx, 204 krakenfutures, 131 coinbase, 1,024 gate, 862 bitget, 1,167 mexc, 20 bitstamp and 13 gemini markets.
@@ -59,7 +59,7 @@ That dump is the parity target.
 
 ## Venue facts move into the loaders
 
-The Nest server denied four pairs and scaled two okx markets in [`clusterOverrides.ts:7`](../../old_ts_server/src/engine/cluster/clusterOverrides.ts).
+The Nest server denied four pairs and scaled two okx markets in [`clusterOverrides.ts:7`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/engine/cluster/clusterOverrides.ts).
 On 2026-09-27 the user removed both from the Rust cluster builder, because each entry is a fact about one venue's market and a pair wide deny also kills valid clusters.
 The Rust engine kept the arithmetic for a scale, since [`anchor_reading.rs:55`](../../server/src/engine/opportunity/anchor_reading.rs) divides whatever the multipliers carry besides the fee out of the index gap.
 
@@ -97,7 +97,7 @@ Mark prices read live on 2026-10-01 show every fact still holds.
    A difference that is kept on purpose is written into this doc with its reason.
 7. Taker fees are the registry constants: binance 500, bybit 550, okx 500, krakenfutures 500, coinbase 400, gate 500, bitget 600, mexc 800, bitstamp 150 and gemini 700 ppm.
    Where the instruments reply carries a fee that means the same orders, which is only bitget's `takerFeeRate`, the loader warns once when a contract disagrees, as the Nest connector did through CCXT.
-8. `Market` gains `price_scale`, set by the loader, and [`index_builder.rs:75`](../../server/src/engine/cluster/index_builder.rs) multiplies both price multipliers by it and divides the size multiplier by it, as [`ClusterIndexBuilder.ts:134`](../../old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) did.
+8. `Market` gains `price_scale`, set by the loader, and [`index_builder.rs:75`](../../server/src/engine/cluster/index_builder.rs) multiplies both price multipliers by it and divides the size multiplier by it, as [`ClusterIndexBuilder.ts:134`](https://github.com/nemanull/arbitrage-observatory/blob/c642b40e4d0648c13ef30f666f5d76ebb9fd6d53/old_ts_server/src/engine/cluster/ClusterIndexBuilder.ts) did.
    The okx loader sets 10 on `ANTHROPIC-USDT-SWAP` and `OPENAI-USDT-SWAP` and logs each at boot.
 9. A loader drops the markets whose ticker names another token than the rest of the venues use, and logs each with its reason.
    Binance drops `ONUSDT` and `ONEUSDT`, and okx drops `BB-USDT-SWAP` and `QNT-USDT-SWAP`.

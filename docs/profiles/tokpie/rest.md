@@ -55,7 +55,7 @@ In the third its ask read `2781.544213` while the book call read `2781.444183`, 
 ### How CCXT maps it
 
 CCXT 4.5.68 has no Tokpie class, and neither does CCXT master on 2026-09-22, see [`fees.md`](./fees.md) section 8.
-So `market.id`, `contractSize`, `linear` and `active` have no CCXT value to compare, and the engine's catalog at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 cannot load the venue.
+So `market.id`, `contractSize`, `linear` and `active` have no CCXT value to compare, and the engine's catalog at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 cannot load the venue.
 
 ### Size unit, pairs listed twice, and price scale
 

@@ -170,7 +170,7 @@ Because some malformed JSON objects close the socket, a feed must send only the 
 | subscription limits | Not publicly specified | 100 channels on one socket in both runs, all delivering |
 | throughput | | 100 USDT markets on one socket for 60 s: 1,125 and 1,091 frames, 6 to 22 per market, median 17 frames a second, peak 65 and 56, 10.5 and 10.1 KB a second on the wire, `gunzipSync` plus `JSON.parse` median 86 and 97 µs a frame, p90 149 and 178 µs |
 
-The engine refuses permessage-deflate at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, since the server compresses inside the frame and never negotiates the extension.
+The engine refuses permessage-deflate at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, since the server compresses inside the frame and never negotiates the extension.
 The engine hands a subclass the raw frame as a `Buffer` at line 209 of the same file, so a GroveX subclass would gunzip it in `handleMessage`.
 At the batch run's rate, gunzip and parse cost about 1.7 ms a second of the event loop for 100 markets.
 

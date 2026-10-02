@@ -59,7 +59,7 @@ CCXT loaded 2,482 markets in 2,339 ms, 785 of them swaps, P1.
 CCXT's master branch on 2026-09-22 still has `'active': (status === 'TRADING'),` in `ts/src/bitrue.ts`.
 
 The `active` flag is a blocker for the catalog.
-The connector keeps only markets whose `active` is not `false`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and then logs `no usable swap markets; skipping the venue` at line 51.
+The connector keeps only markets whose `active` is not `false`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and then logs `no usable swap markets; skipping the venue` at line 51.
 So today the engine would load zero Bitrue markets.
 `marketFilter` runs after that filter, so it cannot restore them.
 The named change is a connector option that decides activity for this venue from `market.info.status === 1`, or a fix in CCXT that reads the numeric status.
@@ -81,7 +81,7 @@ The REST and socket books count contracts, and one contract is `multiplier` coin
 `E-BTC-USDT` has `multiplier` 0.0001, `E-ETH-USDT` 0.001, `E-XRP-USDT` 1, and 21 distinct multipliers exist from 0.00001 to 1,000, P1.
 42 bases have more than one swap, USDT-M and USDC-M and sometimes COIN-M, so the quote family's per venue choice applies, see [`../../implemented/2026-09-06-quote-family-design.md`](../../implemented/2026-09-06-quote-family-design.md).
 15 bases carry a size prefix in the name, such as `E-1000PEPE-USDT`, `E-1MBABYDOGE-USDT` and `E-1000000MOG-USDT`, and CCXT keeps the prefix in `base`, so they cluster only with venues that spell the base the same way.
-The 176 TradFi contracts include `OPENAI` and `ANTHROPIC`, which the engine has denied by hand on other venues before, see [`server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+The 176 TradFi contracts include `OPENAI` and `ANTHROPIC`, which the engine has denied by hand on other venues before, see [`server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 
 ## 3. Anchor
 
@@ -100,8 +100,8 @@ No call returns index and mark for more than one contract.
 `GET /fapi/v1/index` without `contractName` answers `{"code":"-1121","msg":"Invalid contract","data":null}`, and `/fapi/v1/premiumIndex` and `/fapi/v1/fundingRate` answer code `-1002`, "Requests must send an API Key", P1.
 The socket has no mark, index or funding channel, see [`websocket.md`](./websocket.md) section 2.
 
-The `AnchorPoller` asks `fetchRound` for every row of a round at once, keyed by `rawMarketId`, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 103 and 245, and polls once a second, at line 34.
-Every existing poller fills a round from one bulk call, such as Gate's at [`server/src/venues/gate/anchor.ts`](../../../server/src/venues/gate/anchor.ts) line 21.
+The `AnchorPoller` asks `fetchRound` for every row of a round at once, keyed by `rawMarketId`, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 103 and 245, and polls once a second, at line 34.
+Every existing poller fills a round from one bulk call, such as Gate's at [`server/src/venues/gate/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/gate/anchor.ts) line 21.
 On Bitrue a round is one request per tracked market, so one request per market per second.
 With 726 USDT-M contracts that is 726 requests per second against a futures rate limit Bitrue does not publish, section 6.
 The survey of 764 contracts at 5 requests per second drew no refusal, P3, and nothing faster was tried.
@@ -209,8 +209,8 @@ Errors come back with HTTP 200 and a code in the body.
 | an unknown path such as `/fapi/v1/nope` | 200 | `{"args":null,"code":"-1002","data":null,"msg":"You are not authorized to execute this request. Requests must send an API Key, please append X-CH-APIKEY to all request headers","succ":false}` |
 | web funding list without `symbol` | 200 | `{"code":"200004","msg":"symbol parameter illegal","args":null,"data":null,"succ":false}` |
 
-A poller therefore has to read the body, since HTTP 200 never trips the pause on 403, 418 and 429 at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 192.
-A body code that means a rate limit would be thrown as `RateLimitReplyError`, as the MEXC poller does at [`server/src/venues/mexc/anchor.ts`](../../../server/src/venues/mexc/anchor.ts) line 24, but Bitrue documents no such code.
+A poller therefore has to read the body, since HTTP 200 never trips the pause on 403, 418 and 429 at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) lines 188 to 192.
+A body code that means a rate limit would be thrown as `RateLimitReplyError`, as the MEXC poller does at [`server/src/venues/mexc/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/mexc/anchor.ts) line 24, but Bitrue documents no such code.
 
 ## 7. Server time and clock offset
 
@@ -242,7 +242,7 @@ Bitrue does not fit the anchor poller today, because no call returns index and m
 | rate limit pause | `rateLimitPauseMs` 60,000 | the only published window is the spot minute, and no `Retry-After` is documented |
 
 If Bitrue ever joins, the smallest honest shape is a poller over only the markets that cluster with another venue, spread so each market is read every few seconds.
-That would still leave each reading up to several seconds old against the reader's 10 s age limit and 5 s skew limit at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, and it needs a design of its own.
+That would still leave each reading up to several seconds old against the reader's 10 s age limit and 5 s skew limit at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, and it needs a design of its own.
 
 ## 9. Source ledger
 

@@ -31,31 +31,5 @@ services:
       retries: 10
       start_period: 10s
 
-  redis:
-    image: redis:8-alpine
-    container_name: observatory-redis
-    restart: unless-stopped
-    ports:
-      # Another project on this host holds 6379, and it walks 6479 and 6579 for its worktrees.
-      # Staying off that ladder keeps this port free when those worktrees are running.
-      - "127.0.0.1:${REDIS_PORT:-6390}:6379"
-    # Any eviction policy lets Redis drop job keys under memory pressure and corrupt queue state.
-    # Append-only persistence keeps queued jobs across a restart.
-    command:
-      - redis-server
-      - --appendonly
-      - "yes"
-      - --maxmemory-policy
-      - noeviction
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 5s
-
 volumes:
   postgres-data:
-  redis-data:

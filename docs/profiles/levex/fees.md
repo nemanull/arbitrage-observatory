@@ -143,7 +143,7 @@ There is no CCXT source line to cite, and no `ccxtTakerPpm` to declare.
 | `ccxtTakerPpm` | unset | CCXT has no LeveX class |
 
 No registry entry is recommended.
-Every venue in [`registry.ts`](../../../server/src/venues/registry.ts) builds its catalog from a CCXT class through [`connector.ts`](../../../server/src/ccxt/connector.ts), which calls `loadMarkets` at line 68.
+Every venue in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts) builds its catalog from a CCXT class through [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts), which calls `loadMarkets` at line 68.
 LeveX has no class, says it has no API, and forbids scripts from monitoring its site, see section 1.
 
 ## 10. Source ledger

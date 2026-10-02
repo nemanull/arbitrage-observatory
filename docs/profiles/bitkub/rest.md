@@ -52,11 +52,11 @@ Over the 249 active THB exchange pairs the 24 h quote volume summed to 1,886,149
 
 ### How the engine's catalog would map it
 
-- There is no CCXT class in 4.5.68 or on CCXT master, see [`fees.md`](./fees.md) section 8, so `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 64 to 68 has nothing to load, and the swap filter at lines 200 to 201 would drop every row anyway.
+- There is no CCXT class in 4.5.68 or on CCXT master, see [`fees.md`](./fees.md) section 8, so `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 64 to 68 has nothing to load, and the swap filter at lines 200 to 201 would drop every row anyway.
 - The symbol has three spellings: `BTC_THB` on REST, `thb_btc` on the ticker socket, and `1` on the order book socket, see [`websocket.md`](./websocket.md) section 3.
   The REST call accepts `btc_thb` and `BTC_THB` and refuses `thb_btc` with `error` 11.
 - Sizes are in the base asset on REST and on the socket, so a contract size of 1 is right.
-- THB is outside the quote family at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a THB market would form a cluster with no other venue in it.
+- THB is outside the quote family at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so a THB market would form a cluster with no other venue in it.
 - Ten bases are listed twice, once against THB and once against USDT: BTC, ETH, ADA, BCH, XRP, DOGE, NEAR, SOL, SUI and XAUT.
 
 ### Broker markets track Bybit spot

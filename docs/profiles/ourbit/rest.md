@@ -67,7 +67,7 @@ It needs the spot host too, because `fetchMarkets` always loads spot and swap to
 | `contractSize` | `contractSize` | `BTC_USDT` 0.0001, `ETH_USDT` 0.01, `HEI_USDT` 1 | `mexc.js` line 1467 |
 | `taker` | `takerFeeRate` | 0.0004 on 735 | `mexc.js` line 1465 |
 
-The connector keys a venue by the exchange id, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 91, so the `id` override is required.
+The connector keys a venue by the exchange id, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 91, so the `id` override is required.
 Without it the venue would register as `mexc`.
 
 ### Size unit, pairs listed twice, and price scale
@@ -79,7 +79,7 @@ So `contractSize` is the coin amount of one contract, and the engine's size mult
 
 No base and quote pair is listed twice, tag `pairsListedTwice`.
 Eight contracts quote a multiple of the token: `1000PEPE_USDT`, `1000BONK_USDT`, `1000FLOKI_USDT`, `1000LUNC_USDT`, `1000XEC_USDT`, `1000RATS_USDT`, `1000000BABYDOGE_USDT` and `1000000MOG_USDT`.
-Each needs a price scale in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) wherever another venue lists the plain token.
+Each needs a price scale in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) wherever another venue lists the plain token.
 The pairs already on `DENIED_PAIRS` exist here too: `BB_USDT`, `ON_USDT` and `QNT_USDT`, and `ONE_USDT` is not listed.
 
 ## 3. Anchor
@@ -112,7 +112,7 @@ The per contract calls are fresh.
 Over the same polls, `/index_price/BTC_USDT` and `/fair_price/BTC_USDT` carried a `timestamp` a median 153 and 135 ms old in run 2 and 79 and 66 ms in run 3.
 They changed on 34 and 37 of 59 polls in run 2, where the bulk ticker's `BTC_USDT` index and fair price changed on 16 and 14.
 So a bulk reading stamped on arrival is up to about 3.2 s older than its stamp.
-The reader refuses a reading older than 10 s and two legs read more than 5 s apart, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so the lag stays inside both limits, but it can hide up to 3.2 s of real skew inside the 5 s skew limit.
+The reader refuses a reading older than 10 s and two legs read more than 5 s apart, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so the lag stays inside both limits, but it can hide up to 3.2 s of real skew inside the 5 s skew limit.
 
 ### Row mapping
 
@@ -262,7 +262,7 @@ The `timestamp` was 206 to 375 ms old on arrival.
 | unknown path | | HTTP 404 with an HTML page |
 
 Errors arrive as HTTP 200 with `success` false.
-The anchor poller pauses only on HTTP 403, 418 and 429, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) and [`errors.ts`](../../../server/src/shared/errors.ts), so an Ourbit poller has to treat `success` false as a failed round.
+The anchor poller pauses only on HTTP 403, 418 and 429, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) and [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts), so an Ourbit poller has to treat `success` false as a failed round.
 Seeding 735 contracts from the depth call at 20 requests per 2 s takes about 74 s, which matters only for a delta book feed.
 
 ## 7. Server time and clock offset

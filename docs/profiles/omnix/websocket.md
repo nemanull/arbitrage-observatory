@@ -97,7 +97,7 @@ The bid side is named `buys`, not `bids`.
 
 ### Level window
 
-Thirty levels per side, which covers the engine's 20, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+Thirty levels per side, which covers the engine's 20, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 
 ### Size unit against the contract multiplier
 
@@ -113,7 +113,7 @@ The trade channel's `amount` is `vol` times price with no multiplier, `131` at `
 `E-GNO-USDT`, `E-MATIC-USDT` and `E-YFI-USDT` sent 3 frames each in 60 s in both batch runs.
 The REST books of `E-MATIC-USDT` and `E-YFI-USDT` held one bid and one ask, see [`rest.md`](./rest.md) section 5, and `E-GNO-USDT` was not read on REST.
 An unknown contract gets a frame whose `asks` and `buys` are both empty, so an empty frame cannot be told from an unknown symbol.
-The engine's `resetBook` accepts an empty side, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 263.
+The engine's `resetBook` accepts an empty side, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 263.
 
 ### Idle repeats
 
@@ -154,7 +154,7 @@ The book itself was not compared against another venue's book for lateness.
 | subscription limits | Not publicly specified | none reached at 45 channels |
 | throughput | | all 45 contracts on one socket, two runs: 3,723 and 3,749 frames in 60 s, median 61 and 62 and peak 92 and 89 frames a second, 28.2 and 28.5 KB a second on the wire and 59.2 and 59.6 KB a second after gunzip, 466 bytes per frame on the wire, 64.4 and 91.7 µs to gunzip and 26.2 and 37.4 µs to parse a frame |
 
-The gzip layer is inside the frame, so the engine's refusal of permessage-deflate at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 does not avoid it.
+The gzip layer is inside the frame, so the engine's refusal of permessage-deflate at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 does not avoid it.
 A feed must gunzip every message in `handleMessage`, which cost about 2.5 times the parse on this host.
 
 ## 6. Captured frames

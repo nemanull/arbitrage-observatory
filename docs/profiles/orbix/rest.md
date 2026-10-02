@@ -62,7 +62,7 @@ At the `usdt_thb` bid of 33.17 to 33.19 THB that is about 315,000 USDT.
 ### How CCXT maps it
 
 CCXT 4.5.68 has no Orbix class, so no `market.id`, `contractSize`, `linear` or `active` exists to compare, see [`fees.md`](./fees.md) section 8.
-The engine's catalog comes only from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, so Orbix would need a catalog loader of its own.
+The engine's catalog comes only from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, so Orbix would need a catalog loader of its own.
 
 ### Symbol spelling, size unit, and pairs listed twice
 
@@ -75,7 +75,7 @@ The engine's catalog comes only from CCXT `loadMarkets` filtered to active swaps
 The WebSocket serves only the lower case name, see [`websocket.md`](./websocket.md) section 4.
 Sizes are base asset quantities, so the multiplier is 1.
 No pair is listed twice, and no price scale is needed.
-Every pair quotes THB, which [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 does not fold into the USDT family, so no Orbix pair would share a cluster with a USDT perpetual.
+Every pair quotes THB, which [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 does not fold into the USDT family, so no Orbix pair would share a cluster with a USDT perpetual.
 
 ## 3. Anchor
 

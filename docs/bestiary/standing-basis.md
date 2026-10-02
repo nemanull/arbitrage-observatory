@@ -169,13 +169,13 @@ Depth makes it worse, not better.
 The ladder walk in [`edge-at-the-touch.md`](./edge-at-the-touch.md) finds thousands of dollars on both sides of a basis, because both books are honest.
 A row that reports the largest region in the table is the row this class produces.
 
-The answer at the time was the hand kept `DENIED_PAIRS` list in [`../../server/src/engine/cluster/clusterOverrides.ts`](../../server/src/engine/cluster/clusterOverrides.ts).
+The answer at the time was the hand kept `DENIED_PAIRS` list in [`../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/6c7905700f42fc2fc473aa2e4bb288669c017275/server/src/engine/cluster/clusterOverrides.ts).
 It reached eight pairs and grew by a few every run, because denial is by name and the cause is a mechanism.
 
 ## How to detect it
 
 Read each leg's anchor on every sample, and split the cross into the part the anchors explain and the part they do not.
-The vocabulary is in [`index-mark-and-premium.md`](./index-mark-and-premium.md), and the reader is [`../../server/src/engine/opportunity/anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
+The vocabulary is in [`index-mark-and-premium.md`](./index-mark-and-premium.md), and the reader is [`../../server/src/engine/opportunity/anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/6c7905700f42fc2fc473aa2e4bb288669c017275/server/src/engine/opportunity/anchorReading.ts).
 In fractions, 1 + netPpm = (1 + indexGapPpm) × (1 + carriedPpm) × (1 + freshNetPpm).
 
 1. The index gap between the legs, in ppm, after the venue price scales.

@@ -121,7 +121,7 @@ A feed applies deltas by price in array order and never by position.
 The snapshot stops at 100 levels per side, but deltas cover the whole book.
 A book kept from the snapshot and every delta reached 113 bids and 107 asks on ETH/USDT in the first 60 s run, and 109 asks in the second, so levels beyond the first 100 arrive when they change and are never trimmed by the server.
 The whole REST book was 107 bids and 133 asks on ETH/USDT, and 146 bids and 157 asks on BTC/USDT, see [`rest.md`](./rest.md) section 5.
-A feed that holds 20 levels takes the best 20 after each frame, which is what the engine's `depthLevels` of 20 does, at [`../../../server/src/engine/Engine.ts`](../../../server/src/engine/Engine.ts) line 61.
+A feed that holds 20 levels takes the best 20 after each frame, which is what the engine's `depthLevels` of 20 does, at [`../../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61.
 
 ### Size unit against CCXT
 
@@ -134,7 +134,7 @@ A feed that holds 20 levels takes the best 20 after each frame, which is what th
 At the end of each 60 s book run the kept top 20 levels were compared by position with a REST book read a second or so later.
 They matched on 20 of 20 levels in 29 of the 30 side comparisons over three runs.
 The exception was HBAR/USDT asks in the third run at 0 of 20, which is what a position compare gives when one new level shifts every index, and that cause is an inference, P1.
-The unit is the base currency, and CCXT's spot markets have no `contractSize`, which the connector would turn into 1, at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) line 175.
+The unit is the base currency, and CCXT's spot markets have no `contractSize`, which the connector would turn into 1, at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 175.
 
 ### One-sided and empty books
 
@@ -295,7 +295,7 @@ A recommendation for a later design, not a decision, and only relevant if a spot
 | URL plan | `wss://api.latoken.com/stomp`, one plan per slice | one URL serves everything |
 | destination and routing key | `/v1/book/<baseId>/<quoteId>`, with `rawMarketId` set to `<baseId>/<quoteId>` rather than CCXT's pair id | the socket spells the pair by currency ids, and CCXT `market.id` is a third id the socket never uses |
 | markets per connection | 100 | 100 ran with 0 gaps at a median 213 to 215 messages per second in two runs, and no cap is published |
-| subscribe frames | send STOMP text from the feed itself: `CONNECT` with `heart-beat:5000,5000`, then one `SUBSCRIBE` per market with `id` equal to its index in the slice, on `CONNECTED` | `VenueFeed` sends each subscribe frame through `JSON.stringify`, at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 141 to 161, which would quote a STOMP string, so `getSubscribeFrames` returns an empty list and `startKeepalive` sends the text |
+| subscribe frames | send STOMP text from the feed itself: `CONNECT` with `heart-beat:5000,5000`, then one `SUBSCRIBE` per market with `id` equal to its index in the slice, on `CONNECTED` | `VenueFeed` sends each subscribe frame through `JSON.stringify`, at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 141 to 161, which would quote a STOMP string, so `getSubscribeFrames` returns an empty list and `startKeepalive` sends the text |
 | keepalive | an `\n` every 5,000 ms | a silent client that asked for heart-beats is closed at 30 s, and a socket with no traffic at all at 60 s |
 | `maxSilenceMs` | 15,000 | the server heart-beat arrives every 5 s at that setting, and a quiet pair can be silent for minutes, so only the heart-beat can prove the socket alive |
 | parse | split each message on `\0`, skip bare EOLs, read the `subscription` header and parse the JSON body | STOMP framing, one frame per message on the wire, binary WebSocket frames |

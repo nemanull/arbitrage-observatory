@@ -307,7 +307,7 @@ A gap on one contract terminates a socket of 100, and 100 REST depth reads follo
 |---|---|---|---|---|---|
 | S1 | KCEX futures web app, version 3.8.19, page chunk for `/futures/exchange/[symbol]` | https://www.kcex.com/main-static/web-futures/v3.8.19/_next/static/chunks/app/[locale]/futures/exchange/[symbol]/page-74b670118466f89c.js | 2026-09-22 | KCEX, global | socket URL, method and channel names, ping, heart check interval, private channel names, sections 1 to 8 |
 | S2 | MEXC WebSocket profile | [`../mexc/websocket.md`](../mexc/websocket.md) | 2026-09-15 | MEXC | the same protocol family, merged frames, sections 4 and 8 |
-| S3 | `VenueFeed.ts` | [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) | 2026-09-22 | this repository | no headers on open at line 81, `resync` terminates at line 314, section 8 |
+| S3 | `VenueFeed.ts` | [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) | 2026-09-22 | this repository | no headers on open at line 81, `resync` terminates at line 314, section 8 |
 | P4 | `ws-probe.mjs book`, three runs at 03:32, 03:41 and 03:55 UTC on 2026-09-23 | [`ws-probe.mjs`](../../../scripts/probes/venues/kcex/ws-probe.mjs) | 2026-09-22 | this host | sections 1 to 6 |
 | P5 | `ws-probe.mjs batch`, two runs at 03:34 and 03:43 UTC | [`ws-probe.mjs`](../../../scripts/probes/venues/kcex/ws-probe.mjs) | 2026-09-22 | this host | gaps and throughput on 100 contracts, sections 3 to 5 |
 | P6 | `ws-probe.mjs silence`, two runs at 03:36 and 03:44 UTC | [`ws-probe.mjs`](../../../scripts/probes/venues/kcex/ws-probe.mjs) | 2026-09-22 | this host | silence rule, section 5 |

@@ -77,7 +77,7 @@ Each match carries a `settlementTxHash`, the Provenance transaction that settled
 
 It does not.
 CCXT 4.5.68 has no class for the venue, and the master branch has none either, see [`fees.md`](./fees.md) section 8.
-The connector builds its catalog from CCXT `loadMarkets` and keeps active swaps only, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 68 and 79, so this catalog would need a loader of its own before the engine could see it.
+The connector builds its catalog from CCXT `loadMarkets` and keeps active swaps only, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 68 and 79, so this catalog would need a loader of its own before the engine could see it.
 
 | engine field | what the venue offers |
 |---|---|

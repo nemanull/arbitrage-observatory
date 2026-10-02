@@ -70,7 +70,7 @@ It adds `capitalFrequency`, the funding interval in hours, `nextCapitalSettTime`
 
 ### How a catalog would map it
 
-CCXT 4.5.68 has no x.me class, see [`fees.md`](./fees.md) section 8, so the connector's `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 cannot load this venue.
+CCXT 4.5.68 has no x.me class, see [`fees.md`](./fees.md) section 8, so the connector's `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 cannot load this venue.
 A catalog built from these two calls would set:
 
 | `Market` field | source | note |
@@ -85,7 +85,7 @@ A catalog built from these two calls would set:
 ### Pairs listed twice, price scale and names to screen
 
 No base is listed twice.
-`E-1000SATS-USDT`, `E-1000BONK-USDT` and `E-1MBABYDOGE-USDT` quote a bundle of 1,000 or 1,000,000 tokens in their name, so they need the same care as other venues' scaled names in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 20 to 26.
+`E-1000SATS-USDT`, `E-1000BONK-USDT` and `E-1MBABYDOGE-USDT` quote a bundle of 1,000 or 1,000,000 tokens in their name, so they need the same care as other venues' scaled names in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 26.
 At least 41 active contracts are equity, ETF, commodity or pre-IPO perpetuals, such as `E-OPENAI-USDT`, `E-QQQ-USDT`, `E-XAU-USDT` and `E-SAMSUNG-USDT`, listed in [`fees.md`](./fees.md) section 3, and a ticker that names a different thing on another venue needs a `DENIED_PAIRS` line at the same file, line 7.
 
 ## 3. Anchor
@@ -238,12 +238,12 @@ The rerun, with a round trip under half as long, put the venue's clock a median 
 
 A recommendation for a later design, not a decision.
 
-No REST call fits the engine's `AnchorPoller`, which reads one bulk reply per round at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) line 103.
+No REST call fits the engine's `AnchorPoller`, which reads one bulk reply per round at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 103.
 Two shapes would work, and each is a named change.
 
 | option | shape | cost |
 |---|---|---|
-| socket anchor, recommended | subscribe `market_<sym>_ticker` for every tracked contract, as in [`websocket.md`](./websocket.md) section 2, stamp each frame on arrival, and fill `index`, `mark` and `fundingRate` from it. Read `capitalFrequency` and `nextCapitalSettTime` from `public_info` once a minute | a socket source for anchors, which the engine does not have today. A channel's frames were up to 4.5 s apart, inside the reader's 10 s age limit but most of its 5 s skew limit, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 and 5 |
+| socket anchor, recommended | subscribe `market_<sym>_ticker` for every tracked contract, as in [`websocket.md`](./websocket.md) section 2, stamp each frame on arrival, and fill `index`, `mark` and `fundingRate` from it. Read `capitalFrequency` and `nextCapitalSettTime` from `public_info` once a minute | a socket source for anchors, which the engine does not have today. A channel's frames were up to 4.5 s apart, inside the reader's 10 s age limit but most of its 5 s skew limit, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 and 5 |
 | REST round | one `public_market_info` per tracked contract per round | 266 calls, 26 s at two in flight, so a one second cadence needs about 266 requests a second with no published limit |
 
 Either way:

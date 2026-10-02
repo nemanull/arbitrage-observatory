@@ -122,12 +122,12 @@ A feed applies diffs by price and never by position.
 S1 says a whole holds 200 entries per side from the best price in normal mode, and up to 400 around the auction price in a circuit break.
 On the wire the three liquid pairs held 186 to 210 bids and 194 to 206 asks per whole over three runs, so the cap is near 200 and not exact, P1.
 `bat_jpy` held 118 to 122 bids, all its book has, and 199 to 201 asks.
-The engine keeps 20 levels per side, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, which the window covers.
+The engine keeps 20 levels per side, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, which the window covers.
 
 ### Size unit against CCXT `contractSize`
 
 Sizes are amounts of the base currency: the best `btc_jpy` bid in the REST read was `["13640000","0.0026"]`, 0.0026 BTC.
-CCXT sets `contractSize` to `undefined` for every bitbank market, at `server/node_modules/ccxt/js/src/bitbank.js` line 337, and the connector turns a missing contract size into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 194.
+CCXT sets `contractSize` to `undefined` for every bitbank market, at `server/node_modules/ccxt/js/src/bitbank.js` line 337, and the connector turns a missing contract size into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 194.
 So the size unit would be read correctly, as base units.
 A book rebuilt from the socket at the REST reply's `sequenceId` matched the REST top 20 levels exactly, price and size on both sides, in 6 of 12 comparisons over three runs, P1.
 In the other 6, 1 to 33 of the 40 positions differed, so a REST snapshot's `sequenceId` does not fall exactly on a diff boundary.
@@ -250,7 +250,7 @@ A recommendation for a later spot design, not a decision, since bitbank cannot j
 |---|---|---|
 | URL plan | one plan, `wss://stream.bitbank.cc/socket.io/?EIO=4&transport=websocket` | one socket serves every pair |
 | markets per connection | all 44 tradable JPY pairs on one socket | 62 pairs and 124 rooms ran at 79 frames per second |
-| subscribe frames | `getSubscribeFrames` returns `[]`, and `handleMessage` sends the text `40` on the open packet `0{…}`, then `42["join-room","depth_whole_<id>"]` and `42["join-room","depth_diff_<id>"]` per market on `40{…}` | the base class sends `JSON.stringify` of each subscribe object, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 143, and a Socket.IO frame is not JSON. This is the one named change |
+| subscribe frames | `getSubscribeFrames` returns `[]`, and `handleMessage` sends the text `40` on the open packet `0{…}`, then `42["join-room","depth_whole_<id>"]` and `42["join-room","depth_diff_<id>"]` per market on `40{…}` | the base class sends `JSON.stringify` of each subscribe object, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 143, and a Socket.IO frame is not JSON. This is the one named change |
 | keepalive | `startKeepalive` does nothing, and `handleMessage` answers the text `2` with `3` | the server drives the ping, and an unanswered ping closes the socket at 45 s |
 | `maxSilenceMs` | 60,000 | the server ping arrives every 25 s and counts as traffic, and every joined pair also gets a whole every 15 s |
 | routing | strip `42`, parse, then `room_name.slice(12)` for `depth_whole_` and `room_name.slice(11)` for `depth_diff_` gives the `rawMarketId` | the room name wraps the pair id |

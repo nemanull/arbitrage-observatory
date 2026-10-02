@@ -141,7 +141,7 @@ The first snapshot of a busy pair came 185 to 190 ms after the subscribe frame, 
 An unchanged book is pushed again: 17 to 56 of 61 to 136 frames per stream repeated the previous book exactly, and every stream in the 22-pair batch pushed at least 29 times in 30 s.
 The envelope `ts` minus `data[0].ts` had a median of 5 to 8 ms per stream in the second book run, and repeated books carry a new `data[0].ts`, so it is close to the push time and is not the time of the last change.
 The local clock minus `data[0].ts` had a median of 101 to 105 ms, while the clock offset bound from `GET /api/v5/time` spans −106 to +96 ms, so most of that is the one-way delay.
-Fifteen levels is five fewer than the engine's 20, at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
+Fifteen levels is five fewer than the engine's 20, at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
 
 | request | reply |
 |---|---|

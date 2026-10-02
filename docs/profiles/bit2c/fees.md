@@ -135,7 +135,7 @@ The thresholds match S1 tier for tier while every rate differs, so the CCXT tabl
 ## 9. Recommended registry values
 
 Bit2c should not be registered.
-The connector keeps only active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79 with the filter at lines 196 to 203, so its four spot markets give an empty catalog and the venue is skipped with "no usable swap markets", at lines 49 to 51.
+The connector keeps only active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79 with the filter at lines 196 to 203, so its four spot markets give an empty catalog and the venue is skipped with "no usable swap markets", at lines 49 to 51.
 
 If a spot stage ever takes it, `takerPpm` must be 12,500 from S1.
 `ccxtTakerPpm` has no value to declare, because CCXT reports no per market taker.

@@ -153,7 +153,7 @@ If access were ever granted, the unknowns a probe would have to settle first are
 | depth | whether `.200` keeps a 200 level window with explicit `"0"` deletions |
 | keepalive | whether the 5 s ping is a protocol ping, which `ws` answers on its own, or a text frame |
 | markets per connection | nothing published, and 240 subscriptions per hour caps resubscribe storms |
-| compression | whether the server honours a client that refuses permessage-deflate, as [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 does |
+| compression | whether the server honours a client that refuses permessage-deflate, as [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 does |
 
 ## 9. Source ledger
 

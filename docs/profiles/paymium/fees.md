@@ -143,7 +143,7 @@ CCXT's taker of 5,000 ppm is below the published 6,000 ppm, and CCXT's maker reb
 None, because Paymium is spot only and the engine consumes perpetuals, see [`rest.md`](./rest.md) section 2.
 
 If a later design ever adds this spot book, it needs `takerPpm` 6,000 in the registry.
-The connector takes `this.takerPpm ?? toPpm(market.taker)` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 162, and `market.taker` is `undefined` for Paymium, so without a registry value the fee is unknown.
+The connector takes `this.takerPpm ?? toPpm(market.taker)` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 162, and `market.taker` is `undefined` for Paymium, so without a registry value the fee is unknown.
 `ccxtTakerPpm` would stay unset, since CCXT reports no per-market taker.
 The engine would also have to place marketable limit orders, because a market order costs 14,900 ppm.
 

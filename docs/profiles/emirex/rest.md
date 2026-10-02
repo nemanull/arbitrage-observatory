@@ -70,7 +70,7 @@ It publishes two reference prices, and neither is an index.
 | `GET /v1/public/ticker?pair=BTCUSDC` | `last`, `high`, `low`, `volume_24H`, `percent_сhange` with a Cyrillic `с` in the key | `last` "87105.99000000" at 04:24 UTC |
 
 No call returns a mark, and no `AnchorRow` column has a source.
-A leg with a mark of 0 is refused at open, at [`types.ts`](../../../server/src/engine/cluster/types.ts) line 34 and [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 37.
+A leg with a mark of 0 is refused at open, at [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/types.ts) line 34 and [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 37.
 
 ## 4. Anchor semantics
 

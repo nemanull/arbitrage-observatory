@@ -110,7 +110,7 @@ None is documented and no frame carries one.
 
 Eight levels per side on every pair and every frame, except that `ADA-EUR` bids dropped to 5 and 6 in the two batch runs, `ONDO-EUR` bids to 6 in the second, and `ADA-EUR` bids read 6 and 7 by REST.
 There is no depth parameter, S2 and S3.
-Eight levels is less than the engine's `DEPTH_LEVELS` of 20 at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
+Eight levels is less than the engine's `DEPTH_LEVELS` of 20 at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17.
 The deepest bid of several pairs is not a plausible order.
 On `AAVE-EUR` in the third REST run the eighth bid alone was worth 89,179,732 EUR and sat 39,809 ppm under the best bid, while the eight asks together came to about 1.1 million EUR in the second run, see [`rest.md`](./rest.md) section 5.
 In the second pass the deepest bid alone exceeded 10 million quote units on 8 of 24 pairs, see [`rest.md`](./rest.md) section 5.

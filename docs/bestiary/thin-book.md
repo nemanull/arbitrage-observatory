@@ -113,7 +113,7 @@ Since 2026-09-14 the open gate applies the first checkpoint of step 2 at the mom
 A route whose profitable region at open holds less than 1,000 quote units is refused as `thin_book` and writes no row, and a region that grows past the floor on a later tick opens then.
 The sizing across two runs is in [`../research/2026-09-14-open-guard-sizing.md`](../research/2026-09-14-open-guard-sizing.md).
 
-The write path that receives these levels is `Engine.updateDepth` in [`../../server/src/engine/Engine.ts`](../../server/src/engine/Engine.ts).
+The write path that receives these levels is `Engine.updateDepth` in [`../../server/src/engine/Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/f03bd573e8ab4a0ea7d72283d0e15474a44cb3df/server/src/engine/Engine.ts).
 The block it writes into is described in [`../implemented/2026-09-06-depth-block-design.md`](../implemented/2026-09-06-depth-block-design.md).
 Since 2026-09-07 the WebSocket book feeds fill it, one maintained book per market, verified in [`../research/2026-09-07-depth-sequence-gaps.md`](../research/2026-09-07-depth-sequence-gaps.md).
 

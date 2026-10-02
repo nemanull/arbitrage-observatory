@@ -93,7 +93,7 @@ On BTCUSDT, 61 buffered diffs were dropped as old and the next one straddled the
 The partial depth stream is a snapshot every 100 ms.
 Its `lastUpdateId` equalled the final id `u` of a diff frame on 490 of 490 BTCUSDT frames in the second run.
 A book seeded from the first `depth20@100ms` frame, then chained with diffs on `U = last + 1`, took 489 diffs with 0 gaps and never needed a second seed, because each later partial frame arrived after the diff with the same id.
-This is the shape the engine's Binance futures feed already uses, a diff stream reseeded from `@depth20@100ms` at [`../../../server/src/venues/binance/binance.ts`](../../../server/src/venues/binance/binance.ts) lines 21 to 25, except that the spot frames carry no `pu` and the partial frame carries no symbol.
+This is the shape the engine's Binance futures feed already uses, a diff stream reseeded from `@depth20@100ms` at [`../../../server/src/venues/binance/binance.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/binance/binance.ts) lines 21 to 25, except that the spot frames carry no `pu` and the partial frame carries no symbol.
 
 ### Delta semantics
 
@@ -134,7 +134,7 @@ The diff stream has no window, section "Delta semantics".
 ### Size unit against CCXT `contractSize`
 
 The size is in base asset units.
-CCXT sets `contractSize: undefined` on every market at `server/node_modules/ccxt/js/src/tokocrypto.js` line 823, and the engine turns a missing size into 1 at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 190, which is correct for spot.
+CCXT sets `contractSize: undefined` on every market at `server/node_modules/ccxt/js/src/tokocrypto.js` line 823, and the engine turns a missing size into 1 at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 190, which is correct for spot.
 
 | symbol | local book id | REST id | top 20 bids equal | top 20 asks equal | run |
 |---|---:|---:|---:|---:|---|

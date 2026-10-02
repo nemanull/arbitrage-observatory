@@ -266,7 +266,7 @@ A recommendation for a later design, not a decision.
 | markets per connection | 80, the whole shared list | 80 books ran with 0 gaps at 72 and 81 frames per second, and no cap is published, so a larger slice is untested |
 | subscribe frames | one frame per topic, `{"id": "<n>", "event": "subscribe", "topic": "PERP_BTC_USDC@orderbookupdate"}` | the documented shape takes one topic |
 | keepalive | send `{"event":"ping"}` every 10 s, and answer any `{"event":"ping"}` with `{"event":"pong"}` in `handleMessage` | either alone kept a socket open, and doing both leaves no gap |
-| `maxSilenceMs` | 30,000 | the server pings every 10 s and every frame counts as traffic in [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 205, while a quiet book went 31.8 s without a delta |
+| `maxSilenceMs` | 30,000 | the server pings every 10 s and every frame counts as traffic in [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 205, while a quiet book went 31.8 s without a delta |
 | routing | `topic.slice(0, topic.indexOf('@'))` gives the `rawMarketId` | the topic wraps the symbol |
 | snapshot | on an `@orderbook` push: `resetBook` and store `ts`, or skip it when its `ts` equals the stored one | the push is the whole book stamped with the change it reflects |
 | delta | apply only when `data.prevTs === last`, then store `ts` | 0 gaps observed |

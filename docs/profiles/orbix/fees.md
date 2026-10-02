@@ -90,7 +90,7 @@ So there is no `market.taker` to read, and `ccxtTakerPpm` has nothing to declare
 ## 9. Recommended registry values
 
 None.
-Orbix cannot join the engine: it has no perpetual, no CCXT class for the catalog, and its only quote currency is THB, which [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 does not fold into the USDT family.
+Orbix cannot join the engine: it has no perpetual, no CCXT class for the catalog, and its only quote currency is THB, which [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6 does not fold into the USDT family.
 If a THB spot leg were ever designed, `takerPpm` would be 2,500 from the fee call, and `ccxtTakerPpm` would stay unset because no CCXT class exists.
 
 ## 10. Source ledger

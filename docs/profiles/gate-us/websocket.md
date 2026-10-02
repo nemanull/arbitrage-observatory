@@ -125,7 +125,7 @@ A diff feed applies levels by price and never by position.
 ### Size unit
 
 Sizes are base currency amounts as decimal strings: `BTC_USD` `"0.14178"` BTC, `SOL_USD` `"13.548"` SOL, `SAND_USD` `"22478"` SAND, P5.
-CCXT spot markets carry `contractSize` `undefined`, and the connector turns a missing contract size into 1 at [`../../../server/src/ccxt/connector.ts`](../../../server/src/ccxt/connector.ts) lines 175 and 188 to 191, so the unit would be read correctly.
+CCXT spot markets carry `contractSize` `undefined`, and the connector turns a missing contract size into 1 at [`../../../server/src/ccxt/connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 175 and 188 to 191, so the unit would be read correctly.
 
 ### One-sided and empty books
 

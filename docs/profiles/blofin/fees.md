@@ -113,7 +113,7 @@ The liquidation fee and the insurance fund rule are Not verified.
 | field | value | reason |
 |---|---|---|
 | `takerPpm` | 600 | the VIP 0 futures taker, S2 and S7 |
-| `ccxtTakerPpm` | leave unset | CCXT reports the same 600 ppm, so the connector check at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 38 passes without it |
+| `ccxtTakerPpm` | leave unset | CCXT reports the same 600 ppm, so the connector check at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 38 passes without it |
 
 These values only matter from a host that BloFin serves, see the verdict in [`rest.md`](./rest.md) section 8.
 

@@ -55,7 +55,7 @@ CoinGecko put the venue at 374.6 BTC of 24 h volume and counts 87 pairs, S3.
 
 It does not.
 CCXT 4.5.68 has no Vindax class, and neither has CCXT master, see [`fees.md`](./fees.md) section 8.
-The engine builds its catalog only from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 67 and 196 to 199, so Vindax has no catalog path today.
+The engine builds its catalog only from CCXT `loadMarkets` filtered to active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 67 and 196 to 199, so Vindax has no catalog path today.
 
 | engine need | Vindax |
 |---|---|
@@ -122,7 +122,7 @@ A thin book reads as such: `SCUSDT` held 20 bids and 16 asks, `BFCV2USDT` 0 bids
 | missing parameter | | HTTP 400 `{"code":-1102,"msg":"Mandatory parameter 'symbol' was not sent, was empty/null, or malformed."}` |
 | unknown path | | HTTP 200 with `text/html`, the 55 byte "WELCOME TO VinDAX API" page, so a wrong path looks like success to a client that does not check the content type |
 
-The engine's anchor poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts), which is moot with no anchor.
+The engine's anchor poller pauses on 403, 418 and 429, at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts), which is moot with no anchor.
 A spot feed's REST resync would share the 50 per minute window with anything else on the same IP.
 
 ## 7. Server time and clock offset

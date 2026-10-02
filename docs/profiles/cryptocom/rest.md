@@ -90,10 +90,10 @@ Sample markets, as CCXT returned them.
 ### Size unit, pairs listed twice, and price scale
 
 Book sizes are base currency units and `contractSize` is 1, so the engine's size multiplier is right for every perpetual, see [`websocket.md`](./websocket.md) section 4.
-The quote family folds `USD` into `USDT`, at [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so every Crypto.com perpetual joins the `USDT` pair of its base, and the venue lists one contract per base.
+The quote family folds `USD` into `USDT`, at [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6, so every Crypto.com perpetual joins the `USDT` pair of its base, and the venue lists one contract per base.
 
 The pre-IPO bases are named `ANTHROPICIPO` and `OPENAIIPO`, so they do not cluster with okx's `ANTHROPIC` and `OPENAI` at all.
-Their index read 2,172.6 and 1,663.3 at 22:08 UTC, the basis okx reaches only after its price scale of 10 in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
+Their index read 2,172.6 and 1,663.3 at 22:08 UTC, the basis okx reaches only after its price scale of 10 in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
 Whether a Crypto.com base names a different token than the same base on another venue was not surveyed, and `DENIED_PAIRS` needs that check before Crypto.com joins.
 The 155 TradFi perpetuals share stock and commodity tickers with the TradFi perpetuals of other venues, and whether to cluster them is a decision for a later design.
 
@@ -116,7 +116,7 @@ CCXT agrees that no bulk funding call exists, with `'fetchFundingRates': false` 
 So one REST round over the catalog costs one call per perpetual per field.
 One round of `mark_price` alone for all 396 perpetuals, at 40 requests per second, took 10.1 s in both runs, with 396 answers of HTTP 200 and a median reply of 135 and 124 ms.
 At the published 100 requests per second per method, S1, the index and the mark alone are 792 calls, at least 7.9 s a round, all on the one method `get-valuations`.
-The engine's reader refuses two legs read more than 5 s apart and a reading older than 10 s, at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so a REST round over every perpetual cannot feed it.
+The engine's reader refuses two legs read more than 5 s apart and a reading older than 10 s, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so a REST round over every perpetual cannot feed it.
 
 ### Row mapping
 
@@ -272,7 +272,7 @@ The recommended feed takes its snapshot from the socket and needs no REST book, 
 | `get-valuations?instrument_name=NOPEUSD-PERP&valuation_type=mark_price` | 400 | `{"code":40004,"message":"Invalid instrument_name"}` |
 | `/public/get-nope` | 404 | `{"timestamp":"2026-09-22T21:43:19.938+00:00","status":404,"error":"Not Found","path":"/v1/public/get-nope"}` |
 
-The engine's poller pauses on 403, 418 and 429, at [`errors.ts`](../../../server/src/shared/errors.ts) line 1, and 429 is the documented limit reply, so a socket-fed anchor would not need it and a REST fallback would.
+The engine's poller pauses on 403, 418 and 429, at [`errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 1, and 429 is the documented limit reply, so a socket-fed anchor would not need it and a REST fallback would.
 
 ## 7. Server time and clock offset
 

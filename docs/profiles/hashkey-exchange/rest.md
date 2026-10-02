@@ -61,7 +61,7 @@ So a poller keys on the catalog, never on a ticker reply.
 
 ### How the engine's catalog would map it
 
-There is no CCXT class for HashKey Exchange, see [`fees.md`](./fees.md) section 8, so the engine's catalog, `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68 filtered to active swaps at lines 196 to 203, has nothing to load for this venue.
+There is no CCXT class for HashKey Exchange, see [`fees.md`](./fees.md) section 8, so the engine's catalog, `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68 filtered to active swaps at lines 196 to 203, has nothing to load for this venue.
 CCXT's `hashkey` class, which targets HashKey Global, reads the same `exchangeInfo` layout: its `fetchMarkets` concatenates `symbols` and `contracts` at `server/node_modules/ccxt/js/src/hashkey.js` lines 862 and 863.
 Pointed at `https://api-pro.hashkey.com`, it loaded the HK site, P1.
 
@@ -72,7 +72,7 @@ Pointed at `https://api-pro.hashkey.com`, it loaded the HK site, P1.
 | `active` | `status === 'TRADING'`, line 1038 |
 | market id against the socket | identical, see [`websocket.md`](./websocket.md) section 3 |
 | size unit | base currency for spot, contract size 1 |
-| pairs one quote family would hold twice | `BTCUSD` and `BTCUSDT`, `ETHUSD` and `ETHUSDT`, `USDTUSD` and `USDTUSDC` fold into one pair each under [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6. HKD and FDUSD pairs stay outside the family |
+| pairs one quote family would hold twice | `BTCUSD` and `BTCUSDT`, `ETHUSD` and `ETHUSDT`, `USDTUSD` and `USDTUSDC` fold into one pair each under [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6. HKD and FDUSD pairs stay outside the family |
 | price scale | none needed, prices are per coin |
 
 The one swap CCXT would load is active in CCXT's eyes and has an empty book, so the connector would take `BBTC/USD:USD` as a live market whose base no other venue lists.

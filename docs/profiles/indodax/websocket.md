@@ -124,7 +124,7 @@ None is documented and no frame carries one.
 The socket holds 50 levels a side on every busy pair, and fewer when the book is thinner: `vcgusdt` held 12 bids and 50 asks.
 REST `/api/depth` serves 150 a side on the same pairs.
 On `btcusdt` the top 20 socket levels equalled the top 20 REST levels in price and in size on both sides in both runs, read 1,791 and 3,018 ms after the last push.
-The engine holds 20 levels a side by default, `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, so 50 is enough.
+The engine holds 20 levels a side by default, `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, so 50 is enough.
 
 ### Size unit against CCXT `contractSize`
 
@@ -135,7 +135,7 @@ The engine holds 20 levels a side by default, `DEPTH_LEVELS` at [`ClusterIndexBu
 | `vcgusdt` | `"0.004433"` | `"7850.75186100"` VCG | `"34.80238300"` USDT | 34.80 |
 
 The size is base coins, read from the field named `<base>_volume`, where the base is the pair id without its quote suffix.
-CCXT reports `contractSize` undefined on these spot markets, which the connector turns into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, and 1 is right for base coins.
+CCXT reports `contractSize` undefined on these spot markets, which the connector turns into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194, and 1 is right for base coins.
 
 ### One-sided and empty books
 
@@ -179,7 +179,7 @@ An acknowledgement without an `offset` cannot tell an unknown pair from a listed
 | throughput | | 128 order book channels, the 12 USDT pairs and the busiest IDR pairs: 4,178 and 3,702 pushes in 45 s, a median of 76 and 65 a second and a peak of 170 and 162, 647 and 573 KB a second, 6,967 and 6,959 bytes a push, 45 and 53 µs of `JSON.parse` a frame. 123 of the 128 channels delivered, and `xecusdt` was among the 5 silent ones |
 
 A client built on `ws` answers protocol pings by default, which is what kept the connected sockets alive.
-The engine's silence watch counts only messages, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 205, so protocol pings do not reset it and the method 7 reply has to.
+The engine's silence watch counts only messages, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 205, so protocol pings do not reset it and the method 7 reply has to.
 
 ## 6. Captured frames
 

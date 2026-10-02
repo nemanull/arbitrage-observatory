@@ -72,7 +72,7 @@ These spreads come from the bulk ticker, whose touch can be a minute old, see se
 ### How CCXT 4.5.68 maps it
 
 It does not, since CCXT 4.5.68 has no Bitlo class and the master branch has none either, see [`fees.md`](./fees.md) section 8.
-A connector would have to be written by hand, and the engine's catalog accepts only CCXT swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202.
+A connector would have to be written by hand, and the engine's catalog accepts only CCXT swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202.
 
 | engine field | Bitlo source | note |
 |---|---|---|
@@ -82,7 +82,7 @@ A connector would have to be written by hand, and the engine's catalog accepts o
 | `linear` | not applicable | spot |
 | `active` | `tradingEnabled` | |
 
-Only the 72 USDT markets would fall in the USD, USDC and USDT settlement family of [`quoteFamily.ts`](../../../server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
+Only the 72 USDT markets would fall in the USD, USDC and USDT settlement family of [`quoteFamily.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/quoteFamily.ts) lines 3 to 6.
 TRY forms its own family, and no other venue in the engine quotes TRY.
 
 ## 3. Anchor

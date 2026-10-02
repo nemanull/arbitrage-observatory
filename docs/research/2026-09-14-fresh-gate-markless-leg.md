@@ -29,13 +29,13 @@ It opened at 20:29:46.323, closed at 20:34:46.842 as `age_cap`, and took 44 samp
 | fresh net ppm | 15,911 |
 | standing ppm | -572 |
 
-The arithmetic of [`anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts) reproduces every stored number from the raw prices, and the three factors multiply back to the net edge to the last digit.
+The arithmetic of [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/anchorReading.ts) reproduces every stored number from the raw prices, and the three factors multiply back to the net edge to the last digit.
 The gate saw a fresh edge of 15,911 ppm against a threshold of 5,000 and let the route through.
 Nothing in the open gate or the close rule misfired.
 
 ## 2. Why the gate passed
 
-Coinbase publishes no mark in the call the poller reads, so [`coinbase/anchor.ts`](../../server/src/venues/coinbase/anchor.ts) writes 0 and the reader measures the coinbase leg over its index instead.
+Coinbase publishes no mark in the call the poller reads, so [`coinbase/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/venues/coinbase/anchor.ts) writes 0 and the reader measures the coinbase leg over its index instead.
 The whole 1.71 percent discount of the coinbase ask to the coinbase index therefore lands in the fresh premium.
 The design knew this, see the sentence "a leg without a mark counts as one there, and its whole premium shows in the fresh edge instead" in [`../bestiary/index-mark-and-premium.md`](../bestiary/index-mark-and-premium.md).
 On a route with a coinbase leg, the fresh gate is the raw gate.
@@ -158,7 +158,7 @@ The 15 age caps of this run are the two venues where the assumption fails, and n
 ## 8. Options, smallest first
 
 1. Refuse a leg without a mark as `anchor_missing`.
-   One condition in `readLeg` in [`anchorReading.ts`](../../server/src/engine/opportunity/anchorReading.ts).
+   One condition in `readLeg` in [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/d1933c2a3a647cbb3224fe2e7498263dd6e474c9/server/src/engine/opportunity/anchorReading.ts).
    Every coinbase route is refused until a mark exists, which is the "no unjudged row" rule applied consistently.
 2. Read the INTX quote for coinbase.
    One call to `/api/v1/instruments`, symbol is the product id without `-INTX`, and the poller gains a mark, the same index, and both the settled and the predicted hourly rate.

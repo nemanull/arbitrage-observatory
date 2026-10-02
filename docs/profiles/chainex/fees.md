@@ -145,7 +145,7 @@ So `market.taker` has no value to report.
 ## 9. Recommended registry values
 
 None.
-ChainEX is spot only, and the engine takes perpetuals only, through `loadMarkets` filtered to active swaps at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 79.
+ChainEX is spot only, and the engine takes perpetuals only, through `loadMarkets` filtered to active swaps at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 79.
 With no CCXT class there is no connector to register either.
 If the venue were ever wired as a spot leg by hand, `takerPpm` would be 1,000 from section 4, and `ccxtTakerPpm` would have no CCXT constant to declare.
 

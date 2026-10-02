@@ -94,7 +94,7 @@ The catalog carries `trade_enabled` false on 108 of 204 pairs and `closed` false
 ## 9. Recommended registry values
 
 No registry entry is recommended.
-Bilaxy has no swap market and no CCXT class, so the connector at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 63 to 68 and 196 to 202 would load nothing.
+Bilaxy has no swap market and no CCXT class, so the connector at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 63 to 68 and 196 to 202 would load nothing.
 If a spot leg were ever built outside CCXT, `takerPpm` would be 2,000 and `ccxtTakerPpm` would stay unset.
 
 ## 10. Source ledger

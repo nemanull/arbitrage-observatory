@@ -102,7 +102,7 @@ None.
 ### Level window
 
 The push held ten levels per side in every one of the 1,655 pushes checked in P2 and P4, never fewer.
-The engine holds 20 levels per side by default, at [`Engine.ts`](../../../server/src/engine/Engine.ts) lines 61 and 72 to 73 with `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, so this feed fills half of the engine's window.
+The engine holds 20 levels per side by default, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) lines 61 and 72 to 73 with `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, so this feed fills half of the engine's window.
 The full REST book goes deeper, 157 to 165 bids and 119 to 129 asks on `BtcNis`, see [`rest.md`](./rest.md) section 5.
 
 ### Size unit against CCXT `contractSize`
@@ -205,7 +205,7 @@ If a later spot stage wanted it anyway, this is the shape the probe supports.
 | item | recommendation | reason |
 |---|---|---|
 | URL plan | one connection for the venue, negotiate then connect then start, with a fresh negotiate on every reconnect | the site's client negotiates for each connection, and one socket carries all pairs |
-| engine fit | override `openConnection`, since [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 opens `plan.url` as a fixed string | the socket URL needs the token from negotiate |
+| engine fit | override `openConnection`, since [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 opens `plan.url` as a fixed string | the socket URL needs the token from negotiate |
 | subscribe frames | none, `getSubscribeFrames` returns an empty list | the hub pushes every pair |
 | keepalive | none sent | the server sends `{}` every 10 s and never asked for a client frame in 100 s |
 | `maxSilenceMs` | 30,000 | three missed server keepalives, matching `DisconnectTimeout` 30 |

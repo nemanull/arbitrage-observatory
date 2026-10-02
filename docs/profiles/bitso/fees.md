@@ -167,7 +167,7 @@ Liquidation starts when "Margin Level ≤ 1.10×" (S8).
 
 ## 9. Recommended registry values
 
-None today, because Bitso lists no perpetual and the connector keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203.
+None today, because Bitso lists no perpetual and the connector keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203.
 Registering Bitso as it stands would load 54 spot markets, keep 0, and skip the venue with "no usable swap markets", at the same file line 51.
 
 If a later design adds spot legs on the USD family, the entry would read as follows.

@@ -145,8 +145,8 @@ So `market.taker` has no CCXT value, and no source line exists in `server/node_m
 | `takerPpm` | 3,500 if the venue were ever added | spot VIP 0 taker, S3 and S2 |
 | `ccxtTakerPpm` | none | no CCXT class |
 
-The venue does not fit the engine, because the engine loads only active swap markets from CCXT, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 202, and Bitlo has neither swaps nor a CCXT class.
-Nothing is added to [`registry.ts`](../../../server/src/venues/registry.ts).
+The venue does not fit the engine, because the engine loads only active swap markets from CCXT, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 202, and Bitlo has neither swaps nor a CCXT class.
+Nothing is added to [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
 
 ## 10. Source ledger
 

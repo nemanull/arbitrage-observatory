@@ -82,7 +82,7 @@ They are the case where the snapshot is the newer of the two and the book should
 ## 5. COIN-M
 
 `wss://dstream.binance.com` accepts `@depth@0ms` on `btcusd_perp` and `ethusd_perp`, with the same fields and the same 30 ms median gap.
-The inverse family in [`binance.ts`](../../server/src/venues/binance/binance.ts) can use one code path with USD-M.
+The inverse family in [`binance.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/venues/binance/binance.ts) can use one code path with USD-M.
 No inverse market was in a cluster during the seventh run, so this is untested against a real cluster.
 
 ## 6. What this supports
@@ -92,13 +92,13 @@ A Binance book built from `@depth@0ms` diffs and reseeded from `@depth20@100ms` 
 - It sees a new best bid a median of 29 ms earlier than today, and up to 82 ms earlier.
 - It also sees the prices that live for less than one snapshot interval, which the current channel skips entirely.
 - A sequence break no longer has to terminate a connection of 200 markets, because the next snapshot is at most about 100 ms away.
-  Today a break calls `resync` at [`VenueFeed.ts:225`](../../server/src/feeds/book/VenueFeed.ts), which terminates the socket.
+  Today a break calls `resync` at [`VenueFeed.ts:225`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/feeds/book/VenueFeed.ts), which terminates the socket.
 - It needs no REST snapshot, so it adds no weight to an IP budget the anchor poller already spends.
 
 Costs and open items.
 
 - Binance publishes into the engine about three times as often.
-  The engine drops a repeat of the same top prices before discovery at [`Engine.ts:187`](../../server/src/engine/Engine.ts), so the added cost is one depth write and one comparison per frame.
+  The engine drops a repeat of the same top prices before discovery at [`Engine.ts:187`](https://github.com/nemanull/arbitrage-observatory/blob/2063b648756d94829b74af2d6fb1c60b0bb7a90a/server/src/engine/Engine.ts), so the added cost is one depth write and one comparison per frame.
   The event loop is the known structural blocker, so the publish rate has to be measured after the change.
 - Between two snapshots the book knows only the levels at or better than the last snapshot's twentieth level.
   A diff level beyond that window has to be ignored, otherwise a level of rank 21 or worse can appear inside a top 20 reading.

@@ -21,7 +21,7 @@ The futures topic names come from the web app's runtime config S2 and its bundle
 
 One socket carries every topic, spot and futures alike.
 `socket.bitcastle.io` resolved to the same three addresses as `api.bitcastle.io`, all in AWS ap-southeast-1, see [`rest.md`](./rest.md) section 1.
-The engine opens sockets with no subprotocol at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and this server answers such a handshake with HTTP 400, so the subprotocol `mqtt` is mandatory.
+The engine opens sockets with no subprotocol at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and this server answers such a handshake with HTTP 400, so the subprotocol `mqtt` is mandatory.
 The engine also sends every subscribe frame through `JSON.stringify`, at lines 143, 152 and 161, and this socket needs binary MQTT packets.
 
 ## 2. Channel matrix for public market data

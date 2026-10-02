@@ -136,7 +136,7 @@ The REST sizes are coin amounts that are whole multiples of `contractVal` on eve
 CCXT's own order path agrees, since it sends `amount` straight into `quantity` at `server/node_modules/ccxt/js/src/weex.js` line 2012, with an amount step equal to `contractVal` on 995 of 995 contracts.
 CCXT nevertheless sets `contractSize` to `contractVal` at line 1060.
 So the unit on the wire is the base coin, and the engine's `sizeMul` would shrink a BTC size by 10,000 and inflate a DOOD size by 10.
-The registry's existing `contractSize: 1` pin, at [`../../../server/src/ccxt/types.ts`](../../../server/src/ccxt/types.ts) line 22, corrects it for every WEEX market, as it does for Gemini.
+The registry's existing `contractSize: 1` pin, at [`../../../server/src/ccxt/types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) line 22, corrects it for every WEEX market, as it does for Gemini.
 
 ### One-sided and empty books
 
@@ -179,7 +179,7 @@ Because a delisted symbol is acked and served an empty book, the feed has to tre
 | subscription limits | 100 channels and 240 operations per hour per connection, 20 connections per IP, S1 | 101 streams on one connection delivered. The other limits were not approached |
 | throughput | | 100 perpetuals, every tenth by 24 h volume, three runs: median 185 to 197 frames per second, peak 203, 51 to 55 KB per second, 273 to 278 bytes per frame, 15 to 18 µs `JSON.parse` per frame |
 
-The engine opens its sockets with no headers at all, at [`../../../server/src/feeds/book/VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, and the `ws` library adds no `User-Agent` of its own.
+The engine opens its sockets with no headers at all, at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and the `ws` library adds no `User-Agent` of its own.
 That worked on 2026-09-23, but it contradicts the documentation, and CCXT Pro sends `User-Agent: ccxt` with the comment "the exchange requires headers", at `server/node_modules/ccxt/js/src/pro/weex.js` line 55.
 
 ## 6. Captured frames

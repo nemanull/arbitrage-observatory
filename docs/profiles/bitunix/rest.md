@@ -48,7 +48,7 @@ Active perpetuals by settlement asset, counting `OPEN` rows with the API enabled
 ### What a loader would map
 
 No CCXT class exists, so nothing maps these rows today.
-The engine's catalog comes from `loadMarkets` at [`connector.ts`](../../../server/src/ccxt/connector.ts) line 68, filtered to active swaps at line 79.
+The engine's catalog comes from `loadMarkets` at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) line 68, filtered to active swaps at line 79.
 A Bitunix loader would have to produce the same `Market` fields by hand.
 
 | engine field | Bitunix source | note |
@@ -64,7 +64,7 @@ The id is always `base` plus `quote` except on 13 rows: `1000RATSUSDT`, `1000BON
 On those the `base` names the unscaled token while the price and size are per 1,000 or per 1,000,000 of it.
 `1000PEPEUSDT` quoted 0.0049492 with sizes of 309,226 to 580,449 on 2026-09-23 at 01:30 UTC, and Binance's `1000PEPEUSDT` quoted the same price with sizes of the same order.
 Its `minTradeVolume` of 790 is about 3.9 USDT at that price, which fits units of 1,000 PEPE.
-So a loader must take the base from the symbol prefix, or the pair would need a price scale in [`clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts).
+So a loader must take the base from the symbol prefix, or the pair would need a price scale in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 That reading of the unit is an inference from these two comparisons.
 
 ### Pairs listed twice
@@ -176,7 +176,7 @@ Two runs of 60 polls of the batch at 1 s, from 01:24:55 and 01:41:29 UTC, P3.
 
 Across all rows the index changed 4,012 and 4,862 times and the mark 5,333 and 6,610 times in 59 intervals, about 68 to 82 and 90 to 112 rows a second out of 894.
 The socket's `price` channel moved about as often: in 61 s `BTCUSDT` changed its index 24 and 25 times and its mark 11 and 12 times, P6.
-A mark that stands still for 8 to 19 s is still stamped fresh on each arrival, so the reader's 10 s age limit at [`anchorReading.ts`](../../../server/src/engine/opportunity/anchorReading.ts) line 5 does not see it.
+A mark that stands still for 8 to 19 s is still stamped fresh on each arrival, so the reader's 10 s age limit at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) line 5 does not see it.
 
 ## 5. REST book snapshot
 
@@ -216,7 +216,7 @@ Probed error replies, P8.
 | `depth?symbol=btcusdt&limit=1` | 200 | code 0 and a normal book, so the symbol is case insensitive |
 | an unknown path `/nope` | 200 | `{"code":404,"data":null,"msg":"Not Found"}` |
 
-Every error arrives with HTTP 200, so the engine's pause on 403, 418 and 429 at [`AnchorPoller.ts`](../../../server/src/feeds/anchor/AnchorPoller.ts) would never fire for Bitunix.
+Every error arrives with HTTP 200, so the engine's pause on 403, 418 and 429 at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) would never fire for Bitunix.
 A poller has to read `code` and treat 10005 and 10006 as the rate limit.
 
 ## 7. Server time and clock offset

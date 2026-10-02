@@ -112,7 +112,7 @@ CCXT also reports 2,500 ppm on the 13 BTC markets, which charge 0 %.
 ## 9. Recommended registry values
 
 No registry entry is recommended.
-The engine's catalog keeps only active swaps, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196, and Bithumb has none, so the connector would load zero markets.
+The engine's catalog keeps only active swaps, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196, and Bithumb has none, so the connector would load zero markets.
 If a spot leg were ever modelled, `takerPpm: 2500` is the rate an account pays with no action, `takerPpm: 400` is the rate with the 30 day application, and `ccxtTakerPpm: 2500` matches CCXT's constant at `server/node_modules/ccxt/js/src/bithumb.js` line 167.
 
 ## 10. Source ledger

@@ -164,9 +164,9 @@ The funding reply names the rate for the upcoming settlement, which is what `Anc
 | why | `parseMarket` sets no fee field, at `server/node_modules/ccxt/js/src/toobit.js` lines 950 to 1030, and the class has no `fees` block in `describe`, where the only `fees` key is the URL at line 105. `setMarkets` then merges the base default of `'taker': undefined`, at `server/node_modules/ccxt/js/src/base/Exchange.js` lines 2369 to 2374 and 3735 | CCXT |
 | `fetchTradingFees` | private, reads `closeMakerFee` and `closeTakerFee` of `api/v1/futures/commissionRate` | `server/node_modules/ccxt/js/src/toobit.js` lines 2631 to 2679 |
 
-The connector turns a missing `taker` into `null` and skips any market whose registry has no `takerPpm`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 162 to 166.
+The connector turns a missing `taker` into `null` and skips any market whose registry has no `takerPpm`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 162 to 166.
 So without a registry rate every Toobit market would be dropped with the warning at line 134, "skipped 767 market(s) missing an id, a symbol, or a taker fee".
-A null CCXT number is never compared, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 118 to 123, so no `ccxtTakerPpm` is needed.
+A null CCXT number is never compared, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 118 to 123, so no `ccxtTakerPpm` is needed.
 
 ## 9. Recommended registry values
 

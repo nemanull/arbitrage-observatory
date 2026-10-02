@@ -56,13 +56,13 @@ CCXT reads the same call in `fetchMarkets`, at `server/node_modules/ccxt/js/src/
 | `base`, `quote` | `traded_currency` and `base_currency`, lines 370 to 373 | `BTC/USDT` |
 | `type` | `'spot'`, line 384 | 484 of 484 spot, 0 swap |
 | `active` | `is_maintenance` false, line 390 | 465 of 484 active, the 19 under maintenance inactive |
-| `linear`, `contractSize` | `undefined`, lines 392 and 395 | the connector turns a missing size into 1, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 188 to 194, which is right for base coin sizes |
+| `linear`, `contractSize` | `undefined`, lines 392 and 395 | the connector turns a missing size into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194, which is right for base coin sizes |
 | `taker` | `trade_fee_percent`, line 394 | a percent read as a fraction, see [`fees.md`](./fees.md) section 8 |
 | `maker` | the class default 0, line 185 | 0 on all 484 |
 
 CCXT reported 484 markets in 114 and 170 ms, with no duplicate symbol.
 
-The connector filters to active swap markets, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 79 and 196 to 200, so it would find none on Indodax.
+The connector filters to active swap markets, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 79 and 196 to 200, so it would find none on Indodax.
 
 ### Size unit, pairs listed twice, and price scale
 

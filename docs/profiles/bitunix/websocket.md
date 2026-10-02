@@ -111,7 +111,7 @@ None documented, and none on the wire.
 ### Level window
 
 The window is fixed at 15 per side.
-The engine holds 20 levels per side by default, at [`Engine.ts`](../../../server/src/engine/Engine.ts) line 61, so a Bitunix book would carry 15.
+The engine holds 20 levels per side by default, at [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) line 61, so a Bitunix book would carry 15.
 No 20 or 50 level channel exists on the socket, S2.
 
 ### Size unit

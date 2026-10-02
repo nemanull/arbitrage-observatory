@@ -7,7 +7,7 @@ Decision numbers below refer to that design.
 
 This work does not:
 
-- Add any venue to `activeVenues` in [`orchestrator.ts`](../../server/src/orchestrator.ts), or start a feed or a poller in a real run.
+- Add any venue to `activeVenues` in [`orchestrator.ts`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/orchestrator.ts), or start a feed or a poller in a real run.
 - Change `DENIED_PAIRS`, `PRICE_SCALE`, the quote family, the anchor reader, `Engine`, `OpportunityManager` or the database.
 - Add a REST book seed, a socket anchor, or a rate limit rule for HTTP 400 bodies.
 - Change the behaviour of the existing five venues beyond the `book_unserved` warning of decision 8.
@@ -32,8 +32,8 @@ This work does not:
 
 - A venue task edits only `server/src/venues/<id>/`.
   A change a venue needs outside its folder is reported back, not made.
-- The registry entry is written in task 7, so a venue task never edits [`registry.ts`](../../server/src/venues/registry.ts).
-- Frame and reply shapes come from the venue's profile, and a spec fixture is a captured frame cut down to the fields the code reads plus one it ignores, as [`bybit/anchor.spec.ts`](../../server/src/venues/bybit/anchor.spec.ts) does.
+- The registry entry is written in task 7, so a venue task never edits [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/venues/registry.ts).
+- Frame and reply shapes come from the venue's profile, and a spec fixture is a captured frame cut down to the fields the code reads plus one it ignores, as [`bybit/anchor.spec.ts`](https://github.com/nemanull/arbitrage-observatory/blob/eb9e4ccb192834c5e5eac64d671a250ab0dfcf2f/server/src/venues/bybit/anchor.spec.ts) does.
 - Where the profile and the live wire disagree, the wire wins, and the report names the difference.
 - Tests run on explicit paths with `--runInBand --forceExit`, never the whole suite, because the machine runs out of memory.
   A shared lock file serializes jest, `tsgo` and the live smoke across agents.

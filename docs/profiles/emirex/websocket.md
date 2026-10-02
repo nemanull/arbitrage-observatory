@@ -221,7 +221,7 @@ A recommendation for a later design, not a decision, and only if a spot stage is
 | receive time | stamp on arrival | `time` is set per level by the server |
 | deflate | keep `perMessageDeflate: false` | the server does not negotiate it |
 
-The engine's `VenueFeed` sends every subscribe frame through `JSON.stringify`, at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, so it cannot send the text packets `40`, `42[…]` and `3` as they are.
+The engine's `VenueFeed` sends every subscribe frame through `JSON.stringify`, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 143, 152 and 161, so it cannot send the text packets `40`, `42[…]` and `3` as they are.
 Its `resync` terminates and resubscribes without a REST read, so a seed step would also be new.
 
 ## 9. Source ledger

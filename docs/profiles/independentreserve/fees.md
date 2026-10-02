@@ -141,7 +141,7 @@ CCXT marks the schedule `tierBased: false`, which the 28 tiers of section 4 cont
 ## 9. Recommended registry values
 
 None today.
-The connector keeps only markets with `type === 'swap'`, `swap === true` and `active !== false`, at [`connector.ts`](../../../server/src/ccxt/connector.ts) lines 196 to 203, and logs `no usable swap markets; skipping the venue` when none remain, at lines 49 to 52.
+The connector keeps only markets with `type === 'swap'`, `swap === true` and `active !== false`, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 196 to 203, and logs `no usable swap markets; skipping the venue` when none remain, at lines 49 to 52.
 Independent Reserve would contribute zero markets, so a registry entry would do nothing.
 
 If a later design ever admits spot legs, the values would be `takerPpm: 5000` and `ccxtTakerPpm: 5000`.

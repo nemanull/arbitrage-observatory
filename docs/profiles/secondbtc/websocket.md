@@ -222,7 +222,7 @@ No feed is recommended.
 
 | item | finding | consequence |
 |---|---|---|
-| transport | WebSocket upgrade refused with 400 on every attempt | `VenueFeed` opens a WebSocket at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81, so it cannot carry this venue |
+| transport | WebSocket upgrade refused with 400 on every attempt | `VenueFeed` opens a WebSocket at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, so it cannot carry this venue |
 | markets per session | one book per session, and the book names no market | 56 enabled markets would need 56 long-polling sessions |
 | cadence | a whole book every 5.2 to 5.5 s, equal to the REST book | polling the REST `depth` call gives the same data with no session state |
 | content | a copy of Binance by the venue's own market maker, with frozen and duplicated books seen on `SOLUSDT` | a cross between SecondBTC and Binance is a stale copy, not a price another trader can be expected to stand behind |

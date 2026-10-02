@@ -118,7 +118,7 @@ No contract name carried a `1000` prefix or another price scale on 2026-09-22.
 
 The first run polled `futures.bydfi.com` and the second `api.bydfi.com`, and the replies had the same fields and sizes.
 No single call carries all five `AnchorRow` columns.
-MEXC's `funding_rate` reply also carries `idxPrice` and `fairPrice`, which the MEXC poller reads at [`../../../server/src/venues/mexc/anchor.ts`](../../../server/src/venues/mexc/anchor.ts) line 8, and BYDFi's reply does not.
+MEXC's `funding_rate` reply also carries `idxPrice` and `fairPrice`, which the MEXC poller reads at [`../../../server/src/venues/mexc/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/mexc/anchor.ts) line 8, and BYDFi's reply does not.
 Its keys were exactly `symbol,fundingRate,maxFundingRate,minFundingRate,collectCycle,nextSettleTime,timestamp`.
 The ticker's `fundingRate` equalled the funding reply's `fundingRate` on all 266 contracts.
 Single contract calls exist, `index_price/{symbol}`, `fair_price/{symbol}` and `funding_rate/{symbol}`, and answered in 115 to 165 ms.
@@ -180,7 +180,7 @@ Each contract's `indexOrigin` names its sources, and `BTC_USDT` lists `MEXC`, `K
 No contract lists BYDFi itself, so the self-index shape of [`../../research/2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) does not occur.
 Other venues' perpetuals do appear, and 11 contracts use only futures sources: `CL_USDT`, `XAU_USDT`, `XAG_USDT`, `BZ_USDT`, `NVDA_USDT`, `COPPER_USDT`, `DELL_USDT`, `SKHYNIX_USDT`, `LUNA2_USDT`, `NFLX_USDT` and `XPD_USDT`.
 Thin baskets: `ONE_USDT` uses `BINANCE` alone, `LUNA2_USDT` two futures, `COPPER_USDT` three futures, and `SPELL_USDT` `MEXC`, `BINANCE` and `GATEIO`.
-`ONE_USDT` had the largest mark premium on the venue in both runs, -14,756 and -10,302 ppm, and `ONE|USDT` is already in `DENIED_PAIRS` at [`../../../server/src/engine/cluster/clusterOverrides.ts`](../../../server/src/engine/cluster/clusterOverrides.ts) line 11.
+`ONE_USDT` had the largest mark premium on the venue in both runs, -14,756 and -10,302 ppm, and `ONE|USDT` is already in `DENIED_PAIRS` at [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 11.
 The help center adds two guards, S2.
 A source more than 1 % from the median of all sources gets zero weight, and when more than one source deviates by more than 5 % the median replaces the weighted average.
 No public call returns the weights.
@@ -278,7 +278,7 @@ A recommendation for a later design, not a decision.
 | host | `api.bydfi.com`, not `futures.bydfi.com` | the same replies, faster from this host |
 
 The two bulk replies are about 186 KB a second, about 16 GB a day.
-The poller cannot reuse [`../../../server/src/venues/mexc/anchor.ts`](../../../server/src/venues/mexc/anchor.ts) with a URL change, because BYDFi's `funding_rate` reply lacks the index and mark.
+The poller cannot reuse [`../../../server/src/venues/mexc/anchor.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/mexc/anchor.ts) with a URL change, because BYDFi's `funding_rate` reply lacks the index and mark.
 
 ## 9. Source ledger
 

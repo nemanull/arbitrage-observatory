@@ -145,7 +145,7 @@ The socket carries at most 100 orders per side.
 BTC/USD held exactly 100 bid orders, 67 price levels, on the socket, while the REST level 3 book held 214 bid orders and the level 2 book 106 or 107 levels, in both runs.
 JGGL/USD, TEKI/USDT, ZOOM/USD and ZOOM/USDT each held exactly 100 asks in the batch runs.
 Orders past the window are not sent.
-On BTC/USD the 100 orders spanned 67 levels, more than the 20 per side the engine holds, `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](../../../server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, read into [`Engine.ts`](../../../server/src/engine/Engine.ts) lines 72 and 73.
+On BTC/USD the 100 orders spanned 67 levels, more than the 20 per side the engine holds, `DEPTH_LEVELS` at [`ClusterIndexBuilder.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/ClusterIndexBuilder.ts) line 17, read into [`Engine.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/Engine.ts) lines 72 and 73.
 On thin pairs the whole book is shorter than 20 levels: TRX/USD held 9 bid orders and 9 asks, and BNB/USD 8 and 7.
 
 ### Size unit
@@ -289,18 +289,18 @@ The engine trades perpetuals, so CoinZoom has no place in it today, see [`fees.m
 |---|---|---|
 | URL plan | one socket on `wss://api.coinzoom.com/api/v1/public/market/data/stream` | one URL carries every pair, and the venue warns against repeated opens |
 | markets per connection | every tracked pair on one socket, up to the 73 listed | 29 pairs ran on one socket at 83 to 85 frames per second with no anomaly, and 73 pairs is about 2.5 times that |
-| subscribe frames | one `{"OrderBookRequest":{"requestId":"<pair>","action":"subscribe","symbol":"<pair>","aggregate":false,"depth":0}}` per pair, with `subscribeGapMs` 2,500 at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 27 | the documented cap is 30 requests per minute, and 24 per minute was accepted. 73 pairs take about 3 minutes to subscribe |
-| opens | `connectStaggerMs` of several seconds at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 25, and a long reconnect jitter | the documented IP ban on repeated open and close |
+| subscribe frames | one `{"OrderBookRequest":{"requestId":"<pair>","action":"subscribe","symbol":"<pair>","aggregate":false,"depth":0}}` per pair, with `subscribeGapMs` 2,500 at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 27 | the documented cap is 30 requests per minute, and 24 per minute was accepted. 73 pairs take about 3 minutes to subscribe |
+| opens | `connectStaggerMs` of several seconds at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 25, and a long reconnect jitter | the documented IP ban on repeated open and close |
 | keepalive | send nothing, and let `ws` answer the protocol ping | the server pings every 10 s and closes a client that does not answer at about 36 s |
-| `maxSilenceMs` | 30,000 | a server ping counts as traffic at [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 97, so three missed pings is a dead socket, and quiet pairs cannot be judged by book frames |
+| `maxSilenceMs` | 30,000 | a server ping counts as traffic at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 97, so three missed pings is a dead socket, and quiet pairs cannot be judged by book frames |
 | routing | `msg.ob` or `msg.oi` is the pair, spelled like the instruments `symbol` | section 3 |
 | book state | per side, a map of id to `[price, amount]` and a map of price to total amount | the wire carries orders, and the engine's `setBid` and `setAsk` take levels |
 | snapshot | on `ob`, rebuild both maps and call `resetBook` with the aggregated levels | full replace semantics, S1 |
-| delta | on `oi`, per side in frame order, delete or add by id, then `setBid` or `setAsk` each touched price with its new total, 0 removing it at [`OrderBook.ts`](../../../server/src/feeds/book/OrderBook.ts) line 90, then `publish` | recycled ids cross sides, section 4 |
+| delta | on `oi`, per side in frame order, delete or add by id, then `setBid` or `setAsk` each touched price with its new total, 0 removing it at [`OrderBook.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/OrderBook.ts) line 90, then `publish` | recycled ids cross sides, section 4 |
 | resync | `resync` on a delete of an unknown id, an add of a live id, or a crossed book | no sequence or checksum exists, so these are the only detectable breaks |
 | unserved stream | log a pair with no snapshot some seconds after its acknowledgement, and never send `aggregate` true or a nonzero `depth` | those are acknowledged or ignored and never deliver |
 | receive time | stamp on arrival | no book frame carries a time |
-| deflate | keep `perMessageDeflate: false`, as [`VenueFeed.ts`](../../../server/src/feeds/book/VenueFeed.ts) line 81 does | the server does not negotiate it anyway |
+| deflate | keep `perMessageDeflate: false`, as [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81 does | the server does not negotiate it anyway |
 
 ## 9. Source ledger
 
