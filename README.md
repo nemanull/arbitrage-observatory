@@ -15,6 +15,35 @@ The system is read-only.
 It holds no API credentials, contains no order placement path, and has never submitted an order.
 Every profit figure in this repository is arithmetic over a stored price series rather than a fill.
 
+## Performance
+
+- **300,000 messages a second** from 63 venues and 30,891 markets kept up: every message handled, nothing coalesced, a worst lag of 5 ms from arrival to the engine, and the engine thread on 36% of one core.
+- **1.1 million messages a second**, 370 MB a second, read and parsed by the socket side, which fell behind only above that.
+- **385,000 messages a second** is where the single engine thread first falls behind in bursts, and past it the lag stays bounded at 141 to 240 ms instead of growing.
+- **64,000 messages a second** is the projected load of all 60 venues that fit the engine, and 193,000 to 302,000 in a market-wide crash.
+- **14,557 books a second** are applied live today on the five active venues, on under half a core and 62 MB of memory.
+
+The first three are measured on one laptop, an Intel Core i7-12700H with 6 performance and 8 efficiency cores and 32 GB, shared with a browser and a VM.
+60 s of frames recorded from nine live venues were replayed as seven copies of each, 63 venues on 287 sockets, through the same socket, book and engine code a run uses, over local sockets without TLS.
+The method, every stage and the projection's 60 rows are in [`2026-10-01-rust-load-replay.md`](./docs/research/2026-10-01-rust-load-replay.md).
+
+| Messages a second | MB a second | Books applied a second | Socket side | Engine thread | Worst lag | Result |
+| ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 147,952 | 48.9 | 135,837 | 1.8 cores | 19% of a core | 7 ms | kept up |
+| 300,542 | 98.8 | 276,236 | 3.7 cores | 36% of a core | 5 ms | kept up |
+| 385,225 | 129.9 | 352,949 | 4.6 cores | 50% of a core | 25 ms | queue full in 2 of 6,000 samples |
+| 570,586 | 191.9 | 506,157 | 6.2 cores | 70% of a core | 141 ms | engine saturated in bursts, 3% coalesced |
+| 1,104,860 | 370.2 | 504,470 | 11.8 cores | 91% of a core | 220 ms | every message read, half coalesced |
+
+A stage kept up when every message was handled, no replay server fell behind, the engine queue never filled and the worst lag stayed under 100 ms.
+All twelve stages between 132,000 and 300,000 messages a second kept up, over five recordings.
+The three faster stages ran at the lowest priority beside the rest of the laptop, so they are lower bounds.
+Past the engine's limit the socket tasks keep reading and hand the engine each market's newest book instead of every intermediate one, so the lag stays bounded rather than growing.
+
+The projection multiplies each venue's probed rate per market by its perpetuals, 18,607 in all, for about 40 MB a second and 3.5 TB a day.
+Its crash range of three to 4.7 times is inferred from the fifth run's crash, not measured.
+The live figure is the first Rust run's first ten hours: 534 million books, and 36,710 a second in its busiest minute.
+
 ## Results
 
 Five runs have been audited, 3,187 stored rows between them.
@@ -141,35 +170,6 @@ Bybit and Coinbase poll every two seconds instead, because a one hertz round doe
 Without those figures a dislocation cannot be distinguished from a basis, which is what the first four runs established.
 
 The stored schema is the SQL in [`server/migrations/`](./server/migrations/).
-
-## Performance
-
-All figures come from one laptop, an Intel Core i7-12700H with 6 performance and 8 efficiency cores and 32 GB, shared with a browser and a VM.
-The method, every stage and the projection's 60 rows are in [`2026-10-01-rust-load-replay.md`](./docs/research/2026-10-01-rust-load-replay.md).
-
-**Measured capacity.**
-60 s of frames recorded from nine live venues were replayed as seven copies of each, 63 venues with 30,891 markets on 287 sockets, through the same socket, book and engine code a run uses, over local sockets without TLS.
-
-| Messages a second | MB a second | Books applied a second | Socket side | Engine thread | Worst lag | Result |
-| ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| 147,952 | 48.9 | 135,837 | 1.8 cores | 19% of a core | 7 ms | kept up |
-| 300,542 | 98.8 | 276,236 | 3.7 cores | 36% of a core | 5 ms | kept up |
-| 385,225 | 129.9 | 352,949 | 4.6 cores | 50% of a core | 25 ms | queue full in 2 of 6,000 samples |
-| 570,586 | 191.9 | 506,157 | 6.2 cores | 70% of a core | 141 ms | engine saturated in bursts, 3% coalesced |
-| 1,104,860 | 370.2 | 504,470 | 11.8 cores | 91% of a core | 220 ms | every message read, half coalesced |
-
-A stage kept up when every message was handled, no replay server fell behind, the engine queue never filled and the worst lag stayed under 100 ms.
-All twelve stages between 132,000 and 300,000 messages a second kept up, over five recordings.
-The three faster stages ran at the lowest priority beside the rest of the laptop, so they are lower bounds.
-The one engine thread is the limit.
-Past about 385,000 messages a second the socket tasks keep reading and hand the engine each market's newest book instead of every intermediate one, so the lag stays bounded rather than growing, and the socket side read every message up to 1.1 million a second.
-
-**Projected load.**
-The 60 venues that fit the engine list 18,607 perpetuals and are projected to send about 64,000 messages a second at the hours they were probed, 40 MB a second and 3.5 TB a day.
-A market-wide crash multiplies that three to 4.7 times, to 193,000 to 302,000 messages a second, which is inferred from the fifth run's crash rather than measured.
-
-**Live.**
-The first Rust run streams 2,094 markets on the five active venues and applied 534 million books in its first ten hours, 14,557 a second on average and 36,710 in its busiest minute, on under half a core and 62 MB of memory.
 
 ## Scope
 
