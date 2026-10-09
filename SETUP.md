@@ -18,7 +18,7 @@ Every feed the server reads is public.
 
 ```bash
 cp server/.env.example server/.env
-pnpm install          # the frontend and the root scripts only
+pnpm install          # the frontend, the root scripts and the probe packages ws and ccxt
 ```
 
 ## Infrastructure

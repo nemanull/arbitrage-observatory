@@ -99,7 +99,7 @@ function ccxt() {
   log('ccxt', { version: ccxtLib.version, exchanges: ccxtLib.exchanges.length, idsMatchingSafeOrTrade: matches, hasSafetrade: ccxtLib.exchanges.includes('safetrade') });
 
   // The class sources are large, so each is read and dropped one at a time.
-  const srcDir = new URL('../../../../server/node_modules/ccxt/js/src', import.meta.url).pathname;
+  const srcDir = new URL('../../../../node_modules/ccxt/js/src', import.meta.url).pathname;
   const hits = [];
   for (const dir of [srcDir, join(srcDir, 'pro')]) {
     for (const f of readdirSync(dir).filter((n) => n.endsWith('.js'))) {
@@ -107,7 +107,7 @@ function ccxt() {
       if (s.includes('safe.trade') || s.includes('safetrade.com')) hits.push(join(dir === srcDir ? '' : 'pro', f));
     }
   }
-  log('ccxt_source_grep', { dir: 'server/node_modules/ccxt/js/src and pro/', needles: ['safe.trade', 'safetrade.com'], hits });
+  log('ccxt_source_grep', { dir: 'node_modules/ccxt/js/src and pro/', needles: ['safe.trade', 'safetrade.com'], hits });
 }
 
 const mode = process.argv[2] ?? 'access';

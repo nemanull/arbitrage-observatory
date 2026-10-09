@@ -1,2 +1,9 @@
 packages:
   - app
+
+# pnpm fails the install on dependency build scripts nobody has reviewed.
+# ccxt's postinstall only prints a donation banner.
+# bufferutil is an optional native accelerator that ccxt pulls in for ws, and ws works without it.
+allowBuilds:
+  bufferutil: false
+  ccxt: false

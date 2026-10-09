@@ -24,6 +24,8 @@
     "infra:reset": "docker compose down -v"
   },
   "devDependencies": {
-    "typescript": "~6.0.3"
+    "ccxt": "4.5.68",
+    "typescript": "~6.0.3",
+    "ws": "8.21.1"
   }
 }

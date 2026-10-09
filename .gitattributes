@@ -1,0 +1,2 @@
+# The probes are research instruments and the evidence behind docs/, so they stay out of GitHub's language stats.
+scripts/probes/** linguist-detectable=false
