@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 03:25 to 03:55 UTC, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the public futures WebSocket of XT.COM (CCXT id `xt`) for both perpetual families, with the book channel in detail.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/xt/ws-probe.mjs), and the capture is quoted beside the documented value.
 Where the documentation and the wire disagree, both are written, and the wire is what a feed must handle.
@@ -52,13 +54,13 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | endpoint split axis | one public URL, S20 | USDT-M and coin-M on one socket, section 1 |
 | subscribe frame shape | `{"method": "SUBSCRIBE", "params": ["{topic}@{symbol}"], "id": "..."}`, several params allowed, S20 | 200 params in one frame got one ack and all 200 delivered, W3 |
 | unknown symbol expectation | error code 400 "Bad request payload", S20 | `{"code":1,"msg":"checkSymbol error, symbol:nope_usdt","id":"nope_sym",...}`. Upper case `BTC_USDT` fails the same way |
-| chunk unit and budget | Not publicly specified | 200 streams per frame, 400 streams on one socket, all acked, W3 |
+| chunk unit and budget | Not publicly specified | 200 streams per frame, 400 streams on one socket, all acked, W3. On 2026-10-09 about one session in ten served only the first 256 streams of an opening burst of 300 or 400, see section 5 |
 | keepalive mechanism | "Each client connection must periodically send a text ping message. The server will reply with a text pong.", S20 | text `ping` answered by text `pong`, 4 of 4 in each book run. No protocol ping from the server on any socket |
 | connection lifetime and maintenance notice | Not publicly specified | no forced close in 70 s with pings, no notice frame seen |
 | handshake and operation rate limits | Not publicly specified | no refusal at 400 streams in two frames. Opens took 365 to 444 ms |
 | public market data authentication | none | none |
 | message parse and routing | `{"topic", "event": "{topic}@{symbol}", "data"}`, S20 | route on `topic`, then `data.s`, which is the CCXT `market.id`. `event` keeps the `,100ms` suffix on `depth_update` and drops the interval on `depth` |
-| subscribe acknowledgement shape | `{"id", "code": 0/1/2, "msg"}`, S20 | `{"code":0,"msg":"success","id":"inc","sessionId":"rs-40179"}`, 170 to 205 ms after the frame was sent |
+| subscribe acknowledgement shape | `{"id", "code": 0/1/2, "msg"}`, S20 | `{"code":0,"msg":"success","id":"inc","sessionId":"rs-40179"}`, 170 to 205 ms after the frame was sent. On 2026-10-09 every acknowledgement and refusal also carried `"data":{"a":null,"b":null}` |
 | symbol identifier format | lower case `btc_usdt` | identical to CCXT `market.id`, to REST `symbol` and `s`, including the six CJK contracts such as `龙虾_usdt`, which delivered 44 deltas in 30 s in both runs |
 | number representation | strings in the examples | prices and sizes are strings, update ids `pu`, `fu`, `u` and `id` are strings, `t` is a JSON number |
 | timestamp representation | `t` in ms | `t` integer ms |
@@ -110,6 +112,13 @@ The rule held with 0 gaps on 3,371 deltas in the three 60 s book runs, W1.
 On 400 streams on one socket the first batch run saw 574 events whose `fu` was not the previous `u` plus one in 33,109 frames, and the next two saw 0 in 34,132 and 0 in 28,294, W3.
 The first run did not classify its breaks, so whether they were skips or repeats is Not verified.
 A feed must treat a break as a resync either way.
+
+On 2026-10-09 the chain broke in bursts on live sockets.
+A raw socket probe with no seed logic saw 27 breaks in 90 s with 200 markets a socket and 18 with 50 a socket, over all 691 contracts.
+Each burst hit up to 27 markets of one socket within a few ms, so the venue drops a run of frames on a socket rather than single deltas.
+Two 90 s runs of the adapter on 100 markets a socket logged 11 and 20 breaks.
+A break that terminated the socket would reseed 100 to 200 markets several times a minute, so the adapter reseeds only the market that broke.
+On 2026-10-09 a `depth` frame with `id` N arrived about 300 ms after the delta that ended at N, so buffering the deltas until the seed is required.
 
 ### Checksum
 
@@ -183,6 +192,10 @@ From W2, each on its own id, and identical in both runs.
 
 A delisted contract is acknowledged and stays silent, so the feed has to notice a stream that never sends a delta, or the catalog has to drop it first.
 
+On 2026-10-09 a subscribe frame with one unknown symbol got one `code` 1 reply under the frame's `id`, and its other streams were still served.
+`UNSUBSCRIBE` with the same `params` shape was acknowledged with `code` 0 in about 165 ms and stopped that stream's frames.
+On one session of five in a test that day, 34 of 40 `depth` streams kept sending for 6 s after an acknowledged `UNSUBSCRIBE`, so a feed must still ignore a stream it left.
+
 ## 5. Session
 
 | item | documented | probed |
@@ -193,7 +206,7 @@ A delisted contract is acknowledged and stays silent, so the feed has to notice 
 | maintenance notice | Not publicly specified | none seen |
 | compression | "it is recommended to enable the per-message compression extension", S20 | offered permessage-deflate, the server negotiated none and sent 27 and 24 text frames in 3 s, W5. Without the offer it sent 23 and 24. Every frame is plain JSON text |
 | handshake | | 365 to 444 ms over twenty logged opens |
-| subscription limits | Not publicly specified | 400 streams on one socket, no cap reached |
+| subscription limits | Not publicly specified | 400 streams on one socket, no cap reached. On 2026-10-09, with two frames of 200 streams sent back to back, 11 of 102 sockets of 150 or 200 markets served only the first 256 streams and acknowledged both frames with `code` 0. None of 84 sockets of 100 or 128 markets was cut, and none of 48 sockets of 150 markets whose second frame left 1 s after the first. Streams subscribed later on a cut session were served past 256 |
 | throughput | | 400 USDT-M perpetuals by 24 h turnover on one socket: median 443, 429 and 432 frames a second in three runs, peak 827, 853 and 781, 189 to 199 KB a second, 344 to 352 bytes a frame, 8.7 to 11.1 µs of `JSON.parse` a frame, W3 |
 
 ## 6. Captured frames
@@ -273,13 +286,13 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | URL plan | one plan, `wss://fstream.xt.com/ws/market`, for the USDT-M contracts the market filter keeps | one socket serves both families, and the filter in [`rest.md`](./rest.md) section 8 drops coin-M |
 | channels | `depth_update@<rawMarketId>,100ms` for the book, and `depth@<rawMarketId>,50` for the seed | the delta stream has no snapshot, and the limited depth frame carries an id of the same sequence |
-| markets per connection | 200 | 400 streams on one socket ran with 0 breaks in two of three batch runs, and the first run's 574 breaks argue for staying at half that |
+| markets per connection | 100, in one frame of 200 streams | on 2026-10-09 about one session in ten served only the first 256 streams of a larger opening burst, see section 5. The rate of chain breaks did not depend on the socket size |
 | subscribe frames | one frame per slice with both channels for every market, `{"method": "SUBSCRIBE", "params": ["depth_update@btc_usdt,100ms", "depth@btc_usdt,50", …], "id": "<slice>"}` | a 200 param frame was acked once |
 | seed | buffer deltas per contract. On a `depth` frame, skip it if `id + 1` is below the first buffered `fu`, otherwise `resetBook` from it, drop buffered deltas with `u <= id` and apply the rest. If the first delta after the seed has `fu > id + 1`, drop the seed and wait for the next `depth` frame | the documented recipe with the socket frame in place of the REST read, and the skip and reject steps each fired in the third run |
-| after the seed | send `UNSUBSCRIBE` for that contract's `depth` stream, or ignore its frames | a 50 level frame a second per contract doubles the parse work, and the frame is not an exact image on busy books |
+| after the seed | send `UNSUBSCRIBE` for that contract's `depth` stream, which works as of 2026-10-09, and still ignore its frames | a 50 level frame a second per contract doubles the parse work, and the frame is not an exact image on busy books |
 | alternative seed | `GET /future/market/v1/public/q/depth?symbol=<id>&level=50`, the documented path | exact at its id more often, but 691 contracts at the 10 per second depth limit take over a minute, and every resync costs a call |
 | delta | apply only when `fu === last + 1`, then store `u` | documented rule, 0 breaks in 3,371 deltas on the book runs |
-| resync | `fu !== last + 1`: `resync`, which terminates the socket and resubscribes both channels | the engine's existing path reseeds from the next `depth` frame |
+| resync | `fu !== last + 1`: empty that contract's book, subscribe its `depth` stream again, and seed it from the next frame that bridges the buffered deltas | the venue drops bursts of deltas several times a minute as of 2026-10-09, see section 4, and a socket resync would reseed every contract on it each time |
 | keepalive | text `ping` every 15 s | the server closes a socket at 30 s without a ping, even one that is receiving data |
 | `maxSilenceMs` | 45,000 | three missed pongs, since a quiet contract can go seconds without a delta and the pong is the traffic the watch relies on |
 | routing | `data.s` is the `rawMarketId` | identical spelling, lower case, CJK included |

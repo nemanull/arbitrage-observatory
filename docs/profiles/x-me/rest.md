@@ -64,6 +64,8 @@ So the platform is ChainUp by its shape: the `fe-co-api` and `fe-ex-api` web pre
 | `multiplier` on active contracts | 1 on 142, 0.01 on 58, 0.1 on 53, 0.001 on 6, 100 on 4, 10 on 3 |
 | bases listed twice | none |
 
+On 2026-10-09 the call returned 343 rows, 259 with `status` 1 and 84 with `status` 0, and `public_info` listed the same 259.
+
 The website's `POST https://www.x.me/fe-co-api/common/public_info` returns `contractList` with exactly the 266 active contracts.
 Its `id` equals `contractId`, its `multiplier` equals the open API's, and its `subSymbol`, the socket symbol, equals `e_` plus the lower case base plus `usdt` on 266 of 266.
 It adds `capitalFrequency`, the funding interval in hours, `nextCapitalSettTime` in Unix ms, `maxLever`, `deliveryKind` `"0"`, `contractSide` 1 and `marginCoin` `USDT` on every contract.
@@ -151,6 +153,7 @@ The Mark Price article, edited 2026-07-01, R4: "Mark Price= Median number (lates
 - Moving average price is index + the 5 minute moving average of the spread between the venue's median price and the index.
 
 No clamp on the mark premium is published.
+On 2026-10-09 at about 20:55 UTC `tagPrice` equalled `indexPrice` on 205 of 259 contracts, mostly where the premium was under one price tick, while BTC read 82479.9 against 82474.0.
 Over 60 samples per contract in each `anchor` run, `tagPrice / indexPrice − 1` ranged from −145 to 191 ppm on BTC, −131 to 207 on ETH, −116 to 175 on TRX and −890 to 1,782 on DOS.
 In the first `round` run the largest premiums of the 266 were TRUMP at 881 ppm, KMNO at 831 and KERNEL at −688, and in the rerun MMT at −1,143, ATH at −981 and SOXS at −914.
 A closed contract and an unknown `contractId` do not fail: section 6 shows the zeros and stale prices they return.
@@ -169,7 +172,11 @@ The published rate is the upcoming one, recomputed as the hour runs:
 `POST /fe-co-api/common/funding_rate_list` with `{"contractId":48,"page":1,"limit":6}` returns `historyList` rows with the keys `amount`, `ctime` and `contractName`, where `amount` is the settled rate and `ctime` the settlement in Unix ms.
 Other body shapes, `{"contractId":48}`, `{"contractId":48,"pageNum":1,"pageSize":10}` and a time range, answered code 200002 "Please try again later".
 BTC settled at 00:00, 08:00 and 16:00 UTC and DOS every 4 h from 00:00 UTC.
-The settlement instant itself was not captured, so whether the published rate resets at settlement is Not verified.
+The settlement instant itself was not captured on 2026-09-23, so whether the published rate resets at settlement was Not verified then.
+On 2026-10-09 `public_info` gave `capitalFrequency` 4 on 157 contracts, 8 on 101 and 1 on `E-KAIA-USDT`.
+`E-KAIA-USDT` read `currentFundRate` and `nextFundRate` -0.00152532 at 20:59:59 UTC, and `funding_rate_list` then listed -0.00144711 settled at 21:00.
+So the published rate missed the settled one by about 5 percent on that contract, and no public x.me field showed -0.00144711 before the settlement.
+That settled value equalled FameEX's `nextFundRate` for its own `E-KAIA-USDT` in the same second.
 
 ### How often each number changed
 

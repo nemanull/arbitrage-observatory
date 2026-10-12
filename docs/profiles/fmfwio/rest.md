@@ -50,6 +50,10 @@ All access results are from the Canadian VPN exit, and Canada is a derivatives-r
 
 The 23 working perpetuals are ADA, AAVE, LINK, XLM, SOL, UNI, BTC, DOT, GMT, AVAX, MANA, LTC, APE, ATOM, CEL, BCH, ZEC, ETH, XRP, FIL, BNB, SHIB and TRX, each as `<BASE>USDT_PERP`.
 `CELUSDT_PERP` is `working` but its book is empty on REST and on the socket, and the site shows its leverage as `"0"`, see [`fees.md`](./fees.md) section 7.
+On 2026-10-09 the call returned 642 rows, with the same 23 working perpetuals and the expired `LUNAUSDT_PERP`.
+On 2026-10-09 FMFW.io served HitBTC's exact book, so it is a HitBTC front end and not an independent venue.
+The `ETHUSDT_PERP` REST book at depth 3 equalled `api.hitbtc.com`'s level for level, with the same `timestamp` to the millisecond, and the `futures/info` rows equalled HitBTC's.
+A cross between FMFW.io and HitBTC, or any other HitBTC v3 host, compares a book with itself.
 
 ### How CCXT 4.5.68 maps it
 

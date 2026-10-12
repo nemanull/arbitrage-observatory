@@ -54,6 +54,12 @@ The only status field is the boolean `tradable`, and no delisting or pre-launch 
 | `beta_product` | false on 396 |
 | a base listed twice | none |
 
+On 2026-10-08 the call returned 988 rows: 409 `PERPETUAL_SWAP`, 569 `CCY_PAIR` and 10 `FUTURE`, all with `tradable` true.
+The 409 perpetuals were `DIGITAL_CURRENCIES` 239, `EQUITY` 131, `EQUITY_IND` 28, `COMMODITIES` 8 and `PRE_IPO` 3.
+The third pre-IPO perpetual is `OURAUSD-PERP`.
+All 409 still had `quote_ccy` `USD`, `contract_size` `"1"` and an `underlying_symbol` of `<base>USD-INDEX`, and none listed a base twice or carried `beta_product` true.
+`max_leverage` was `"50"` on 407 and `"100"` on 2.
+
 ### How CCXT 4.5.68 maps it
 
 | item | value | evidence |
@@ -79,6 +85,8 @@ Probed through the connector's filter, `type` swap, `swap` true and `active !== 
 | `contractSize` | 1 on 396 |
 | pairs listed twice inside CCXT's keys | none |
 
+On 2026-10-08 the same filter gave 409 active swaps, every one `USD` quoted and linear with `contractSize` 1 and `taker` 0.005, and their ids equalled the catalog's 409 perpetuals.
+
 Sample markets, as CCXT returned them.
 
 | id | symbol | base | quote | settle | linear | contractSize | taker | precision.price | precision.amount |
@@ -94,7 +102,9 @@ The quote family folds `USD` into `USDT`, at [`quoteFamily.ts`](https://github.c
 
 The pre-IPO bases are named `ANTHROPICIPO` and `OPENAIIPO`, so they do not cluster with okx's `ANTHROPIC` and `OPENAI` at all.
 Their index read 2,172.6 and 1,663.3 at 22:08 UTC, the basis okx reaches only after its price scale of 10 in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) lines 20 to 23.
-Whether a Crypto.com base names a different token than the same base on another venue was not surveyed, and `DENIED_PAIRS` needs that check before Crypto.com joins.
+Whether a Crypto.com base names a different token than the same base on another venue was checked on 2026-10-08 by the `live_identity` test against binance, bybit, okx, gate and mexc.
+`EDGEUSD-PERP` is Definitive's EDGE at about 0.115 USD, priced like gate's `EDGE_USDT`, while binance, bybit, okx and mexc list edgeX's EDGE at about 0.366 USD, so the adapter denies it.
+The other 395 markets that share a cluster with a reference venue all sat within 2 percent of the reference median.
 The 155 TradFi perpetuals share stock and commodity tickers with the TradFi perpetuals of other venues, and whether to cluster them is a decision for a later design.
 
 ## 3. Anchor
@@ -155,6 +165,10 @@ Index Price = equally weighted average of the Market Prices
 
 The basket PDF read "Update Date: 2026-09-22" and listed 2,846 rows over 569 indices, which cover 394 of the 396 perpetuals.
 `CSOPSAMSUNG2LUSD-PERP` and `FLNCUSD-PERP` had no basket in it.
+On 2026-10-08 the PDF read "Update Date: 2026-10-05", and 12 of the 409 perpetuals had no basket in it.
+They were `CSOPSAMSUNG2LUSD-PERP`, `CVNAUSD-PERP`, `CYPHUSD-PERP`, `FLNCUSD-PERP`, `GTLBUSD-PERP`, `HUTUSD-PERP`, `KIOXIAUSD-PERP`, `OKLOUSD-PERP`, `OURAUSD-PERP`, `PATHUSD-PERP`, `TSLLUSD-PERP` and `TWSTUSD-PERP`.
+The `ANTHROPICIPOUSD-INDEX` and `OPENAIIPOUSD-INDEX` baskets were unchanged, and no basket held a Crypto.com perpetual.
+`EDGEUSD-INDEX` was Coinbase, Kraken, Crypto.com and Gate spot `EDGE`, 25 % each.
 The weights printed in the PDF are not all equal, so the equal weighting of S3 does not hold for every index.
 
 | index | basket on 2026-09-22 |

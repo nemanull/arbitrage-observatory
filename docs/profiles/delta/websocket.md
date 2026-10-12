@@ -25,6 +25,9 @@ The global platform serves both formats today, on two URLs, section 1, and the c
 | `wss://testnet-socket.delta.exchange` | testnet, S1 | | not probed |
 
 A subscribe frame whose channels all belong to the other URL is refused as a whole with `{"message":"Subscription forbidden: Invalid channel array","type":"error"}`, on both URLs, P1.
+On 2026-10-09 the compact URL instead refused each of the legacy `l2_updates` and `v2/ticker` channels in the acknowledgement, as `{"channels":[{"error":"subscription forbidden on this invalid channel","name":"l2_updates"}],"type":"subscriptions"}`.
+On that day the `type` `error` frame came only for a subscribe frame whose `channels` field was not an array, on both URLs.
+On 2026-10-09 the legacy URL also served the compact `ob_updates` channel, with the same snapshot and update frames as the compact URL, beside its legacy `l2_updates`.
 A frame that mixes a valid channel with one of the other URL's gets the valid one subscribed and a per channel error for the other, P3.
 `mark_price` and `funding_rate` keep their names on both URLs, and the payloads differ, section 6.
 Both hostnames are CloudFront names, `dvh76wfnav1n7.cloudfront.net` and `d3ll98yxlgwrsi.cloudfront.net`, and the servers answer the upgrade as `nginx/1.14.2`, P4.
@@ -87,6 +90,7 @@ The first frame per symbol is `"action":"snapshot"` with the whole book, "All le
 Six perpetuals got exactly one snapshot each, 105 to 115 ms after the subscribe frame, and no further snapshot in 60 s, in two runs.
 The snapshot held 20 levels per side on BTCUSDT, 51 bids and 50 asks on ETHUSDT, 49 or 50 bids and 50 asks on SOLUSDT, 50 per side on XRPUSDT, 33 and 42 on DOGEUSDT and 34 and 47 on PAXGUSDT.
 The REST book returns at most 20 levels, see [`rest.md`](./rest.md) section 5, so the socket snapshot is the deeper source.
+On 2026-10-09 the REST book without a `depth` returned the whole book, 50 and 51 levels on ETHUSDT, and its sizes equalled the socket snapshot's at all 101 prices, so the two sources are equally deep.
 A second subscribe of a symbol already on the socket is acked again and sends no new snapshot.
 
 ### Delta semantics
@@ -104,6 +108,8 @@ action update, seq ≠ last + 1   gap: resubscribe the symbol (documented), or t
 action error                    resubscribe after a few seconds (documented, not seen)
 ```
 
+The documented error frame names the market under `symbol`, not `sy`: `{"action":"error","symbol":"BTCUSD","type":"ob_updates","msg":"Snapshot load failed. Verify if product is live and resubscribe after a few secs."}`, in S2 as read on 2026-10-09.
+S2 says it comes in place of the snapshot, in rare cases such as a race after the subscribe.
 The first update after a snapshot had `seq` equal to the snapshot's plus one on every symbol.
 The rule held on every update of both runs, with 0 gaps.
 
@@ -159,7 +165,8 @@ BTCUSDT never went more than 707 ms without an update.
 | `ob_updates` `all` | ack listing `all` | nothing, as S1 says `all` is not accepted |
 | `ob_updates` with no `symbols` key | `{"error":"subscription forbidden without symbol array on this channel","name":"ob_updates"}` | |
 | unknown channel `nope_channel` | `{"error":"subscription forbidden on this invalid channel","name":"nope_channel"}` | |
-| a frame naming only the other URL's channels | `{"message":"Subscription forbidden: Invalid channel array","type":"error"}` | nothing from the frame is subscribed |
+| a frame naming only the other URL's channels | `{"message":"Subscription forbidden: Invalid channel array","type":"error"}` on 2026-09-23. On 2026-10-09 the compact URL answered each legacy channel with `"subscription forbidden on this invalid channel"` in the acknowledgement, and the legacy URL accepted `ob_updates` | nothing from the frame is subscribed on the compact URL |
+| a `channels` field that is not an array | `{"message":"Subscription forbidden: Invalid channel array","type":"error"}` on both URLs on 2026-10-09 | nothing from the frame is subscribed |
 | `ob_updates` `XRPUSDT` and `l2_updates` `XRPUSDT` in one frame | the ack lists `ob_updates` and adds `{"error":"subscription forbidden on this invalid channel","name":"l2_updates"}` | `ob_updates` delivers |
 | text that is not JSON | no reply | the socket stays open |
 | a 101st to 107th symbol | `"subscription forbidden on this channel with more than 100 symbols"` | the first 101 keep delivering |

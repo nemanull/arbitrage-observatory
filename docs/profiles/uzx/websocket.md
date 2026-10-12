@@ -51,7 +51,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | unknown symbol expectation | the WebSocket error code table in S1 is empty | `{"id":"","event":"subscribe","topic":"swap.NOPEUSDT.depth.step0","status":"error"}`, with no code and no message. A delisted contract, `LISTAUSDT`, is acknowledged `ok` and never delivers |
 | chunk unit and budget | "Connection Limit: 1 time/second" and "Subscription Limit: 240 times/hour", S1 | 60 subscribe frames in one burst on one socket, 60 acks, 60 streams delivering, twice. The hourly budget was never reached, so its penalty is Not verified |
 | keepalive mechanism | the server sends `{"ping": 1751273700330}` every 5 s, the client answers `{"pong": 1751273700330}` within 5 s, and four unanswered pings end the connection, S1 | pings every 4,984 to 5,017 ms. A socket that never answered closed at 20,000 and 20,001 ms with code 1006 in two runs. No protocol level ping frame arrived |
-| connection lifetime and maintenance notice | none documented | no forced close in 104 s. Every new socket first receives `{"pong":"<ms>"}` and a `change.swap.config` notice, section 6 |
+| connection lifetime and maintenance notice | none documented | no forced close in 104 s. Every new socket first receives `{"pong":"<ms>"}` and a `change.*` notice, `change.swap.config` on 2026-09-23 and `change.app-config.config` on 2026-10-09, section 6 |
 | handshake and operation rate limits | 1 connection per second, 240 subscriptions per hour, S1 | opens took 117 to 158 ms and were spaced 1.2 s apart. No refusal |
 | public market data authentication | none | none |
 | message parse and routing | FEED frames carry `type` `swap.BTCUSDT.orderBook` and `product_name` | book frames have no `event` key, so a book is any frame with `bids` and `asks`, routed on `product_name`. Acks carry `event`, pings carry `ping` |
@@ -169,7 +169,7 @@ So a stream is never silent for long: the longest gap on any book stream was 918
 | keepalive | server `{"ping": <ms>}` every 5 s, client `{"pong": <same>}` within 5 s, S1 | as documented, the pong echoes the number |
 | silence the server tolerates | "If no subscription is made within 30 seconds after a successful connection, or if the server does not push data to the user within 30 seconds after subscription, the system will automatically disconnect the connection.", S1 | not reproduced. A socket with no subscription that answered pings stayed open 103.7 s, and one whose only subscription was refused stayed open 101.3 s, in both passes. Only unanswered pings closed a socket: at 20.0 s, code 1006, no close frame |
 | forced disconnect | "If a network issue occurs, the system will automatically disconnect the connection.", S1 | none in 104 s |
-| maintenance notice | none documented | none seen. `change.swap.config` names a contract, by its name one whose configuration changed, and every new socket received the same `ICPUSDT` notice stamped 2026-09-23 06:31:25 UTC |
+| maintenance notice | none documented | none seen. `change.swap.config` names a contract, by its name one whose configuration changed, and every new socket received the same `ICPUSDT` notice stamped 2026-09-23 06:31:25 UTC. On 2026-10-09 the notice on a new socket was `change.app-config.config` with an empty `symbol`, stamped 2026-10-09 04:59:38 UTC |
 | compression | `"zip"`, "Whether to enable gzip", S1 | `zip: true` sends binary frames that start with `28b52ffd`, the Zstandard magic number, and do not gunzip. The ack was 91 bytes on the wire for 78 decoded. The flag is per socket, not per subscription: after one `zip: true` subscribe, `BTCUSDT` and `XRPUSDT` also turned binary until the next `zip: false` subscribe 3 s later. Pings stay text. Permessage-deflate was offered twice and never negotiated |
 | handshake | | 117 to 158 ms to open |
 | subscription limits | 240 per hour, 1 connection per second | 60 on one socket, all served |
@@ -190,6 +190,12 @@ Sent on open, before any subscription.
 
 ```json
 {"data":null,"id":"change","interval":"","status":"ok","symbol":"ICPUSDT","ts":1790145085846,"type":"change.swap.config"}
+```
+
+On 2026-10-09 a new socket got this notice in its place.
+
+```json
+{"data":null,"id":"change","interval":"","status":"ok","symbol":"","ts":1791521978837,"type":"change.app-config.config"}
 ```
 
 Subscribe and acknowledgement.

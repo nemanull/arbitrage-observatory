@@ -145,7 +145,7 @@ The rate the engine reads for the upcoming settlement is known up to four hours 
 | item | value | evidence |
 |---|---|---|
 | version | 4.5.68 | Probed, `ccxt.version` |
-| `market.taker` on every active swap without credentials | `0.005` on 396 of 396 | Probed, `rest-probe.mjs main`, tag `ccxt` |
+| `market.taker` on every active swap without credentials | `0.005` on 396 of 396, and on 409 of 409 on 2026-10-08 | Probed, `rest-probe.mjs main`, tag `ccxt`, and a CCXT 4.5.68 load on 2026-10-08 |
 | `market.maker` | `0.0025` on 396 of 396 | Probed, same tag |
 | where it comes from | `fetchMarkets` sets no fee on a market, lines 815 to 863, so `setMarkets` copies the exchange-wide `fees.trading` onto every market | `server/node_modules/ccxt/js/src/cryptocom.js` lines 329 and 330, `server/node_modules/ccxt/js/src/base/Exchange.js` lines 3732 to 3735 |
 | what the constant is | the spot Level 1 rate, 0.250 % maker and 0.500 % taker, with the spot tier table below it | `server/node_modules/ccxt/js/src/cryptocom.js` lines 331 to 358, and the spot table rendered in S1 |

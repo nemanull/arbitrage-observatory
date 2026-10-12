@@ -31,6 +31,7 @@ The fetch tool used for documentation got HTTP 403 there too, and no attempt was
 ### The instruments call
 
 `GET /api/v1/futures/market/trading_pairs`, 318,337 bytes, 761 rows, P2.
+Rechecked on 2026-10-08, which was 2026-10-09 in UTC, the call returned 774 rows in 346,270 bytes.
 
 | field | meaning, S1 | probed |
 |---|---|---|
@@ -42,8 +43,10 @@ The fetch tool used for documentation got HTTP 403 there too, and no attempt was
 | `basePrecision`, `quotePrecision` | decimals of size and price | 4 and 1 on `BTCUSDT` |
 | `maxFundingRate`, `minFundingRate` | funding cap and floor | in percent, symmetric on every row, see [`fees.md`](./fees.md) section 6 |
 | `priceProtectScope` | order price band around the mark | 0.05 on 660 rows, 0.1 on 82 |
+| `delistTime` | not documented | absent from the probe and present on 4 `OPEN` rows on 2026-10-08, as Unix ms in a string: `TSLAUSDT` and `CRCLUSDT` dated 2027-03-31, `MSTRUSDT` dated 2027-03-05, and `SPCXUSDT` dated 2026-06-10, which was already past while the contract still traded and streamed |
 
 Active perpetuals by settlement asset, counting `OPEN` rows with the API enabled: 685 USDT-M, 25 USDC-M and 15 coin-M.
+On 2026-10-08 they were 693 USDT-M, 25 USDC-M and 15 coin-M, while 40 USDT rows were `OPEN` with the API disabled and `FDUSDUSDT` was still `PREVIEW`.
 
 ### What a loader would map
 
@@ -76,6 +79,7 @@ The coin-M rows quote a size that looks like US dollars, see [`websocket.md`](./
 ### Rows outside the catalog
 
 `GET /api/v1/futures/market/tickers` returned 805 rows and `funding_rate/batch` returned 894, against 761 in the catalog, P2.
+On 2026-10-08 `funding_rate/batch` returned 907 rows: all 774 catalog rows and 133 rows outside the catalog, each of those with a `fundingRate` of `"0"` and a `nextFundingTime` off the hour.
 All 761 catalog rows are in the funding batch, and `FDUSDUSDT` is missing from the tickers.
 The 133 funding rows not in the catalog are delisted contracts such as `MILKUSDT`, `WAVESUSDT` and `DARUSDT`, every one with a `fundingRate` of `"0"`.
 `TONUSD` among them has `markPrice` `"0"` and `indexPrice` `null`.
@@ -127,6 +131,12 @@ The help center article "Spot Index Price and Mark Price" answers HTTP 403 here 
 No basket or constituents call exists in the futures API, S1.
 The Bitunix index is not Binance's: on 819 common symbols it differed from Binance's index by a median 631 to 640 ppm over three runs, and it equalled it on 1 to 3, P4.
 `BTCUSDT` read 86,722.8 on Bitunix against 86,693.0 on Binance at about the same second.
+
+The equity perpetuals were checked on 2026-10-08, which was 2026-10-09 at about 06:20 UTC, while US equity markets were closed.
+Over 20 polls at 1 s, the Bitunix index of `TSLAUSDT` and of `AAPLUSDT` held one value each, while Binance's index of the same contracts took 18 values.
+The `AAPLUSDT` index sat 27 bp from Binance's while its last trade sat within 1 bp, so that index was not the last trade.
+On `DRAMUSDT` and `CRCLUSDT` the index equalled the last trade on 18 and 17 of the 20 polls, with only 2 or 3 distinct values each.
+So a self index on the equity perpetuals was neither shown nor ruled out, and a check while their markets are open is still needed.
 
 ### Mark
 

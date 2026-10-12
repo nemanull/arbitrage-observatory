@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 04:12 to 04:39 UTC, from the development host near Seattle, whose traffic leaves through a Surfshark WireGuard tunnel that exits in Canada (Cloudflare trace `loc=CA`, `colo=SEA`).
 
+**Rechecked:** 2026-10-09, against the live venue, and each corrected line names that date.
+
 This profile covers the fees of Globe for its perpetual futures, the product the survey researches, since Globe lists perpetuals.
 Globe has no CCXT class, see section 8.
 Every access result below was seen from that Canadian VPN exit.
@@ -112,6 +114,7 @@ How often the tier is recomputed is Not publicly specified.
 
 The documented schedule and the wire disagree.
 A next settlement of 12:00 UTC read at 04:20 UTC, with an 8 h period, puts the settlements at 04:00, 12:00 and 20:00 UTC, not at 00:00, 08:00 and 16:00 UTC.
+On 2026-10-09 `product-detail` still read `funding_period` 28800 and `taker_fee` 0.0005 on all 30 contracts, and `next_funding_time` read 20:00 UTC at 18:32 UTC, which fits 04:00, 12:00 and 20:00 UTC.
 The settlement instant itself was not captured, and no public funding history call is documented, see [`rest.md`](./rest.md) section 4.
 
 Every published rate was an integer multiple of one three-hundredth of a percent, about 33 ppm, on all 30 contracts, P1.

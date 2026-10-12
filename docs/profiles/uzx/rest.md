@@ -25,6 +25,7 @@ Every claim is from [`rest-probe.mjs`](../../../scripts/probes/venues/uzx/rest-p
 | `GET /notification/swap/tickers`, about 34.5 KB decoded | | three runs of 60 polls: median 70.0, 80.7 and 95.0 ms, p90 76.6, 85.7 and 98.2 ms, max 237.5, 104.0 and 103.3 ms |
 
 Replies are Brotli encoded on the wire (`content-encoding: br`), and the sizes above are decoded.
+On 2026-10-09 the tickers reply came Zstandard encoded to a client that offered `zstd`, and gzip encoded to one that offered only gzip.
 
 Access from this host was open.
 Every public call to `api-v2.uzx.com` and `api.uzx.com` returned HTTP 200 or a documented error, and no call was refused, challenged or geoblocked.
@@ -44,11 +45,13 @@ It takes `ins_type` of `SPOT`, `SWAP` or `BASE` and `product_name`, S1.
 | `?ins_type=SWAP` | 25,641 bytes, the 60 USDT-M rows |
 | `?ins_type=BASE` | 2,533 bytes, the 6 coin-M rows |
 | `?ins_type=NOPE` | ignored, all 151 rows |
+| rows on 2026-10-09 | 156: 90 `SPOT`, 60 `SWAP`, 6 `BASE`, so only spot grew |
 | fields | `ins_type`, `product_name`, `base_coin_name`, `quote_coin_name`, `price_precision`, `num_precision`, `max_once_vol`, `max_once_amount`, `min_once_vol`, `min_once_amount`, `swap_value`, `price_unit`, `max_leverage`, `max_once_limit_num`, `max_once_market_num`, `max_hold_num`, `maintenance_margin_rate`, `market_max_deeps`, `max_book_num` |
 
 The product list has no status field.
 The documentation defines a contract status enum of 1 "Active" and 2 "Trading suspended", S1, and only the undocumented web call `GET https://api.uzx.com/v2/info/swap-usdt/symbols` (and `/v2/info/swap-base/symbols`) carries it.
 All 66 perpetuals read `status` 1 and `front_hidden` false, and the two web calls list exactly the same 66 names with the same `swap_value` as `/v2/products`, P1.
+On 2026-10-09 the USDT-M web call still listed the same 60 names as `/v2/products?ins_type=SWAP`, all with `status` 1 and the same `swap_value`.
 The web rows add `circuit_rate` (0.002, 0.004, 0.005, 0.01 or 0.012), `price_range` (0.003, 0.03, 0.05, 0.06 or 0.1), a tiered `step_maintenance_margin_rate` and empty `taker_fee` and `maker_fee`, P1.
 
 `market_max_deeps` is 10 on 60 perpetuals, 20 on `XAUUSDT` and 50 on `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `DOGEUSDT` and `KAITOUSDT`, P1.
@@ -84,6 +87,7 @@ The quote family ranks USDT ahead of USD, so the coin-M rows would be ranked out
 `1000SATSUSDT` has base `1000SATS`, and its index sat within 900 ppm of Binance's `1000SATSUSDT` index in every read, since it was never among the five largest gaps, so it is quoted per 1,000 SATS like Binance's contract, P4.
 `PENGUUSDT` (100 PENGU) and `ASTERUSDT` (10 ASTER) have large contract sizes and ordinary per coin prices.
 `UZXUSDT` is the venue's own token, and it has no counterpart on Binance, P4.
+On 2026-10-09 CoinGecko's search found no UZX coin, and gate and MEXC listed no UZX market in either spot or futures.
 `XAUUSDT` is gold.
 
 The bulk ticker also returns 8 delisted contracts that are not in the catalog, with zero prices and no `funding_next_time`, see section 3.
@@ -107,7 +111,10 @@ The interval is the one `AnchorRow` column the bulk call lacks.
 The documentation has no funding endpoint at all.
 The web client's funding history call, which takes `symbol`, `page`, `size`, `begin` and `end`, returns `{"current", "total", "list": [{"cycle", "rate", "symbol", "time"}]}` with `cycle` in hours and `time` in Unix ms, P3.
 It answered all 66 perpetuals, and `funding_next_time` minus the newest settlement `time` equalled `cycle` on 66 of 66, P3.
+On 2026-10-09 it answered all 60 USDT-M contracts, with `cycle` 8 on 52 and 4 on 8, and `funding_next_time` minus the newest `time` again equalled `cycle` on every one.
+Sixty requests sent ten at a time all answered code 200 on 2026-10-09, so no limit showed.
 Without `symbol` it answers HTTP 422 `{"code":100400,"msg":"Invalid parameters","data":null}`.
+On 2026-10-09 an unknown symbol such as `NOPEUSDT` got the same HTTP 422 reply, while a delisted one such as `LISTAUSDT` still answered 200 with its old settlements.
 
 The socket channel `swap.overview` pushes the same rows as the bulk ticker for the 66 live perpetuals once a second, see [`websocket.md`](./websocket.md) section 2.
 
@@ -135,6 +142,7 @@ The UZX index is not Binance's index.
 Over 58 contracts both venues list, the median gap to Binance USD-M `indexPrice` was 166, 171 and 154 ppm in three reads, only 2, 1 and 0 were identical, and the largest gaps were `AVNTUSDT` at -12,076 and -11,873 ppm and `BIGTIMEUSDT` at -6,822 ppm, P4.
 `UZXUSDT` indexes the venue's own token, which Binance USD-M does not list, and its basket is unpublished.
 Whether that basket is mostly UZX's own market is Not verified, and it is the self-referential shape the design warns about, see [`../../research/2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md).
+On 2026-10-09 the `UZXUSDT` index read 2.4152 while UZX's own spot `UZX-USDT` last traded at 2.41629, and no other venue found lists the token, so the basket can hardly be anything but UZX's own spot market.
 Its index changed 0 and 16 times in two runs of 60 one second polls, P2.
 
 ### Mark
@@ -217,6 +225,9 @@ The bulk ticker reply carries no rate limit header, P5 `errors`.
 | `/notification/swap/BTC-USDT/ticker` | 404 | `404 page not found` as text |
 | `/v2/nope` | 404 | `{"code":404,"msg":"Not Found"}` |
 | `/v2/info/swap/history/funding` without `symbol` | 422 | `{"code":100400,"msg":"Invalid parameters","data":null}` |
+| `/v2/info/swap/history/funding?symbol=NOPEUSDT`, on 2026-10-09 | 422 | `{"code":100400,"msg":"Invalid parameters","data":null}` |
+| `/v2/info/nope` on `api.uzx.com`, on 2026-10-09 | 401 | `missing token` as text |
+| `/v2/nope` on `api.uzx.com`, on 2026-10-09 | 404 | an nginx HTML page |
 
 An unknown symbol is not an error on the market data paths, so a poller must check for an empty `data` or a zero index itself.
 

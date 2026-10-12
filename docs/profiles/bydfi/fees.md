@@ -43,6 +43,7 @@ The help center gives one row, "USDT-M & COIN-M", at 0.02 % maker and 0.06 % tak
 The VIP page carries `swapMakerFeeRate` 0.0002 and `swapTakerFeeRate` 0.0006 for level 0, S5.
 The contract catalog carries `takerFeeRate` 0.0006 and `makerFeeRate` 0.0002 on all 266 contracts, including the 3 USDC and 8 coin-M ones, P1 `catalog`.
 The three sources agree.
+On 2026-10-09 all 266 contracts of the catalog still carried `takerFeeRate` 0.0006.
 
 ## 3. Coverage matrix
 

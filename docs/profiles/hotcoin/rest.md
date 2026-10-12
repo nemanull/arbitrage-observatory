@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 03:17 to 03:46 UTC in two passes, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue, and each corrected line names that date.
+
 This profile covers the public perpetual REST API of Hotcoin that a catalog, an anchor poller and a book check would use, for every perpetual family.
 CCXT 4.5.68 has no Hotcoin class, see [`fees.md`](./fees.md) section 8.
 Every probed number comes from [`rest-probe.mjs`](../../../scripts/probes/venues/hotcoin/rest-probe.mjs), run from `server/`, labelled P1 with its mode.
@@ -36,6 +38,8 @@ That slow body is the one number in this profile that works against a 1 s anchor
 
 `GET /api/v1/perpetual/public` returns every listed perpetual in one reply, with no parameter, S1 "Available Futures List".
 On 2026-09-23 at 03:37 and 03:43 UTC it returned 585 rows of about 554,775 bytes, `{"code":200,"msg":"success","data":[…]}`, the same 585 both times, P1 `catalog`.
+On 2026-10-09 at 19:20 UTC it returned 607 rows: 588 USDT-M, 9 USDC-M and 10 coin-M, all with `env` 0.
+Their categories were 383 `crypto`, 217 `us_stock`, 4 `hk_stock`, 2 `forex` and 1 `bond`.
 
 | family | `base` (margin) | `quote` | `direction` | rows | asset categories |
 |---|---|---|---|---:|---|
@@ -51,6 +55,8 @@ Those 383 are delisted contracts that the tickers call and the `fund_rates` chan
 The `assetCategory` field is not reliable for TradFi.
 `jpn225usdt`, `gbpusdusdt`, `hschkdusdt` and `gvzusdt` read `crypto` although their names are an equity index, a currency pair, a Hong Kong index and a volatility index, P1 `book`.
 The `us_stock` rows include the pre-IPO contracts `anthropicusdt` and `openaiusdt`, P1 `catalog`.
+On 2026-10-09 four codes were in Chinese, `币安人生usdt`, `哈基米usdt`, `牛来usdt` and `龙虾usdt`, with the same Chinese `underlying`.
+Their REST paths must be percent encoded, and `/api/v1/perpetual/public/%E9%BE%99%E8%99%BEusdt/fee-rate` answered HTTP 200 with the history of `龙虾usdt` that day.
 
 The row fields are `amount24`, `assetCategory`, `base`, `baseDisplayName`, `code`, `codeDisplayName`, `direction`, `env`, `fluctuation`, `fund`, `guaranteedStopLossRate`, `guaranteedStopLossStatus`, `high`, `indexBase`, `indexBaseAppLogo`, `indexBaseDisplayName`, `indexBaseWebLogo`, `indexPrice`, `liquidationTime`, `low`, `markPrice`, `marketPriceDigit`, `maxLever`, `minQuoteDigit`, `minTradeDigit`, `minTradeUnit`, `price`, `quote`, `quoteDisplayName`, `size24`, `totalPosition`, `underlying` and `unitAmount`, P1 `catalog`.
 The documented example lacks `assetCategory`, `liquidationTime`, `underlying` and the display names, S1.
@@ -75,6 +81,8 @@ On a linear contract it is coins of the underlying, and on an inverse contract i
 The probe recovered it from each row's own 24 h figures, `size24 / amount24 / price` on linear rows and `size24 × price / amount24` on inverse rows, and the result agreed with `unitAmount` within 25 % on 584 of 584 rows that traded more than 1,000 contracts, P1 `catalog`.
 So `amount24` counts contracts, and `size24` is quote turnover on linear rows and coin turnover on inverse rows.
 The values seen were 0.0001 (3 rows), 0.001 (21), 0.01 (115), 0.1 (122), 1 (100), 10 (131), 100 (75), 1,000 (16), 1,500 (1) and 10,000 (1), P1 `catalog`.
+On 2026-10-09 the 597 linear rows read 0.0001 (3), 0.001 (21), 0.01 (120), 0.1 (136), 1 (102), 10 (124), 100 (73), 1,000 (16), 1,500 (1) and 10,000 (1).
+The web client's own `contractUnit` helper multiplies a book amount by `unitAmount` to show coins, which confirms that a book size counts contracts of `unitAmount` coins.
 The book sizes on the socket and on REST are counts of these contracts, see [`websocket.md`](./websocket.md) section 4.
 
 Nine pairs are listed in both USDT-M and USDC-M: AAVE, DOGE, ETH, HYPE, BTC, WLFI, XRP, BNB and SOL.
@@ -94,6 +102,7 @@ Their base should keep the prefix, like `1000PEPE`, and pair with the same prefi
 | `GET /api/v1/perpetual/public/{code}/premiumIndex` | `indexPrice` | `markPrice` | `estimateFeeRate`, upcoming, and `lastFeeRate`, settled | absent | `liquidationTime`, Unix ms | 428 bytes, one contract | 40 polls on `btcusdt`: min 221, median 229, max 526 ms, and 228, 232 and 510 ms in the rerun |
 | `GET /api/v1/perpetual/public/{code}/fee-rate` | | | settled history | from the spacing | | about 1.9 KB for 5 rows | 0.66 s |
 | WebSocket `fund_rates` | row field 2 | row field 1 | field 3 settled and field 4 upcoming | absent | field 5, a countdown in ms | 131 KB, 968 rows, every 2.5 to 3.5 s | see [`websocket.md`](./websocket.md) section 2 |
+| `GET /api/v1/perpetual/public/contracts`, undocumented | `indexPrice` | absent | `fundingRate` and `nextFundingRate` | absent | `nextFundingRateTimestamp` | 607 rows on 2026-10-09 | not timed |
 
 All from P1 `anchor`, `funding` and `history`, 2026-09-23 03:19 to 03:21 UTC and rerun at 03:43 to 03:45 UTC.
 
@@ -106,8 +115,12 @@ At 03:44 UTC the two estimates read −0.00011342294343242668 and −0.00121223 
 No call publishes the funding interval.
 The funding history spacing gives it: 8 h on 19 of 38 sampled contracts and 4 h on the other 19, P1 `history`.
 On 2026-09-23 at 03:17 UTC, 321 contracts showed a next settlement of 08:00 UTC and 264 showed 04:00 UTC, P1 `catalog`.
-A contract whose next settlement falls at 04:00, 12:00 or 20:00 UTC is on 4 h, since an 8 h contract settles only at 00:00, 08:00 and 16:00 UTC.
-At 00:00, 08:00 and 16:00 UTC, which both groups share, a single read cannot tell the two apart.
+On 2026-10-09 at 19:32 UTC, 342 contracts showed a next settlement of 00:00 UTC and 265 showed 20:00 UTC.
+The interval is not only 4 h or 8 h.
+On 2026-10-09 `kaiausdt` settled every hour, with history rows at 19:00, 18:01, 17:00, 16:01, 15:00 and 14:00 UTC.
+So a next settlement at 04:00, 12:00 or 20:00 UTC rules out 8 h but does not prove 4 h.
+At 00:00, 08:00 and 16:00 UTC, which every interval shares, a single read cannot tell them apart.
+The history call takes `page=1` as its first page, newest row first, and `page=0` returned the same rows on 2026-10-09.
 
 ### Row mapping
 
@@ -117,7 +130,7 @@ At 00:00, 08:00 and 16:00 UTC, which both groups share, a single read cannot tel
 | `index` | `indexPrice` | decimal string | `Number()` |
 | `mark` | `markPrice` | decimal string, never 0 on 585 rows | `Number()` |
 | `fundingRate` | `fund` | decimal string, a fraction per interval: `"-0.0001213795555556"` is −0.0121 % | `Number()`, and it is the last settled rate, not the upcoming one |
-| `fundingIntervalHours` | none | | from the funding history at boot, 4 or 8 |
+| `fundingIntervalHours` | none | | from the funding history at boot, 8, 4 or 1 on 2026-10-09 |
 | `nextFundingAt` | `liquidationTime` | integer Unix ms: `1790150400000` is 2026-09-23 08:00 UTC | none |
 
 The rate is a fraction, not a percent.
@@ -153,6 +166,9 @@ The estimate on `btcusdt` changed once in 40 reads over about a minute, and not 
 
 The settlement instant was not captured.
 The history rows are stamped 4 to 213 s after the hour, median 44 s, over 380 rows, P1 `history`, so a poller should expect `fund` and `liquidationTime` to step up to a few minutes after the hour.
+A booking can come much later.
+On 2026-10-09 the 08:00 UTC settlement of `terusdt`, `jpn225usdt` and `suiusdt` was stamped 09:17 UTC, 77 minutes after the hour.
+So the raw spacing of two stamps can read 7 h or 9 h on an 8 h contract, and the interval is better read as the grid of UTC hours that the stamps fit.
 
 ### How often each number changed
 

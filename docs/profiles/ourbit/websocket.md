@@ -307,6 +307,9 @@ A recommendation for a later design, not a decision.
 The plain stream is the low latency option, and it needs a REST seed per contract, the version rule and a REST reseed on every gap.
 It would also bring about 30,000 frames per second for the whole catalog, which the Node engine's loop cannot absorb at 26 to 29 µs per message, see [`2026-09-07-depth-stream-scaling.md`](../../research/2026-09-07-depth-stream-scaling.md).
 The merged stream keeps the REST seed and the gap rule and cuts the frame count 39 times, at a latency close to `sub.depth.full`.
+On 2026-10-09 five `sub.depth.full` sockets of up to 150 contracts held 750 contracts for 90 s with no socket closed, every book two sided and no crossed top.
+That run answers the open question of 150 full depth subscriptions per socket.
+Limit 20 was acknowledged and limit 30 refused with `Not support limit` on the same day.
 Seeding 735 contracts from REST at the documented 20 requests per 2 s takes about 74 s, see [`rest.md`](./rest.md) section 6.
 
 ## 9. Source ledger

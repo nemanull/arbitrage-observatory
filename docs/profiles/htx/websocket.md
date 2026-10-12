@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, from the development host near Seattle, 03:08 to 03:46 UTC on 2026-09-23.
 
+**Rechecked:** 2026-10-08, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the public futures WebSocket of HTX (CCXT id `htx`) for the USDT-margined perpetuals in detail and the coin-margined perpetuals where they differ, with the book channel in detail.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/htx/ws-probe.mjs), in two runs about thirteen minutes apart, and a pair such as "388 and 379 ms" gives the first run and then the second.
 Where the documentation and the wire disagree, both are written, and the wire is what a feed must handle.
@@ -60,7 +62,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | handshake and operation rate limits | 50 `req` per second, 40 subscriptions per second, S1 | opens took 379 to 900 ms, and no refusal was seen |
 | public market data authentication | none | none, including `public.*.funding_rate` on the notification URL |
 | message parse and routing | gunzip, then JSON with `ch`, `ts`, `tick` | routes on `ch`, whose second dot field is the code |
-| subscribe acknowledgement shape | `{"id", "status", "subbed", "ts"}` | `{"id":"id1","status":"ok","subbed":"market.BTC-USDT.depth.size_20.high_freq","ts":1790134045107}`, arriving just before the stream's snapshot |
+| subscribe acknowledgement shape | `{"id", "status", "subbed", "ts"}` | `{"id":"id1","status":"ok","subbed":"market.BTC-USDT.depth.size_20.high_freq","ts":1790134045107}`, arriving just before the stream's snapshot. On 2026-10-08 every acknowledgement and every error also carried `"tick":{"asks":null,"bids":null}` |
 | symbol identifier format | `BTC-USDT` | identical to CCXT `market.id`, and a lowercase subscribe is acked and delivered under the uppercase `ch` |
 | number representation | `[price, vol]` | price and size as JSON numbers in book, bbo and step frames. Mark and index klines send decimal strings |
 | timestamp representation | `ts` in ms | envelope `ts` and `tick.ts` in ms. `tick.ts` was 138 ms before arrival at the minimum and up to 160 ms at p90, with the host clock within about 10 ms of HTX |
@@ -172,6 +174,9 @@ Because a suspended contract is acknowledged and never served, the feed has to n
 | subscription limits | 40 subscriptions per second, and "the WS request connection should not go over 30 normally" in the order push section | 60 in one burst accepted. 150 streams on one socket ran with 0 gaps |
 | throughput | | 150 USDT-M perpetuals, every other one by 24 h turnover: median 457 and 535 frames per second, peak 634 and 977, about 93 and 111 KB per second compressed, about 205 bytes compressed and 330 bytes decompressed per frame |
 
+On 2026-10-08, while Tencent EdgeOne blocked this host's IP after a burst of REST mark reads, the handshake of `wss://api.hbdm.vn/linear-swap-ws` was answered HTTP 567 too, see [`rest.md`](./rest.md) section 6.
+So a REST client that trips the block also takes down every book socket from the same IP.
+
 The engine refuses permessage-deflate at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and that does not matter here, because the gzip is inside the frame.
 `VenueFeed` hands `handleMessage` the raw `Buffer`, at line 209, so a subclass can gunzip it before parsing, and no feed in the engine does so today.
 At the second `batch` rate, 535 frames per 150 streams per second at 18 µs, the gunzip adds about 10 ms of loop time per second per 150 streams, on top of the parse.
@@ -188,6 +193,7 @@ Subscribe.
 ```
 
 Acknowledgement, from the first run.
+On 2026-10-08 acknowledgements and errors also carried `"tick":{"asks":null,"bids":null}`, so a feed cannot tell a book frame by `tick` alone, and `ch` is what marks one.
 
 ```json
 {"id":"id1","status":"ok","subbed":"market.BTC-USDT.depth.size_20.high_freq","ts":1790134045107}

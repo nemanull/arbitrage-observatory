@@ -97,7 +97,7 @@ A personal futures rate would come from the private `GET /api/3/futures/fee` cal
 | item | value | source |
 |---|---|---|
 | interval | 8 h, settling at 00:00, 08:00 and 16:00 UTC on every perpetual | 1,602 of 1,602 consecutive history gaps were 8 h over 30 days, P1 |
-| published rate | `funding_rate` is the rate settled at the last settlement, and `indicative_funding_rate` the estimate for the next one | S1, and 19 of 19 `funding_rate` values equalled the latest history row, P1 |
+| published rate | `funding_rate` is the rate charged at `next_funding_time`, and `indicative_funding_rate` the estimate for the settlement after it, as corrected on 2026-10-09 in [`rest.md`](./rest.md) section 3 | S1, and 19 of 19 `funding_rate` values equalled the latest history row, P1 |
 | formula | rate = P + clamp(I − P, −0.05 %, +0.05 %), where P is `avg_premium_index` and I is `interest_rate` | inferred, it reproduces 1,604 of 1,620 settled rows over 30 days, P1 |
 | interest rate | `"0.0001"` per period on every row | P1 |
 | cap and floor | not documented, and the rows the formula misses sit at `-0.003` on `BCHUSDT_PERP` (15 rows) and `-0.0029` on `MANAUSDT_PERP` (1 row), where the formula gave a lower number | P1 |

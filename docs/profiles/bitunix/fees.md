@@ -55,6 +55,8 @@ Counts from `GET /api/v1/futures/market/trading_pairs` on 2026-09-23 at 01:24 UT
 CoinGecko showed 757 perpetual pairs on 2026-09-22, S10, against 760 `OPEN` rows in the catalog.
 
 The 35 API-disabled USDT contracts are equity, ETF and pre-market contracts: `QQQUSDT`, `SPYUSDT`, `EWJUSDT`, `EWYUSDT`, `PAYPUSDT`, `PLTRUSDT`, `MSFTUSDT`, `NFLXUSDT`, `TSMUSDT`, `BABAUSDT`, `AVGOUSDT`, `USARUSDT`, `QCOMUSDT`, `ARMUSDT`, `COSTUSDT`, `SHLDUSDT`, `COHRUSDT`, `QNTXUSDT`, `LLYUSDT`, `NVOUSDT`, `ANTHROPICUSDT`, `HYUNDAIUSDT`, `ASTSUSDT`, `EWTUSDT`, `CSCOUSDT`, `DISUSDT`, `SMCIUSDT`, `SONYUSDT`, `CIENUSDT`, `WENUSDT`, `GIGADEVUSDT`, `KOUSDT`, `RDDTUSDT`, `INFQUSDT` and `QBTSUSDT`, P2.
+On 2026-10-08, which was 2026-10-09 in UTC, 40 USDT contracts had the API disabled and 693 had it enabled.
+The 5 added since the probe are `TWSTUSDT`, `XOMUSDT`, `ACNUSDT`, `BWETUSDT` and `CRMLUSDT`.
 The API documentation defines `isApiSupported` false as "API Trading Disabled", S9.
 Their books still stream on the public socket, see [`websocket.md`](./websocket.md) section 4.
 
@@ -111,6 +113,9 @@ The engine models the base retail taker, so none of these changes the recommende
 | rate unit on the REST anchor | percent per interval, so `"0.01"` is 0.0001 as a fraction | P3, [`rest.md`](./rest.md) section 4 |
 | rate unit in the history | a fraction per interval | P4 |
 | isolated margin | the fee comes from the futures balance, then open orders are cancelled to free funds, then it is taken from the position | S5 |
+
+On 2026-10-08, which was 2026-10-09 in UTC, the funding batch gave 450 catalog rows a 4 h interval and 324 an 8 h interval.
+No catalog row settled every 1 h or 2 h that day, and those intervals appeared only on 7 funding rows outside the catalog, such as `OMUSDT` at 1 h and `TROYUSDT` at 2 h.
 
 The funding help article says each period's rate is fixed at the start of the period from the previous period's data, and a predicted rate for the following period is computed every minute, S5.
 The REST rate held still for a whole minute of polls on every row, and it had changed between reads seven minutes apart, see [`rest.md`](./rest.md) section 4.

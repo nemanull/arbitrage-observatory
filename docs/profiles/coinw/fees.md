@@ -92,6 +92,7 @@ Whether a market order pays these on top of the taker fee is Not publicly specif
 | formula, cap and floor | Not verified. The funding article returned 403. Its search snippet says "Funding Fee = Position Notional Value × Current Funding Rate", with notional at the mark price, and "When the funding rate is positive, longs pay shorts" | S9 |
 | trading during settlement | "During the funding period, operations related to transaction such as placing orders or closing positions are not permitted", and "The funding process typically takes 30 to 40 seconds" | S1 precautions page |
 
+On 2026-10-09 the catalog held 389 rows, 387 USDT-M and 2 USDC-M, all with `takerFee` `"0.0006"`, and `settledPeriod` read 8 h on 212, 4 h on 176 and 1 h on 1, `KAIA`.
 The settlement instant itself was not captured, because this survey never waits for one.
 The halt around settlement matters for a taker leg: an order sent in the 30 to 40 s window is refused.
 

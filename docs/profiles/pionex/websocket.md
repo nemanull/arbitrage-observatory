@@ -188,7 +188,7 @@ A delisted contract was not available to probe, since all 606 perpetuals were `T
 | maintenance notice | Not publicly specified | none seen |
 | compression | Not publicly specified | offered permessage-deflate, the server negotiated `permessage-deflate; server_no_context_takeover; client_no_context_takeover`. Not offered, the socket opened without it and every frame was uncompressed |
 | frame type | Not publicly specified | every server frame is a binary WebSocket frame whose payload is UTF-8 JSON: 1,266 to 1,377 binary and 0 text frames per book run. The engine passes each payload through `toBuffer` to `handleMessage` either way, at [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) lines 94 and 209 |
-| handshake | | 100 to 201 ms to open from this host |
+| handshake | | 100 to 201 ms to open from this host. On 2026-10-09 one 101 answer carried `X-RateLimit-Tokens: 4`, from a bucket of 5. An adapter run that day saw the sixth of six handshakes opened at once refused with HTTP 429, and handshakes refused for about a minute after it |
 | subscription limits | 5 messages per second per connection, 10 connections per IP, S4 | 100 streams on one socket at 4 frames a second, 26 s to subscribe |
 | throughput | | 100 USDT-M perpetuals, every fifth by 24 h quote volume, in two runs: 228 and 230 frames per second median, 200 to 248, 236 and 237 KB per second, 1,031 to 1,041 bytes per frame, 51 to 52 µs `JSON.parse` per frame |
 
@@ -285,6 +285,7 @@ A recommendation for a later design, not a decision.
 | receive time | stamp on arrival, never from `timestamp` or `data.timestamp` | the `INDEX` top level timestamp is not Unix milliseconds, and receive time is the engine's rule anyway |
 | sizes | `Number()` of the string, in base currency, `contractSize` 1 | section 4 |
 | deflate | keep `perMessageDeflate: false` | the server negotiates it only when offered |
+| connect stagger | open the sockets 1 s apart and spread reconnects over 3 s, as the adapter built on 2026-10-09 does | the handshake bucket of 5, section 5 |
 
 ## 9. Source ledger
 

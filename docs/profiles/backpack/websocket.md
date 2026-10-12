@@ -44,8 +44,8 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 |---|---|---|
 | endpoint split axis | one URL, S1 | crypto and equity perpetuals on one socket |
 | subscribe frame shape | `{"method": "SUBSCRIBE", "params": ["stream"]}`, "more than one in the `params` field" allowed, S1 | 91 `depth` streams in one frame all delivered, and a second frame of 7 streams on the same socket too |
-| unknown symbol expectation | Not publicly specified | `depth.NOPE_USDC_PERP`, the closed `depth.TON_USDC_PERP` and `depth.5.BTC_USDC_PERP` get no reply and no frames. An unknown stream type, `nope.BTC_USDC_PERP`, answers error 4006 |
-| chunk unit and budget | Not publicly specified | 91 streams in one frame, no refusal |
+| unknown symbol expectation | Not publicly specified | On 2026-09-23 `depth.NOPE_USDC_PERP`, the closed `depth.TON_USDC_PERP` and `depth.5.BTC_USDC_PERP` got no reply and no frames. On 2026-10-09 `depth.NOPE_USDC_PERP` and `depth.5.BTC_USDC_PERP` answered error 4014 "Invalid symbol", which refuses every stream of that frame, while the closed `TON_USDC_PERP` stayed silent. An unknown stream type, `nope.BTC_USDC_PERP`, answers error 4006 |
+| chunk unit and budget | Not publicly specified | 91 streams in one frame, no refusal. On 2026-10-09 one unknown symbol refused its whole frame, so one stream per frame keeps the others served |
 | keepalive mechanism | "a `Ping` frame will be sent from the server every 60s, and a `Pong` is expected to be received from the client. If a `Pong` is not received within 120s, a `Close` frame will be sent", S1 | protocol pings 60 s apart on every socket, the first 5 to 38 s after the open. No application ping exists. A client protocol ping is answered, section 5 |
 | connection lifetime and maintenance notice | on shutdown the server "sends a `Close` frame to each client before closing the connection. The client should reconnect", S1 | no lifetime cap or notice seen in 120 s |
 | handshake and operation rate limits | Not publicly specified | no refusal, opens of 471 to 639 ms |
@@ -157,9 +157,9 @@ The longest gaps between two depth frames were 30 s on `GOOGL.US_USDC_PERP`, 28 
 
 | request | reply | then |
 |---|---|---|
-| `depth.NOPE_USDC_PERP` | nothing | nothing in 1.5 s |
+| `depth.NOPE_USDC_PERP` | nothing on 2026-09-23. On 2026-10-09 `{"id":null,"error":{"code":4014,"message":"Invalid symbol"}}`, and `depth.LINK_USDC_PERP` in the same frame got no frames | nothing in 1.5 s |
 | `depth.TON_USDC_PERP`, a `Closed` market | nothing | nothing in 1.5 s |
-| `depth.5.BTC_USDC_PERP` | nothing | nothing in 1.5 s |
+| `depth.5.BTC_USDC_PERP` | nothing on 2026-09-23. On 2026-10-09 the same 4014 | nothing in 1.5 s |
 | `depth.100ms.BTC_USDC_PERP` | `{"id":null,"error":{"code":4008,"message":"Invalid depth window"}}` | |
 | `nope.BTC_USDC_PERP`, also with `"id": 9` | `{"id":null,"error":{"code":4006,"message":"Invalid stream"}}` | |
 | `{"method": "FOO", …}` | `{"id":null,"error":{"code":4002,"message":"Parse error"}}` | |
@@ -167,7 +167,8 @@ The longest gaps between two depth frames were 30 s on `GOOGL.US_USDC_PERP`, 28 
 | `bookTicker.BTC_USDC_PERP` twice | nothing | frames continue with no repeated `u`, so no duplicate delivery |
 | `UNSUBSCRIBE` of that stream | nothing | its frames stop |
 
-Because an unknown or closed market is silent, the feed has to notice a stream that never delivers on its own, and the REST seed is where that shows.
+Because a closed market is silent, and the 4014 reply names no stream, the feed has to notice a stream that never delivers on its own, and the REST seed is where that shows.
+On 2026-10-09 a frame of `depth.ETH_USDC_PERP` and the closed `depth.TON_USDC_PERP` served ETH, so only an unknown symbol refuses a frame.
 
 ## 5. Session
 
@@ -247,6 +248,12 @@ Errors.
 {"id":null,"error":{"code":4008,"message":"Invalid depth window"}}
 ```
 
+An unknown symbol, captured on 2026-10-09.
+
+```json
+{"id":null,"error":{"code":4014,"message":"Invalid symbol"}}
+```
+
 Keepalive is a WebSocket protocol ping from the server and the client's protocol pong, with no JSON frame.
 
 ## 7. Private channels
@@ -265,7 +272,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | URL plan | `wss://ws.backpack.exchange`, slices of 30 markets per connection | one URL serves all. The engine's resync terminates the whole socket, and each market on it then needs a REST seed, which at 5 per second takes 6 s for 30 |
 | channel | `depth.<rawMarketId>` | every book event with a strict per-market chain. `depth.200ms.<rawMarketId>` is the fallback if the realtime rate is too much for the event loop |
-| subscribe frames | one frame per slice, `{"method":"SUBSCRIBE","params":["depth.BTC_USDC_PERP", …]}` | a multi-stream frame was served in full |
+| subscribe frames | one frame per market, `{"method":"SUBSCRIBE","params":["depth.BTC_USDC_PERP"]}` | a multi-stream frame was served in full on 2026-09-23, but on 2026-10-09 one unknown symbol refused its whole frame with error 4014. Thirty single-stream frames sent at once were all served |
 | seed | after subscribing, `GET /api/v1/depth?symbol=<id>&limit=1000` for each market at 5 per second, deltas buffered until the reply, then the alignment of section 4 | the stream sends no snapshot. The engine has no REST seeding path in any feed today, so this is new code in `VenueFeed` or in the Backpack subclass |
 | REST level order | read bids from the end of the array | REST bids are ascending |
 | price keys | `Number()` of the price, never the string | REST and socket format the same price differently |
@@ -273,7 +280,7 @@ A recommendation for a later design, not a decision.
 | `maxSilenceMs` | 45,000 | three missed client pongs |
 | delta | apply only when `U === last + 1`, then store `u`. A size of zero deletes | documented rule, 0 gaps observed |
 | resync | a gap, or a delta before the seed lands: reseed that one market from REST while buffering. With today's `resync`, terminate and reseed the slice | the documentation asks for a REST requery, and one market's gap need not cost the slice |
-| unserved stream | a market whose REST seed fails or whose stream stays silent is logged | unknown and closed markets are acknowledged by silence |
+| unserved stream | a market whose REST seed fails or whose stream stays silent is logged | closed markets are acknowledged by silence, and the 4014 refusal of an unknown symbol names no stream |
 | receive time | stamp on arrival | the engine timestamp is a median 49 to 66 ms old on arrival |
 | deflate | keep `perMessageDeflate: false` | the server compresses only when asked |
 | markets | skip the 17 equity perpetuals | their index can be their own book, see [`rest.md`](./rest.md) section 2 |

@@ -52,6 +52,9 @@ The undocumented `GET /fapi/v1/ticker_all` returns every contract's 24 h ticker 
 35 of the 130 active contracts had a last trade more than seven days old, among them `E-BSV-USDT` (2022-05-23), `E-PENDLE-USDT` (2024-08-26) and `E-MATIC-USDT` (2024-09-05).
 `FILCOIN-BTC-USDT` last traded on 2021-10-29 and its mark read 60,377 against an index of 84,114.
 So about a quarter of the listed book is ghost markets, and the adapter must filter them.
+On 2026-10-09 the undocumented `GET https://futuresopenapi.koinbay.com/v1/inner/contract_config` listed 95 contracts with `status` 1.
+They were the 93 USDT-M contracts that traded that day, plus `E-BTC-USD` and `S-BTC-USDT`.
+It left out the other 34 active USDT-M contracts, whose last trade by `ticker_all` was 694 to 1,600 days old, so the config is a liveness filter with no age threshold.
 
 ### How CCXT maps it
 
@@ -70,7 +73,10 @@ A Koinbay adapter would build the catalog from this call itself:
 Multipliers range from 0.00001 to 5,000 coins per contract across the active set, for example 0.0001 on BTC, 0.1 on SOL and SSV.
 BTC is the only base listed more than once among active contracts: `E-BTC-USDT`, `S-BTC-USDT` and `FILCOIN-BTC-USDT`, plus the inverse `E-BTC-USD`.
 Only `E-BTC-USDT` should be kept.
-Names like `E-SHIB-USDT` quote the plain coin with a large multiplier, so no price scale was needed in the names inspected, but a per name check against another venue is Not verified.
+The 2026-09-22 reading that `E-SHIB-USDT` quotes the plain coin was wrong, see the check below.
+On 2026-10-09 `E-SHIB-USDT` and `E-PEPE-USDT` quoted 0.0054 and 0.0039, a thousand times okx's, gate's and MEXC's 0.0000054 and 0.0000039, so each price is per 1,000 tokens.
+Their `multiplier` of 100 and 500 counts those bundles.
+A SHIB level of about 7,900 contracts then holds about 4,300 USDT, near the levels of DOGE and TRX, where single tokens would make it about 4 USDT.
 
 ## 3. Anchor
 
@@ -103,6 +109,8 @@ That is the only practical anchor source.
 | `fundingIntervalHours` | absent | absent, 8 is plausible from `nextSettlementTime` at 08:00 UTC but Not verified |
 | `nextFundingAt` | absent | `nextSettlementTime`, ms as a string, 1790236800000 |
 
+On 2026-10-09 `capitalFrequency` in `contract_config`, see section 2, gave the interval: 8 h on 91 of the 93 live USDT-M contracts, 1 h on `E-T-USDT` and 4 h on `E-XAG-USDT`.
+
 ## 4. Anchor semantics
 
 ### Index
@@ -126,7 +134,10 @@ A capped premium is Not verified.
 On SSV, SOL and the inverse both fields read 0.0001.
 The docs do not say which field is the rate charged at `nextSettlementTime`.
 No cap, floor or formula is published, and no public funding history call exists.
-The settlement instant was not captured.
+The settlement instant was not captured on 2026-09-22.
+On 2026-10-09 `POST https://futuresopenapi.koinbay.com/fe-co-api/common/funding_rate_list` with body `{"contractId":195,"page":1,"limit":4}` answered without a login.
+It listed `E-T-USDT` settling 0.0000125 every hour, including at 21:00 UTC, which equals its `currentFundRate`, while `nextFundRate` read 0.000012.
+So `currentFundRate` is the better candidate for the charged rate, although no contract was seen to change its rate across a settlement.
 
 ### How often each number changed
 

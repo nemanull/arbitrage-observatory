@@ -49,7 +49,7 @@ A loader would build each market by hand.
 | engine field | source | note |
 |---|---|---|
 | `rawMarketId` | `symbol` | identical to the socket `key` and to the anchor replies' `symbol` on 40 of 40 |
-| `base` | `symbol` minus the `USDT` suffix | `1000PEPEUSDT` gives `1000PEPE`, which needs a price scale of 1000 |
+| `base` | `symbol` minus the `USDT` suffix | `1000PEPEUSDT` gives `1000PEPE`, the base Binance and Bybit use for the same unit, so it needs no price scale, checked 2026-10-09 |
 | `quote` | `USDT` | |
 | `linear` | true | margined and settled in USDT, S1 |
 | `contractSize` | none | book `qty` is USDT notional, so sizes must be divided by price, not multiplied by a constant, see [`websocket.md`](./websocket.md) section 4 |
@@ -57,7 +57,9 @@ A loader would build each market by hand.
 
 ### Pairs to watch
 
-- `1000PEPEUSDT` is quoted per 1,000 PEPE, so it needs a price scale.
+- `1000PEPEUSDT` is quoted per 1,000 PEPE.
+  On 2026-10-09 its book read 0.003923 against 0.0039231 on Binance's `1000PEPEUSDT`, so the base `1000PEPE` clusters with Binance's and Bybit's without a price scale.
+  Its open interest `qty` over `value` gave 0.003924 USDT per unit, so book sizes divided by price count units of 1,000 PEPE.
 - `TBTCTUSDT` is a second bitcoin contract.
   Its index read 84,110.80333333333 at the same `time` as `BTCUSDT`'s, identical to every digit, and its book traded at whole dollar prices near 84,077 on 2026-09-24 06:56 UTC.
   It held about 4.6 M USDT of open interest against about 36.6 M on `BTCUSDT`.
@@ -108,6 +110,12 @@ Whether `rate` is the rate for the next settlement or the one last computed at `
 "The index price is taken from 5 major spot exchanges and applies dynamic algorithms to eliminate abnormal data sources in real-time", S5 of [`fees.md`](./fees.md).
 The index article names "Binance, Okex, Huobi, Coinbase, Kraken" as examples and gives a volume weighted mean, S6 of [`fees.md`](./fees.md).
 No basket or constituent call is documented, so the per contract basket is Not publicly specified.
+
+On 2026-10-09 from 20:25 to 20:33 UTC, after the US close, the index of `TSLAUSDT`, `NVDAUSDT` and `XAGUSDT` equalled TruBit's own REST book mid to the digit and changed only when that mid changed.
+`TSLAUSDT` read 383.015 with a book of 383.01 and 383.02, then 382.985 with 382.97 and 383.00, so its index is the venue's own perpetual outside the US session.
+`XAGUSDT` read 60.875 with a book of 60.87 and 60.88 while COMEX silver still traded, and Binance and Bybit read the silver index 0.04 to 0.06 percent away.
+`PAXGUSDT` and the crypto contracts did not match their own mid, as `PAXGUSDT` read 4,194.11 against a mid of 4,191.955.
+The adapter therefore leaves these three contracts out of its anchor rows under decision 4 of the venue adapter waves design.
 
 ### Mark
 

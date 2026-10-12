@@ -44,6 +44,10 @@ The WebSocket host is a different CDN, see [`websocket.md`](./websocket.md) sect
 | `indexId` | 387 distinct values, one per contract |
 | `tradfiTag` | empty on all 387, though equity names such as `SAMSUNG`, `DELL` and `MSTR` are listed |
 
+On 2026-10-09 the call returned 389 rows, 387 `usdt` and 2 `usdc`.
+376 read `online` and 13 read `preOffline`: `HYUNDAI`, `CRM`, `KIOXIA`, `CIEN`, `XBI`, `PENG`, `PANW`, `ADBE`, `CSCO`, `JPM`, `V`, `NAVER` and `QNT`.
+`takerFee` was `"0.0006"` and `tradfiTag` was empty on all 389, and the adapter keeps only the `online` rows.
+
 The batch call `GET /v1/perpum/instrumentList` documents `symbols` as mandatory and at most 20, S3.
 Without `symbols` it returned 404 rows in both runs, the 387 plus the 17 `…PROPW` contracts.
 
@@ -105,6 +109,7 @@ The funding frame's `h` equalled `settledPeriod` and its `nt` equalled `settledA
 
 At 02:43 UTC the 211 contracts on 8 h read 08:00 UTC, the 175 on 4 h read 04:00 UTC, and `G`, the one hourly contract, read 03:00 UTC.
 `settledAt` did not change over either 60 s poll, since no settlement fell inside them.
+On 2026-10-09 `settledPeriod` read 8 h on 212 rows, 4 h on 176 and 1 h on 1, and the hourly contract is now `KAIA`, while `G` reads 4 h.
 
 ## 4. Anchor semantics
 
@@ -126,6 +131,8 @@ Against Binance USD-M `premiumIndex` read right after a 20 s hold, P3:
 
 So the index is not a copy of Binance's index.
 The largest gap is `ONE`, whose Binance index is Binance's own perpetual, see [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md).
+On 2026-10-09 that gap was gone: `ONE` read index 0.0021023, mark 0.002097 and `r` -0.0003445 on the socket, against Binance USD-M's index 0.00210245, mark 0.00209676 and `lastFundingRate` -0.0003445, while okx's `ONE-USDT` index read 0.0020138.
+So CoinW's `ONE` anchor that day tracked Binance's self-indexed perpetual within 7 ppm.
 
 ### Mark
 
@@ -257,7 +264,7 @@ The engine's anchor is a REST poller, and CoinW has no REST call that fills it, 
 | rate limit pause | `rateLimitPauseMs` 30,000 | a ban lasts 30 s, S7, and whether a refusal carries `Retry-After` is Not verified |
 | skip | rows whose `status` is not `online`, the `…PROPW` rows, and contracts absent from the instruments reply | the last two are not in the public catalog |
 | do not read | tickers `fair_price` as an index | it tracks the last price, section 4 |
-| deny list input | `ONE`, whose mark sat 10.6 % and 12.2 % under its index, which the `ONE` line of `DENIED_PAIRS` already covers | section 4 |
+| deny list input | `ONE`, whose mark sat 10.6 % and 12.2 % under its index, which the `ONE` line of `DENIED_PAIRS` already covers. The Rust adapter of 2026-10-09 denies nothing and keeps `ONE`, whose book sat within 3.4 % of okx, gate and MEXC that day | section 4 |
 
 The REST fallback would be `fundingRate` per contract for the last settled rate and `tickers` for a last price, and it cannot supply a mark, so it cannot fill the row.
 

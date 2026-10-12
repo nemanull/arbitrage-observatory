@@ -35,6 +35,8 @@ Each probe mode ran twice, and both readings are written where they differ.
 `GET /public/get_instruments` without parameters returned every instrument of every kind: 5,930 rows, 5,115,758 bytes, in 375 ms and 265 ms, P1.
 It costs 10,000 credits from a pool of 500,000, "1 request/second" sustained and a burst of 50, S2.
 `currency` and `kind` narrow it, and `currency=USDT&kind=future` returned an empty list.
+On 2026-10-08 the call without parameters returned 6,439 rows and 5,547,149 bytes.
+On the same day `currency=any&kind=future` returned every future of every currency in one reply of 214 rows, 194,210 bytes or 11.7 KB compressed, and 136 of those rows were perpetuals.
 
 | state | documented values | seen on perpetuals |
 |---|---|---|
@@ -42,6 +44,7 @@ It costs 10,000 credits from a pool of 500,000, "1 request/second" sustained and
 | `is_active` | boolean | `true` on 131 of 131 |
 
 The one row not `open` among the 5,930 was the spot pair `SOL_ETH`, `locked`.
+On 2026-10-08 all 136 perpetuals read `open` and `is_active` true, and `SOL_ETH` was still the one row not `open`.
 
 | family | `instrument_type` | settlement | quote and counter | count | `price_index` |
 |---|---|---|---|---:|---|
@@ -50,6 +53,8 @@ The one row not `open` among the 5,930 was the spot pair `SOL_ETH`, `locked`.
 | ETH inverse perpetual | `reversed` | ETH | USD | 1 | `eth_usd` |
 
 The 129 linear perpetuals split by `underlying_type` into 97 `crypto`, 23 `equity`, 5 `equity_etf`, 4 `commodity`, 1 `crypto_index` (`COIN50`) and 1 `preipo` (`OPENAI`).
+That split sums to 131, so it likely counted the two inverse perpetuals as `crypto`.
+On 2026-10-08 the catalog listed 134 linear perpetuals, split into 97 `crypto`, 24 `equity`, 6 `equity_etf`, 4 `commodity`, 1 `crypto_index` (`COIN50`) and 2 `preipo` (`OPENAI` and `ANTH`).
 Four bases carry a 1000 prefix, `1000BONK`, `1000MOG`, `1000PEPE` and `1000SHIB`.
 
 ### How CCXT 4.5.68 maps it
@@ -67,9 +72,12 @@ Four bases carry a 1000 prefix, `1000BONK`, `1000MOG`, `1000PEPE` and `1000SHIB`
 | `contractSize` | `contract_size`, line 998 | equal to the catalog on 131 of 131: 0.0001 on 4, 0.001 on 10, 0.01 on 42, 0.1 on 33, 1 on 40 linear, 10 on `BTC-PERPETUAL`, 1 on `ETH-PERPETUAL` |
 | `taker`, `maker` | `taker_commission`, `maker_commission`, lines 996 and 997 | 0.00035 and 0.00015 on 131 |
 
+On 2026-10-08 the linear `contract_size` was 0.0001 on 4, 0.001 on 11, 0.01 on 44, 0.1 on 33 and 1 on 42.
+
 ### Size unit, pairs listed twice, and price scale
 
 The linear `contract_size` is in the base coin, and so is every book amount, so the amount is already coins and must not be multiplied by `contractSize`, see [`websocket.md`](./websocket.md) section 4.
+A REST book read on 2026-10-08 showed `BTC_USDC-PERPETUAL` sizes of 4.721 and 0.3929 against a `contract_size` of 0.0001, which are not whole contract counts, so the amounts were still BTC.
 The inverse `contract_size` is in USD, "A contract_size of 10 on BTC-PERPETUAL therefore means 10 USD, not 10 BTC", S4.
 The engine multiplies book sizes by `contractSize`, so Deribit needs the registry's `contractSize: 1` pin, the same override Gemini uses in [`registry.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/venues/registry.ts).
 
@@ -93,6 +101,8 @@ Prices are per one unit of the base, and the 1000-prefixed bases are priced per 
 
 One call carries index, mark and rate for all 129 linear perpetuals, and the rows are keyed by `instrument_name`, which is CCXT's `market.id`.
 No row was missing a mark, an index or a rate on either run.
+On 2026-10-08 the USDC call returned 188 rows, of which 134 were perpetuals, and none lacked a mark, an index or a rate.
+On the same day `currency=any` still answered 400 with `invalid currency`.
 The reply has no interval and no settlement time, because funding accrues continuously, see section 4.
 `kind=future` returns the 45 dated USDC futures beside the perpetuals, so the poller keeps rows whose name ends in `-PERPETUAL`.
 
@@ -148,13 +158,16 @@ The basket is public on the WebSocket channel `deribit_price_ranking.{index_name
 | `hyperliquid:20 proxy_usd:40 proxy_usdt:40`, HYPE | 1 |
 | `kraken:25 okx:25 proxy_usdt:50`, TRX | 1 |
 
+On 2026-10-08 both `btc_usdc` and `btc_usd` read `coinbase:20 kraken:20 lmax:20 proxy_usdt:40`, so Coinbase had replaced OKX in the BTC basket.
+On the same day `nvda_usdc`, `openai_usdc` and `coin50_usdc` still read `proxy_usd` at weight 100, and their `_usd` indices read `mda_index_source` at weight 100.
 No visible basket contains Deribit's own perpetual.
 The 122 opaque baskets are presumably the Coinbase Index of S6, but the name `mda_index_source` is not explained in any source read, so that is an inference.
 
 Three index shapes can trail the perpetual itself, which is the failure of [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md).
 
 - `OPENAI_USDC-PERPETUAL`, the one pre-IPO perpetual: the index is "the median of" two inputs, "(i) an internal reference price derived from trading activity on Deribit, being a one-hour exponential moving average (EMA) of the contract's Mark Price" and "(ii) one or more third-party, publicly observable market prices", and "If an external input diverges from the Index Price by more than 5%, the index falls back to internal-only pricing (EMA)", S8.
-- The 23 equity and 5 equity ETF perpetuals: "When the underlying equity market is closed on weekends and/or holidays, Deribit switches to an Internal Index constructed using a one-hour exponential moving average (EMA) of the Mark Price combined with Tokenized Price Feeds or External Perpetual Futures Prices", S8.
+- `ANTH_USDC-PERPETUAL`, listed by 2026-10-08, is the second `preipo` row, so the same pre-IPO index rule presumably applies, which is an inference.
+- The 23 equity and 5 equity ETF perpetuals, 24 and 6 on 2026-10-08: "When the underlying equity market is closed on weekends and/or holidays, Deribit switches to an Internal Index constructed using a one-hour exponential moving average (EMA) of the Mark Price combined with Tokenized Price Feeds or External Perpetual Futures Prices", S8.
 - The 4 commodity perpetuals switch the same way when their markets are closed, including weekday evenings and daily maintenance, S8.
 
 ### Mark
@@ -258,7 +271,7 @@ A recommendation for a later design, not a decision.
 | receive time | stamp on arrival, and consider stamping `creation_timestamp` instead | the snapshot is a median 1.4 s old on arrival |
 | rate limit pause | `rateLimitPauseMs` 10,000 | the public per IP limit is unpublished, and a breach may disconnect |
 | skip | rows whose instrument is not `open` in the catalog | documented states include `locked` and `halted` |
-| deny list input | `OPENAI_USDC-PERPETUAL` | its index can fall back to a one hour EMA of its own mark, section 4 |
+| deny list input | `OPENAI_USDC-PERPETUAL`, and `ANTH_USDC-PERPETUAL` since 2026-10-08 | its index can fall back to a one hour EMA of its own mark, section 4 |
 | weekend input | the 23 equity, 5 equity ETF and 4 commodity perpetuals | their index becomes an EMA of their own mark while the underlying market is closed, section 4 |
 | alternative | `ticker.<id>.100ms` for all 129 over the WebSocket | current index, mark and rate on every change, at the cost of a socket based anchor the engine does not have |
 

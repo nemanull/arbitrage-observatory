@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 04:12 to 04:39 UTC, from the development host near Seattle, whose traffic leaves through a Surfshark WireGuard tunnel that exits in Canada.
 
+**Rechecked:** 2026-10-09, against the live venue, and each corrected line names that date.
+
 This profile covers the public REST API of Globe for its one perpetual family, the linear USD perpetuals.
 Globe has no CCXT class, see [`fees.md`](./fees.md) section 8, so the catalog below is Globe's own reply and not a CCXT mapping.
 Every number below was measured by [`rest-probe.mjs`](../../../scripts/probes/venues/globe/rest-probe.mjs) in two passes, or is quoted from the documentation with its source.
@@ -21,7 +23,7 @@ Every access result was seen from the Canadian VPN exit, and nothing was refused
 | edge | `https://globe.exchange/cdn-cgi/trace` answered `colo=SEA` and `loc=CA`, and replies carried `cf-ray` suffixes `YVR` and `SEA` |
 | cold request | `/ticker/contracts` on a new connection: 583 and 572 ms to the first byte, 589 and 576 ms in total |
 | warm request | five more reads 1.2 s apart: 113 to 121 ms in the first pass and 112 to 119 ms in the second |
-| caching | `cf-cache-status: DYNAMIC` on every read, no `cache-control`, gzip |
+| caching | `cf-cache-status: DYNAMIC` on every read, no `cache-control`, gzip, and on 2026-10-09 brotli to a client that offered `br` and gzip to one that offered only gzip |
 
 Every public call answered 200 from this host, except the error cases of section 6.
 The legacy host `globedx.com` answers 301 to `https://globe.exchange/`, and the client library still names `http://www.globedx.com/api/v1`, S3.
@@ -43,6 +45,7 @@ The legacy host `globedx.com` answers 301 to `https://globe.exchange/`, and the 
 | `early_access` | false on 30 | same |
 | reply | 24,877 bytes | 24,882 bytes |
 
+On 2026-10-09 at 18:32 UTC the call still returned 30 rows in 24,797 to 24,801 bytes, all `perpetual`, `Vanilla` and `USD`, with the same 28 `Active` and the same 2 `Suspended`.
 The documented `product-detail` status values are `Active`, `Suspended`, `Configuring`, `NoMatching` and `Closed`, S1.
 The active perpetual count by settlement asset is 28 USD-margined contracts.
 `GET /api/v1/ticker/pairs` returned the 3 spot pairs, `BTC/USDT`, `ETH/USDT` and `GDT/USDT`, which this survey does not profile.
@@ -148,6 +151,7 @@ Every rate on the wire was a whole multiple of 1/300 of a percent, on 30 of 30 c
 
 Not captured, by design of the survey.
 The help article puts settlements at 00:00, 08:00 and 16:00 UTC, S2, while `next_funding_time` read 12:00 UTC from 04:20 to 04:38 UTC with an 8 h period, which puts them at 04:00, 12:00 and 20:00 UTC.
+On 2026-10-09 `next_funding_time` read 1791576000000, which is 20:00 UTC, at 18:32 UTC, so the wire still fits 04:00, 12:00 and 20:00 UTC.
 
 ### How often each number changed
 
@@ -198,7 +202,7 @@ The socket is the better source, since it pushes the same book every 100 ms.
 | REST limit | "1 request per second" | S1 |
 | WebSocket limit | "50 messages per second" | S1 |
 | on excess | "requests may be rejected. If you persistently exceed these limits we may block your IP address or deactivate your trading account." | S1 |
-| status code of a limit | Not publicly specified, and not tested, since the probe stayed under the limit | |
+| status code of a limit | Not publicly specified, and not seen. On 2026-10-09 a burst of 5 parallel requests to `/ticker/contracts` all answered 200, so a short burst is not refused | |
 | `Retry-After` | not seen, and no rate limit header was present on any reply | P1 |
 
 | request | status | body |

@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22, from the development host near Seattle.
 
+**Rechecked:** 2026-10-08, against the live venue, and each corrected line names that date.
+
 This profile covers perpetual trading on WhiteBIT (CCXT id `whitebit`), and nothing else.
 Spot, margin, deposit, withdrawal and earn schedules are named once at the end of the coverage matrix.
 Every number carries a source ledger row, a probe reference, or a CCXT file and line.
@@ -111,10 +113,10 @@ The help center article "WhiteBIT Futures" holds it and refused this host and th
 | item | documented | probed | evidence |
 |---|---|---|---|
 | who pays | "Positive rate = longs pay shorts (contract price above index). Negative rate = shorts pay longs." | | S3 |
-| interval | "The `funding_interval_minutes` field ... returns the cadence for each pair" | 480 minutes on 173 perpetuals and 240 on 224, in all four reads | S3, `rest-probe.mjs main`, tag `futures_reply` |
+| interval | "The `funding_interval_minutes` field ... returns the cadence for each pair" | 480 minutes on 173 perpetuals and 240 on 224, in all four reads. On 2026-10-08, 480 on 173, 240 on 221 and 60 on `ARK_PERP` | S3, `rest-probe.mjs main`, tag `futures_reply` |
 | next settlement | `next_funding_rate_timestamp`, "Unix timestamp in milliseconds of the next funding settlement" | all 397 read `"1790121600000"`, 2026-09-23 00:00 UTC, at 21:34, 21:47, 22:02 and 22:08 UTC | S2, same tag |
 | published rate | `funding_rate`, "Predicted funding rate for the next settlement interval. Fluctuates in real time until settlement occurs." | the rate changed at most once a minute on the contracts tracked, on a step of the mark, see [`rest.md`](./rest.md) section 4 | S2 |
-| cap and floor | `funding_cap` and `funding_floor`, "Upper bound that the funding rate can reach for the market", added 2026-07-29 | `±0.02` on 378 perpetuals, `±0.0075` on 6, `±0.00375` on 13 including `BTC_PERP`, `ETH_PERP` and `SOL_PERP` | S2, S11, same tag |
+| cap and floor | `funding_cap` and `funding_floor`, "Upper bound that the funding rate can reach for the market", added 2026-07-29 | `±0.02` on 378 perpetuals, `±0.0075` on 6, `±0.00375` on 13 including `BTC_PERP`, `ETH_PERP` and `SOL_PERP`. On 2026-10-08, `±0.02` on 375, `±0.0075` on 7 and `±0.00375` on 13 | S2, S11, same tag |
 | rate on the socket | the premium index channel documents the rate "in the range -0.1 to 0.1 with up to 16 decimal places" | | S12 |
 | settled history | `GET /api/v4/public/funding-history/{market}` with `fundingTime`, `fundingRate`, `settlementPrice` ("Mark price ... at the time of funding settlement") and `rateCalculatedTime` ("The rate is computed before the actual settlement") | on `BTC_PERP` 100 rows, 28,800 s apart, and `rateCalculatedTime` exactly 28,800 s before `fundingTime` on all 100 | S13, tag `funding_history` |
 | which rate is charged | the settled row's `rateCalculatedTime` is one interval before `fundingTime` | Not captured, since the only settlement in reach was at 00:00 UTC, after the probing window, see [`rest.md`](./rest.md) section 4 | S13 |

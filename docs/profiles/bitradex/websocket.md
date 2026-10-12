@@ -22,6 +22,7 @@ The bundle builds these as `getOrigin("fws",{ws:!0})+"/public"`, where `getOrigi
 `fws.bitradex.ai` resolved to Cloudflare, 104.18.14.240 and 104.18.15.240 plus two IPv6 addresses, see [`rest.md`](./rest.md) section 1.
 The handshake was accepted from the Canadian exit with no refusal.
 The same host refuses the user agent `curl/8.14.1` on HTTPS with status 456 and body `xxx`, and a `curl` upgrade request to `/public` got the same 456, while `ws` from Node was accepted.
+On 2026-10-09 a handshake with no User-Agent header at all was accepted.
 
 ## 2. Channel matrix for public market data
 
@@ -57,7 +58,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | handshake and operation rate limits | Not publicly specified | no refusal at 6 subscribe frames in 600 ms |
 | public market data authentication | none | none |
 | message parse and routing | `event` routes, and a `depth_update` event is cut at its first comma | `{"topic","event","data"}`, `event` is the full topic, for example `depth_update@btc_usdt,100ms`, `data.s` is the symbol |
-| subscribe acknowledgement shape | not read | `{"code":0,"msg":"success","id":"1"}` |
+| subscribe acknowledgement shape | not read | `{"code":0,"msg":"success","id":"1"}`, and on 2026-10-09 `{"code":0,"data":{"a":null,"b":null},"id":"1","msg":"success"}` |
 | symbol identifier format | lower case with underscore | `btc_usdt`, identical to REST `symbol` in `symbol/list` and to `s` in `q/agg-tickers` |
 | number representation | not read | prices and sizes are strings. `id`, `pu`, `fu` and `u` are strings on the socket, while REST `q/depth` sends `u` as a JSON number |
 | timestamp representation | not read | `t` in ms on deltas, marks, indexes and tickers. The `depth` snapshot carries no `t` |
@@ -91,6 +92,11 @@ delta, pu ≠ last          gap: resync
 ```
 
 `fu` was `pu` plus one on every delta, and the rule held with 0 gaps in P2 and P3.
+
+The rule above is incomplete, checked on 2026-10-09.
+A `depth` snapshot can arrive before the delta whose `u` equals its `id`, so a delta whose `u` is at or below the last id is already in the book and is skipped rather than read as a gap.
+Over 45 s on six contracts, 23 of 299 deltas were already held by a snapshot, with no gap and no snapshot older than the deltas already applied.
+In every snapshot whose `id` equalled the last delta's `u`, the top 5 levels matched the book built from the deltas.
 Whether the server ever skips ids between `pu` and `fu` is not known, because the socket does not document it.
 
 ### Checksum
@@ -111,6 +117,8 @@ None seen in any frame.
 Its book sizes are whole numbers such as `"19488"` and `"20276"` at a price near 84,100, which is 1.95 and 2.03 BTC if the unit is contracts, and about 1.6 billion USDT if the unit were coins.
 So the unit is contracts of `contractSize` coins.
 That is an inference from the catalog, not a published rule.
+On 2026-10-09 every trading contract had `quantityPrecision` 0, and REST `q/depth?level=20` sizes were whole numbers.
+The five best `btc_usdt` bids came to 737,478 USDT read as contracts of 0.0001 BTC, against 1,037,441 USDT in Binance's five, where a reading in coins would give about 7.4 billion USDT.
 
 ### One-sided and empty books
 
@@ -131,7 +139,10 @@ A feed that resets on every snapshot costs one reset a second per symbol and nev
 | `depth@btc_usdt,50,100ms` and other unknown forms | nothing |
 | text `not json` | text `Invalid parameter`, and the socket stays open |
 
-A closed symbol was not tried on the socket.
+Checked on 2026-10-09, a subscribe frame that names an unknown symbol gets no acknowledgement at all, while its valid topics are still served.
+The switched-off `ton_usdt` is acknowledged and sends `depth` snapshots.
+An unknown method such as `nope`, and `SUBSCRIBE` in upper case, are both acknowledged with code 0.
+A subscribe whose `params` is a string instead of an array is answered with the bare text `Invalid parameter`.
 Because a bad topic is simply ignored, the feed has to notice a symbol with no snapshot on its own.
 
 ### Is the book the venue's own
@@ -140,6 +151,13 @@ At 06:56 UTC the best bid and ask in `q/agg-tickers` equalled Binance USDT-M `bo
 The BTC book on BitradeX changed only 34 times in 45 s, while Binance BTC changes many times a second.
 A touch that matches Binance to the tick while moving far less often suggests a book quoted by one maker off Binance prices.
 That reading is an inference, and it would make any cross against Binance a lag artefact rather than a tradable edge.
+
+Measured on 2026-10-09 by sampling both touches every 100 ms for 60 s, the reading holds on some contracts only.
+On `btc_usdt`, `eth_usdt`, `sol_usdt`, `sui_usdt` and `trump_usdt` the touch equalled Binance USDT-M's in 55 to 94 % of samples.
+Each new touch there had shown on Binance a median of 0.95 to 1.15 s earlier, read from the 1 s `depth` snapshots, so part of that lag is the snapshot's own period.
+On `xrp_usdt`, `link_usdt`, `xmr_usdt` and `cookie_usdt` the touch almost never equalled Binance's.
+The sizes behind an equal touch are not Binance's, for example 2.07 BTC at the best bid against Binance's 9.30, so the book is not a relay frame for frame.
+It reads as a maker that pegs its touch to Binance on some contracts about a second late, so a cross against Binance on those contracts is mostly lag.
 
 ## 5. Session
 

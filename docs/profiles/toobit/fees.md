@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers perpetual trading on Toobit (CCXT id `toobit`), and nothing else.
 Spot, the Innovation Zone, deposit, withdrawal, card and earn schedules are named once at the end of the coverage matrix.
 Every number carries a source ledger row, a probe reference, or a CCXT file and line.
@@ -117,7 +119,7 @@ Estimated Funding Rate Of Next Period = clamp (average premium index + clamp (co
 |---|---|---|---|
 | who pays | positive rate: "long position holders pay funding fees to short position holders", negative the reverse, and "Only users who hold open positions at the time of settlement will pay or receive funding fees" | | S9 |
 | fee | "Funding Fee = Position Value × Funding Rate = Position Size × Mark Price × Funding Rate", exchanged between traders with "no fees charged by the platform" | | S9 |
-| schedule | "every 8 hours at 00:00, 08:00, and 16:00 (UTC)", and "some contracts may have different settlement intervals (e.g., every 1, 2, or 4 hours)" | `period` `8H` on 327 contracts, `4H` on 437 and `1H` on 3, and every 8 h and 4 h contract named 2026-09-23 00:00 UTC as the next settlement at 21:34 UTC | S9, [`rest.md`](./rest.md) section 3 |
+| schedule | "every 8 hours at 00:00, 08:00, and 16:00 (UTC)", and "some contracts may have different settlement intervals (e.g., every 1, 2, or 4 hours)" | `period` `8H` on 327 contracts, `4H` on 437 and `1H` on 3, and every 8 h and 4 h contract named 2026-09-23 00:00 UTC as the next settlement at 21:34 UTC. On 2026-10-09 the 775 catalog contracts read `4H` on 437, `8H` on 337 and `1H` on 1, `KAIA-SWAP-USDT` | S9, [`rest.md`](./rest.md) section 3 |
 | interval changes | per contract announcements, for example `ALPACAUSDT` from 4 h to 2 h on 2025-04-24 with a "±2.00%" cap | the three hourly contracts on 2026-09-22 were `LSK-SWAP-USDT`, `G-SWAP-USDT` and `LRCX-SWAP-USDT` | S12, probe |
 | interest term | "0.06% - 0.03% / 3 = 0.01%" per 8 h period | `interest` `"0.0001"` on 593 contracts, `"0.0"` on 172, and `"0.00005"` and `"0.0003"` on one each. 171 of the 172 zero rows are `isRwa` stock contracts, and the published rate equalled `interest` exactly on 219 contracts in the rerun | S10, `/api/v1/futures/fundingRate` |
 | depth for the premium | "The value range of N: 8000 USDT", the notional over which the depth weighted bid and ask are read | | S10 |

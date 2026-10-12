@@ -86,8 +86,11 @@ The snapshot is not cut to 40 or 41 levels: `XRPUSDTPERP` opened with 51 and the
 | `XRPUSDTPERP` | 51 and 20 | 49 and 22 | 52 and 22 |
 | `SOLUSDTPERP` | 34 and 20 | 34 and 19 | 37 and 21 |
 
+On 2026-10-09 at 20:01 UTC the snapshots held 25 and 16 levels on `BTCUSDTPERP`, 17 and 15 on `ETHUSDTPERP`, 39 and 21 on `XRPUSDTPERP`, and 18 and 13 on `SOLUSDTPERP`.
+
 The books are thin.
 The whole `BTCUSDTPERP` book held 27 bid levels, and the best ask carried 0.0598 BTC, about 5,200 USDT.
+On 2026-10-09 the best levels of `BTCUSDTPERP` carried about 0.05 to 0.1 BTC each.
 
 ### Delta semantics
 
@@ -104,6 +107,8 @@ OB_L1_DIFF, sq ≠ last + 1   gap: resubscribe (documented), or terminate the so
 ```
 
 The `sq` counts per pair: `BTCUSDTPERP` stood near 907,000 and `XRPUSDTPERP` near 1,680,000 at the same moment.
+The counter is not monotonic across days, since on 2026-10-09 `BTCUSDTPERP` read 203,206 and then 208,348, and `XRPUSDTPERP` read 249,059.
+The step of one between frames still held on 2026-10-09, with no gap in 75 deltas over 25 s and none in a 90 s feed run.
 It is not the `SequenceNumber` of the REST book, which read 7,111,111,356 while the socket read 907,198 for the same book, P1.
 So a REST book cannot seed the socket's chain, and the snapshot on subscribe is the only seed.
 
@@ -127,7 +132,9 @@ A feed still applies deltas by price and never by position.
 
 No window was seen.
 The book grew past its snapshot on three pairs, to 52 bids on `XRPUSDTPERP`, and the checksum stayed right, so the stream covers the whole aggregated book.
-The engine's 20 levels a side are covered on the bid side of every perpetual, while `BTCUSDTPERP` and `ETHUSDTPERP` had fewer than 20 ask levels in the whole book.
+The engine's 20 levels a side were covered on the bid side of every perpetual, while `BTCUSDTPERP` and `ETHUSDTPERP` had fewer than 20 ask levels in the whole book.
+That no longer held on 2026-10-09, when the whole book of `ETHUSDTPERP` and of `SOLUSDTPERP` had fewer than 20 levels on both sides, and `BTCUSDTPERP` had 16 asks.
+The book is still whole, so a feed of `OB_L1_DIFF` holds every level there is.
 
 ### Size unit against CCXT `contractSize`
 
@@ -135,6 +142,7 @@ VALR has no CCXT class, so there is no `contractSize` to compare.
 Positions are "measured based on their base currency quantity", S3, and the socket's quantities are base coins.
 At 60 s into the first run, the top 10 bids and top 10 asks of `BTCUSDTPERP` on the socket equalled the REST book price for price and size for size, 10 of 10 on each side, P1.
 In the second run 8 of 10 bids and 10 of 10 asks matched, with the socket's best bid at 86,623 and the REST best bid at 86,629, and the REST book is cached for 30 s, so the two reads need not describe the same moment.
+On 2026-10-09 at 20:01 UTC a REST book read right after the socket snapshot matched it on 10 of 10 bids and 10 of 10 asks, such as 0.05 BTC at 82,331 on both.
 A hand-written catalog would set `contractSize` 1.
 
 ### One-sided and empty books

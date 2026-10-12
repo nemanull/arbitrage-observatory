@@ -54,6 +54,10 @@ Documented states are `PreLaunch`, `Trading`, `Settling` and `Closed`, S2.
 
 The tags split the linear catalog: 234 `Stock`, 4 `Commodity`, 73 `Innovation Zone`, 152 `new`, and others, P1 `catalog`.
 All 697 linear symbols are also in Bybit's linear catalog, P1 `catalog`.
+On 2026-10-09 the linear call returned 711 rows in one page, all `LinearPerpetual`, `Trading` and settled in USDT, and every one of them was in Bybit's catalog.
+Their funding intervals were 384 at 480 minutes, 325 at 240 and 2 at 60.
+Their tags counted 249 `Stock`, 4 `Commodity`, 73 `Innovation Zone` and 152 `new`.
+The same day `offlineTime` was set on `STGUSDT` to `1791622800`, which is 2026-10-10 09:00 UTC, while the row still said `Trading`.
 
 ### Whose market this is
 
@@ -64,6 +68,7 @@ All 697 linear symbols are also in Bybit's linear catalog, P1 `catalog`.
 | recent trades against Bybit's | `XRPUSDT`, `CHRUSDT`: 60 of 60 execution ids are Bybit's | `ETHUSDT`: 0 of 60 | P1 `mirror` |
 | settled funding against Bybit's, last 4 settlements | `CHRUSDT`: 4 of 4 equal | `BTCUSDT` 0 of 4, `ETHUSDT` 0 of 4, `GMTUSDT` 3 of 4, the three all at the 0.0001 baseline | P1 `funding` |
 
+On 2026-10-09 a compare of all 711 single symbol tickers against the bulk reply found a different cap and open interest on exactly the same four perpetuals.
 The own open interest is small against Bybit's: 107.458 BTC against 60,401.797 BTC on `BTCUSDT`, and 4,114.22 ETH against 854,995.45 ETH on `ETHUSDT`, P1 `own` in the second pass.
 The Help Center search API returned 0 articles for "bybit" on 2026-09-23, so this relationship rests on the wire alone.
 

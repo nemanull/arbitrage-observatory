@@ -44,14 +44,17 @@ These are one host on one date.
 
 | family | rows | `type` | `status` | intervals in hours | CCXT loads it |
 |---|---:|---|---|---|---|
-| USDT-M perpetuals | 673 | `FFWCSX` | `Open` 673 | 8 on 242, 4 on 429, 1 on 2 | yes, `linear` |
+| USDT-M perpetuals | 682 | `FFWCSX` | `Open` 682 | 8 on 251, 4 on 430, 1 on 1 | yes, `linear` |
 | USDC-M perpetuals | 5 | `FFWCSX` | `Open` 5 | 8 on 5 | yes, `linear` |
 | coin-margined inverse perpetuals | 4 | `FFWCSX` | `Open` 4 | 8 on 4 | yes, `inverse` |
-| inverse dated futures | 2 | `FFICSX` | `Open` 2 | none | yes, type `future` |
+| inverse dated futures | 1 | `FFICSX` | `Open` 1 | none | yes, type `future` |
 
+The counts above are from 2026-10-08, when the call returned 692 rows, and the 2026-09-22 run had 673 USDT-M perpetuals and 2 dated futures.
 The documented `status` values are `Init`, `Open`, `BeingSettled`, `Settled`, `Paused`, `Closed` and `CancelOnly`, S2.
-Every row read `Open` on 2026-09-22, and 3 read `marketStage` `PRE_MARKET`: `ANTHROPICUSDTM`, `BPUSDTM` and `OPENAIUSDTM`.
-The USDT-M rows split into 518 crypto, 6 metal, 3 commodity and 146 stock contracts, see [`fees.md`](./fees.md) section 3.
+Every row read `Open` on 2026-09-22 and again on 2026-10-08.
+On 2026-10-08, 5 rows read `marketStage` `PRE_MARKET`: `ANTHROPICUSDTM`, `BPUSDTM`, `MOONSHOTUSDTM`, `OPENAIUSDTM` and `OURAUSDTM`.
+On 2026-09-22 only the first, second and fourth of those were listed.
+The USDT-M rows split into 518 crypto, 6 metal, 3 commodity and 155 stock contracts by `assetClass` on 2026-10-08, against 146 stock on 2026-09-22, see [`fees.md`](./fees.md) section 3.
 
 ### How CCXT 4.5.68 maps it
 
@@ -137,7 +140,8 @@ The UTA funding call returns every perpetual when neither `symbol` nor `productT
 | `nextFundingAt` | `nextFundingRateDateTime` | integer Unix ms: `1790121600000` is 2026-09-23 00:00 UTC | none |
 
 `nextFundingRateTime`, which S2 describes as "Next funding rate time (milliseconds)", is a countdown on the wire: 8192636 at 21:43:27 UTC is the 2.28 h left to 00:00 UTC.
-`predictedFundingFeeRate` was null on 684 of 684 rows.
+`predictedFundingFeeRate` was null on 684 of 684 rows, and on 692 of 692 on 2026-10-08.
+`currentFundingRateGranularity` was null on 14 perpetuals on 2026-10-08, such as `DOGEUSDTM` and `SOLUSDCM`, while `fundingRateGranularity` was set on every perpetual, so the interval is read from the latter.
 `lastTimeFundingRate` is the last settled rate, and it equalled `fundingFeeRate` on 524 of 682 perpetuals at 22:07 UTC.
 The dated futures carry no funding fields at all.
 
@@ -161,7 +165,7 @@ A survey of all 682 baskets at four requests a second, `rest-probe.mjs baskets` 
 
 | shape | contracts |
 |---|---|
-| one source | 3, each `kucoin_futures` at weight 1: `ANTHROPICUSDTM`, `BPUSDTM`, `OPENAIUSDTM`, all pre-market |
+| one source | 3, each `kucoin_futures` at weight 1: `ANTHROPICUSDTM`, `BPUSDTM`, `OPENAIUSDTM`, all pre-market. On 2026-10-08 it was 5, the five pre-market contracts of section 2 |
 | two sources | 2, both holding KuCoin's own perpetual: `LUNRUSDTM` (`okx_index` 0.8537, `kucoin_futures` 0.1463) and `MPUSDTM` (`bitget_index` 0.8333, `kucoin_futures` 0.1667) |
 | KuCoin's own perpetual inside the basket | 32. Weight 1 on the three pre-market contracts, 0.2632 on `GUAUSDTM`, 0.1333 on `ESIMUSDTM`, and 0.0566 to 0.1667 on 27 stock contracts, `MPUSDTM` and `LUNRUSDTM` highest |
 | another venue's perpetual inside the basket | 166 hold `binance_futures`, at 0.5263 on `GUAUSDTM`, 0.4285 on `SIRENUSDTM`, 0.2059 on `TSTBSCUSDTM`, 0.1385 on `TAIKOUSDTM`, and 0.1333 or less elsewhere, at 22:09 UTC |
@@ -169,7 +173,9 @@ A survey of all 682 baskets at four requests a second, `rest-probe.mjs baskets` 
 Source counts across the 682 were 1 source on 3, 2 on 2, 3 on 163, 4 on 229, 5 on 174, 6 on 92 and 7 on 19.
 Member names across all baskets were `kucoin` 441, `gateio` 403, `binance` 348, `bitget` 323, `mexc` 322, `bybit` 250, `okex` 223, `binance_futures` 166, `binance_index` 145, `okx_index` 124, `binance_alpha` 74, `finnhub` 53, `kucoin_futures` 32, `bitget_index` 17, `coinbase` 13, `kraken` 12, `lbank` 9, `crypto` 4, `bitstamp` 3, `bitfinex` 3 and `bingx` 2.
 The rerun at 22:09 UTC found `finnhub` in 60 baskets, so 3 sources on 156 and 4 on 236, and the stock weights of four baskets that hold KuCoin's perpetual had moved, so stock baskets change during the day.
-A basket that is KuCoin's own perpetual at weight 1 is the self-index shape in [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md), and only the three pre-market contracts have it.
+A basket that is KuCoin's own perpetual at weight 1 is the self-index shape in [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md), and only the pre-market contracts have it.
+A survey of all 687 linear baskets on 2026-10-08 found it on exactly the five pre-market contracts, and `kucoin_futures` at 0.05 to 0.26 in 29 other baskets, with `RGTIUSDTM` now a third two-source basket beside `LUNRUSDTM` and `MPUSDTM`.
+The catalog's `sourceExchanges` misreports the pre-market baskets on 2026-10-08, for example `bybit_mark_price` on `BPUSDTM`, so it cannot stand in for the basket call.
 `GUAUSDTM` is the one normal contract with more than half its weight on perpetuals, Binance's at 0.5263 and KuCoin's at 0.2632.
 
 ### Mark
@@ -308,7 +314,7 @@ A recommendation for a later design, not a decision.
 | URL | `https://api-futures.kucoin.com/api/v1/contracts/active` | one call carries all five `AnchorRow` fields for every family |
 | interval | 1,000 ms, the default | median 215 and 223 ms and max 287 and 325 ms over two runs of 60 polls, weight 3 or 90 of the 2,000 per 30 s budget, and the index publishes on a one second grid |
 | row mapping | section 3, key `symbol` | |
-| skip | `marketStage` other than `NORMAL` | the three pre-market indices are KuCoin's own perpetual at weight 1, and their funding is fixed |
+| skip | `marketStage` other than `NORMAL` | the pre-market indices are KuCoin's own perpetual at weight 1, and their funding is fixed |
 | skip | rows whose `status` is not `Open`, and rows without `nextFundingRateDateTime` | documented closing states, and the dated futures |
 | do not read | `makerFeeRate` and `takerFeeRate` as a fee source for the anchor | the registry owns the fee, see [`fees.md`](./fees.md) section 9 |
 | error check | treat any `code` other than `"200000"` as a failed round | HTTP 200 carries errors |

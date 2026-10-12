@@ -27,6 +27,8 @@ Three changes apply to this survey.
    `websocket.md` records the spot book channel on the same axes.
    `rest.md` records the spot catalog, states in section 3 that the venue publishes no index, mark or funding, names any index or reference price it does publish, and recommends no anchor poller.
 2. Probe scripts go under `scripts/probes/venues/<folder>/`, run from `server/`, and load `ws` and `ccxt` from `server/node_modules` the way [`../../scripts/probes/gate-ws-probe.mjs`](../../scripts/probes/gate-ws-probe.mjs) does.
+   From 2026-10-09 new probes are Python instead, one self-contained `<topic>-probe.py` per topic with an inline script metadata block (PEP 723) that names its dependencies, run with `uv run`.
+   The user is moving new tooling off JS, the server is Rust now, and the existing `.mjs` probes stay as frozen evidence.
 3. Every file opens with **Status:**, **Retrieved:** and **Probed:** lines, where Probed names the date and the host near Seattle, or says why nothing could be probed.
 
 ## Per wave procedure
@@ -268,7 +270,7 @@ The other 63 keep CoinMarketCap rank order in waves 42 to 54, and 7 of them stil
 
 | wave | CMC rank | venue | folder | CCXT 4.5.68 | perps on CoinGecko | status |
 |---|---|---|---|---|---|---|
-| 35 | 34 | MGBX | `mgbx` | none | no | In progress |
+| 35 | 34 | MGBX | `mgbx` | none | no | Done |
 | 35 | 38 | Echobit | `echobit` | none | no | Done |
 | 35 | 43 | YUBIT | `yubit` | none | no | Done |
 | 35 | 52 | UZX | `uzx` | none | no | Done |
@@ -288,88 +290,98 @@ The other 63 keep CoinMarketCap rank order in waves 42 to 54, and 7 of them stil
 | 38 | 145 | BitxEX | `bitxex` | none | no | Done |
 | 38 | 149 | BASEKX | `basekx` | none | no | Done |
 | 38 | 157 | Gleec BTC | `gleec-btc` | none | no | Done |
-| 39 | 159 | Blockfinex | `blockfinex` | none | no | Not started |
+| 39 | 159 | Blockfinex | `blockfinex` | none | no | Done |
 | 39 | 160 | BiKing | `biking` | none | no | Done |
-| 39 | 161 | BitTap | `bittap` | none | no | Not started |
-| 39 | 166 | IBIT Global | `ibit-global` | none | no | In progress |
-| 39 | 168 | WOO X Pro | `woo-x-pro` | none | no | Not started |
-| 40 | 170 | OneBullEx | `onebullex` | none | no | Not started |
-| 40 | 173 | OneEx | `oneex` | none | no | Not started |
-| 40 | 177 | CoinP | `coinp` | none | no | Not started |
-| 40 | 184 | idax exchange | `idax` | none | no | Not started |
-| 40 | 185 | EasiCoin | `easicoin` | none | no | Not started |
-| 41 | 188 | Tebbit | `tebbit` | none | no | Not started |
-| 41 | 190 | CZR Exchange | `czr` | none | no | Not started |
-| 41 | 200 | AEGET | `aeget` | none | no | Not started |
-| 41 | 201 | Cofinex | `cofinex` | none | no | Not started |
-| 41 | 205 | KTX | `ktx` | none | no | Not started |
-| 42 | 15 | Binance TR | `binance-tr` | none | no | Not started |
-| 42 | 30 | Binance TH | `binance-th` | none | no | Not started |
-| 42 | 44 | BiFinance | `bifinance` | none | no | Not started |
-| 42 | 73 | C-Patex | `c-patex` | none | no | Not started |
-| 42 | 99 | Reku | `reku` | none | no | Not started |
-| 43 | 102 | Coinmate | `coinmate` | `coinmate` | no | Not started |
-| 43 | 107 | IndoEx | `indoex` | none | no | Not started |
-| 43 | 114 | LMAX Digital | `lmax-digital` | none | no | Not started |
-| 43 | 118 | Ripio | `ripio` | none | no | Not started |
-| 43 | 124 | Coinmetro | `coinmetro` | none | no | Not started |
-| 44 | 127 | Bitspay | `bitspay` | none | no | Not started |
-| 44 | 136 | Altcoin Trader | `altcoin-trader` | none | no | Not started |
-| 44 | 137 | SuperEx | `superex` | none | no | Not started |
-| 44 | 139 | SWFT Trade | `swft-trade` | none | no | Not started |
-| 44 | 140 | Remitano | `remitano` | none | no | Not started |
-| 45 | 141 | ZKE | `zke` | none | no | Not started |
-| 45 | 146 | AIA Exchange | `aia` | none | no | Not started |
-| 45 | 147 | YoBit | `yobit` | none | no | Not started |
-| 45 | 151 | Crypton Exchange | `crypton` | none | no | Not started |
-| 45 | 153 | Bitcoiva | `bitcoiva` | none | no | Not started |
-| 46 | 155 | CoinCorner | `coincorner` | none | no | Not started |
-| 46 | 162 | Revolut X | `revolut-x` | none | no | Not started |
-| 46 | 164 | Cryptomus | `cryptomus` | `cryptomus` | no | Not started |
-| 46 | 167 | TRIV | `triv` | none | no | Not started |
-| 46 | 175 | Picol | `picol` | none | no | Not started |
-| 47 | 176 | CoinCola | `coincola` | none | no | Not started |
-| 47 | 180 | GudangKripto | `gudangkripto` | none | no | Not started |
-| 47 | 181 | Dzengi | `dzengi` | none | no | Not started |
-| 47 | 186 | BitGW Exchange | `bitgw` | none | no | Not started |
-| 47 | 189 | Gems Trade | `gems-trade` | none | no | Not started |
-| 48 | 192 | Blynex | `blynex` | none | no | Not started |
-| 48 | 193 | BIT.TEAM | `bit-team` | `bitteam` | no | Not started |
-| 48 | 195 | COINSPACE | `coinspace` | none | no | Not started |
-| 48 | 196 | XXKK | `xxkk` | none | no | Not started |
-| 48 | 197 | NexDAX | `nexdax` | none | no | Not started |
-| 49 | 198 | Metal X | `metal-x` | none | no | Not started |
-| 49 | 202 | CRMClick | `crmclick` | none | no | Not started |
-| 49 | 204 | CoinMy | `coinmy` | none | no | Not started |
-| 49 | 206 | ChangeNOW | `changenow` | none | no | Not started |
-| 49 | 207 | CriptoSwaps | `criptoswaps` | none | no | Not started |
-| 50 | 208 | BlockFin | `blockfin` | none | no | Not started |
-| 50 | 209 | SunX | `sunx` | none | no | Not started |
-| 50 | 210 | Binibit | `binibit` | none | no | Not started |
-| 50 | 212 | NEX Exchange | `nex` | none | no | Not started |
-| 50 | 214 | Unocoin | `unocoin` | none | no | Not started |
-| 51 | 216 | ASTX | `astx` | none | no | Not started |
-| 51 | 217 | Feather Exchange | `feather` | none | no | Not started |
-| 51 | 218 | Ulink | `ulink` | none | no | Not started |
-| 51 | 219 | KlicklX | `klicklx` | none | no | Not started |
-| 51 | 220 | Bitonic | `bitonic` | none | no | Not started |
-| 52 | 221 | CEEX exchange | `ceex` | none | no | Not started |
-| 52 | 222 | Coinut | `coinut` | none | no | Not started |
-| 52 | 224 | BlueBit | `bluebit` | none | no | Not started |
-| 52 | 225 | Ndax | `ndax` | `ndax` | no | Not started |
-| 52 | 226 | CoinLion | `coinlion` | none | no | Not started |
-| 53 | 227 | B2Z Exchange | `b2z` | none | no | Not started |
-| 53 | 228 | ListaDao | `listadao` | none | no | Not started |
-| 53 | 229 | StakeCube | `stakecube` | none | no | Not started |
-| 53 | 230 | Bittylicious | `bittylicious` | none | no | Not started |
-| 53 | 231 | FreiExchange | `freiexchange` | none | no | Not started |
-| 54 | 232 | FOBLGATE | `foblgate` | none | no | Not started |
-| 54 | 233 | 5DAX | `5dax` | none | no | Not started |
-| 54 | 234 | Bitcoin.me | `bitcoin-me` | none | no | Not started |
+| 39 | 161 | BitTap | `bittap` | none | no | Done |
+| 39 | 166 | IBIT Global | `ibit-global` | none | no | Done |
+| 39 | 168 | WOO X Pro | `woo-x-pro` | none | no | Done |
+| 40 | 170 | OneBullEx | `onebullex` | none | no | Done |
+| 40 | 173 | OneEx | `oneex` | none | no | Done |
+| 40 | 177 | CoinP | `coinp` | none | no | Done |
+| 40 | 184 | idax exchange | `idax` | none | no | Done |
+| 40 | 185 | EasiCoin | `easicoin` | none | no | Done |
+| 41 | 188 | Tebbit | `tebbit` | none | no | Done |
+| 41 | 190 | CZR Exchange | `czr` | none | no | Done |
+| 41 | 200 | AEGET | `aeget` | none | no | Done |
+| 41 | 201 | Cofinex | `cofinex` | none | no | Done |
+| 41 | 205 | KTX | `ktx` | none | no | Done |
+| 42 | 15 | Binance TR | `binance-tr` | none | no | Done |
+| 42 | 30 | Binance TH | `binance-th` | none | no | Done |
+| 42 | 44 | BiFinance | `bifinance` | none | no | Done |
+| 42 | 73 | C-Patex | `c-patex` | none | no | Done |
+| 42 | 99 | Reku | `reku` | none | no | Done |
+| 43 | 102 | Coinmate | `coinmate` | `coinmate` | no | Done |
+| 43 | 107 | IndoEx | `indoex` | none | no | Done |
+| 43 | 114 | LMAX Digital | `lmax-digital` | none | no | Done |
+| 43 | 118 | Ripio | `ripio` | none | no | Done |
+| 43 | 124 | Coinmetro | `coinmetro` | none | no | Done |
+| 44 | 127 | Bitspay | `bitspay` | none | no | Done |
+| 44 | 136 | Altcoin Trader | `altcoin-trader` | none | no | Done |
+| 44 | 137 | SuperEx | `superex` | none | no | Done |
+| 44 | 139 | SWFT Trade | `swft-trade` | none | no | Done |
+| 44 | 140 | Remitano | `remitano` | none | no | Done |
+| 45 | 141 | ZKE | `zke` | none | no | Done |
+| 45 | 146 | AIA Exchange | `aia` | none | no | Done |
+| 45 | 147 | YoBit | `yobit` | none | no | Done |
+| 45 | 151 | Crypton Exchange | `crypton` | none | no | Done |
+| 45 | 153 | Bitcoiva | `bitcoiva` | none | no | Done |
+| 46 | 155 | CoinCorner | `coincorner` | none | no | Done |
+| 46 | 162 | Revolut X | `revolut-x` | none | no | Done |
+| 46 | 164 | Cryptomus | `cryptomus` | `cryptomus` | no | Done |
+| 46 | 167 | TRIV | `triv` | none | no | Done |
+| 46 | 175 | Picol | `picol` | none | no | Done |
+| 47 | 176 | CoinCola | `coincola` | none | no | Done |
+| 47 | 180 | GudangKripto | `gudangkripto` | none | no | Done |
+| 47 | 181 | Dzengi | `dzengi` | none | no | Done |
+| 47 | 186 | BitGW Exchange | `bitgw` | none | no | Done |
+| 47 | 189 | Gems Trade | `gems-trade` | none | no | Done |
+| 48 | 192 | Blynex | `blynex` | none | no | Done |
+| 48 | 193 | BIT.TEAM | `bit-team` | `bitteam` | no | Done |
+| 48 | 195 | COINSPACE | `coinspace` | none | no | Done |
+| 48 | 196 | XXKK | `xxkk` | none | no | Done |
+| 48 | 197 | NexDAX | `nexdax` | none | no | Done |
+| 49 | 198 | Metal X | `metal-x` | none | no | Done |
+| 49 | 202 | CRMClick | `crmclick` | none | no | Done |
+| 49 | 204 | CoinMy | `coinmy` | none | no | Done |
+| 49 | 206 | ChangeNOW | `changenow` | none | no | Done |
+| 49 | 207 | CriptoSwaps | `criptoswaps` | none | no | Done |
+| 50 | 208 | BlockFin | `blockfin` | none | no | Done |
+| 50 | 209 | SunX | `sunx` | none | no | Done |
+| 50 | 210 | Binibit | `binibit` | none | no | Done |
+| 50 | 212 | NEX Exchange | `nex` | none | no | Done |
+| 50 | 214 | Unocoin | `unocoin` | none | no | Done |
+| 51 | 216 | ASTX | `astx` | none | no | Done |
+| 51 | 217 | Feather Exchange | `feather` | none | no | Done |
+| 51 | 218 | Ulink | `ulink` | none | no | Done |
+| 51 | 219 | KlicklX | `klicklx` | none | no | Done |
+| 51 | 220 | Bitonic | `bitonic` | none | no | Done |
+| 52 | 221 | CEEX exchange | `ceex` | none | no | Done |
+| 52 | 222 | Coinut | `coinut` | none | no | Done |
+| 52 | 224 | BlueBit | `bluebit` | none | no | Done |
+| 52 | 225 | Ndax | `ndax` | `ndax` | no | Done |
+| 52 | 226 | CoinLion | `coinlion` | none | no | Done |
+| 53 | 227 | B2Z Exchange | `b2z` | none | no | Done |
+| 53 | 228 | ListaDao | `listadao` | none | no | Done |
+| 53 | 229 | StakeCube | `stakecube` | none | no | Done |
+| 53 | 230 | Bittylicious | `bittylicious` | none | no | Done |
+| 53 | 231 | FreiExchange | `freiexchange` | none | no | Done |
+| 54 | 232 | FOBLGATE | `foblgate` | none | no | Done |
+| 54 | 233 | 5DAX | `5dax` | none | no | Done |
+| 54 | 234 | Bitcoin.me | `bitcoin-me` | none | no | Done |
+
+### Waves 39 to 54, in lanes
+
+On 2026-10-09 the user asked for the rest of the CoinMarketCap additions to be researched: the 76 venues still Not started, plus MGBX and IBIT Global, whose partial files are checked and finished.
+The user's limit is ten agents at a time, so the 78 venues run as ten lanes of seven or eight across two workflows, in wave and rank order, with one researcher per venue as design decision 2 says.
+A lane starts its next venue as soon as the last one returns, and the main session writes finished venues down in batches rather than per wave.
+Each researcher caps its work at about 40 minutes, keeps temporary files on disk under the gitignored `.claude/survey-work/<folder>/` rather than in RAM backed `/tmp`, and cites CCXT at `node_modules/.pnpm/ccxt@4.5.68/node_modules/ccxt/js/src/<id>.js`, since `server/node_modules` left with the TypeScript server.
+All 78 were researched and written down between 2026-10-09 and 2026-10-10, in about 3.6 hours of wall clock.
+Their verdicts are 12 fits with a named change, 16 blocked, 11 no public API, 36 spot only and 3 defunct.
+The four venues with a CCXT class, Coinmate, Cryptomus, BIT.TEAM and Ndax, passed the taker check of design section "Verification": CCXT gave 6,000, 20,000, an undefined taker and 2,500 ppm, which their profiles record.
 
 ## Closing tasks
 
-Task C waits until the CoinMarketCap additions are researched, because this plan still drives them.
+Task C waited until the CoinMarketCap additions were researched, which they were on 2026-10-10.
 MGBX and Bitbase were stopped near the end of their runs on 2026-09-23 about 07:20 UTC because the user's usage was nearly spent, so their profiles may be incomplete and they are In progress.
 KoinBX stopped at the session limit on 2026-09-23 05:47 UTC with `fees.md` and `rest.md` written, and a single agent finished `websocket.md` and its summary the same morning.
 

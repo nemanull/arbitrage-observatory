@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 03:23 to 03:51 UTC in two passes, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue, and each corrected line names that date.
+
 This profile covers the public perpetual WebSocket of Hotcoin for every perpetual family, with the book channel in detail.
 CCXT 4.5.68 has no Hotcoin class, and CCXT Pro has none either, see [`fees.md`](./fees.md) section 8.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/hotcoin/ws-probe.mjs), labelled P1 with its mode, and the capture is quoted beside the documented value.
@@ -33,13 +35,15 @@ Every subscription is `{"event": "subscribe", "params": {"biz": "perpetual", "ty
 | `depth` | one contract | `{"asks": [[price, size, cumulative]…], "bids": […]}`, 50 levels a side, a whole window every push | 3.96 and 3.98 frames a second on `btcusdt`, 0.40 and 0.49 on `jpn225usdt`, section 4. Recommended |
 | `ticker` | one contract | one array of 15 fields, which read against the catalog as time, high, low, 24 h contracts, 24 h turnover, open, last, and more | 144 and 142 frames on `btcusdt`, median gap 207 and 311 ms |
 | `tickers` | all contracts | arrays of the same 15 fields | 18 and 17 frames, median gap 3,025 and 2,996 ms, 21,169 to 124,150 bytes |
-| `fund_rate` | one contract | one array of 19 fields, below | 18 and 20 frames on `btcusdt`, median gap 2,176 and 2,155 ms, max 4,787 and 4,724 ms |
+| `fund_rate` | one contract | one array of 19 fields, below | 18 and 20 frames on `btcusdt`, median gap 2,176 and 2,155 ms, max 4,787 and 4,724 ms. It pushes only when a value changes: on 2026-10-09 over 40 s `andurilusdt` and `sheinusdt` sent 1 frame each, while `btcusdt` sent 10 and `sophusdt` 9 |
 | `fund_rates` | all contracts | arrays of the same 19 fields, 968 rows | 17 and 16 frames, gaps 2,546 to 3,538 ms, median 3,023 and 2,993, 131,022 to 131,267 bytes |
 | `fills` | one contract | `[[price, size, side, time, 0]…]` | 193 and 220 frames on `btcusdt` |
 | `candles`, `mark_candles` | one contract, with `granularity` | | not probed |
 
 The `fund_rates` rows are keyed by the lowercase contract code, and S1 names their fields: "[0] Contract Code, [1] Marked Price, [2] Indexed Price, [3] Funding Rate, [4] Estimated Funding Rate, [5] Next Settlement Time, [6] Current Open Interest, [7] Indexed Price Converted to CNY, [8] Marked Price Converted to CNY, [9] ENV, [10] Base Currency, [11] Quote Currency, [12] Settlement Currency, [13] to [15] display names".
 The wire rows have 19 fields, and fields 16 to 18 are undocumented, P1 `channels`.
+On 2026-10-09 a `fund_rates` frame held 991 rows, all of 19 fields.
+In those rows field 9 was the string `"0"` and fields 10 to 12 were empty strings, where a per contract `fund_rate` row carries `0`, `"usdt"`, `"btc"` and `"usdt"`.
 
 | field | documented | probed against REST read in the same run |
 |---|---|---|
@@ -51,6 +55,7 @@ The wire rows have 19 fields, and fields 16 to 18 are undocumented, P1 `channels
 
 The 383 rows beyond the catalog are delisted contracts, and all 383 carry a negative countdown, P1 `channels`.
 The last frame's `timestamp` was 473 ms old on arrival, and 98 ms in the rerun.
+On 2026-10-09 at 19:22 UTC two frames stamped 1 ms past a 3 s boundary arrived 613 and 626 ms after their `timestamp`, and their `timestamp` plus field 5 landed 0.29 to 0.36 s after the hour.
 The `btcusdt` mark and index changed on 13 of 16 consecutive frame pairs, and on 13 of 15 in the rerun, P1 `channels`.
 So `fund_rates` is a bulk anchor push of mark, index, settled rate, upcoming rate and next settlement, every 3 s, see [`rest.md`](./rest.md) section 3.
 It has no interval field.

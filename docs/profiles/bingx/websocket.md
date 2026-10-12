@@ -108,6 +108,9 @@ action = update, id <= last           never observed: drop, or resync
 ```
 
 The first update after every snapshot carried the snapshot id plus one, on the six streams of every book run.
+On 2026-10-08 the adapter's probe `probe_live_sequence` saw updates and the snapshot interleave on 4 of 180 streams in one run.
+`XRP-USDT`, `RLC-USDT` and `ARKM-USDT` each got one update with the snapshot id minus one about 1 ms before the snapshot, and `ONT-USDT` got that update just after its snapshot.
+A second run on 180 other streams saw no interleave, so a feed must hold updates that come before the snapshot and drop the ones whose id the snapshot already holds.
 After that, ids skip forward by 2 to 9 without any frame for the missing ids.
 
 | run | streams | skips | streams with a skip | skipped ids | skipped ids that arrived later | largest step |
@@ -194,6 +197,11 @@ The server `Ping` every 5 s is the traffic that proves the socket alive.
 | `dataType` as an array | no reply | nothing |
 
 A refused subscription can still leak one data frame, so a feed must accept book frames only for topics it was acked on.
+
+A capture on 2026-10-08, at about 05:07 UTC on 2026-10-09, differed from the rows above in three ways.
+Every acknowledgement and refusal carried `"data":{"asks":null,"bids":null}` rather than `"data":null`.
+A subscribe `id` that is not a UUID, such as the raw market id `BTC-USDT`, was accepted and echoed back unchanged.
+`NCCONICKEL2USD-USDT@incrDepth`, a `status` 25 contract, was acked with code 0 and sent a snapshot, so a `status` 25 topic is not always refused.
 
 ## 5. Session
 

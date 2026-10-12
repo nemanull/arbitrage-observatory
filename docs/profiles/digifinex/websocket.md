@@ -50,7 +50,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | axis | documented | probed |
 |---|---|---|
 | endpoint split axis | one URL for all perpetuals, S1 | linear and inverse on one socket, section 1 |
-| subscribe frame shape | `{"event":"depth.subscribe","id":1,"instrument_ids":["BTCUSDTPERP","ETHUSDTPERP"],"level":10}`, `id` required, S1 | 30 instruments in one `instrument_ids` array got one ack and all 30 delivered. A request without `id` answers code 2 |
+| subscribe frame shape | `{"event":"depth.subscribe","id":1,"instrument_ids":["BTCUSDTPERP","ETHUSDTPERP"],"level":10}`, `id` required, S1 | 30 instruments in one `instrument_ids` array got one ack and all 30 delivered. A request without `id` answers code 2, and so does `id` 0, checked on 2026-10-09. On 2026-10-09 a frame naming `BTCUSDTPERP` beside the unknown `NOPEUSDTPERP` got one code 2 reply, and neither instrument streamed |
 | unknown symbol expectation | error code 2 `ParamInvalid`, S1 | `{"event":"depth.subscribe","id":12,"code":2,"msg":"invalid param"}` for `NOPEUSDTPERP`, the delisted `TORNUSDTPERP`, the spot spelling `BTC_USDT`, and a missing instrument |
 | chunk unit and budget | 30 public channels per connection, one instrument is one channel, S1 | enforced by closing the socket: 31 in one frame closed with 1006 and no reply about 180 ms after the open, and a 31st channel on a socket holding 30 closed it with 1006 about 150 ms after the send, with no reply |
 | keepalive mechanism | `{"id":1,"event":"server.ping"}`, answer `"data":"pong"`, a timer under 60 s, S1 | pong in 149 to 178 ms over 12 pings in two runs. No server protocol ping on any socket, the longest open 100 s |
@@ -151,11 +151,13 @@ In the 30 contract batch, `GOOGLUSDTPERP` sent 22 frames in 60 s and `QQQUSDTPER
 | `depth.subscribe` `BTCUSDT2PERP`, simulated | code 1 `success` | depth frames arrive, so a simulated contract is served on the same socket |
 | `depth.subscribe` `BTC_USDT` level 20 | code 2 `invalid param` | nothing |
 | `depth.subscribe` with no instrument | code 2 `invalid param` | |
+| `depth.subscribe` `BTCUSDTPERP` and `NOPEUSDTPERP` in one frame, on 2026-10-09 | one code 2 `invalid param` | nothing, the known instrument does not stream either |
 | `depth.subscribe` `BTCUSDTPERP` level 20 twice | the second answers code 5 `repeat subscribe` | the first keeps delivering |
 | `ticker.subscribe` `NOPEUSDTPERP` | code 2 `invalid param` | |
 | unknown event `nope.subscribe` | code 2 `invalid param` | |
 | `depth.unsubscribe` of a stream never subscribed | code 7 `unsubscribe fail` | |
 | `server.time` without `id` | code 2 `invalid param` | |
+| `server.ping` with `id` 0, on 2026-10-09 | `{"code":2,"event":"server.ping","msg":"invalid param"}`, with no `id` | |
 | text that is not JSON | `{"event":"","code":2,"msg":"invalid param"}` | the socket stays open |
 
 Unlike Gate, the channel refuses a symbol it will not serve, so a feed can log the refusal by its `id`.
@@ -164,7 +166,7 @@ Unlike Gate, the channel refuses a symbol it will not serve, so a feed can log t
 
 | item | documented | probed |
 |---|---|---|
-| keepalive | `server.ping` with an `id`, answered `"data":"pong"`, "you should set a timer less than 60 second and send a ping", S1 | pong in 149 to 178 ms over 12 pings. No server protocol ping in 100 s |
+| keepalive | `server.ping` with an `id`, answered `"data":"pong"`, "you should set a timer less than 60 second and send a ping", S1 | pong in 149 to 178 ms over 12 pings. No server protocol ping in 100 s. On 2026-10-09 `id` 0 was refused with code 2, and `id` 1000000 was answered `{"code":1,"data":"pong","event":"server.ping","id":1000000,"msg":"success"}` |
 | silence the server tolerates | "The connection will break automatically if the subscription is not established or data has not been pushed for more than 60 seconds", S1 | the server times the client, not the pushes. A socket that sent nothing closed at 60.6 and 60.7 s in two runs, and a socket subscribed to `SATSUSDTPERP` that received 183 and 202 depth frames but sent nothing after its subscribe closed at 60.8 s both times, all with 1006 and no close frame. A socket that pinged every 20 s stayed open for the full 100 s, subscribed or not |
 | forced disconnect | 24 h per connection, S1 | not reached |
 | maintenance notice | none documented | none seen |
@@ -276,7 +278,7 @@ A recommendation for a later design, not a decision.
 | catalog filter | `marketFilter` keeping `linear === true`, and a pick among the three ETH contracts, see [`rest.md`](./rest.md) section 2 | inverse sizes are USD, and CCXT keeps only `OETHUSDTPERP` for `ETH/USDT:USDT` |
 | channel | `depth` at level 20 | snapshot on subscribe, the window is kept by the venue, and 20 matches the engine's `depthLevels` |
 | markets per connection | 25, never above 30 | the 31st channel closes the socket with every book on it, and 25 keeps room for one extra channel added by mistake. 103 contracts need 5 sockets at 25 |
-| subscribe frames | one frame per slice: `{"id": <n>, "event": "depth.subscribe", "instrument_ids": [...], "level": 20}` | a 30 instrument array was acked as one and all delivered |
+| subscribe frames | one frame per instrument: `{"id": <n>, "event": "depth.subscribe", "instrument_ids": ["BTCUSDTPERP"], "level": 20}`, with a distinct `id` above 0 for each | a frame naming one instrument the venue refuses delivers none of the others, as seen on 2026-10-09, and the `id` of the code 2 reply names the refused instrument. 25 such frames sent at once on one socket were all acknowledged on 2026-10-09 |
 | decode | `zlib.inflateSync(raw)` in `handleMessage`, then `JSON.parse` | every frame is zlib inside a binary message, and `handleMessage` already receives a `Buffer` at `server/src/feeds/book/VenueFeed.ts` lines 209 and 390 to 393 |
 | keepalive | `{"id": <n>, "event": "server.ping"}` every 20 s | the server closes a socket whose client sent nothing for 60 s, even while it pushes |
 | `maxSilenceMs` | 60,000 | a quiet book went 32.1 s without a frame, and the pong every 20 s is the traffic the watch relies on |

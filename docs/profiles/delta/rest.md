@@ -209,6 +209,9 @@ The mark changed on every republish, and the number of republishes is the ceilin
 ## 5. REST book snapshot
 
 `GET /v2/l2orderbook/{symbol}?depth=<n>` returned 5 levels per side for `depth=5` and 20 for the default, 20, 50, 100 and 1000, so 20 is the ceiling, in 108 to 380 ms over two runs, P5.
+On 2026-10-09 that ceiling proved to be BTCUSDT's own depth, whose whole book was 20 levels per side.
+On that day the default and `depth=100` returned the whole book, 50 bids and 51 asks on ETHUSDT and 49 and 51 on SOLUSDT, while `depth=5` and `depth=20` returned 5 and 20.
+The ETHUSDT sizes equalled the socket snapshot's at all 101 prices, so both count contracts.
 Bids come descending and asks ascending.
 Each level is `{"size": 230, "depth": "2.3E+2", "price": "86819.5"}`, with `size` a JSON number of contracts, `price` a string and `depth` a cumulative string that can use exponent notation.
 The reply has `symbol`, `buy`, `sell` and `last_updated_at` in µs with millisecond precision, and no sequence number, so it cannot be aligned with the socket's `seq`.

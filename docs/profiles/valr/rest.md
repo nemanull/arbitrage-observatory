@@ -132,6 +132,7 @@ No basket call exists, and the basket list is a help center article last edited 
 The clamp is "a max mark price deviation vs spot index", which "is currently set to 1.5%", S3.
 A perpetual that trades more than 1.5 % from its index therefore reads a mark held at 1.5 %, which is the capped premium shape named in [`2026-09-15-five-venue-research-design.md`](../../implemented/2026-09-15-five-venue-research-design.md), and without a published index the cap cannot be detected from the anchor.
 On the wire the mark sat at the touch: one `BTCUSDTPERP` summary read `markPrice` 86,438 with a bid of 86,438 and an ask of 86,453, P1, and the socket's first mark, 86,476, equalled the snapshot's best bid, see [`websocket.md`](./websocket.md) section 6.
+The mark is not always inside the touch, since on 2026-10-09 at 19:58 UTC one `BTCUSDTPERP` summary read `markPrice` 82,321 with a bid of 82,282 and an ask of 82,318.
 
 ### Funding
 
@@ -170,6 +171,7 @@ The socket's `MARK_PRICE_UPDATE` came every 3 s and changed on 5 to 25 of the 25
 | `GET /v1/public/<pair>/orderbook/full` | every order, not aggregated, S1 | as above | `max-age=30` | 43 order rows on the bid side of `BTCUSDTPERP`, each with an order `id` and `positionAtPrice`, P1 |
 | `GET /v1/marketdata/<pair>/orderbook` | as the public book, authenticated | | `max-age=1`, S1 | not probed |
 
+On 2026-10-09 at 19:58 UTC the `BTCUSDTPERP` book held 25 bids and 16 asks, and the socket's snapshot three minutes later held the same counts, so the REST book is the whole book while it stays under 41 levels.
 Each level is `{"side", "quantity", "price", "currencyPair", "orderCount"}` with string price and quantity in base coins.
 The reply also carries `LastChange`, an ISO time, and `SequenceNumber`, which is not the socket's `sq`, see [`websocket.md`](./websocket.md) section 4.
 A 30 s cache makes this book unfit to seed or check the socket, and the socket needs neither.

@@ -44,6 +44,7 @@ The newest snapshot of `/en/fees` (2026-05-18) holds only the "Your browser is n
 | spot, context only | 0.05 %, 500 ppm | 0.05 %, 500 ppm | S4 |
 
 The VIP table has one "Futures" column, so every perpetual family pays the same rate.
+On 2026-10-09 the catalog listed 554 USDT-M, 23 coin-quoted and 24 `USDT_<coin>` perpetuals, plus `SPCX_TSLAX_PERP`, quoted in the tokenized Tesla stock.
 The family counts are from P1.
 The Liquidation article also says a trader closing before liquidation pays a "trading fee ratio is up to 0.05%", S6.
 No fee number was readable from a live Pionex page, see section 1.
@@ -118,6 +119,8 @@ The engine models a VIP 0 taker, so none of these changes the recommended value.
 | cap and floor | none published. The clamp bounds only `I - P`, and `P` is unbounded in the formula | S5 |
 | observed extremes | `KERNEL_USDT_PERP` settled at -1.235754 % on its 4 h interval at 00:00 UTC, and `nextFundingRate` spanned -0.726859 % to +0.0989 % over 605 contracts at 03:18 UTC, and -0.588756 % to +0.0926 % at 03:38 UTC | P2, P3 |
 
+On 2026-10-09 the history of all 554 USDT-M contracts read 4 h on 338, 8 h on 174, 1 h on 33 and 2 h on 8.
+So 2 h is a fourth interval, used by tokenized stocks and ETFs such as `FUTUX_USDT_PERP`.
 The settlement instant itself was not captured, and no probe waited for one.
 The published `nextFundingRate` is the estimate for the upcoming settlement, see [`rest.md`](./rest.md) section 4.
 

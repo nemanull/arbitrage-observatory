@@ -90,6 +90,8 @@ Whether that one maker rate is charged is Not verified.
 | cap and floor | Not publicly specified | |
 | stability | not documented | `btc_usdt` read `-0.0000129` on every history row of two one-day windows, 288 rows each, ending 2026-09-21 03:20 and 03:45 UTC, and on the latest 100 rows in both runs, P2 |
 
+On 2026-10-09 the contracts call read 58 contracts at `0.0000129`, 10 at `-0.0000129`, 6 at `0` and 8 at other values, see [`rest.md`](./rest.md) section 4.
+
 The funding history endpoint returns one row every 300 s, not one row per settlement, and it marks no row as settled, see [`rest.md`](./rest.md) section 4.
 So the rate actually charged at an instant is Not verified.
 

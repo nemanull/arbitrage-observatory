@@ -86,6 +86,8 @@ The engine would take `OETHUSDTPERP` as its ETH market today by accident of arra
 - Prices are per coin on every contract, `PEPEUSDTPERP` included at an index of 0.000004918, so no price scale is needed, P2.
 - 36 of the 103 USDT contracts are stocks, ETFs, commodities or pre-IPO names with a 0.01 contract, among them `OPENAIUSDTPERP`, `ANTHROPICUSDTPERP`, `SPCXUSDTPERP`, `QNTXUSDTPERP`, `SKHYUSDTPERP` beside `SKHYNIXUSDTPERP`, and `NVDAUSDTPERP`, P1.
   Their tickers can name a different asset on another venue, so each needs a check against `DENIED_PAIRS` at `server/src/engine/cluster/clusterOverrides.ts` line 7 before the venue is activated.
+- On 2026-10-09 `SPYUSDTPERP` carried `base_currency` `SSPY`, and CCXT reads its base as `SSPY` too.
+  Its index of 779.12 matched the SPY of Binance at 779.26 and of Bybit at 779.23, so it is the SPDR S&P 500 ETF under another code, and it shares no cluster with them.
 
 ## 3. Anchor
 
@@ -227,6 +229,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | index and mark | `GET https://openapi.digifinex.com/swap/v2/public/tickers` every 1,000 ms | one call carries both for every contract, weight 1, median 187 and 206 ms, max 654 ms over 120 polls |
 | funding | `GET .../public/funding_rate_history?instrument_id=<id>&start_timestamp=<now>&limit=1` for one tracked contract after another, two a second, cached per contract and merged into each tickers round | the only REST source of the upcoming rate and its instant, weight 10, so 1,200 of the 6,000 a minute, and each of about 100 contracts refreshed about every 50 s |
+| funding, as built on 2026-10-09 | one call with `start_timestamp` 25 h back and `limit=100` gives the upcoming entry and the interval together | the entries come oldest first from `start_timestamp`, and `limit` keeps the oldest, checked on 2026-10-09. A burst of 101 concurrent reads at start answered without a 429 on 2026-10-09 |
 | interval | once per contract at start and after each settlement, `funding_rate_history` with `start_timestamp` one day back: the step between the last two entries | the `funding_rate` call reports 8 h for the 4 h contracts |
 | alternative for funding | the WebSocket `fund_rate` channel on sockets of its own, at most 30 contracts each | live and weightless, but 4 more sockets and a push only every 15 to 35 s |
 | do not use | `GET .../public/funding_rate` | it returns the last settled rate and the wrong instant for 4 h contracts, section 4 |

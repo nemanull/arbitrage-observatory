@@ -57,7 +57,7 @@ The help center fee article states no number and sends the reader to "All tier p
 
 A few perpetuals track equities or funds rather than tokens.
 `PERP_SNDK_USDT` had an index of 1883.81 and `PERP_EWT_USDT` an index of 114.56, while the Energy Web Token that other venues list as EWT trades near one dollar.
-So `EWT` names a different asset here, see [`rest.md`](./rest.md) section 2.
+Checked on 2026-10-08, `EWT` is an equity perpetual that Binance lists as `EWTUSDT` at the same index, and `SNDK` matches Binance, Bybit and Gate, so neither is a ticker collision, see [`rest.md`](./rest.md) section 2.
 
 ## 4. Perpetual tiers
 
@@ -120,7 +120,7 @@ On 2026-09-23 the book an API taker can reach was 3,652 to 6,140 ppm wide on BTC
 | formula | `Funding Rate = clamp[ average premium index / (8/N), funding cap, funding floor]`, N the symbol's funding interval in hours | S7 |
 | premium index | `[(impact bid price + impact ask price) / 2 - index price] / index price`, sampled every 5 seconds | S7 |
 | impact notional | per symbol `impactNotional`: 2,000 USDT on 140 perps, 1,000 on 54, 200 on 15, 100 on 11, 10,000 on 2, 5,000 on 1 | P1 |
-| interval | 4 h on 149 perps and 8 h on 74, per symbol `fundingIntervalHours` | P1 |
+| interval | 4 h on 149 perps and 8 h on 74, per symbol `fundingIntervalHours`, and 148 and 74 of 222 on 2026-10-08 | P1 |
 | cap and floor | `fundingCap` and `fundingFloor` per symbol: ±0.02 on 202 perps, ±0.00375 on 8, ±0.0075 on 4, ±0.004875 on 3, ±0.003 on 2, ±0.0045 on 1 | P1 |
 | charge | `Funding fee = Funding rate * Position notional = Funding rate * Holding * Mark price`, exchanged between longs and shorts, settled in USDT | S7 |
 | who pays | holders of a position at the settlement instant, for 8 h symbols at 00:00, 08:00 and 16:00 UTC | S7 |

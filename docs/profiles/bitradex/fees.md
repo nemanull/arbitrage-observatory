@@ -36,6 +36,7 @@ The access results in [`rest.md`](./rest.md) section 1 and [`websocket.md`](./we
 
 Which of the two sources a VIP 0 fill is charged, the step table or the per symbol field, is Not verified, because it needs an account.
 The `eth_usdt` taker of 0.0065 is ten times its neighbours and reads like a data entry slip, but it is what the venue publishes, and it was the same in the Wayback Machine capture of 2026-09-14, P3.
+On 2026-10-09 `symbol/list` still carried 650 ppm on `btc_usdt`, 6,500 ppm on `eth_usdt` and 600 ppm on the other 54 trading contracts.
 
 ## 3. Coverage matrix
 

@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 (2026-09-23 UTC), from the development host near Seattle.
 
+**Rechecked:** 2026-10-08, against the live venue, and each corrected line names that date.
+
 This profile covers the public WebSocket of Phemex (CCXT id `phemex`) for every perpetual family, with the USDⓈ-M book channel in detail.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/phemex/ws-probe.mjs), and the capture is quoted beside the documented value.
 Where the documentation and the wire disagree, both are written, and the wire is what a feed must handle.
@@ -160,6 +162,7 @@ Consecutive deltas with an identical body occurred 2 and 7 times on `BTCUSDT` in
 | 102nd subscribe on one socket | `6015 subscription limit exceeded` | the first 101 keep delivering |
 
 Every refusal is explicit, so a feed can log the error and needs no silent stream watch.
+On 2026-10-08 three sockets of 50, 50 and 35 `orderbook_p` subscribes, paced 100 ms apart, delivered all 135 listed USDT-M and USDC-M books for 90 s with no error frame and no crossed top.
 
 ## 5. Session
 

@@ -57,7 +57,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | public market data authentication | none | none |
 | message parse and routing | `{id, method, code, result: {instrument_name, subscription, channel, depth, data}}`, field order fixed since 2024-01-04, S6 | data frames carry `"method":"subscribe"` and `"id":-1`, except the first frame of a `mark`, `index`, `funding` or `ticker` subscription, and route on `result.instrument_name` and `result.channel` |
 | subscribe acknowledgement shape | `{id, method, code, result, message}`, S4 | a book gets one `{"id":1,"method":"subscribe","code":0,"channel":"book.BTCUSD-PERP.50"}` per channel. `mark`, `index`, `funding` and `ticker` get no bare ack, their first data frame carries the request id |
-| symbol identifier format | `BTCUSD-PERP` | identical to CCXT `market.id` and the REST `symbol` on 396 of 396 perpetuals. The index channel takes `underlying_symbol`, `BTCUSD-INDEX` |
+| symbol identifier format | `BTCUSD-PERP` | identical to CCXT `market.id` and the REST `symbol` on 396 of 396 perpetuals, and on 409 of 409 on 2026-10-08. The index channel takes `underlying_symbol`, `BTCUSD-INDEX` |
 | number representation | "All numbers must be strings", S1 | price, size and order count are strings. `u`, `pu`, `cs` and `t` are JSON numbers |
 | timestamp representation | `t` and `tt` in ms, S2 | integer ms. `t` is the publish time and `tt` the last book change: `t - tt` was 5 to 9 ms at the median on every stream, and about 5 s on an idle delta |
 | size unit | not stated | base currency units, equal to the REST book, and CCXT `contractSize` is 1 on every perpetual, section 4 |
@@ -163,6 +163,9 @@ The longest gap on a busy book was 1,603 ms.
 | channels past the 400th | `{"code":40107,"message":"Maximum subscriptions exceeded"}`, 64 replies for the 8 refused frames in both runs, and the first five logged all carried the fifth frame's `id` |
 
 A closed or delisted perpetual was not available to probe, since all 396 were `tradable`.
+
+On 2026-10-08 the `Unknown symbol` reply to `book.NOPEUSD-PERP.50` and the `Unsupported instrument` reply to `index.BTCUSD-PERP` each arrived once, not 8 times.
+The 40107 reply was not rechecked.
 
 ## 5. Session
 
@@ -278,6 +281,11 @@ A recommendation for a later design, not a decision.
 | checksum | leave `cs` unread | the algorithm is unpublished and no layout tried matched it |
 | deflate | keep `perMessageDeflate: false` | the server does not negotiate it anyway |
 | anchor | mark, index and funding from `mark.<rawMarketId>`, `index.<underlying_symbol>` and `funding.<rawMarketId>`, 1,188 channels on three connections of 396 | no REST call returns them in bulk, see [`rest.md`](./rest.md) section 8 |
+
+On 2026-10-08 the catalog held 409 perpetuals, so one socket can no longer hold every book under the 400 channel cap.
+The adapter built that day puts up to 100 markets on each socket with their book, mark, index and funding channels, so a full socket holds 400 channels and the 408 kept markets take 5 sockets.
+It sends the first subscribe frame as soon as the socket opens, without the 1 s wait, then the other three 250 ms apart.
+Two 90 s runs of the live smoke test that day logged no refusal, no 40107 and no other error reply on any of the 5 sockets.
 
 ## 9. Source ledger
 

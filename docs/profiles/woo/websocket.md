@@ -92,6 +92,15 @@ In the rerun the REST reply was read every 5 s for 60 s, and on 12 of 12 reads i
 ETH's REST reply was older on 2 of 12 reads, by up to 4.15 s.
 So the documented recipe can wait indefinitely on a busy symbol, and a feed needs a rule for a REST reply that is behind the chain, which the documentation does not give.
 
+On 2026-10-08 local time, 03:20 UTC on 2026-10-09, the `woo_probe` test beside the adapter read the REST books of 20 perpetuals every 10 s for 60 s.
+26 snapshots were followed by a newer delta.
+5 had a `timestamp` equal to the next delta's `prevTs`.
+20 had a `timestamp` between the next delta's `prevTs` and its `ts`, 100 to 150 ms after the `prevTs`, on BTC, SOL, HYPE and XRP.
+1, the first BTC read, was 17.4 s behind the socket.
+A book rebuilt from each snapshot that was not behind plus the deltas after it matched the top 20 levels of every later snapshot of that symbol, 78 of 78.
+So a delta whose `prevTs` is before the snapshot `timestamp` and whose `ts` is after it is the normal first delta, and its absolute sizes bring the book to its `ts`.
+Earlier that day another run of the probe saw the BTC, SOL and HYPE timestamps equal to some delta's `ts`, and one `PERP_XMR_USDT` snapshot between a push's `prevTs` and its `ts`.
+
 ### Delta semantics
 
 A delta carries `ts`, `prevTs`, `s`, and `bids` and `asks` arrays of `[price, size]` strings.
@@ -105,6 +114,8 @@ first delta after the REST seed: prevTs = snapshot timestamp   apply, last = ts
 later delta: prevTs = last                                     apply, last = ts
 later delta: prevTs ≠ last                                     gap: resync
 ```
+
+Checked on 2026-10-08, the first delta after the seed is applied when its `prevTs` is at or before the snapshot `timestamp` and its `ts` is after it, see the snapshot section above.
 
 The chain held on every frame of both runs, with 0 gaps.
 `ts` is a millisecond clock, not a counter, and two updates in the same millisecond were not seen.
@@ -292,9 +303,9 @@ The engine's feeds today take their first book from the socket, and this venue s
 | markets per connection | 100 | the per connection cap, confirmed at 100 and refused at 101 |
 | subscribe frames | frames of 10 topics, `{"id": "<n>", "cmd": "SUBSCRIBE", "params": [...]}` | 11 or more are refused whole |
 | ack check | log every requested topic missing from the ack's `data` | refused topics still answer `"success":true` |
-| seed | after the ack, read `GET /v3/public/orderbook?symbol=<id>&maxLevel=50` per symbol, at most 10 a second | no snapshot on subscribe, and 10 per second per IP is the REST limit, see [`rest.md`](./rest.md) section 6 |
-| alignment | start at the delta whose `prevTs` equals the snapshot `timestamp`, and drop buffered deltas with `ts` at or before it | the documented recipe |
-| REST behind the chain | if the first delta after the seed has a newer `prevTs` than the snapshot, reseed after a pause, and after a few misses mark the symbol stale rather than looping | BTC never aligned in two runs, section 4 |
+| seed | after the ack, read `GET /v3/public/orderbook?symbol=<id>&maxLevel=1000` per symbol, at most 10 a second | no snapshot on subscribe, and 10 per second per IP is the REST limit, see [`rest.md`](./rest.md) section 6. `maxLevel` 50 cut the 63 bid BTC book on 2026-10-08, see [`rest.md`](./rest.md) section 5 |
+| alignment | drop buffered deltas with `ts` at or before the snapshot `timestamp`, and start at the first newer delta when its `prevTs` is at or before that `timestamp` | the documented recipe, widened on 2026-10-08 because most snapshots fell between two pushes, section 4 |
+| REST behind the chain | if the first delta after the seed has a newer `prevTs` than the snapshot, fetch that symbol again and publish its book empty until a snapshot aligns | BTC never aligned in two runs, and on 2026-10-08 1 of 26 snapshots was behind, section 4 |
 | delta | apply only when `prevTs === last`, then store `ts` | 0 gaps observed |
 | resync | a `prevTs` gap: `resync`, which terminates the socket, resubscribes and so reseeds every symbol on it | the engine's existing path |
 | keepalive | `{"cmd": "PING", "ts": <ms>}` every 15 s | the server closes a socket that has sent nothing for 60 s |

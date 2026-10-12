@@ -1,20 +1,26 @@
 use super::TrackedMarket;
+use super::anchor_poller::{RateLimited, get_bytes};
 use super::order_book::OrderBook;
 use crate::clock::now_ms;
 use crate::engine::cluster::{BookLevel, ClusterId, Market};
 use crate::engine::engine::{BookUpdate, EngineEvent, Levels, Slot};
-use futures_util::{SinkExt, StreamExt};
+use futures_util::future::BoxFuture;
+use futures_util::{FutureExt, SinkExt, StreamExt};
 use std::any::Any;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::net::TcpStream;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::mpsc::error::TrySendError;
 use tokio::task::JoinHandle;
-use tokio::time::{Instant, Interval, MissedTickBehavior, interval_at, sleep, timeout};
-use tokio_tungstenite::connect_async;
+use tokio::time::{Instant, Interval, MissedTickBehavior, interval_at, sleep, sleep_until, timeout};
+use tokio_tungstenite::tungstenite::client::IntoClientRequest;
+use tokio_tungstenite::tungstenite::handshake::client::Request;
+use tokio_tungstenite::tungstenite::http::{HeaderName, HeaderValue};
 use tokio_tungstenite::tungstenite::{Bytes, Message};
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async};
 use tokio_util::sync::CancellationToken;
 
 const RECONNECT_BASE: Duration = Duration::from_millis(500);
@@ -23,6 +29,12 @@ const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const CLOSE_GRACE: Duration = Duration::from_secs(2);
 const HOUSEKEEPING_EVERY: Duration = Duration::from_secs(1); // silence, the first book watch and retirement are checked on this tick
 const UNSERVED_SAMPLE: usize = 3;
+const SNAPSHOT_RATE_LIMIT_PAUSE: Duration = Duration::from_secs(10); // when a snapshot's rate limit answer sends no Retry-After
+const MAX_SNAPSHOT_BACKOFF: Duration = Duration::from_secs(30);
+const SNAPSHOT_FAILURE_LOG_EVERY: u32 = 30;
+
+type Socket = WebSocketStream<MaybeTlsStream<TcpStream>>;
+type SnapshotFetch = BoxFuture<'static, (usize, anyhow::Result<Bytes>)>; // the market's position and the REST reply
 
 #[derive(Debug, Clone)]
 pub struct EndpointPlan {
@@ -41,6 +53,8 @@ pub struct FeedSettings {
     pub first_book_wait: Duration, // after the last subscribe frame, how long a market may hold no book before the connection logs it
     pub retire_after: Option<Duration>, // reopen the socket before the venue's own cap, as binance closes every socket at 24 h
     pub retire_jitter: Duration,
+    pub snapshot_gap: Duration, // pause between the starts of two REST snapshot fetches on one connection
+    pub headers: &'static [(&'static str, &'static str)], // sent on every handshake, [("User-Agent", "Mozilla/5.0")]
 }
 
 impl FeedSettings {
@@ -54,6 +68,8 @@ impl FeedSettings {
             first_book_wait: Duration::from_secs(10),
             retire_after: None,
             retire_jitter: Duration::ZERO,
+            snapshot_gap: Duration::from_millis(200),
+            headers: &[],
         }
     }
 }
@@ -75,6 +91,16 @@ pub trait BookVenue: Send + Sync + 'static {
 
     // Text and binary frames both arrive as bytes, and an error is logged while the connection carries on.
     fn handle(&self, frame: &[u8], conn: &mut Connection<Self::State>) -> anyhow::Result<()>;
+
+    // Where a market's REST book lives, for a venue whose socket never sends a snapshot and which calls request_snapshot.
+    fn snapshot_url(&self, _market: &Market) -> Option<String> {
+        None
+    }
+
+    // Gets the body of the snapshot_url reply between two frames, and an error is logged while the connection carries on.
+    fn handle_snapshot(&self, _position: usize, _body: &[u8], _conn: &mut Connection<Self::State>) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 // One socket's books and routing, kept across reconnects and reset by begin when a connection opens.
@@ -94,6 +120,8 @@ pub struct Connection<S> {
     resync: bool, // ends the connection after the current frame
     outbox: Vec<Message>, // frames the venue asked to send while handling a frame
     warned_unknown: HashSet<String>,
+    snapshots: VecDeque<usize>, // positions waiting for a REST snapshot, oldest first
+    is_snapshot_queued: Vec<bool>, // queued or in flight
 }
 
 impl<S: Default> Connection<S> {
@@ -120,10 +148,13 @@ impl<S: Default> Connection<S> {
             resync: false,
             outbox: Vec::new(),
             warned_unknown: HashSet::new(),
+            snapshots: VecDeque::new(),
+            is_snapshot_queued: vec![false; count],
         }
     }
 
     // What a connection learned dies with it, except the warned symbols, which describe the plan.
+    // The fetch in flight belongs to the run_connection call that ended, so it is dropped with it.
     fn begin(&mut self) {
         self.state = S::default();
         self.books.fill(None);
@@ -134,6 +165,8 @@ impl<S: Default> Connection<S> {
         self.is_pending.fill(false);
         self.resync = false;
         self.outbox.clear();
+        self.snapshots.clear();
+        self.is_snapshot_queued.fill(false);
     }
 
     pub fn id(&self) -> &str {
@@ -142,6 +175,11 @@ impl<S: Default> Connection<S> {
 
     pub fn markets(&self) -> &[Market] {
         &self.markets
+    }
+
+    // The arrival of the frame or snapshot reply being handled, in Unix ms.
+    pub fn frame_recv_ts(&self) -> i64 {
+        self.frame_recv_ts
     }
 
     // A venue can deliver a symbol nobody asked for, and a raw id spelled differently from the venue's own looks identical here.
@@ -189,6 +227,20 @@ impl<S: Default> Connection<S> {
     // Sent once the current frame is handled, such as the pong a venue expects to an application ping.
     pub fn send(&mut self, frame: Message) {
         self.outbox.push(frame);
+    }
+
+    // Queues a fetch of the market's snapshot_url, and a second call while it is queued or in flight does nothing.
+    // The reply reaches handle_snapshot on this connection only, since a reconnect clears the queue.
+    pub fn request_snapshot(&mut self, position: usize) {
+        let Some(queued) = self.is_snapshot_queued.get_mut(position) else {
+            return;
+        };
+        if *queued {
+            return;
+        }
+
+        *queued = true;
+        self.snapshots.push_back(position);
     }
 
     // Ends the connection after the current frame, and the venue's next snapshots rebuild the books.
@@ -328,6 +380,11 @@ impl<S: Default> Connection<S> {
     pub fn take_sent(&mut self) -> Vec<Message> {
         std::mem::take(&mut self.outbox)
     }
+
+    // The positions request_snapshot queued, oldest first.
+    pub fn queued_snapshots(&self) -> Vec<usize> {
+        self.snapshots.iter().copied().collect()
+    }
 }
 
 struct EngineGone;
@@ -344,6 +401,7 @@ pub fn spawn_feed<V: BookVenue>(
     venue_id: &str,
     venue_index: usize,
     markets: &[TrackedMarket],
+    http: &reqwest::Client,
     tx: &Sender<EngineEvent>,
     cancel: &CancellationToken,
 ) -> Vec<JoinHandle<()>> {
@@ -395,6 +453,7 @@ pub fn spawn_feed<V: BookVenue>(
             plan_slots,
             venue_index,
             start_delay,
+            http.clone(),
             tx.clone(),
             cancel.clone(),
         )));
@@ -422,6 +481,7 @@ async fn run_socket<V: BookVenue>(
     slots: Vec<Slot>,
     venue_index: usize,
     start_delay: Duration,
+    http: reqwest::Client,
     tx: Sender<EngineEvent>,
     cancel: CancellationToken,
 ) {
@@ -438,7 +498,7 @@ async fn run_socket<V: BookVenue>(
     let mut attempt: u32 = 0;
 
     loop {
-        let exit = run_connection(&*venue, &plan.url, &settings, &mut conn, &mut attempt, &tx, &cancel).await;
+        let exit = run_connection(&*venue, &plan.url, &settings, &mut conn, &mut attempt, &http, &tx, &cancel).await;
         if exit == Exit::Stopped {
             return;
         }
@@ -476,12 +536,20 @@ async fn run_connection<V: BookVenue>(
     settings: &FeedSettings,
     conn: &mut Connection<V::State>,
     attempt: &mut u32,
+    http: &reqwest::Client,
     tx: &Sender<EngineEvent>,
     cancel: &CancellationToken,
 ) -> Exit {
+    let request = match handshake_request(url, settings.headers) {
+        Ok(request) => request,
+        Err(error) => {
+            tracing::error!(event = "connection_failed", connection = %conn.id, error = format!("{error:#}"));
+            return Exit::Closed;
+        }
+    };
     let mut ws = tokio::select! {
         _ = cancel.cancelled() => return Exit::Stopped,
-        connected = timeout(CONNECT_TIMEOUT, connect_async(url)) => match connected {
+        connected = timeout(CONNECT_TIMEOUT, connect_async(request)) => match connected {
             Ok(Ok((ws, _response))) => ws,
             Ok(Err(error)) => {
                 tracing::error!(event = "connection_failed", connection = %conn.id, %error);
@@ -535,6 +603,9 @@ async fn run_connection<V: BookVenue>(
         .retire_after
         .map(|after| opened_at + after + random_up_to(settings.retire_jitter));
     let mut last_traffic = opened_at;
+    let mut snapshot: Option<SnapshotFetch> = None;
+    let mut next_snapshot_at = opened_at; // the earliest start of the next fetch
+    let mut snapshot_failures: u32 = 0; // consecutive failed fetches on this connection
 
     loop {
         tokio::select! {
@@ -581,19 +652,71 @@ async fn run_connection<V: BookVenue>(
                     }
                 }
 
-                for frame in conn.outbox.drain(..) {
-                    if let Err(error) = ws.send(frame).await {
-                        tracing::error!(event = "connection_error", connection = %conn.id, %error);
-                        return Exit::Closed;
+                if let Err(exit) = finish_handled(&mut ws, conn, tx).await {
+                    return exit;
+                }
+
+                if snapshot.is_none() && !conn.snapshots.is_empty() {
+                    match next_snapshot(venue, http, settings.snapshot_gap, conn, &mut next_snapshot_at) {
+                        Ok(fetch) => snapshot = fetch,
+                        Err(exit) => return exit,
+                    }
+                }
+            }
+
+            (position, fetched) = in_flight(&mut snapshot) => {
+                snapshot = None;
+                let market = conn.markets[position].raw_market_id.as_str();
+
+                match fetched {
+                    Ok(body) => {
+                        tracing::debug!(event = "snapshot_fetched", connection = %conn.id, market, bytes = body.len());
+                        snapshot_failures = 0;
+                        conn.is_snapshot_queued[position] = false;
+                        conn.frame_recv_ts = now_ms();
+
+                        match catch_panic(|| venue.handle_snapshot(position, &body, conn)) {
+                            Ok(Ok(())) => {}
+                            Ok(Err(error)) => {
+                                let market = conn.markets[position].raw_market_id.as_str();
+                                tracing::error!(event = "snapshot_handle_failed", connection = %conn.id, market, %error);
+                            }
+                            Err(panic) => {
+                                tracing::error!(event = "venue_panicked", connection = %conn.id, call = "handle_snapshot", panic);
+                                return Exit::Closed;
+                            }
+                        }
+
+                        if let Err(exit) = finish_handled(&mut ws, conn, tx).await {
+                            return exit;
+                        }
+                    }
+                    Err(error) => {
+                        // A run of failures backs off and logs sparsely, so one dead market cannot fetch and warn five times a second.
+                        snapshot_failures += 1;
+                        if snapshot_failures == 1 || snapshot_failures % SNAPSHOT_FAILURE_LOG_EVERY == 0 {
+                            tracing::warn!(
+                                event = "snapshot_failed",
+                                connection = %conn.id,
+                                market,
+                                failures = snapshot_failures,
+                                error = format!("{error:#}"),
+                            );
+                        }
+                        let mut pause = snapshot_backoff(settings.snapshot_gap, snapshot_failures);
+                        if let Some(limited) = error.downcast_ref::<RateLimited>() {
+                            pause = pause.max(limited.retry_after.unwrap_or(SNAPSHOT_RATE_LIMIT_PAUSE));
+                        }
+                        next_snapshot_at = next_snapshot_at.max(Instant::now() + pause);
+                        conn.snapshots.push_back(position); // still flagged as queued
                     }
                 }
 
-                if conn.flush_changed(tx).is_err() {
-                    return Exit::Stopped;
-                }
-
-                if conn.resync {
-                    return Exit::Closed;
+                if !conn.snapshots.is_empty() {
+                    match next_snapshot(venue, http, settings.snapshot_gap, conn, &mut next_snapshot_at) {
+                        Ok(fetch) => snapshot = fetch,
+                        Err(exit) => return exit,
+                    }
                 }
             }
 
@@ -657,6 +780,88 @@ async fn run_connection<V: BookVenue>(
                 }
             }
         }
+    }
+}
+
+// Builds the handshake from the URL with the venue's headers, as connect_async(url) would build it without them.
+fn handshake_request(url: &str, headers: &[(&str, &str)]) -> anyhow::Result<Request> {
+    let mut request = url.into_client_request()?;
+    for &(name, value) in headers {
+        request
+            .headers_mut()
+            .insert(HeaderName::from_bytes(name.as_bytes())?, HeaderValue::from_str(value)?);
+    }
+    Ok(request)
+}
+
+// What follows a handled frame or snapshot: the venue's own frames, then the changed books, then a requested resync.
+async fn finish_handled<S: Default>(ws: &mut Socket, conn: &mut Connection<S>, tx: &Sender<EngineEvent>) -> Result<(), Exit> {
+    for frame in conn.outbox.drain(..) {
+        if let Err(error) = ws.send(frame).await {
+            tracing::error!(event = "connection_error", connection = %conn.id, %error);
+            return Err(Exit::Closed);
+        }
+    }
+
+    if conn.flush_changed(tx).is_err() {
+        return Err(Exit::Stopped);
+    }
+
+    if conn.resync {
+        return Err(Exit::Closed);
+    }
+
+    Ok(())
+}
+
+// Starts the fetch of the oldest queued market that has a snapshot_url, no sooner than `next_at`, and moves `next_at` one gap past that start.
+fn next_snapshot<V: BookVenue>(
+    venue: &V,
+    http: &reqwest::Client,
+    gap: Duration,
+    conn: &mut Connection<V::State>,
+    next_at: &mut Instant,
+) -> Result<Option<SnapshotFetch>, Exit> {
+    while let Some(position) = conn.snapshots.pop_front() {
+        let market = &conn.markets[position];
+        let url = match catch_panic(|| venue.snapshot_url(market)) {
+            Ok(Some(url)) => url,
+            Ok(None) => {
+                tracing::warn!(event = "snapshot_url_missing", connection = %conn.id, market = %market.raw_market_id);
+                conn.is_snapshot_queued[position] = false;
+                continue;
+            }
+            Err(panic) => {
+                tracing::error!(event = "venue_panicked", connection = %conn.id, call = "snapshot_url", panic);
+                return Err(Exit::Closed);
+            }
+        };
+
+        let start_at = (*next_at).max(Instant::now());
+        *next_at = start_at + gap;
+        let http = http.clone();
+        return Ok(Some(
+            async move {
+                sleep_until(start_at).await;
+                (position, get_bytes(&http, &url).await)
+            }
+            .boxed(),
+        ));
+    }
+
+    Ok(None)
+}
+
+// Doubles with each consecutive failure, from two gaps up to MAX_SNAPSHOT_BACKOFF.
+fn snapshot_backoff(gap: Duration, failures: u32) -> Duration {
+    gap.saturating_mul(1 << failures.min(8)).min(MAX_SNAPSHOT_BACKOFF)
+}
+
+// The reply of the fetch in flight, or never when none is, as tick does for an absent timer.
+async fn in_flight(fetch: &mut Option<SnapshotFetch>) -> (usize, anyhow::Result<Bytes>) {
+    match fetch {
+        Some(fetch) => fetch.await,
+        None => std::future::pending().await,
     }
 }
 

@@ -19,6 +19,7 @@ Where the documentation and the wire disagree, both are written, and the wire is
 | UTA public spot | `wss://x-push-spot.kucoin.com`, S1 | same | not probed |
 | classic public futures | the `endpoint` returned by `POST https://api-futures.kucoin.com/api/v1/bullet-public`, S3 | `{endpoint}?token={token}&connectId={id}`, and the token "is valid for only 24 hours", S4 | the call returned `wss://ws-api-futures.kucoin.com/` with `pingInterval` 18000 and `pingTimeout` 10000 in 383 and 180 ms, and the socket opened in 309 to 447 ms, CloudFront edge `SEA900` |
 
+On 2026-10-08 subscribe frames sent as soon as the UTA socket opened, before the welcome arrived, were all acknowledged and served, so a feed need not wait for the welcome.
 One socket of either kind carries every futures family.
 On one UTA socket `XBTUSDTM`, `XBTUSDCM` and the inverse `XBTUSDM` all delivered, and a spot subscription on the futures socket was refused, see section 4.
 CCXT Pro 4.5.68 holds both URLs: the UTA ones at `server/node_modules/ccxt/js/src/pro/kucoin.js` lines 51 to 53, and the classic token call at line 145.
@@ -76,6 +77,9 @@ The probed column describes the UTA socket and `obu` `increment@10ms`, with the 
 The first frame for each stream is `"t": "snapshot"` with `O` equal to `C`, and up to 500 levels per side.
 `XBTUSDTM` and `ETHUSDTM` snapshots held 500 bids and 500 asks, and thinner books held all they had, 33 and 19 on `INITUSDTM` and 100 and 62 on `AAPLUSDTM` in the first run.
 The snapshot came 0.5 to 6.2 s after the subscribe frame over two runs, with `INITUSDTM` slowest at 6.2 s and `XBTUSDTM` at 3.8 s and then 0.5 s.
+The snapshot is not sent at the subscribe but with the stream's first book change after it, as checked on 2026-10-08.
+On 14 contracts, mostly the quietest by turnover, every snapshot's `C` was 1 to 460 above the REST `level2/depth20` `sequence` read just before the subscribe, and its `M` was about 30 ms old on arrival.
+The quiet ones took 0.6 to 10.4 s, and in a 90 s run of all 686 kept contracts a few still had no snapshot 15 s after their subscribe, while every one had one by the end.
 The deprecated `increment` depth started delivering within about 30 ms of its ack.
 No second snapshot came in 60 s.
 All 100 streams of the batch run got their snapshot.

@@ -143,6 +143,8 @@ Probed through the connector's filter, `type` swap, `swap` true and `active !== 
 - One unit of each of the six live `k` names is 1,000 tokens, so price and size are both per 1,000: `kPEPE` read 0.004409 per unit and its book sizes are in `kPEPE`.
   CCXT's `KPEPE` clusters with nothing, as on Backpack, see [`../backpack/rest.md`](../backpack/rest.md) line 74.
   Renaming the base to `1000PEPE` would join other venues' `1000PEPE` contracts without a price scale, see [`../phemex/rest.md`](../phemex/rest.md) lines 65 and 66.
+- On 2026-10-08 `PURR` was the Purr token at an oracle of 0.11625, while bybit, okx and gate listed the Nasdaq stock of Hyperliquid Strategies as `PURR` at about 11.52.
+  Bybit types it `stock`, gate `stocks` and okx `instCategory` 3, so a `PURR` base would join the stock's cluster as another token.
 - HIP-3 bases such as `XYZ-TSLA` cluster with nothing either, which is safe by default and hides those markets from the engine.
 - The `io` dex is not loaded at CCXT's default limit, so a HIP-3 catalog needs `options.fetchMarkets.hip3.dexes` set explicitly or the limit raised.
 
@@ -200,6 +202,7 @@ No documented info call returns which of the eight venues list a given asset, so
 Two other oracle shapes exist.
 A hyperp's oracle is "an 8 hour exponentially weighted moving average of the last day's minutely mark prices", capped at 4 times the initial mark, S12, which is the self-index shape of [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md).
 No info call read here flags a hyperp: `perpCategories` and `perpConciseAnnotations` returned 206 entries each with categories such as `crypto`, `stocks` and `preipo`, and none mentioned a hyperp or pre-launch, in both runs of the `hyperps` mode.
+On 2026-10-08 `perpCategories` returned 219 entries, every one a builder dex name such as `flx:BTC`, so it says nothing about a first-dex asset.
 The same mode read the first dex twice 20 s apart, and 14 of 138 and then 21 of 157 live assets whose mark moved kept the same oracle.
 A quiet asset on the 3 s oracle does the same, so that check could not single out a hyperp either.
 A builder dex's oracle is whatever its `oracleUpdater` posts with `setOracle`, at most once per 2.5 s and expected every 3 s, S8.

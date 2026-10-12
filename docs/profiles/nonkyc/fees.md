@@ -63,6 +63,8 @@ No trader wallet was queried.
 | spot, NonKYC's own exchange | yes | its own order book, not Orderly's. 323 markets on `GET https://api.nonkyc.io/api/v2/market/getlist`, all `isActive` true, 232 quoted in USDT, 32 in BTC, 17 in USDC and 11 in XMR, P1. VIP 0 fee 0.2 % on the fee grid of 30 day volume and NKYC holdings, S1. REST API described by `https://api.nonkyc.io/openapi.json`, and the socket at `wss://ws.nonkyc.io` opened in 699 and 700 ms, P2. CCXT 4.5.68 has no class, and CCXT pull request #26713 would add a spot-only one, S11 |
 | deposits and withdrawals | not recorded | the NonKYC fee page says "All withdrawal fees are $1, except for expensive networks such as ERC-20, BTC, and similar chains", S1. Orderly deposit and withdrawal fees are on Orderly's documentation |
 
+On 2026-10-09 Orderly listed 73 shared markets, 38 on 8 h funding and 35 on 4 h, see [`rest.md`](./rest.md) section 2.
+
 ## 4. Perpetual tiers
 
 NonKYC publishes no user tier table for its perpetuals.

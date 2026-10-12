@@ -46,6 +46,7 @@ Each catalog row also carries its own `takerFeeRate` and `makerFeeRate`, P1.
 | `makerFeeRate` | 0.0008, for example `CELOUSDT`, `OGNUSDT` | 19 |
 
 So 133 crypto contracts charge a maker above the published 0.020 %, and the schedule page does not mention it.
+On 2026-10-09 the catalog's `takerFeeRate` was 0.0008 on 1,035 of 1,036 rows and 0.0016 on `USDCUSDT`.
 
 ## 3. Coverage matrix
 
@@ -90,7 +91,7 @@ When the level is recalculated is Not publicly specified on the page.
 | discount | what the sources say |
 |---|---|
 | WXT holding | a WXT balance is one of the three routes to each VIP level, S1. The VIP program page is titled "Trading Fees as Low as 0.006%", S11, and any further WXT percentage discount is Not verified |
-| API orders | the catalog documents `apiMakerFeeRate` and `apiTakerFeeRate` as "This field may not be returned", S3, and none of the 995 rows carried them on 2026-09-23. So no separate API rate was published |
+| API orders | the catalog documents `apiMakerFeeRate` and `apiTakerFeeRate` as "This field may not be returned", S3, and none of the 995 rows carried them on 2026-09-23. So no separate API rate was published. On 2026-10-09, 26 rows carried them, each with an API taker of 0.0008, equal to the VIP 0 taker |
 | market maker | only a contact, "Quant Trading & MM : bd@weex.com", in the site footer, S1 |
 | zero fee promotion | "0 fees for all TradFi futures", maker and taker, from May 1, 12:00 AM to May 31, 2026, 11:59 PM (UTC+8), S5. It has ended, and the catalog listed a 0.0008 taker on all 418 TradFi contracts on 2026-09-23 |
 | referral | CCXT's referral link carries a `vipCode`, at line 203, and its fee effect is Not publicly specified |

@@ -42,12 +42,13 @@ Fees are charged on opening and on closing, on a notional of mark price times po
 | perpetuals, USDT-quoted, multi-collateral | yes, 211 active | 131 `CRYPTO`, 74 `STOCK`, 6 `COMMODITIES` on 2026-09-23, P1. One contract per base, settled in any of 17 or 19 currencies from `availableSettlement` |
 | coin-margined or inverse perpetuals | no | every perpetual has `quoteCurrency` `USDT`, P1 |
 | USDC-quoted perpetuals | no | USDC is a settlement currency of the one contract, not a separate family, P1 |
-| dated futures | yes, 4 | `BTC-260925`, `BTC-261225`, `ETH-260925`, `ETH-261225`, P1 |
+| dated futures | yes, 4 | `BTC-260925`, `BTC-261225`, `ETH-260925`, `ETH-261225`, P1. On 2026-10-09 they were `BTC-261225`, `ETH-261225`, `BTC-270326` and `ETH-270326` |
 | options | no | none in the catalog, P1 |
 | spot | yes, 1,100 markets | 15 quote currencies, P1 |
 
 CoinGecko's derivatives list shows "BTSE (Futures)" with 212 perpetual pairs and 4 futures pairs, open interest 24,913 BTC and 24 h volume 7,723.74 BTC on 2026-09-23, S8.
 The catalog read 211 active perpetuals at the same time.
+On 2026-10-09 the catalog read 219 active perpetuals: 131 `CRYPTO`, 82 `STOCK` and 6 `COMMODITIES`.
 
 ## 4. Perpetual tiers
 
@@ -92,7 +93,7 @@ Futures trading fees, from S2.
 | interest rate | Not published as a number. On 2026-09-23, 64 of the 66 crypto perpetuals on 8 h read exactly `0.0001` and 60 of the 65 on 4 h read exactly `0.00005`, which is 0.01 % per 8 h prorated | S11, P1 funding |
 | stock and commodity rate | `0` on 65 of 74 stock and 6 of 6 commodity perpetuals on 2026-09-23, and `0` at every settlement of `SNDK-PERP-USDT` in 7 days. The 9 others, such as `SKHYNIX-PERP-USDT` at `0.00148944`, carried a premium | P1 funding |
 | cap and floor | Not publicly specified. The live rates ran from `-0.00125256` to `0.00154144` | S11, P1 funding |
-| interval | 480 minutes on 144 perpetuals and 240 minutes on 67, from `fundingIntervalMinutes`. S11 says the interval "may vary by market". The older perpetual article still says every 1 hour | P1 anchor, S11, S12 |
+| interval | 480 minutes on 144 perpetuals and 240 minutes on 67, and 152 and 67 on 2026-10-09, from `fundingIntervalMinutes`. S11 says the interval "may vary by market". The older perpetual article still says every 1 hour | P1 anchor, S11, S12 |
 | settlement instants | 00:00, 08:00 and 16:00 UTC for 8 h, every 4 h from 00:00 UTC for 4 h. The history stamps land 0.2 to 1.0 s after the hour | P1 funding |
 | who pays | a positive rate: longs pay shorts, a negative rate: shorts pay longs. Only positions open at the settlement instant pay, and nothing is exchanged at a rate of 0 | S11 |
 | amount | Notional Value × Funding Rate, where Notional Value = Mark Price × Position Size × Contract Multiplier | S11 |

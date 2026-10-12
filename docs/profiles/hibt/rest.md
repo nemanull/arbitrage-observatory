@@ -169,6 +169,7 @@ For the engine this is the capped mark shape at its limit.
 
 The documented formula is F = P + clamp(I minus P, a, b) with I = 0.01 % and a and b not published, see [`fees.md`](./fees.md) section 6.
 The published rates are flat instead: 53 contracts at `0.0000129`, 17 at `-0.0000129`, 6 at `0` and 6 others, identical in all four runs, P1.
+On 2026-10-09 the split was 58 at `0.0000129`, 10 at `-0.0000129`, 6 at `0` and 8 others, so the rates are still mostly the same two values.
 
 `GET /v2/market/fundingRate?symbol=<id>` returns the current rate sampled every 300 s, newest first, 100 rows by default.
 It accepts `startTime`, `endTime` and `limit=1000`, and a window of one day returned 288 rows.
@@ -211,6 +212,8 @@ The socket's index topic pushes once a second, see [`websocket.md`](./websocket.
 Bids are descending and asks ascending on both calls.
 `gold`, `crude`, `silver`, `lco`, `platinumu` and `chiwheat` hold one level per side.
 `crude` read bid 7,583.6 and ask 7,585.2 in all four runs while its sizes changed, and `silver` read 6,624.9 and 6,626.3 in all four.
+On 2026-10-09 the depth call still gave `crude` 7,583.6 and 7,585.2 and `silver` 6,624.9 and 6,626.3, so those two books have not moved since 2026-09-23.
+The same day the contracts call gave `crude`, `silver`, `lco` and `platinumu` a `bid`, `ask` and `last_price` of `0`, while `gold` and `chiwheat` moved and read an `index_price` equal to their `last_price`.
 The REST book and the socket book matched on 18 to 20 of the top 20 BTC bid levels, see [`websocket.md`](./websocket.md) section 4, so the REST book is not cached behind the socket.
 
 ## 6. Rate limits and errors

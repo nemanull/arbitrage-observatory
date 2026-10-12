@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 03:16 to 04:01 UTC, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the public futures REST API of XT.COM (CCXT id `xt`) for both perpetual families, with the catalog and the anchor calls in detail.
 Every number was measured by [`rest-probe.mjs`](../../../scripts/probes/venues/xt/rest-probe.mjs) unless it names another source, and the runs are listed in section 9.
 All calls were public and unauthenticated, at most three a second.
@@ -49,6 +51,12 @@ Three switches decide what a row is: `tradeSwitch`, `openSwitch` and `isOpenApi`
 The 37 perpetuals that trade but are closed to the Open API include `dia_usdt`, `soph_usdt`, `nvdax_usdt`, `pltr_usdt` and `openai_usdt`.
 The 65 that are open to the API but do not trade are delisted contracts such as `ftt_usdt`, `matic_usdt` and `ftm_usdt`.
 All quote currencies are `usdt` on `fapi` and the settlement coin is the base on `dapi`.
+
+On 2026-10-09 the USDT-M call returned 1,179 rows in 2.6 MB.
+693 perpetuals had `tradeSwitch` and `isOpenApi` both true, 61 traded but were closed to the Open API, 66 were open to the API but did not trade, and 305 had both false.
+4 of the 54 dated futures traded.
+The two pre-market rows, with `inPreMarket` true, were `anthropic_usdt`, open to the API, and `openai_usdt`, closed to it.
+`moonshot_usdt` carried `inPreMarket` false and the label `STOCK`.
 
 ### How CCXT 4.5.68 maps it
 
@@ -96,6 +104,9 @@ CCXT reports `fetchFundingRates` as false at `xt.js` line 76, and the documentat
 No single call carries all five `AnchorRow` fields, so a poller reads three.
 
 Coverage of the 691 tradable Open API USDT-M perpetuals on every anchor run: `cg/contracts` 691, `q/mark-price` 690, missing `moonshot_usdt`, and `q/index-price` 689, missing `moonshot_usdt` and `anthropic_usdt`, P3.
+On 2026-10-09 `q/index-price` returned 756 rows, `q/mark-price` 758 and `cg/contracts` 758, about 11 KB, 8 KB and 88 KB gzipped.
+Of the 693 tradable Open API perpetuals that day, only `anthropic_usdt` was missing, from `q/index-price` alone.
+`cg/contracts` also carried `funding_interval_minutes`, 60, 240 or 480, beside `collection_internal`, and both were set on all 693.
 `cg/contracts` also lists the 37 contracts closed to the Open API and the four trading dated futures, and it leaves out every contract whose `tradeSwitch` is false.
 
 ### Row mapping
@@ -110,6 +121,7 @@ Coverage of the 691 tradable Open API USDT-M perpetuals on every anchor run: `cg
 | `nextFundingAt` | `cg/contracts` `next_funding_rate_timestamp` | integer Unix ms: `1790150400000` is 2026-09-23 08:00 UTC | none |
 
 At 03:18 UTC 436 contracts read 04:00 UTC next and 291 read 08:00 UTC, which matches 435 contracts on 4 h, `lsk_usdt` on 1 h and 291 on 8 h, P3.
+On 2026-10-09 421 of the 693 contracts were on 4 h, 271 on 8 h and 1 on 1 h.
 `next_funding_rate` equalled `funding_rate` on 732 of 732 rows in every run, so it adds nothing.
 The funding history call reports its interval in seconds, `collectionInternal` 28800 and 14400, while the current rate call and `cg/contracts` report hours, and the documentation says the same, S31.
 
@@ -134,6 +146,9 @@ Of the 691 contracts, 217 sit in the `TradFi` plate, 161 in `Tokenized Stocks`, 
 How their index is sourced is Not publicly specified, since the help center formula is written for spot exchanges.
 `nflx_usdt` read mark 72.71 against index 723.28 at 03:57 UTC, P3, and 72.42 against 722.80 in a curl read of `agg-tickers` at 03:36, a factor of ten, so its index is on a pre-split scale.
 At 03:47 UTC one contract's mark and index were 309 s old on arrival, and a curl read at 03:48 named it `babaon_usdt` at 352 s.
+On 2026-10-09 at 18:56 UTC `babaon_usdt` sat 1,126 s old on both calls, and during an earlier run `lly_usdt` sat 752 to 760 s old.
+The same day `nflx_usdt` read index 704.83 against mark 70.65 and a last trade of 70.55, and its index was 959 s old at 18:34 UTC and fresh at 18:56 UTC.
+`moonshot_usdt` now has its own index row, and it read 67.02 on six reads over 30 s at about 18:45 UTC, equal to binance's `MOONSHOTUSDT` index and to XT's own last trade.
 
 ### Mark
 
@@ -236,7 +251,7 @@ A recommendation for a later design, not a decision.
 | row mapping | section 3 | |
 | skip | contracts missing from either the index or the mark reply, `moonshot_usdt` and `anthropic_usdt` on 2026-09-23 | no anchor to read |
 | skip | rows whose `t` is more than 5 s older than arrival | the engine stamps on arrival, and `babaon_usdt` sat 352 s old |
-| skip | pre-market contracts, `inPreMarket` true in the symbol list | the mark is the contract's own fills and there is no index |
+| skip | pre-market contracts, `inPreMarket` true in the symbol list | the mark is the contract's own fills and there is no index. On 2026-10-09 `q/index-price` still carried no row for `anthropic_usdt` |
 | deny list input | `nflx_usdt`, whose index is ten times its price, and `one_usdt`, whose mark sat 1.3 % from its index | section 4, and ONE is already in `DENIED_PAIRS` |
 | deny list input | the 217 `TradFi` contracts need a check against other venues' tickers before they cluster | a stock ticker can name a crypto token elsewhere |
 | rate limit pause | `rateLimitPauseMs` 60,000 | no `Retry-After` is documented, and the documented penalty is a ten minute account lock whose effect on public calls is Not verified |

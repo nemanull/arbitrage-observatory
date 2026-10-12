@@ -88,6 +88,8 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 `@orderbook` sends the whole book right after the subscribe, 124 to 155 ms later in the first run and 140 to 174 ms in the second, on four symbols each.
 After that it pushes at most once a second, and only when the book changed: `BTC` 44 frames, `ETH` 44 and 47, `CL` 7 and 11, `MERL` 15 and 19, in about 60 s.
 The documented depth is 100, and the wire carried 392 to 427 levels per side on `BTC`, 453 to 501 on `ETH`, 32 to 35 on `CL` and 22 to 30 on `MERL`.
+On 2026-10-09 the `PERP_ETH_USDC` push carried 241 to 275 bids and 562 to 582 asks in two captures, so the push has no cap near 500 levels per side.
+Each push came 10 to 170 ms after the delta of the same change and carried that delta's `ts`.
 The `request` event returns the same whole book once.
 
 ### Delta semantics
@@ -144,6 +146,8 @@ So the engine's 20 levels are always inside what the feed holds.
 The book moved between the two reads of the second run.
 Sizes are base units, 0.9423 ETH, and CCXT `woofipro` reports `contractSize` 1, so the engine's size multiplier is correct.
 
+On 2026-10-09 a Public Info book with `max_level` 10 matched, on all 20 levels in price and size, the socket book rebuilt from an `@orderbook` push and the deltas up to the same `ts`, on `PERP_ETH_USDC` and on `PERP_1000PEPE_USDC`.
+
 ### One-sided and empty books
 
 No one-sided or empty book was seen.
@@ -186,6 +190,9 @@ A delisted market was not available to probe.
 | subscription limits | Not publicly specified | 80 book topics on one socket, and 22 mixed topics on another, with no refusal |
 | throughput | | 80 shared markets on `@orderbookupdate`: 72 and 81 frames per second on average, median 69 and 76, peak 170 and 189, 13.7 and 15.8 KB per second, 190 and 196 bytes per frame, 25 to 28 µs per frame for `toString` and `JSON.parse` |
 | quietest markets | | `PERP_EURUSD_USDC` 0 and 1 frames in 60 s, `PERP_M_USDC` 2 and 4 |
+
+On 2026-10-09 one socket acknowledged 100 book topics, and the 101st and 102nd were refused with `"errorMsg":"your subscribed topics have reached limit "`, as [`../nonkyc/websocket.md`](../nonkyc/websocket.md) section 3 found.
+So a socket carries at most 50 markets with both book topics, and the 80 topics above fit only because they were delta topics alone.
 
 ## 6. Captured frames
 
@@ -263,7 +270,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | URL plan | one plan, `wss://ws-evm.orderly.org/ws/stream/OqdphuyCtYWxwzhxyLLjOWNdFP7sQt8RPWzmb5xY` | one family, and only this path segment is served |
 | channels | `<rawMarketId>@orderbookupdate` and `<rawMarketId>@orderbook` | the deltas carry the chain, and the first `@orderbook` push is the snapshot the chain starts from |
-| markets per connection | 80, the whole shared list | 80 books ran with 0 gaps at 72 and 81 frames per second, and no cap is published, so a larger slice is untested |
+| markets per connection | 50, so 100 topics with both book topics | the server refuses the 101st topic, as checked on 2026-10-09 in section 5 |
 | subscribe frames | one frame per topic, `{"id": "<n>", "event": "subscribe", "topic": "PERP_BTC_USDC@orderbookupdate"}` | the documented shape takes one topic |
 | keepalive | send `{"event":"ping"}` every 10 s, and answer any `{"event":"ping"}` with `{"event":"pong"}` in `handleMessage` | either alone kept a socket open, and doing both leaves no gap |
 | `maxSilenceMs` | 30,000 | the server pings every 10 s and every frame counts as traffic in [`VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 205, while a quiet book went 31.8 s without a delta |

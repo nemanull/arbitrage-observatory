@@ -23,6 +23,7 @@ Every probed value comes from [`ws-probe.mjs`](../../../scripts/probes/venues/by
 One socket carries every family.
 `BTC_USDT`, `BTC_USDC` and `BTC_USD` were subscribed on one socket and each delivered.
 `futures.bydfi.com` resolves to Cloudflare, 104.18.12.14 and 104.18.13.14, see [`rest.md`](./rest.md) section 1.
+On 2026-10-09 `wss://api.bydfi.com/edge` answered HTTP 404, so the REST host does not serve the socket.
 
 ## 2. Channel matrix for public market data
 
@@ -272,6 +273,9 @@ A recommendation for a later design, not a decision.
 | receive time | stamp on arrival | |
 | deflate | keep `perMessageDeflate: false` | the server does not negotiate it |
 | reuse | the MEXC feed with its URL constant changed | the protocol, channel, frame shapes, keepalive and silence behaviour matched MEXC's on every item probed |
+
+On 2026-10-09 two `sub.depth.full` sockets of 150 and 108 contracts held the 258 linear contracts for 90 s with no socket closed, every book two sided and no crossed top.
+Limit 20 was acknowledged and limit 30 refused with `Not support limit` on the same day.
 
 ## 9. Source ledger
 

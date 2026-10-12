@@ -1,14 +1,17 @@
 // Ported case for case from old_ts_server/src/feeds/book/VenueFeed.spec.ts, on real time and local sockets in place of fake timers.
-// The cases after the port are new: the runtime against local WebSocket servers, reconnect_delay, FeedSettings and spawn_feed.
+// The cases after the port are new: the runtime against local WebSocket servers, reconnect_delay, FeedSettings, spawn_feed, REST snapshots and handshake headers.
 
 use super::*;
 use crate::engine::cluster::index_builder::DEPTH_LEVEL;
 use crate::test_log::capture;
+use crate::venues::testing::{MockRest, http};
 use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::mpsc::{self, Receiver};
 use tokio::time::sleep_until;
-use tokio_tungstenite::{WebSocketStream, accept_async};
+use tokio_tungstenite::tungstenite::handshake::server::{Request as ServerRequest, Response as ServerResponse};
+use tokio_tungstenite::{WebSocketStream, accept_async, accept_hdr_async};
 use tracing::Level;
 
 const VENUE: &str = "testvenue";
@@ -260,7 +263,7 @@ fn start(
         settings,
         plans: vec![endpoint(PLAN_ID, url, raw_market_ids)],
     };
-    spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(raw_market_ids), tx, cancel)
+    spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(raw_market_ids), &http(), tx, cancel)
 }
 
 // Cancels the feed and waits for its tasks, so a task that panicked fails the case.
@@ -1007,7 +1010,7 @@ async fn a_venue_can_ping_with_text_and_its_state_starts_fresh_on_every_connecti
     let (tx, mut rx) = mpsc::channel(8);
     let cancel = CancellationToken::new();
     let venue = TextPingVenue { url };
-    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(&["AAA"]), &tx, &cancel);
+    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(&["AAA"]), &http(), &tx, &cancel);
 
     let mut first = accept(&listener).await;
     assert_eq!(read_texts(&mut first, 3).await, ["AAA", "ping 1", "ping 2"]);
@@ -1196,7 +1199,7 @@ async fn a_cancel_during_the_stagger_ends_the_task_before_it_connects() {
         },
         plans: vec![endpoint("testvenue#0", NOWHERE, &["AAA"]), endpoint("testvenue#1", &url, &["BBB"])],
     };
-    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(&["AAA", "BBB"]), &tx, &cancel);
+    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(&["AAA", "BBB"]), &http(), &tx, &cancel);
 
     stop(&cancel, tasks).await;
     assert!(
@@ -1251,7 +1254,7 @@ async fn spawn_feed_refuses_a_market_planned_twice_and_a_planned_market_that_is_
         ],
     };
     let markets = tracked(&["AAA", "BBB", "CCC", "DDD"]);
-    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &markets, &tx, &cancel);
+    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &markets, &http(), &tx, &cancel);
     assert_eq!(tasks.len(), 2);
 
     // Each socket subscribes only what it kept, and each kept market still writes its own slot.
@@ -1310,7 +1313,7 @@ async fn spawn_feed_staggers_first_opens_by_connect_stagger() {
     let (tx, _rx) = mpsc::channel(8);
     let cancel = CancellationToken::new();
     let started = Instant::now();
-    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(&raw_market_ids), &tx, &cancel);
+    let tasks = spawn_feed(Arc::new(venue), VENUE, VENUE_INDEX, &tracked(&raw_market_ids), &http(), &tx, &cancel);
 
     // Plan i waits i staggers and never less, so only the upper bound allows for a busy machine.
     let mut sockets = Vec::new();
@@ -1336,12 +1339,12 @@ async fn spawn_feed_spawns_nothing_for_an_empty_plan() {
         settings: quiet(),
         plans: Vec::new(),
     };
-    assert!(spawn_feed(Arc::new(no_plans), VENUE, VENUE_INDEX, &markets, &tx, &cancel).is_empty());
+    assert!(spawn_feed(Arc::new(no_plans), VENUE, VENUE_INDEX, &markets, &http(), &tx, &cancel).is_empty());
     let empty_plans = TestVenue {
         settings: quiet(),
         plans: vec![endpoint("testvenue#0", NOWHERE, &[]), endpoint("testvenue#1", NOWHERE, &["XXX"])],
     };
-    assert!(spawn_feed(Arc::new(empty_plans), VENUE, VENUE_INDEX, &markets, &tx, &cancel).is_empty());
+    assert!(spawn_feed(Arc::new(empty_plans), VENUE, VENUE_INDEX, &markets, &http(), &tx, &cancel).is_empty());
 
     let aborted = logs.events("feed_start_aborted");
     assert_eq!(aborted.len(), 2);
@@ -1370,4 +1373,568 @@ fn feed_settings_new_fills_the_venue_feed_defaults() {
     assert_eq!(settings.first_book_wait, Duration::from_secs(10));
     assert_eq!(settings.retire_after, None);
     assert_eq!(settings.retire_jitter, Duration::ZERO);
+    assert_eq!(settings.snapshot_gap, Duration::from_millis(200));
+    assert!(settings.headers.is_empty());
+}
+
+// A frame is one bid delta with its sequence, and a book is seeded only by its REST snapshot.
+#[derive(Deserialize)]
+struct Delta {
+    market: String,
+    seq: u64,
+    price: f64,
+    size: f64,
+}
+
+#[derive(Deserialize)]
+struct RestBook {
+    seq: u64,
+    bids: Vec<(f64, f64)>,
+    asks: Vec<(f64, f64)>,
+}
+
+const PANIC_SEQ: u64 = 999; // a snapshot with this seq panics in handle_snapshot
+const RESYNC_SEQ: u64 = 998; // and one with this seq asks for a resync
+
+// Requests a snapshot for every delta that finds no book, keeps those deltas, and replays the ones newer than the snapshot.
+struct RestSeededVenue {
+    url: String,
+    rest: String,
+    settings: FeedSettings,
+    subscribed: Mutex<u32>, // connections opened, so a case can tell them apart
+}
+
+impl RestSeededVenue {
+    fn new(url: &str, rest: &str, settings: FeedSettings) -> Self {
+        Self {
+            url: url.to_string(),
+            rest: rest.to_string(),
+            settings,
+            subscribed: Mutex::new(0),
+        }
+    }
+}
+
+impl BookVenue for RestSeededVenue {
+    type State = HashMap<usize, Vec<Delta>>; // deltas held until the market's snapshot
+
+    fn settings(&self) -> FeedSettings {
+        self.settings.clone()
+    }
+
+    fn plan(&self, markets: &[Market]) -> Vec<EndpointPlan> {
+        vec![EndpointPlan {
+            id: PLAN_ID.to_string(),
+            url: self.url.clone(),
+            markets: markets.to_vec(),
+        }]
+    }
+
+    fn subscribe_frames(&self, markets: &[Market], _held: &mut Self::State) -> Vec<Message> {
+        *self.subscribed.lock().unwrap() += 1;
+        one_frame_per_market(markets)
+    }
+
+    fn handle(&self, frame: &[u8], conn: &mut Connection<Self::State>) -> anyhow::Result<()> {
+        let delta: Delta = serde_json::from_slice(frame)?;
+        let Some(position) = conn.position(&delta.market) else {
+            return Ok(());
+        };
+
+        if let Some(book) = conn.book(position) {
+            book.set_bid(delta.price, delta.size);
+            conn.publish(position);
+            return Ok(());
+        }
+
+        conn.state.entry(position).or_default().push(delta);
+        conn.request_snapshot(position);
+        Ok(())
+    }
+
+    fn snapshot_url(&self, market: &Market) -> Option<String> {
+        assert!(market.raw_market_id != "PANIC", "the venue has no url for PANIC");
+        (market.raw_market_id != "NOREST").then(|| format!("{}/depth?symbol={}", self.rest, market.raw_market_id))
+    }
+
+    fn handle_snapshot(&self, position: usize, body: &[u8], conn: &mut Connection<Self::State>) -> anyhow::Result<()> {
+        let snapshot: RestBook = serde_json::from_slice(body)?;
+        match snapshot.seq {
+            PANIC_SEQ => panic!("the snapshot broke the venue"),
+            RESYNC_SEQ => {
+                conn.resync("AAA", "the snapshot is behind the deltas");
+                return Ok(());
+            }
+            _ => {}
+        }
+        conn.reset_book(position, &levels(&snapshot.bids), &levels(&snapshot.asks));
+
+        let held = conn.state.remove(&position).unwrap_or_default();
+        let Some(book) = conn.book(position) else {
+            return Ok(());
+        };
+        for delta in held {
+            if delta.seq > snapshot.seq {
+                book.set_bid(delta.price, delta.size);
+            }
+        }
+        conn.publish(position);
+        Ok(())
+    }
+}
+
+fn start_rest_seeded(
+    venue: RestSeededVenue,
+    raw_market_ids: &[&str],
+    tx: &Sender<EngineEvent>,
+    cancel: &CancellationToken,
+) -> (Arc<RestSeededVenue>, Vec<JoinHandle<()>>) {
+    let venue = Arc::new(venue);
+    let tasks = spawn_feed(venue.clone(), VENUE, VENUE_INDEX, &tracked(raw_market_ids), &http(), tx, cancel);
+    (venue, tasks)
+}
+
+async fn send_delta(socket: &mut Socket, market: &str, seq: u64, price: f64, size: f64) {
+    let text = serde_json::json!({ "market": market, "seq": seq, "price": price, "size": size }).to_string();
+    socket.send(Message::text(text)).await.unwrap();
+}
+
+fn depth_path(market: &str) -> String {
+    format!("/depth?symbol={market}")
+}
+
+fn rest_book(seq: u64, bids: &[(f64, f64)], asks: &[(f64, f64)]) -> serde_json::Value {
+    serde_json::json!({ "seq": seq, "bids": bids, "asks": asks })
+}
+
+// Polls the REST host until it has seen `count` requests, and returns when the last of them arrived.
+async fn wait_calls(rest: &MockRest, count: usize) -> Instant {
+    let deadline = Instant::now() + WAIT;
+    while rest.calls().len() < count {
+        assert!(Instant::now() < deadline, "the REST host saw {:?}, wanted {count} requests", rest.calls());
+        sleep(Duration::from_millis(2)).await;
+    }
+    Instant::now()
+}
+
+#[tokio::test]
+async fn a_rest_snapshot_seeds_the_book_and_the_held_deltas_newer_than_it_replay_on_top() {
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.reply_after(
+        &depth_path("AAA"),
+        rest_book(2, &[(100.0, 1.0)], &[(101.0, 1.0)]),
+        Duration::from_millis(300),
+    );
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let venue = RestSeededVenue::new(&url, &rest.url, quiet());
+    let (_venue, tasks) = start_rest_seeded(venue, &["AAA"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 1).await;
+
+    // The first two are covered by the snapshot's seq 2, and the third arrives while its fetch is in flight.
+    send_delta(&mut socket, "AAA", 1, 99.0, 5.0).await;
+    send_delta(&mut socket, "AAA", 2, 99.5, 1.0).await;
+    send_delta(&mut socket, "AAA", 3, 100.5, 2.0).await;
+    let before = now_ms();
+    let seeded = next_book(&mut rx).await;
+    let after = now_ms();
+
+    assert_eq!(seeded.slot.cluster, 10);
+    assert_eq!(seeded.bids.as_slice(), [level(100.5, 2.0), level(100.0, 1.0)]);
+    assert_eq!(seeded.asks.as_slice(), [level(101.0, 1.0)]);
+    assert!(before <= seeded.recv_ts && seeded.recv_ts <= after, "recv_ts {} is not the reply's arrival", seeded.recv_ts);
+
+    send_delta(&mut socket, "AAA", 4, 100.5, 0.0).await;
+    let lifted = next_book(&mut rx).await;
+    assert_eq!(lifted.bids.as_slice(), [level(100.0, 1.0)]);
+    assert_eq!(rest.calls(), [depth_path("AAA")]);
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_failed_snapshot_is_logged_and_queued_again() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.fail(&depth_path("AAA"), 500);
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        snapshot_gap: Duration::from_millis(300),
+        ..quiet()
+    };
+    let venue = RestSeededVenue::new(&url, &rest.url, settings);
+    let (_venue, tasks) = start_rest_seeded(venue, &["AAA"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 1).await;
+
+    // The retry waits two gaps after the failure, which leaves time to mend the route.
+    send_delta(&mut socket, "AAA", 1, 99.0, 1.0).await;
+    wait_calls(&rest, 1).await;
+    rest.reply(&depth_path("AAA"), rest_book(0, &[(100.0, 1.0)], &[(101.0, 1.0)]));
+    let seeded = next_book(&mut rx).await;
+
+    assert_eq!(seeded.bids.as_slice(), [level(100.0, 1.0), level(99.0, 1.0)]);
+    assert_eq!(rest.calls(), [depth_path("AAA"), depth_path("AAA")]);
+    let failures = logs.events("snapshot_failed");
+    assert_eq!(failures.len(), 1);
+    assert_eq!(failures[0].level, Level::WARN);
+    assert_eq!(failures[0].text("connection"), PLAN_ID);
+    assert_eq!(failures[0].text("market"), "AAA");
+    assert!(failures[0].text("error").starts_with("500 Internal Server Error"), "{}", failures[0].text("error"));
+    assert!(logs.events("feed_reconnecting").is_empty(), "a failed snapshot ended the connection");
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_snapshot_that_keeps_failing_backs_off_and_warns_once() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.fail(&depth_path("AAA"), 500);
+    let (tx, _rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        snapshot_gap: Duration::from_millis(50),
+        ..quiet()
+    };
+    let venue = RestSeededVenue::new(&url, &rest.url, settings);
+    let (_venue, tasks) = start_rest_seeded(venue, &["AAA"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 1).await;
+
+    send_delta(&mut socket, "AAA", 1, 99.0, 1.0).await;
+    sleep(Duration::from_millis(1_600)).await;
+
+    // A steady 50 ms gap would start about 32 fetches here, and the doubling pauses start them at 0, 100, 300, 700 and 1,500 ms.
+    let calls = rest.calls().len();
+    assert!((3..=6).contains(&calls), "{calls} fetches");
+    assert_eq!(logs.events("snapshot_failed").len(), 1);
+    assert_eq!(logs.events("snapshot_failed")[0].number("failures"), 1.0);
+
+    stop(&cancel, tasks).await;
+}
+
+#[test]
+fn snapshot_backoff_doubles_from_two_gaps_and_stops_at_the_cap() {
+    let gap = Duration::from_millis(200);
+
+    assert_eq!(snapshot_backoff(gap, 1), Duration::from_millis(400));
+    assert_eq!(snapshot_backoff(gap, 2), Duration::from_millis(800));
+    assert_eq!(snapshot_backoff(gap, 7), Duration::from_millis(25_600));
+    assert_eq!(snapshot_backoff(gap, 8), MAX_SNAPSHOT_BACKOFF);
+    assert_eq!(snapshot_backoff(gap, 1_000), MAX_SNAPSHOT_BACKOFF);
+}
+
+#[tokio::test]
+async fn a_market_asked_for_again_while_queued_or_in_flight_is_fetched_once() {
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.reply_after(&depth_path("AAA"), rest_book(0, &[(100.0, 1.0)], &[(101.0, 1.0)]), Duration::from_millis(200));
+    rest.reply(&depth_path("BBB"), rest_book(0, &[(50.0, 1.0)], &[(51.0, 1.0)]));
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        snapshot_gap: Duration::from_millis(300),
+        ..quiet()
+    };
+    let venue = RestSeededVenue::new(&url, &rest.url, settings);
+    let (_venue, tasks) = start_rest_seeded(venue, &["AAA", "BBB"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 2).await;
+
+    // AAA goes in flight at once, and BBB waits a gap behind it, so each is asked for again in both states.
+    send_delta(&mut socket, "AAA", 1, 99.0, 1.0).await;
+    send_delta(&mut socket, "BBB", 1, 49.0, 1.0).await;
+    send_delta(&mut socket, "AAA", 2, 99.0, 2.0).await;
+    send_delta(&mut socket, "BBB", 2, 49.0, 2.0).await;
+    let first = next_book(&mut rx).await;
+    let second = next_book(&mut rx).await;
+
+    assert_eq!((first.slot.cluster, second.slot.cluster), (10, 11));
+    assert_eq!(first.bids.as_slice(), [level(100.0, 1.0), level(99.0, 2.0)]);
+    assert_eq!(second.bids.as_slice(), [level(50.0, 1.0), level(49.0, 2.0)]);
+    sleep(Duration::from_millis(400)).await;
+    assert_eq!(rest.calls(), [depth_path("AAA"), depth_path("BBB")]);
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_reconnect_drops_the_queue_and_the_fetch_in_flight() {
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.reply_after(&depth_path("AAA"), rest_book(0, &[(100.0, 1.0)], &[(101.0, 1.0)]), Duration::from_millis(500));
+    rest.reply(&depth_path("BBB"), rest_book(0, &[(50.0, 1.0)], &[(51.0, 1.0)]));
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        snapshot_gap: Duration::from_millis(300),
+        ..quiet()
+    };
+    let venue = RestSeededVenue::new(&url, &rest.url, settings);
+    let (venue, tasks) = start_rest_seeded(venue, &["AAA", "BBB"], &tx, &cancel);
+    let mut first = accept(&listener).await;
+    read_texts(&mut first, 2).await;
+
+    send_delta(&mut first, "AAA", 1, 99.0, 1.0).await;
+    send_delta(&mut first, "BBB", 1, 49.0, 1.0).await;
+    wait_calls(&rest, 1).await;
+    first.close(None).await.unwrap();
+    expect_stale(&mut rx, &[10, 11]).await;
+    let mut second = accept(&listener).await;
+    read_texts(&mut second, 2).await;
+    assert_eq!(*venue.subscribed.lock().unwrap(), 2);
+
+    // AAA's reply lands at 500 ms and BBB was due at 300 ms, both after the reconnect.
+    if let Ok(Some(event)) = timeout(Duration::from_millis(1_000), rx.recv()).await {
+        panic!("a snapshot of the old connection reached the new one: {event:?}");
+    }
+    assert_eq!(rest.calls(), [depth_path("AAA")]);
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn snapshot_fetches_start_at_least_a_gap_apart() {
+    let gap = Duration::from_millis(400);
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.reply(&depth_path("AAA"), rest_book(0, &[(100.0, 1.0)], &[(101.0, 1.0)]));
+    rest.reply(&depth_path("BBB"), rest_book(0, &[(50.0, 1.0)], &[(51.0, 1.0)]));
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        snapshot_gap: gap,
+        ..quiet()
+    };
+    let venue = RestSeededVenue::new(&url, &rest.url, settings);
+    let (_venue, tasks) = start_rest_seeded(venue, &["NOREST", "AAA", "BBB"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 3).await;
+
+    // NOREST has no snapshot_url, so it leaves the queue without taking a gap.
+    let sent_at = Instant::now();
+    send_delta(&mut socket, "NOREST", 1, 9.0, 1.0).await;
+    send_delta(&mut socket, "AAA", 1, 99.0, 1.0).await;
+    send_delta(&mut socket, "BBB", 1, 49.0, 1.0).await;
+    let first_at = wait_calls(&rest, 1).await - sent_at;
+    let second_at = wait_calls(&rest, 2).await - sent_at;
+
+    // Both fetches start after the frames were sent, so only the upper bounds allow for a busy machine.
+    assert!(first_at < gap / 2, "the first fetch started after {first_at:?}");
+    assert!(second_at >= gap && second_at < gap + Duration::from_millis(250), "the second fetch started after {second_at:?}");
+    assert_eq!(next_book(&mut rx).await.slot.cluster, 11);
+    assert_eq!(next_book(&mut rx).await.slot.cluster, 12);
+    assert_eq!(rest.calls(), [depth_path("AAA"), depth_path("BBB")]);
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn the_headers_in_settings_reach_the_handshake() {
+    let (listener, url) = listen().await;
+    let (tx, _rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        headers: &[("User-Agent", "observatory-test/1.0")],
+        ..quiet()
+    };
+    let tasks = start(&url, settings, &["AAA"], &tx, &cancel);
+
+    let (stream, _) = timeout(WAIT, listener.accept()).await.expect("the feed did not connect").unwrap();
+    let agent = Arc::new(Mutex::new(None));
+    let seen = agent.clone();
+    let record = move |request: &ServerRequest, response: ServerResponse| {
+        *seen.lock().unwrap() = request.headers().get("user-agent").map(|value| value.to_str().unwrap().to_string());
+        Ok(response)
+    };
+    let mut socket = accept_hdr_async(stream, record).await.unwrap();
+    read_texts(&mut socket, 1).await;
+
+    assert_eq!(agent.lock().unwrap().as_deref(), Some("observatory-test/1.0"));
+
+    stop(&cancel, tasks).await;
+}
+
+#[test]
+fn request_snapshot_queues_a_market_once_and_begin_clears_the_queue() {
+    let mut conn: Connection<()> = Connection::for_test(PLAN_ID, vec![market("AAA"), market("BBB")]);
+    assert_eq!(conn.frame_recv_ts(), 1);
+
+    conn.request_snapshot(1);
+    conn.request_snapshot(0);
+    conn.request_snapshot(1);
+    conn.request_snapshot(7); // past the plan, so ignored
+    assert_eq!(conn.queued_snapshots(), [1, 0]);
+
+    conn.begin();
+    assert!(conn.queued_snapshots().is_empty());
+    conn.request_snapshot(1);
+    assert_eq!(conn.queued_snapshots(), [1]);
+}
+
+#[tokio::test]
+async fn a_rate_limited_snapshot_waits_its_retry_after_before_the_retry() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let rest = format!("http://{}", rest_listener.local_addr().unwrap());
+    let calls = Arc::new(Mutex::new(Vec::new()));
+    let seen = calls.clone();
+    let app = axum::Router::new().fallback(move || {
+        let seen = seen.clone();
+        async move {
+            let mut calls = seen.lock().unwrap();
+            calls.push(Instant::now());
+            if calls.len() == 1 {
+                return (axum::http::StatusCode::TOO_MANY_REQUESTS, [("retry-after", "1")], String::new());
+            }
+            (axum::http::StatusCode::OK, [("content-type", "application/json")], rest_book(0, &[(100.0, 1.0)], &[(101.0, 1.0)]).to_string())
+        }
+    });
+    tokio::spawn(async move { axum::serve(rest_listener, app).await.unwrap() });
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let (_venue, tasks) = start_rest_seeded(RestSeededVenue::new(&url, &rest, quiet()), &["AAA"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 1).await;
+
+    send_delta(&mut socket, "AAA", 1, 99.0, 1.0).await;
+    let seeded = next_book(&mut rx).await;
+
+    assert_eq!(seeded.bids.as_slice(), [level(100.0, 1.0), level(99.0, 1.0)]);
+    let calls = calls.lock().unwrap().clone();
+    assert_eq!(calls.len(), 2);
+    let waited = calls[1] - calls[0];
+    assert!(waited >= Duration::from_millis(950) && waited < Duration::from_millis(1_500), "the retry came after {waited:?}");
+    let failures = logs.events("snapshot_failed");
+    assert_eq!(failures.len(), 1);
+    assert!(failures[0].text("error").starts_with("429 Too Many Requests"), "{}", failures[0].text("error"));
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_panic_in_snapshot_url_ends_the_connection() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let (_venue, tasks) = start_rest_seeded(RestSeededVenue::new(&url, &rest.url, quiet()), &["PANIC"], &tx, &cancel);
+    let mut first = accept(&listener).await;
+    read_texts(&mut first, 1).await;
+
+    send_delta(&mut first, "PANIC", 1, 9.0, 1.0).await;
+    expect_stale(&mut rx, &[10]).await;
+    let mut second = accept(&listener).await;
+    read_texts(&mut second, 1).await;
+
+    let panics = logs.events("venue_panicked");
+    assert_eq!(panics.len(), 1);
+    assert_eq!(panics[0].text("call"), "snapshot_url");
+    assert!(rest.calls().is_empty());
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_panic_in_handle_snapshot_ends_the_connection() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.reply(&depth_path("AAA"), rest_book(PANIC_SEQ, &[(100.0, 1.0)], &[(101.0, 1.0)]));
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let (_venue, tasks) = start_rest_seeded(RestSeededVenue::new(&url, &rest.url, quiet()), &["AAA"], &tx, &cancel);
+    let mut first = accept(&listener).await;
+    read_texts(&mut first, 1).await;
+
+    send_delta(&mut first, "AAA", 1, 99.0, 1.0).await;
+    expect_stale(&mut rx, &[10]).await;
+    let mut second = accept(&listener).await;
+    read_texts(&mut second, 1).await;
+
+    let panics = logs.events("venue_panicked");
+    assert_eq!(panics.len(), 1);
+    assert_eq!(panics[0].text("call"), "handle_snapshot");
+    assert_eq!(panics[0].text("panic"), "the snapshot broke the venue");
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_resync_asked_by_handle_snapshot_ends_the_connection() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.reply(&depth_path("AAA"), rest_book(RESYNC_SEQ, &[(100.0, 1.0)], &[(101.0, 1.0)]));
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let (_venue, tasks) = start_rest_seeded(RestSeededVenue::new(&url, &rest.url, quiet()), &["AAA"], &tx, &cancel);
+    let mut first = accept(&listener).await;
+    read_texts(&mut first, 1).await;
+
+    send_delta(&mut first, "AAA", 1, 99.0, 1.0).await;
+    expect_stale(&mut rx, &[10]).await;
+    let mut second = accept(&listener).await;
+    read_texts(&mut second, 1).await;
+
+    assert_eq!(logs.events("book_resync").len(), 1);
+    assert!(logs.events("venue_panicked").is_empty());
+
+    stop(&cancel, tasks).await;
+}
+
+#[tokio::test]
+async fn a_hanging_snapshot_neither_stalls_frames_nor_blocks_a_cancel() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let rest = MockRest::start().await;
+    rest.hang(&depth_path("AAA"));
+    let (tx, _rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let (_venue, tasks) = start_rest_seeded(RestSeededVenue::new(&url, &rest.url, quiet()), &["AAA"], &tx, &cancel);
+    let mut socket = accept(&listener).await;
+    read_texts(&mut socket, 1).await;
+
+    send_delta(&mut socket, "AAA", 1, 99.0, 1.0).await;
+    wait_calls(&rest, 1).await;
+    socket.send(Message::text("not a delta")).await.unwrap();
+    let deadline = Instant::now() + WAIT;
+    while logs.events("frame_handle_failed").is_empty() {
+        assert!(Instant::now() < deadline, "a frame waited behind the fetch in flight");
+        sleep(Duration::from_millis(2)).await;
+    }
+
+    let cancelled_at = Instant::now();
+    stop(&cancel, tasks).await;
+    assert!(cancelled_at.elapsed() < Duration::from_millis(500), "the cancel took {:?}", cancelled_at.elapsed());
+}
+
+#[tokio::test]
+async fn a_header_the_handshake_cannot_carry_fails_the_connection_before_it_dials() {
+    let (logs, _guard) = capture();
+    let (listener, url) = listen().await;
+    let (tx, mut rx) = mpsc::channel(8);
+    let cancel = CancellationToken::new();
+    let settings = FeedSettings {
+        headers: &[("User-Agent", "two\nlines")],
+        ..quiet()
+    };
+    let tasks = start(&url, settings, &["AAA"], &tx, &cancel);
+
+    expect_stale(&mut rx, &[10]).await;
+    assert!(timeout(Duration::from_millis(200), listener.accept()).await.is_err(), "the feed dialled with a bad header");
+    let failures = logs.events("connection_failed");
+    assert_eq!(failures.len(), 1);
+    assert_eq!(failures[0].level, Level::ERROR);
+    assert_eq!(failures[0].text("connection"), PLAN_ID);
+
+    stop(&cancel, tasks).await;
 }

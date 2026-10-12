@@ -1939,6 +1939,7 @@ dependencies = [
  "axum",
  "chrono",
  "dotenvy",
+ "flate2",
  "futures-util",
  "opentelemetry-appender-tracing",
  "opentelemetry-otlp",

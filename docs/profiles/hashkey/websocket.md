@@ -90,6 +90,7 @@ At the 30 s mark of each book run the probe read the REST book and compared the 
 | 03:36 UTC | v1 and v2 `ETHUSDT-PERPETUAL` | 81 and 81 | 81 and 81 | 81 and 81 on both versions |
 
 Levels per frame ranged from 25 to 55 bids and 12 to 45 asks on `BTCUSDT-PERPETUAL`, and 55 to 87 bids and 39 to 91 asks on `ETHUSDT-PERPETUAL`, P1.
+On 2026-10-09 the v2 frames on `BTCUSDT-PERPETUAL` were deeper, at 83 to 87 bids and 39 to 60 asks, and `ETHUSDT-PERPETUAL` held 51 to 70 bids and 54 to 73 asks, still far under the cap.
 The documented cap of 200 levels was never reached, because the books are that shallow, so whether a deeper book is truncated at 200 is Not verified.
 A `limit` of 5 in `params` changed nothing on either version, 76 to 85 levels arrived, P2.
 
@@ -103,6 +104,7 @@ A `limit` of 5 in `params` changed nothing on either version, 76 to 85 levels ar
 | v2 `ETHUSDT-PERPETUAL` | 84, 208, 183 | 53 to 91 ms | 101 ms | 802 to 3,202 ms | 5,007 to 5,108 ms | 53 to 57 ms |
 
 Ranges span the three book runs at 03:16, 03:23 and 03:36 UTC, P1.
+On 2026-10-09 at 18:52 UTC `BTCUSDT-PERPETUAL` sent no v2 frame for 8.5 s, longer than any gap of 2026-09-23.
 v1 conflates to about 300 ms, although single gaps as short as 84 ms occurred.
 Its `sendTime` trailed `t` by a median of 133 to 159 ms, so a v1 book reaches this host about 130 to 160 ms later than the same book on v2.
 The pong round trip was 98 to 114 ms and the server clock sat within 5 ms of this host, so the arrival delay is mostly network.
@@ -268,7 +270,7 @@ A recommendation for a later design, not a decision.
 | markets per connection | all, which is 2 today | no cap is published, and nine topics ran on one socket without a refusal |
 | subscribe frames | one frame per market, `{"topic": "depth", "event": "sub", "params": {"symbol": "<rawMarketId>"}}` | v2 refuses a comma list |
 | keepalive | `{"ping": Date.now()}` every 10 s | v2 closes a socket after about 31 s without a client frame, even while it streams, and the documentation asks for 10 s |
-| `maxSilenceMs` | 25,000 | a quiet book sent nothing for up to 5.6 s, and the pong every 10 s counts as traffic, so 25 s is two missed pongs |
+| `maxSilenceMs` | 25,000 | a quiet book sent nothing for up to 5.6 s on 2026-09-23 and 8.5 s on 2026-10-09, and the pong every 10 s counts as traffic, so 25 s is two missed pongs |
 | routing | `data.s` is the `rawMarketId`, and `params.symbol` carries the same | the socket spells the id exactly as CCXT does |
 | every `depth` frame | `resetBook(contract, bids, asks)` | every frame is the whole book |
 | version check | keep the part of `v` before `_` per contract and drop a frame that is not newer | cheap, and never triggered in the probes |

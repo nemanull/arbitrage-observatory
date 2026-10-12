@@ -54,6 +54,7 @@ The documented status values are `working`, `suspended` and `clearing`, and `exp
 
 So each Changelly PRO perpetual is the HitBTC perpetual of the same id, one book and one matching engine.
 If HitBTC ever joins the engine, Changelly PRO adds no second book, and a cross between the two is a comparison of a book with itself.
+On 2026-10-09 the catalog held 349 symbols here against 1,220 on `api.hitbtc.com`, and FMFW.io, Mandala Exchange and Gleec BTC served the same HitBTC book too.
 The fee rows differ: `take_rate` is `"0.0005"` here and `"0.0007"` on HitBTC, P3.
 
 ### How CCXT 4.5.68 maps it
@@ -99,14 +100,20 @@ The fifth, the interval, is published nowhere, and it was 8 h on every row of 30
 | key | object key | `BTCUSDT_PERP` | none |
 | `index` | `index_price` | decimal string | `Number()` |
 | `mark` | `mark_price` | decimal string, never 0 on 19 rows | `Number()` |
-| `fundingRate` | `indicative_funding_rate` | decimal string, a fraction per 8 h: `"0.0001"` is 0.01 % | `Number()` |
+| `fundingRate` | `funding_rate`, corrected on 2026-10-09, see below | decimal string, a fraction per 8 h: `"0.0001"` is 0.01 % | `Number()` |
 | `fundingIntervalHours` | none | | the constant 8 |
 | `nextFundingAt` | `next_funding_time` | ISO string, `"2026-09-23T08:00:00.000Z"` | `Date.parse()` |
 
-`funding_rate` is the rate of the last settlement, not the next one.
+This profile first read `funding_rate` as the rate of the last settlement, not the next one, and the reading was corrected on 2026-10-09 below.
 The documentation says "Percent of the contract's mark value paid in the previous funding period" for `funding_rate`, and "Estimated percent of the contract's mark value to be paid after the end of the current funding period, calculated at the moment" for `indicative_funding_rate`, S1.
 The wire agrees: `funding_rate` equalled the latest settled history row on 19 of 19 perpetuals, P1.
 CCXT's `hitbtc` puts `funding_rate` in `fundingRate` and `indicative_funding_rate` in `nextFundingRate`, at `server/node_modules/ccxt/js/src/hitbtc.js` lines 3439 and 3442, so a CCXT reader would take the last settled rate for the next one.
+
+Checked on 2026-10-09, the adapter reads `funding_rate` as the rate charged at `next_funding_time`, as the HitBTC profile does, because this host serves HitBTC's own rows.
+On that day the mark equalled `index_price × (1 + funding_rate × time left / 8 h)` within half a tick on 18 of 18 working rows, and `indicative_funding_rate` failed on 3 of the 3 rows where the two rates differed.
+The newest funding history row on `api.hitbtc.com`, stamped 16:00 UTC, carried the live `funding_rate` and named 00:00 as its `next_funding_time`.
+The rate stays fixed for the whole interval, and HitBTC's funding article says the rate standing when the countdown reaches 0 is the one paid.
+So `indicative_funding_rate` is the running estimate for the settlement after the next one.
 
 The `timestamp` of every live row is the same and moves on a 3 s grid, so a reading is up to about 3 s old when it arrives, and a quiet contract's row can lag longer, section 4.
 
@@ -145,7 +152,7 @@ That is the same trap as a capped mark, since a standing basis of a thin book, a
 | floor | the 16 rows the formula misses are `-0.003` on `BCHUSDT_PERP` (15) and `-0.0029` on `MANAUSDT_PERP` (1), each where the formula gave a lower number, so a per contract floor exists and is not published | P1 |
 | cap | no row reached one, so it is Not verified | P1 |
 | interval | 8 h at 00:00, 08:00 and 16:00 UTC, 1,602 of 1,602 gaps | P1 |
-| published rate | `funding_rate` the last settled, `indicative_funding_rate` the next | section 3 |
+| published rate | `funding_rate` the rate charged at `next_funding_time`, `indicative_funding_rate` the estimate for the settlement after it, as corrected on 2026-10-09 | section 3 |
 
 ### Rate across a settlement
 
@@ -223,7 +230,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | URL | `https://api.pro.changelly.com/api/3/public/futures/info` | one call carries index, mark, both rates and next settlement for every perpetual |
 | interval | 1,000 ms, the default | median 142 to 144 ms and max 1,128 ms over 180 polls, 1 of the 30 a second budget, and the numbers move on a 3 s grid |
-| row mapping | section 3, `fundingRate` from `indicative_funding_rate`, `fundingIntervalHours` the constant 8 | `funding_rate` is the last settled rate, and no interval field exists |
+| row mapping | section 3, `fundingRate` from `funding_rate`, `fundingIntervalHours` the constant 8 | the mark prorates `funding_rate` to the next settlement, see section 3, and no interval field exists |
 | skip | rows whose catalog `status` is not `working` | `LUNAUSDT_PERP` still has a row, stamped 2022-05-13 |
 | rate limit pause | `rateLimitPauseMs` 1,000 | the window is 1 s and no `Retry-After` is documented |
 | mark caveat | treat the mark as index plus funding carry, not as a book price | section 4, a standing basis reads as fresh |

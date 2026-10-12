@@ -57,6 +57,12 @@ Every one of the 126 swap tickers has its row in the reply, so no visible contra
 No status value such as trading, delisting or settling exists.
 A hidden row is either delisted, as `CATI`, `CETUS`, `CFX` and `DEGEN` were on 2026-03-19 (S6 in [`fees.md`](./fees.md)), or scheduled, as `ZHIPU`, `HOOD` and `BRKB` are.
 
+Rechecked on 2026-10-09 at 19:47 UTC: the call still returned 200 rows, with 126 visible, 72 hidden and the 2 `TUSDT` simulation rows.
+`ZHIPU`, `HOOD` and `BRKB` went live with `showState` true, and their `showDate` now lies in the past.
+No visible row had a future `showDate`, so `showState` alone decides visibility.
+Every visible row's `indexId` was its `symbolId` without `-SWAP-`.
+The visible multipliers then ran from 0.0001 to 1,000.
+
 | count | value |
 |---|---:|
 | visible USDT-M perpetuals, `showState` true and `baseId` 1 | 124 |
@@ -126,6 +132,10 @@ Funding exists in bulk, and mark and index exist only per contract.
 `GET /uapi/contract/fund/rates` answered 404 with an HTML body, so the funding call exists only on the website host.
 The mark and index klines take `interval` and not the socket's `klineType`, and without it they answer 400 `{"code":-100012,"msg":"Parameter interval [String] missing!"}`, from `curl`.
 The website itself reads mark and index the same way, one contract at a time from the latest 1 m candle, in its bundled script.
+
+On 2026-10-09 the funding call's 200 rows held only two intervals, 4 h on 104 rows and 8 h on 96.
+Of the 126 visible rows, 66 were on 4 h and 60 on 8 h, and `AAPL-SWAP-USDT` had moved from 12 h to 8 h.
+`settleTime` and `nextSettleTime` were integers on every row.
 
 A REST poll of every visible contract needs 1 funding call and 248 kline calls per round.
 The documented budget for market data is 1,200 GET per 60 s (S3), so a full round takes at least 12.45 s.

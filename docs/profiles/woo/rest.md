@@ -54,6 +54,9 @@ Access from this host, which exits in Canada, a country WOO X does not serve:
 | spot USDT, `SPOT_*_USDT` | 88 | both |
 | spot USDC | 2 | both |
 
+On 2026-10-08 the call listed 309 rows, of which 222 were `PERP_*_USDT` perpetuals, all `TRADING` with `baseAssetMultiplier` 1, 148 at 4 h and 74 at 8 h.
+CCXT 4.5.68's `woo` loaded the same 222 active linear swaps in the same minute, with the same ids, bases, quotes and `contractSize` 1.
+
 CoinGecko listed 224 perpetual pairs the same day, see [`fees.md`](./fees.md) section 1.
 
 ### How CCXT 4.5.68 maps it
@@ -77,14 +80,23 @@ No contract is quoted per 10 or per 1000 units, since `baseAssetMultiplier` is 1
 Sub-cent tokens trade at their unit price, for example `PERP_DOGS_USDT` at an index of 0.00005112 and `PERP_HMSTR_USDT` at 0.000185, so a pair that another venue quotes per 1000 needs the cluster price scale of [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts).
 The three bases that start with a digit, `1INCH`, `2Z` and `0G`, map unchanged.
 
-`PERP_EWT_USDT` had an index of 114.44 to 114.8 in both runs, while the Energy Web Token that other venues list as EWT trades near one dollar, so it is some other asset and needs a `DENIED_PAIRS` line before any venue lists EWT beside it.
+`PERP_EWT_USDT` had an index of 114.44 to 114.8 in both runs, while the Energy Web Token that other venues list as EWT trades near one dollar.
 The help center's index component table, last updated 2025-03-04, has no row for `EWT`, `SNDK`, `GRAM` or `SOLV`, S5.
 `PERP_SNDK_USDT` had an index of 1883.81, which reads as an equity price.
+
+Checked on 2026-10-08, both are equity perpetuals that the reference venues list under the same ticker, so neither needs a deny line.
+`PERP_EWT_USDT` had an index of 113.68, and Binance's `EWTUSDT`, listed with `underlyingType` `EQUITY` and subtype `TradFi`, had an index of 113.68 and a mark of 113.82.
+`PERP_SNDK_USDT` had an index of 1627.34, against 1627.26 on Binance, 1627.33 on Bybit and 1628.15 on Gate.
+A venue that lists the Energy Web Token as `EWT` would meet these in one cluster, and the identity check of that venue catches it.
 
 Two perpetuals were `TRADING` with a broken anchor:
 
 - `PERP_SOLV_USDT` had `"indexPrice":null` at 04:05 UTC and on the first poll of both runs, with a mark of 0.00418 and no 24 h volume.
 - `PERP_EWT_USDT` had `nextFundingTime` 1790064000000, 2026-09-22 08:00 UTC, in the past, and an `estFundingRateTimestamp` frozen at 2026-09-22 02:17:59 UTC, while its index and mark kept moving.
+
+On 2026-10-08 local time, 03:18 UTC on 2026-10-09, `PERP_SOLV_USDT` still had a null index and EWT's funding was live again.
+Two other perpetuals had frozen estimators instead.
+`PERP_BNB_USDT` had a `nextFundingTime` 43 h in the past and an `estFundingRateTimestamp` 51 h old, and `PERP_SNDK_USDT` had them 19 h and 25 h old, while the index and mark of both kept moving.
 
 ## 3. Anchor
 
@@ -157,6 +169,7 @@ Every clamp and override the article lists:
 
 The liquidity rule decides this venue's reading.
 On every poll between 53 and 90 of 223 perpetuals had a mark exactly equal to the index, and 71 and 66 of 222 had a zero premium on the first poll of each run.
+On 2026-10-08 one poll had 62 of 222 marks equal to the index, and another poll that day had 65.
 A mark pinned to the index carries no premium, so the engine's fresh gate would read that leg as fresh whatever its book says, which is the capped mark failure of the design's section 4.
 Which book the liquidity rule measures, with or without RPI orders, is Not publicly specified.
 
@@ -214,6 +227,8 @@ The non-RPI book is what an API taker fills against, see [`fees.md`](./fees.md) 
 Its best BTC ask in both runs was a single `0.0002` BTC order, and its top 20 bid levels held about 454,000 USDT against 9.3 to 13.5 million with RPI.
 `maxLevel` 1 and 20 cut the ETH book to 1 and 20 bids, and 50, 100, 200, 500, 1000 or no `maxLevel` all returned the whole non-RPI book of 39 bids and 12 or 13 asks.
 The BTC REST book lagged the socket by up to 46.6 s, see [`websocket.md`](./websocket.md) section 4.
+On 2026-10-08 the BTC book held 63 bids and 34 asks, and a request with no `maxLevel`, or with 100 or 1000, returned it whole, while `maxLevel` 50 cut it to 50 bids.
+So a seed that wants the whole non-RPI book asks for more than 50 levels.
 
 ## 6. Rate limits and errors
 
@@ -250,7 +265,7 @@ A recommendation for a later design, not a decision.
 | URLs | `https://api.woox.io/v3/public/futures` and `https://api.woox.io/v3/public/fundingRate`, fetched in parallel each round | one call lacks the interval, section 3 |
 | interval | 1 s, the poller default at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 7 | 2 requests a second against 10 per endpoint, and replies took 117 to 216 ms |
 | row mapping | section 3, joined on `symbol` | |
-| skip | a row with `indexPrice` `null`, a row whose `nextFundingTime` is in the past, and a symbol missing from either reply | `PERP_SOLV_USDT` and `PERP_EWT_USDT`, section 2 |
+| skip | a row with `indexPrice` `null`, a row whose `nextFundingTime` is in the past, and a symbol missing from either reply | `PERP_SOLV_USDT` and `PERP_EWT_USDT`, and on 2026-10-08 `PERP_SOLV_USDT`, `PERP_BNB_USDT` and `PERP_SNDK_USDT`, section 2 |
 | `rateLimitPauseMs` | 1,000 | the limit window is one second and no `Retry-After` is documented, where the default is 60,000 at line 9 |
 | mark equal to index | log the count each summary, and treat such a leg as unjudged | 53 to 90 rows per poll, section 4 |
 

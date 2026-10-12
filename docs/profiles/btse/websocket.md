@@ -65,6 +65,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 
 The first frame for each topic is `"type": "snapshot"` with up to 50 bids and 50 asks and a `seqNum`.
 All 211 perpetuals sent exactly one snapshot each in all three batch runs, and no second snapshot followed within 45 s.
+On 2026-10-09 the 216 perpetuals the Rust loader keeps all booked within 90 s on three sockets of at most 100 topics, with no sequence gap and no crossed book.
 Subscribing again to a topic the socket already holds is acknowledged and sends a fresh snapshot, and the `seqNum` chain carries on across it.
 The documentation's reconnect advice relies on that: "the first message after re-subscribe is always a full `snapshot`", S1.
 The snapshot's `timestamp` was 56 to 101 ms before its arrival on nine topics of the second book run, and 628 ms on the quiet `1KCAT-PERP`.
@@ -174,6 +175,8 @@ So the L1 topic can stall where the book topic does not.
 | `{"op": "unsubscribe", "args": ["update:ETH-PERP-USDT_0"]}` | `{"event":"unsubscribe","channel":["update:ETH-PERP-USDT_0"]}` |
 
 A delisted perpetual was not available to probe, since all 211 were active.
+On 2026-10-09 the acknowledgement and every error frame also carried `"data":{"asks":null,"bids":null}`, which the captures below of 2026-09-23 do not show.
+The error frame for the topics of a subscribe arrived before that subscribe's acknowledgement.
 Because a grouping out of range is acknowledged and then stays silent, the feed has to notice a topic with no snapshot on its own.
 
 ## 5. Session
@@ -221,6 +224,16 @@ Best bid and ask.
 
 ```json
 {"topic":"snapshotL1:ETH-PERP","data":{"bids":[["2766.67","165900"]],"asks":[["2766.68","2366"]],"type":"snapshotL1","symbol":"ETH-PERP","timestamp":1790134133193}}
+```
+
+Acknowledgement and error on 2026-10-09, with the `data` field the earlier captures lack.
+
+```json
+{"channel":["update:1KPEPE-PERP_0","update:BTC-PERP_0"],"data":{"asks":null,"bids":null},"event":"subscribe"}
+```
+
+```json
+{"data":{"asks":null,"bids":null},"errors":[{"error":{"code":1002,"message":"Invalid request. Please check again your request and provide all information required."}}],"severity":"ERROR"}
 ```
 
 Keepalive, as plain text in both directions.

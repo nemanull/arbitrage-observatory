@@ -69,6 +69,9 @@ It arrived 0 to 2 ms after the `subscribed` ack on every channel of the book run
 BTC, ETH, DOGE and `ETHF0:BTCF0` got 25 bids and 25 asks, and ETH at `len` 100 got 100 and 100.
 Thin contracts get what exists: `XTZF0:USTF0` got 18 and 21, then 19 and 21, and `EUROPE50IXF0:USTF0` got 2 bids and 1 ask.
 No second snapshot came on any channel in 75 s, so a snapshot is sent only on subscribe.
+On 2026-10-09 the acks came about 1 s after the conf ack, and on one socket the first heartbeat of each of two channels, numbered 1 and 2 by `SEQ_ALL`, arrived before its `subscribed` ack.
+So a heartbeat can name a `chanId` that no ack has named yet.
+No snapshot or update came before its ack in that capture or in 9,750 frames on 25 channels over 20 s the same day.
 
 ### Update semantics
 

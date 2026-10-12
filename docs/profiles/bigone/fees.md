@@ -107,9 +107,9 @@ The futures columns are flat, so no level changes the perpetual taker.
 | cap | the absolute rate is capped at 75 % of initial margin minus maintenance margin, and it may not change by more than 75 % of the maintenance margin between intervals | S4 |
 | cap, BTCUSDT | 0.375 %, from `initialMargin` 0.01 and `maintenanceMargin` 0.005 in `symbols` | S4, P1 |
 | cap, TradFi | ±2.00 % on `TSLAUSDT`, ±0.50 % on `XAUUSDT` and `XAGUSDT` | S7 |
-| interval | 8 h by default. From 2026-09-04 02:00 UTC, 24 named USDT-M contracts settle every 4 h and `SKRUSDT` every 1 h | S4, S6 |
+| interval | 8 h by default. From 2026-09-04 02:00 UTC, 24 named USDT-M contracts settle every 4 h and `SKRUSDT` every 1 h. On 2026-10-09 the `instruments` call carried `fundingIntervalMinutes`, with 29 contracts at 4 h, see [`rest.md`](./rest.md) section 3 | S4, S6 |
 | schedule, documented | "every 8 hours at 02:00 UTC+00, 10:00 UTC+00, and 18:00 UTC+00" in an article edited 2021-10-17 | S4 |
-| schedule, on the wire | at 04:13 UTC on 2026-09-23 98 contracts read `nextFundingTime` 08:00 UTC and `SKRUSDT` read 05:00 UTC, so the 8 h grid is now 00:00, 08:00 and 16:00 UTC | P1 |
+| schedule, on the wire | at 04:13 UTC on 2026-09-23 98 contracts read `nextFundingTime` 08:00 UTC and `SKRUSDT` read 05:00 UTC, so the 8 h grid is now 00:00, 08:00 and 16:00 UTC. At 18:39 UTC on 2026-10-09 the 8 h contracts read 00:00 UTC, the 4 h ones 20:00 UTC and `SKRUSDT` 19:00 UTC, which fits that grid | P1 |
 | rates seen | from -0.138 % (`SQQQUSDT`) to +0.093 % (`BEUSDT`) at 04:17 UTC | P2 |
 
 The documented schedule and the wire disagree, and the wire is what a poller reads.

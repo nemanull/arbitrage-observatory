@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 04:20 to 04:37 UTC, from the development host near Seattle, whose traffic leaves through a Surfshark WireGuard tunnel that exits in Canada.
 
+**Rechecked:** 2026-10-09, against the live venue, and each corrected line names that date.
+
 This profile covers the public WebSocket of Globe for its one perpetual family, the linear USD perpetuals, with the book channel in detail.
 Globe has no CCXT class, so no CCXT Pro source exists to compare against, see [`fees.md`](./fees.md) section 8.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/globe/ws-probe.mjs) in two passes, and both readings are written where they differ.
@@ -165,6 +167,8 @@ A repeat still says the book was current at that tick.
 | text that is not JSON | `{"error":"invalid-syntax"}`, where the documentation names `invalid-json` | the socket stays open |
 
 A closed or delisted contract was not available to probe, since the catalog lists only `Active` and `Suspended` ones.
+On 2026-10-09 every error frame also carried a `data` object with null sides, as in `{"data":{"asks":null,"bids":null},"details":"NOPE-PERP","error":"invalid-instrument"}`.
+`invalid-request` and `invalid-syntax` had the same shape, and a feed must not read those null sides as a book.
 
 ## 5. Session
 
@@ -245,6 +249,12 @@ Errors.
 
 ```json
 {"error":"invalid-syntax"}
+```
+
+The same unknown instrument on 2026-10-09, with the `data` object every error frame now carries.
+
+```json
+{"data":{"asks":null,"bids":null},"details":"NOPE-PERP","error":"invalid-instrument"}
 ```
 
 ## 7. Private channels

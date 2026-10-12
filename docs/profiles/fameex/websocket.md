@@ -38,6 +38,9 @@ No refusal came back from this host, although the Terms exclude Canada, see [`fe
 
 No mark, index or funding channel is documented, and the ticker carries none of the three.
 So the anchor has to come from REST, see [`rest.md`](./rest.md) section 3.
+On 2026-10-09 the website's own socket `wss://wsfapi.fameex.com/ws` answered `{"event":"sub","params":{"channel":"index_tag_fund_price","cb_id":"1"}}` with every contract's `tagPrice`, `indexPrice`, `nextFundRate`, `currentFundRate`, `capitalFrequency` and `nextCapitalSettTime`.
+The rows are keyed by `contractId` and arrive in text frames about twice a second.
+The book socket ignores that channel, so an adapter that gives each market one socket reads the anchor over REST.
 The channel names use the contract without the `E-` hyphens and in lowercase, so `E-BTC-USDT` is `e_btcusdt`, and `E-1000PEPE-USDT` is `e_1000pepeusdt`.
 
 ## 3. The sixteen axes
@@ -141,6 +144,7 @@ Their size unit in coins is Not verified, so a feed should skip them.
 No frame of any of the 213 active contracts was one-sided in either batch, W3.
 The closed contract `E-HIFI-USDT` sends nothing on the socket, W2, while REST still returns a one level book for it, see [`rest.md`](./rest.md) section 5.
 What the socket sends for an empty side of an open contract is Not verified.
+On 2026-10-09 one push of `market_e_galausdt_depth_step0` in a 90 s run over 208 contracts came crossed, with a bid of 0.002254 at or above an ask of 0.002253, and the next push was not.
 
 ### Idle repeats
 

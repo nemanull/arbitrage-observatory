@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 (2026-09-23 UTC), from the development host near Seattle.
 
+**Rechecked:** 2026-10-08, against the live venue, and each corrected line names that date.
+
 This profile covers the trading fees of Phemex (CCXT id `phemex`) on its perpetual contracts.
 The researched product is the USDⓈ-M perpetual family, and USDT-M is the leg the engine would trade.
 The public API and the fee page answered this host, see [`rest.md`](./rest.md) section 1.
@@ -48,6 +50,7 @@ The per contract rate is behind authentication: `GET /api-data/futures/fee-rate?
 | spot | yes | 177 listed, 841 delisted | not researched here |
 
 The catalog lists 134 perpetuals, and CoinGecko's derivatives page shows 137 perpetual pairs for Phemex (Futures) on 2026-09-22.
+On 2026-10-08 the catalog listed 125 USDT-M perpetuals, 54 crypto, 69 TradFi and 2 pre-market, beside the same 10 USDC-M and 8 COIN-M contracts, so 143 perpetuals.
 
 ## 4. Perpetual tiers
 
@@ -91,6 +94,7 @@ S2 gives Star VIP as N/A in every column and the Pro levels only a lower volume 
 | other promotions | "These rates do not apply to a few select currencies during special promotion periods. Refer to fees on actual transaction records as final" | S1 |
 
 No active zero fee promotion on perpetuals was found on 2026-09-22.
+On 2026-10-08, 17 listed TradFi rows of `/public/products` carried `feeRateDiscountRate` 0.0 with `feeRateDiscountImpactScope` `NONAPI`, and every window had ended by March 2026, so the VIP 0 taker of 600 ppm stands.
 Which contracts a "select currencies" exception covers cannot be read without an API key, section 2.
 
 ## 6. Funding as a cost
@@ -100,7 +104,7 @@ Which contracts a "select currencies" exception covers cannot be read without an
 | formula | "Funding Rate (F) = Premium Index (P) + clamp (Interest Rate (I) – Premium Index (P), 0.05%, -0.05%)" | S5, updated Mar 26, 2025 |
 | premium index | "{[Max (0, Impact Bid Price – Price Index) – Max (0, Price Index – Impact Ask Price)]} / Price Index", sampled every minute and averaged over the interval | S5 |
 | interest rate | 0.01 % per 8 h by the formula, and `interestRate` read `0.0001` on 49 rows, all 8 h, `0.00005` on 17 rows, 16 of them 4 h, and `0` on 68 rows | S5, P1 |
-| interval | 8 h on 96 USDⓈ-M contracts and all 8 COIN-M, 4 h on 30 USDⓈ-M contracts | P1 |
+| interval | 8 h on 96 USDⓈ-M contracts and all 8 COIN-M, 4 h on 30 USDⓈ-M contracts, and on 2026-10-08 8 h on 101 and 4 h on 34 of the 135 listed USDⓈ-M contracts | P1 |
 | settlement instants | 00:00, 08:00 and 16:00 UTC for 8 h, and the 4 h history of `TSLAUSDT` shows 12:00, 16:00, 20:00 and 00:00 UTC | S5, P1 |
 | cap and floor | per contract in `fundingRateCap` and `fundingRateFloor`: ±2 % on 106 of 134 rows, ±3 % on 8, ±0.375 % on 3 (`BTCUSD`, `XAUUSDT`, `XAGUSDT`), ±0.02 % on 14 TradFi and pre-market rows, ±1 % on `BNBUSDT`, ±1.5 % on `NGUSDT`, ±0.01 % on `PAXGUSDT` | P1 |
 | who pays | "Positive rates mean longs pay shorts", and "You only pay/receive funding if holding a position at these timestamps" | S5 |

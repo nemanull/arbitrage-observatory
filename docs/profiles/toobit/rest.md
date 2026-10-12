@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the public REST API of Toobit (CCXT id `toobit`) that a catalog, an anchor poller and a book resync would use, for both perpetual families, USDT-M and USDC-M.
 Every probed number comes from [`rest-probe.mjs`](../../../scripts/probes/venues/toobit/rest-probe.mjs), run from `server/`.
 The `main` mode ran twice, at 21:34 and 21:59 UTC, and the two readings are written side by side where they differ.
@@ -48,12 +50,12 @@ These are one host on one date.
 
 | item | value on 2026-09-22 |
 |---|---|
-| `contracts` | 767: `marginToken` `USDT` on 757 and `USDC` on 10 |
-| `inverse` | false on 767 |
-| `status` | `TRADING` on 767. The documented contract states are `TRADING`, `ONLINE` "not tradable", `API_TRADE_FORBIDDEN`, `OPEN_FORBIDDEN` and `CLOSE_FORBIDDEN`, S1 |
+| `contracts` | 767: `marginToken` `USDT` on 757 and `USDC` on 10. On 2026-10-09, 775: 765 `USDT` and 10 `USDC`, each with `quoteAsset` equal to `marginToken` |
+| `inverse` | false on 767, and on 775 of 775 on 2026-10-09 |
+| `status` | `TRADING` on 767, and on 775 of 775 on 2026-10-09. The documented contract states are `TRADING`, `ONLINE` "not tradable", `API_TRADE_FORBIDDEN`, `OPEN_FORBIDDEN` and `CLOSE_FORBIDDEN`, S1 |
 | id shape | `<BASE>-SWAP-USDT` or `<BASE>-SWAP-USDC` on 767 of 767, and `symbolName` equal to `symbol` on all |
-| `contractMultiplier` | `1` on 391, `0.01` on 236, `0.1` on 105, `0.001` on 26, `0.0001` on 5, `10` and `100` on 2 each |
-| stock contracts | `isRwa` true and `rwaType` `STOCK` on 244 |
+| `contractMultiplier` | `1` on 391, `0.01` on 236, `0.1` on 105, `0.001` on 26, `0.0001` on 5, `10` and `100` on 2 each. On 2026-10-09, `1` on 388, `0.01` on 247, `0.1` on 105, `0.001` on 26, `0.0001` on 5, `10` and `100` on 2 each |
+| stock contracts | `isRwa` true and `rwaType` `STOCK` on 244, and on 254 on 2026-10-09 |
 | `closingStartTime`, `closingEndTime` | `"0"` on every contract |
 | `symbols` | 530 spot pairs, not detailed |
 
@@ -119,6 +121,10 @@ The mark reply still lists the retired `ID-SWAP-USDT`, `SONIC-SWAP-USDT` and `NE
 `TON-SWAP-USDT` is the case that needs a check: its index basket is Binance `GRAMUSDT` alone, section 4, Binance USD-M answered `GRAMUSDT` at 1.453 and an empty reply for `TONUSDT`, okx answered code `51001` for `TON-USDT-SWAP`, and bybit listed no linear `TONUSDT`, while Toobit's own last price was 1.452.
 So Toobit's `TON` tracks what Binance calls `GRAM`, and a `DENIED_PAIRS` line for `TON|USDT` is worth adding before Toobit joins, in case another venue lists a different token as `TON`.
 Whether any other Toobit ticker names a different token than the same ticker elsewhere was not surveyed.
+On 2026-10-09 the identity check compared 730 Toobit books with Binance, Bybit, OKX, Gate and MEXC.
+`ON-SWAP-USDT` is the ON token at 0.1154, while Bybit and OKX list ON as the ON Semiconductor stock near 80, so the adapter denies it.
+`HK50-SWAP-USDT` is the Hang Seng in US dollars, as Gate's `HK50_USDT` is, while MEXC quotes it in Hong Kong dollar points, about 7.84 times higher.
+`TON-SWAP-USDT` still tracked Binance's `GRAMUSDT` on that date, and its index of 1.4699 sat within 0.1 percent of MEXC's `TON_USDT` index.
 
 ## 3. Anchor
 
@@ -126,9 +132,9 @@ Whether any other Toobit ticker names a different token than the same ticker els
 
 | call | carries | reply | warm time over 60 polls, first run | rerun |
 |---|---|---|---|---|
-| `GET /quote/v1/index`, weight 1 | `index` and `edp`, each a map from index token to a decimal string | 779 index tokens, 38 KB | min 138, median 147, p90 187, max 222 ms | min 124, median 131, p90 207, max 400 ms |
-| `GET /quote/v1/markPrice`, "up to 5 requests per second" | an array of `{exchangeId, symbolId, price, time}` | 878 rows, 76 KB | min 152, median 163, p90 301, max 491 ms | min 289, median 306, p90 335, max 419 ms |
-| `GET /api/v1/futures/fundingRate`, weight 1 | an array of `{symbol, rate, period, nextFundingTime, interest, fundingRateCap, fundingRateFloor}` | 815 rows, 136 KB | min 146, median 171, p90 400, max 434 ms | min 166, median 185, p90 279, max 407 ms |
+| `GET /quote/v1/index`, weight 1 | `index` and `edp`, each a map from index token to a decimal string | 779 index tokens, 38 KB. 788 on 2026-10-09 | min 138, median 147, p90 187, max 222 ms | min 124, median 131, p90 207, max 400 ms |
+| `GET /quote/v1/markPrice`, "up to 5 requests per second" | an array of `{exchangeId, symbolId, price, time}` | 878 rows, 76 KB. 890 on 2026-10-09, 115 of them not in the catalog | min 152, median 163, p90 301, max 491 ms | min 289, median 306, p90 335, max 419 ms |
+| `GET /api/v1/futures/fundingRate`, weight 1 | an array of `{symbol, rate, period, nextFundingTime, interest, fundingRateCap, fundingRateFloor}` | 815 rows, 136 KB. 823 on 2026-10-09 | min 146, median 171, p90 400, max 434 ms | min 166, median 185, p90 279, max 407 ms |
 
 Three calls carry every `AnchorRow` column, and none took more than 1 s.
 The index reply is keyed by the index token and not by the contract, so the poller needs the catalog's `indexToken` to join it, and no two contracts shared an index token.
@@ -190,6 +196,11 @@ The crypto ones sit on Binance alone for 19, KuCoin alone for 11, Bitget alone f
 A single source basket makes Toobit's index that one venue's price, so a route between Toobit and that venue compares a Toobit book against the other venue's own quote, the shape [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) describes.
 The stock baskets name Bybit, Gate, MEXC and Binance in a field called `spotPair`, while those venues list stocks as perpetuals, so reading them as other venues' perpetuals is an inference that was not checked.
 The 264 single source contracts are the deny list input this survey offers.
+
+A reread of all 775 baskets on 2026-10-09 found 277 with one source: Binance alone on 189, Bitget on 33, Gate on 30, MEXC on 13, KuCoin on 11 and Bybit on 1.
+No basket named Toobit itself on that date either.
+The `HK50USDT` basket was Gate alone, and its index equalled Gate's `HK50_USDT` index of 3,100.51, which is the Hang Seng in US dollars.
+MEXC's `HK50_USDT` index read 24,299.49 at the same moment, the same index in Hong Kong dollar points.
 
 ### Mark
 
@@ -275,7 +286,7 @@ The recommended feed takes its snapshot from the socket and needs no REST book, 
 |---|---|---|
 | public limit | "3000 weight per 1 minute" as `REQUEST_WEIGHT`, and `rateLimits` in `exchangeInfo` "will be removed in future iterations", S2 | `rateLimits` read `REQUEST_WEIGHT` `MINUTE` 1, `limit` 3000, `burst` 3000 |
 | scope | per IP for public calls is implied by "the same IP", S5 | Not verified |
-| status on limit | "HTTP 429 with error code -1003 TOO_MANY_REQUESTS", and 403 "when the WAF Limit (Web Application Firewall) has been violated", S2 | no limit was reached |
+| status on limit | "HTTP 429 with error code -1003 TOO_MANY_REQUESTS", and 403 "when the WAF Limit (Web Application Firewall) has been violated", S2 | no limit was reached. On 2026-10-09 `GET /quote/v1/markPrice` answered HTTP 400 with `{"code":-100013,"msg":"Too many requests!"}` on a few polls at one request a second, 2 of 120 in one run, below its documented 5 requests a second |
 | reset | "retry only after the time indicated by the X-Api-Limit-Reset-Timestamp response header", S2 and S5 | Not verified |
 | usage headers | "Every REST response (v1 and v2) includes the following headers": `X-Api-Limit-Status`, `X-Api-Limit`, `X-Api-Limit-Reset-Timestamp`, S2 | absent on every public reply in both runs |
 | `Retry-After` | not documented | absent on every reply |

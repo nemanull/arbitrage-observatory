@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the public market WebSocket of Toobit (CCXT id `toobit`) for both perpetual families, USDT-M and USDC-M, with the book channel in detail.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/toobit/ws-probe.mjs), run twice, at 21:38 and 21:44 UTC, and the two runs are quoted side by side where they differ.
 Where the documentation and the wire disagree, both are written, and the wire is what a feed must handle.
@@ -53,7 +55,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | handshake and operation rate limits | Not publicly specified | no refusal with up to five sockets open at once and 12 subscribe frames in 5 s on one socket |
 | public market data authentication | none | none |
 | message parse and routing | `{symbol, symbolName, topic, params, data, f, sendTime}`, S1 | book topics route on `topic` and the top level `symbol`. `bookTicker` and `markPrice` updates carry no top level `symbol` and route on `data.s` and `data.symbolId` |
-| subscribe acknowledgement shape | not documented | none. The first data frame, with `"f": true`, is the only sign a subscription took. An error is `{"code": "...", "desc": "..."}` |
+| subscribe acknowledgement shape | not documented | none. The first data frame, with `"f": true`, is the only sign a subscription took. An error is `{"code": "...", "desc": "..."}`. On 2026-10-09 every error and every pong also carried `"data": null` |
 | symbol identifier format | `BTC-SWAP-USDT` | identical to CCXT `market.id` and to the REST `symbol` on 767 of 767 contracts, see [`rest.md`](./rest.md) section 2 |
 | number representation | strings, S1 | prices and sizes are strings on every book frame |
 | timestamp representation | `t` "Matching time" in ms, `sendTime` in ms | as documented, plus `v`, a version string such as `"1790113457252_0.000000000000000001"` whose first part is a millisecond time |

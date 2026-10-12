@@ -43,6 +43,7 @@ Nobody on this host may trade the product, since the operator excludes US person
 | paper trading perpetuals (`TEST…F0:TESTUSDTF0`, 14 listed) | not a fee schedule, test money | | [`rest.md`](./rest.md) section 2 |
 
 The zero fee schedule started on 17 December 2025 and names no end date.
+The fee page re-read on 2026-10-09 still says "Derivatives Trades Maker fees Zero Taker Fees Zero", and the catalog listed 76 USDt-settled perpetuals that day.
 The Help Center says "Starting December 17th, 2025, no (Maker or Taker) fees apply for: Spot and Margin trading, Derivatives trading, Securities trading, OTC trading", S4.
 The zero fee page answers "Are fees being lowered as part of a promotion?" with "No, the lowering of trading fees to zero will be an ongoing change and become the new standard for our platform", S2.
 
@@ -93,6 +94,7 @@ That table matches neither the current schedule nor any derivatives schedule fou
 | probed | the rate charged at a settlement equals the dead band formula applied to the last average spread of the period before it, on all three BTC settlements of 2026-09-22 and 2026-09-23 | [`rest.md`](./rest.md) section 4 |
 
 So the rate a position will pay at the next funding time is fixed eight hours ahead, when the previous period closes.
+On 2026-10-09 the status reply carried a cap on every row, 0.25 % on 90 of 92, so the three index contracts no longer lack one.
 The settlement instant itself was not captured, and the probe read it from the one minute status history.
 
 ## 7. Liquidation, settlement and delisting

@@ -157,6 +157,9 @@ The server `ts` of a `push.depth.full` frame was 87 to 707 ms older than its arr
 | `subscribe.depth.full` `BTC_USDT` twice | `success` twice | one stream, 8 frames in about 3 s |
 | `unsubscribe.depth.full` | no reply | the stream stops |
 
+On 2026-10-09 the same requests got the same replies: `NOPE_USDT` and limit 30 answered `response.error`, `LRC_USDT` was acknowledged and then silent, and the first pong was followed by a `clientId` frame.
+`push.depth.full` versions rose on every frame, and a 90 s run of the adapter over all 316 active contracts on three connections saw no version go back.
+
 Since an error names the symbol only in its text and an acknowledgement names none, a feed matches neither to a request.
 It has to notice a stream with no frame on its own, and a quiet book looks the same as a dead one.
 

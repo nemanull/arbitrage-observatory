@@ -85,11 +85,12 @@ Whether that 0.1 % overrides the 0.2 % spot rate is Not publicly specified.
 | cap and floor | Not publicly specified | not observable, since every rate is 0 | S2, S4 |
 | current rate | | `funding_rate` `"0"` or `"0.000000000000000000"` on every frame of all 13 contracts in two 45 s runs | P3 |
 | is funding charged | yes, "longs pay shorts" when positive | `funding_disabled` is true on all 13 contracts in the catalog | S2, P1 |
-| last settlement | | `last_funding_time` is 2026-09-08 between 08:00 and 15:00 UTC on 12 contracts and 2022-02-01 08:00 UTC on `SOL_USDT_PERPETUAL` | P3 |
+| last settlement | | `last_funding_time` was 2026-09-08 between 08:00 and 15:00 UTC on 12 contracts and 2022-02-01 08:00 UTC on `SOL_USDT_PERPETUAL`. On 2026-10-09 it read 2026-09-30 at 08:00, 12:00, 14:00 or 15:00 UTC on the 12, and still 2022-02-01 on SOL, while `funding_disabled` stayed true and every rate stayed 0 | P3 |
 | who pays whom | peer to peer between longs and shorts, "Tothemoon does not charge any fees on the Funding Rate amount" | | S2 |
 | who is charged | "You will only pay or receive the Funding amount if you hold a position at one of these times" | | S2 |
 
-So funding is switched off on every live contract, and it has not settled since 2026-09-08 on 12 of them.
+So funding is switched off on every live contract.
+On 2026-09-23 the 12 contracts had last settled on 2026-09-08, and on 2026-10-09 their `last_funding_time` had moved to 2026-09-30 although every published rate was still 0.
 With a zero rate the documented mark formula, Mark = Index × (1 + Funding Rate × Time to Funding / Funding Interval), collapses to Mark = Index, which is what every ticker frame shows, see [`rest.md`](./rest.md) section 4.
 No public funding history call exists, and the settlement instant itself was not captured.
 

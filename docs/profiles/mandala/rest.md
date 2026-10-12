@@ -25,6 +25,7 @@ All access results are from the Canadian VPN exit.
 
 - Call: `GET /api/3/public/symbol`, one object keyed by symbol code (S1).
 - Status values: `status` is `working` on all 426 symbols returned.
+  On 2026-10-09 the call returned 423 symbols, with the same 24 working perpetuals.
   S1 describes no other value in the fields read, so a suspended contract was not observed.
 - Active perpetuals: 24, all `type` `futures`, `contract_type` `perpetual`, `quote_currency` and `fee_currency` USDT, `expiry` null.
   They are ADA, AAVE, LINK, XLM, SAND, SOL, UNI, BTC, DOT, GMT, AVAX, MANA, LTC, APE, ATOM, BCH, ZEC, ETH, XRP, FIL, BNB, SHIB, TRUMP and TRX, each as `<BASE>USDT_PERP`.
@@ -53,7 +54,7 @@ One call returns every column for every perpetual.
 | key | object key, `BTCUSDT_PERP` | equals `market.id` |
 | `index` | `index_price` | string |
 | `mark` | `mark_price` | string |
-| `fundingRate` | `indicative_funding_rate` | the rate for the upcoming settlement, a fraction on the wire |
+| `fundingRate` | `funding_rate`, corrected on 2026-10-09 | the rate charged at `next_funding_time`, a fraction on the wire, see Funding below |
 | `fundingIntervalHours` | not in the reply, 8 | from the funding history, 8 h gaps |
 | `nextFundingAt` | `next_funding_time`, ISO 8601 | `2026-09-24T08:00:00.000Z` on all 24 |
 
@@ -74,7 +75,12 @@ One call returns every column for every perpetual.
   No clamp is published.
   On BTC the mark sat exactly 1.21 USDT, 14.4 ppm, above the index on ten consecutive readings at 06:50, and 1.15 USDT, 13.7 ppm, on ten more at 06:54, while `premium_index` read 0, so the fair basis looks like a slow term that does not follow the perp's own book.
 - Funding: `funding_rate` is the rate "paid in the previous funding period", and `indicative_funding_rate` is the estimate for the end of the current one (S1).
-  The upcoming rate is therefore `indicative_funding_rate`.
+  This profile first read the upcoming rate as `indicative_funding_rate`.
+  Checked on 2026-10-09, the adapter reads `funding_rate` as the rate charged at `next_funding_time`, as the HitBTC profile does, because this host serves HitBTC's own rows.
+  On that day the mark equalled `index_price × (1 + funding_rate × time left / 8 h)` within half a tick on 24 of 24 working rows, and `indicative_funding_rate` failed on 3 of the 3 rows where the two rates differed.
+  The newest funding history row on `api.hitbtc.com`, stamped 16:00 UTC, carried the live `funding_rate` and named 00:00 as its `next_funding_time`.
+  The rate stays fixed for the whole interval, and HitBTC's funding article says the rate standing when the countdown reaches 0 is the one paid.
+  So `indicative_funding_rate` is the running estimate for the settlement after the next one.
   The formula uses `premium_index`, `avg_premium_index` and `interest_rate` (0.0001 per period on every contract), and no cap or floor is published.
   MANA showed `funding_rate` 0.0001 and `indicative_funding_rate` -0.000264, so the two fields do diverge.
 - Republish cadence: mark and index change together on a 3 s grid.
@@ -118,7 +124,7 @@ The clock offset is below one second and was not measured more finely.
 - URL: `GET https://api.trade.mandala.exchange/api/3/public/futures/info`, one call per tick.
 - Interval: 1 s is allowed by the 30 per second public limit, and 3 s matches the venue's republish grid.
   Keep 1 s so that a fresh reading lands within a second of its publication.
-- Row mapping: `index_price` to `index`, `mark_price` to `mark`, `indicative_funding_rate` to `fundingRate`, 8 to `fundingIntervalHours`, `Date.parse(next_funding_time)` to `nextFundingAt`.
+- Row mapping: `index_price` to `index`, `mark_price` to `mark`, `funding_rate` to `fundingRate`, 8 to `fundingIntervalHours`, `Date.parse(next_funding_time)` to `nextFundingAt`.
 - Skip rows whose key is not a tracked `market.id` and rows with `contract_type` other than `perpetual`.
 - Flag: the index basket and the mark clamp are unpublished, so the self-index and capped-mark checks of the design cannot be done from documents.
 

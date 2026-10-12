@@ -55,6 +55,15 @@ At three instants in each `book` run the last TopicID 7 frame was read against t
 
 A quiet contract sent a ticker frame at least every 5.0 s: the longest silence was 5,001 to 5,004 ms on `SUSDT` and `TMFUSDT`, and 1,121 to 1,287 ms on BTC and ETH.
 
+On 2026-10-09 TopicID 7 was subscribed on all 359 USDT contracts on one socket for 70 s.
+Every contract pushed, and the longest silence after the first 10 s was 5,971 ms on `TBTUSDT`.
+178 contracts went over 5.0 s between two pushes, and 20 went over 5.5 s.
+Every push carried every field, `I`, `U`, `PF`, `E`, `O`, `H`, `L`, `V`, `T`, `N`, `M`, `D`, `V2`, `T2`, `F`, `C`, `BP1` and `AP1`, and not only the changed ones.
+The first push after a subscribe is the venue's cached last ticker, and it arrived a median of 823 ms and at most 5,268 ms after its `mt`.
+The first push also arrived before the acknowledgement of its subscribe.
+`E` equalled the current funding rate call and `PF` the funding cycle call's `nextSettleTime` on `BTCUSDT`, `ETHUSDT` and `NVDAUSDT`.
+An unknown id is refused with `{"a":"RecvTopicAction","m":"subscription cluster does not exist: NOPEUSDT",…}`.
+
 ## 3. The sixteen axes
 
 The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../research/2026-07-30-venue-ws-protocol-differences.md).
@@ -105,6 +114,9 @@ The first frame for each stream is `"t":"f"` with up to 60 levels per side, and 
 A second `f` frame also arrives mid-stream without being asked for: 22 to 155 of 348 streams got one within 45 s in the paced batch runs, and BTC got one 25 s in during the first `book` run.
 A repeated subscribe on the same socket forces one: `XRPUSDT` resubscribed at 7,506 ms was acknowledged at 7,678 ms and sent a new snapshot at 7,679 ms, and the delta rate did not double.
 So a feed resets on every `f`, not only the first.
+On 2026-10-09 a socket of 35 books subscribed each of them again at 20 s and at 40 s.
+Each round brought exactly one snapshot per stream, and the deltas over each 20 s stayed at 3,350, 3,368 and 3,403.
+No stream sent a mid-stream snapshot of its own in those 60 s.
 A thin book's snapshot holds fewer levels: the median snapshot over 348 contracts held 29 or 30 bids, and 0 to 3 contracts per batch run held fewer than 20 on a side.
 
 ### Delta semantics
@@ -287,7 +299,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | URL plan | one plan, the swap URL, for the 348 USDT contracts | both families share it, and the 5 inverse contracts duplicate USDT pairs, see [`rest.md`](./rest.md) section 2 |
 | channel | TopicID 25, FilterValue `DeepCoin_<wire id>_<market.info.tickSz>` | the only book channel, snapshot on subscribe, 60 levels |
-| markets per connection | 35, which is 10 sockets for 348 contracts | 35 contracts on one socket ran clean and 348 corrupted 8 to 26 books per 45 s. Ten sockets is the whole allowance of 10 connections per IP, so a reconnect must close before it opens, and a slice larger than 35 was not tested for loss |
+| markets per connection | 35, which is 10 sockets for 348 contracts. On 2026-10-09 the 359 contracts took 10 sockets of 35 or 36, each also carrying the TopicID 7 ticker of its contracts, and a 90 s run crossed no book | 35 contracts on one socket ran clean and 348 corrupted 8 to 26 books per 45 s. Ten sockets is the whole allowance of 10 connections per IP, so a reconnect must close before it opens, and a slice larger than 35 was not tested for loss |
 | subscribe frames | one frame per stream, paced at no more than 20 per 100 ms | a burst of 348 in 5 ms lost acknowledgements and then the whole socket |
 | keepalive | text `ping` every 10 s | the server closes a socket 20 s after the last ping, whatever data flows |
 | `maxSilenceMs` | 25,000 | every `pong` counts as traffic, and a quiet book went up to 39.0 s without a book frame |

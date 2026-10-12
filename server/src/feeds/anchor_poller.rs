@@ -2,6 +2,7 @@ use super::TrackedMarket;
 use crate::clock::now_ms;
 use crate::engine::cluster::AnchorReading;
 use crate::engine::engine::{EngineEvent, Slot, anchor_issue};
+use anyhow::Context;
 use reqwest::header::{ACCEPT, RETRY_AFTER};
 use serde::de::DeserializeOwned;
 use std::collections::{HashMap, HashSet};
@@ -12,6 +13,7 @@ use std::time::Duration;
 use tokio::sync::mpsc::Sender;
 use tokio::task::JoinHandle;
 use tokio::time::{Instant, MissedTickBehavior, interval};
+use tokio_tungstenite::tungstenite::Bytes;
 use tokio_util::sync::CancellationToken;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
@@ -69,8 +71,28 @@ pub trait AnchorVenue: Send + Sync + 'static {
 }
 
 pub async fn get_json<T: DeserializeOwned>(http: &reqwest::Client, url: &str) -> anyhow::Result<T> {
-    let response = http
-        .get(url)
+    let body = get_bytes(http, url).await?;
+    decode(&body, url)
+}
+
+pub async fn get_bytes(http: &reqwest::Client, url: &str) -> anyhow::Result<Bytes> {
+    let response = send(http.get(url), url).await?;
+    Ok(response.bytes().await?)
+}
+
+// The body goes out as JSON with content-type application/json, and the reply is read like get_json's.
+pub async fn post_json<T: DeserializeOwned>(
+    http: &reqwest::Client,
+    url: &str,
+    body: &serde_json::Value,
+) -> anyhow::Result<T> {
+    let response = send(http.post(url).json(body), url).await?;
+    decode(&response.bytes().await?, url)
+}
+
+// The one request path of every helper above, so each shares the timeout and the rate limit answer.
+async fn send(request: reqwest::RequestBuilder, url: &str) -> anyhow::Result<reqwest::Response> {
+    let response = request
         .timeout(REQUEST_TIMEOUT)
         .header(ACCEPT, "application/json")
         .send()
@@ -96,13 +118,26 @@ pub async fn get_json<T: DeserializeOwned>(http: &reqwest::Client, url: &str) ->
         anyhow::bail!("{status} from {url}");
     }
 
-    Ok(response.json().await?)
+    Ok(response)
 }
 
-// Retry-After is either whole seconds or an HTTP date.
+fn decode<T: DeserializeOwned>(body: &[u8], url: &str) -> anyhow::Result<T> {
+    serde_json::from_slice(body).with_context(|| format!("error decoding response body from {url}"))
+}
+
+// Retry-After is whole seconds, a Unix time in seconds or ms, or an HTTP date.
+// BTSE documents both the seconds and the Unix reading, and read as seconds a Unix time would pause for decades.
 fn retry_after(header: &str) -> Option<Duration> {
     if !header.is_empty() && header.bytes().all(|byte| byte.is_ascii_digit()) {
-        return header.parse().ok().map(Duration::from_secs);
+        let value: i64 = header.parse().ok()?;
+        let at_ms = if value > 1_000_000_000_000 {
+            value
+        } else if value > 1_000_000_000 {
+            value * 1_000
+        } else {
+            return Some(Duration::from_secs(value as u64));
+        };
+        return Some(Duration::from_millis((at_ms - now_ms()).max(0) as u64));
     }
 
     let at = chrono::DateTime::parse_from_rfc2822(header).ok()?;

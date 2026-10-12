@@ -55,6 +55,7 @@ So the Niza taker is at least 300 ppm, and 500 ppm is what Niza shows its users.
 | other Niza products | named only | the Niza ecosystem site at `https://nizaecosystem.com/` names a NIZA L1, a DEX and a REIT beside the Perp DEX, not researched |
 
 The shared perpetuals include RWA markets, `EURUSD`, `USDJPY`, `NAS100`, `SPX500`, `GOOGL`, `NVDA`, `TSLA`, `XAU`, `XAG`, `CL` and `BZ`, whose index freezes while the underlying market is closed, S4.
+On 2026-10-09 Orderly listed 73 shared markets, 38 on 8 h funding and 35 on 4 h, and `BZ` and `1000SHIB` were gone, see [`rest.md`](./rest.md) section 2.
 
 ## 4. Perpetual tiers
 

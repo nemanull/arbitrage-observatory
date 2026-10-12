@@ -43,11 +43,14 @@ It optionally filters on `symbol`, `contractType`, `underlyingType` and `underly
 | `apiMakerFeeRate`, `apiTakerFeeRate` | documented as "may not be returned", and absent on 995 of 995 |
 
 So the active perpetual count by settlement asset is USDT 995: 577 crypto and 418 TradFi.
+On 2026-10-09 the catalog held 1,036 rows: `PERPETUAL` 570 and `TRADIFI_PERPETUAL` 466, which were 396 `Stocks`, 40 `Indices`, 14 `Metals`, 8 `Forex`, 4 `Commodities` and 4 `Pre-IPO`.
+That day `apiMakerFeeRate` and `apiTakerFeeRate` were present on 26 rows, each with an API taker of 0.0008, and absent on the other 1,010.
 CoinGecko's derivatives list counted 1,048 perpetual pairs for "WEEX (Futures)" on 2026-09-22, S7, and the gap to 995 was not explained.
 `JP225USDT`, the Nikkei 225, is filed as `PERPETUAL` with `underlyingType` `COIN`, so `contractType` alone does not separate crypto from TradFi.
 
 Only part of the catalog accepts API orders.
 `GET /capi/v3/market/apiTradingSymbols`, weight 5, returned 290 names, of which 239 are catalog contracts, 174 crypto and 65 TradFi, and 51 are demo contracts ending in `SUSDT` such as `BTCSUSDT`.
+On 2026-10-09 it returned 297 names, of which 246 were catalog contracts.
 756 of 995 contracts are absent from it, among them `API3USDT`, `ENJUSDT`, `WAVESUSDT` and `SUSHIUSDT`, and an API order on one of them is refused with `-1058 NO_PERMISSION_TRADE_PAIR`, S11.
 
 ### How CCXT 4.5.68 maps it
@@ -67,6 +70,10 @@ Only part of the catalog accepts API orders.
 
 Because `active` is hard coded, a contract whose opening has been suspended ahead of a delisting still reads as active.
 A delisted contract leaves the catalog: `IKAUSDT`, delisted in June 2026, answered `-1142` on every REST call, S5.
+A listed contract can still be dead, though.
+On 2026-10-09, 11 catalog contracts had a REST book whose `bids` and `asks` were null with `lastUpdateId` 0, no `ticker/bookTicker` row, a `lastPrice` of 0 and no volume in 24 h: `GASTOWNUSDT`, `NEXUSDT`, `PITCHUSDT`, `NIOUSDT`, `CJSUSDT`, `SINOCERAUSDT`, `TUNGSTENUSDT`, `LUXSHAREUSDT`, `CCTCUSDT`, `JP225USDT` and `牛来USDT`.
+`GET /capi/v3/market/trades` answered them, and other listed contracts such as `PIUSDT` and `USDCUSDT`, with `-1142` "Parameter 'symbol' is invalid.", while it served `BTCUSDT`.
+No field of their catalog rows tells them apart from a live contract.
 
 ### Size unit, pairs listed twice, and price scale
 
@@ -116,6 +123,7 @@ The 4 hourly contracts and the 494 on four hours settle at 04:00, and the 497 on
 `DALUSDT` read `28800000`, which is 1970-01-01 08:00 UTC, and its funding history was empty, so a poller has to drop a `nextFundingTime` in the past.
 `collectCycle` equals 1,440 divided by the number of `delivery` times in the catalog on 995 of 995 contracts.
 By type, crypto perpetuals are 126 on 8 h, 447 on 4 h and 4 on 1 h, and TradFi perpetuals are 371 on 8 h and 47 on 4 h.
+On 2026-10-09 `collectCycle` read 480 on 546 contracts, 240 on 487 and 60 on 3, and no `nextFundingTime` was in the past.
 
 The funding rate is a fraction per interval.
 `lastFundingRate` equalled the newest settled row of the funding history on `ETHUSDT` (8 h), `GASTOWNUSDT` (1 h) and `SCRUSDT` (4 h), in three runs out of three, for example `0.00009373` settled at 00:00 UTC on `ETHUSDT`.
@@ -149,6 +157,10 @@ The index moved on 16 and 19 of 19 two second ticker intervals for BTC, and 109 
 On TradFi contracts the index stood still in these reads, which were taken while the US stock market was closed.
 `AAPLUSDT` read index `294.645`, `METAUSDT` `603.78` and `MSTRUSDT` `191.465` both at 03:27 and at 03:45, with 0 changes in the 19 intervals of the second ticker run, while their marks traded at `340.85`, `743.79` and `170.54`.
 In the second ticker run, 91 of 418 TradFi indexes and 18 of 577 crypto indexes did not move in 38 s.
+Some of these indexes have stopped for good rather than for the closed hours.
+On 2026-10-09 at 18:57 UTC, during US trading hours, `AAPLUSDT`, `METAUSDT` and `MSTRUSDT` still read `294.645`, `603.78` and `191.465`, while their marks traded at `337.81`, `719.74` and `154.42`.
+Other stock indexes such as `MSFTUSDT` and `AMZNUSDT` followed the live share price that day.
+The four `Pre-IPO` contracts, `ANTHROPICUSDT`, `OPENAIUSDT`, `OURAUSDT` and `YMTCUSDT`, had indexes that moved with trading and sat within 0.01 % of binance's index for the same contracts on 2026-10-09, so their basket is not WEEX's own perpetual alone.
 
 ### Mark
 
@@ -209,6 +221,7 @@ Whether `forecastFundingRate` resets after the hour, and how long `lastFundingRa
 | symbol case | `btcusdt` was accepted and answered the BTC book |
 
 `GET /capi/v3/market/ticker/bookTicker` without a symbol, weight 1, returned 984 rows, 11 fewer than the catalog.
+On 2026-10-09 it returned 1,025 of 1,036, and the 11 missing were the dead contracts of section 2.
 
 ## 6. Rate limits and errors
 
@@ -240,7 +253,7 @@ A recommendation for a later design, not a decision.
 | row mapping | section 3, keyed by `symbol` | |
 | reading time | stamp on arrival and never read `premiumIndex` `time` | `time` is the reply's clock, not the price's |
 | do not read | `premiumIndex` `markPrice` and `indexPrice`, and CCXT's `fetchFundingRates` `fundingRate` | a minute old, and the settled rate |
-| skip | `TRADIFI_PERPETUAL` rows, and `JP225USDT` | the index freezes while the mark follows the last trade, section 4 |
+| skip | `TRADIFI_PERPETUAL` rows, and `JP225USDT` | the index freezes while the mark follows the last trade, section 4. The Rust adapter checked on 2026-10-09 keeps these rows under decision 4 of the venue adapter waves design and leaves out any row whose index has not moved for 10 minutes while its mark has |
 | skip | rows whose `nextFundingTime` is in the past | `DALUSDT` read 1970 |
 | rate limit pause | `rateLimitPauseMs` 10,000 | the window is 10 s, the ban is 10 s, and no `Retry-After` was seen |
 | alternative | the socket ticker, `<SYMBOL>@ticker`, pushes `m` and `i` about once a second or faster | it would take 995 more streams, which at 100 per connection doubles the socket count toward the 20 an IP may hold |

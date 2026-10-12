@@ -96,7 +96,7 @@ So the perpetual taker is 0.06 % for every account this research could see.
 | formula | "Funding Rate = clamp ([premium index + clamp (base rate - premium index, 0.05%, -0.05%)], -0.75%, 0.75%)" | S3 |
 | premium index and base rate | not defined on the page, Not publicly specified | S3 |
 | cap and floor | ±0.75 % per interval | S3 |
-| interval | per contract: 8 h on 194, 4 h on 379 and 1 h on 5 of the 578 live contracts | P1 and P2, from `endTime` minus `startTime` in `get_all_capital_rate` |
+| interval | per contract: 8 h on 194, 4 h on 379 and 1 h on 5 of the 578 live contracts. On 2026-10-09 it was 8 h on 195, 4 h on 382 and 1 h on 2 of the 579 | P1 and P2, from `endTime` minus `startTime` in `get_all_capital_rate` |
 | documented interval | "Funding payments are transferred between traders and are charged every eight hours", in article 390 | S8 |
 | interval changes | announced per contract, for example `USELESSUSDT` and `AINUSDT` moved from 8 h to 4 h on 2025-07-11, and the same notice reserves the right to change "the interest rate, premium and capped funding rate" without notice | S10 |
 | settlement times | on the hour. `BTC-USDT-PERPETUAL` settled at 16:00, 00:00 and 08:00 UTC, the 4 h `API3-USDT-PERPETUAL` every 4 h ending 00:00 UTC, and the 1 h `IOST-USDT-PERPETUAL` every hour | P3 |

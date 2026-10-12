@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22, from the development host near Seattle.
 
+**Rechecked:** 2026-10-08, against the live venue, and each corrected line names that date.
+
 This profile covers the public REST API v4 of WhiteBIT (CCXT id `whitebit`) that a catalog, an anchor poller and a book resync would use, for every perpetual family.
 Every probed number comes from [`rest-probe.mjs`](../../../scripts/probes/venues/whitebit/rest-probe.mjs), run from `server/`.
 Where the documentation and the wire disagree, both are written, and the wire is what a poller must handle.
@@ -51,6 +53,8 @@ The docs call both reference data, "re-synced from the database approximately ev
 
 The 397 `ticker_id` values equal the 397 perpetual `name` values of `/markets`, with none missing either way, in all four runs.
 `delistedAt` was set on `STG_PERP` for 2026-09-23 09:30 UTC, and on no other perpetual.
+Checked on 2026-10-08, `/markets` held 1,194 rows, with 302 `futures` and 93 `tradfiFutures`, and `/futures` held the same 395 perpetuals.
+`STG_PERP` had left both replies after its delisting, and no perpetual carried a `delistedAt`.
 The docs say an announced delisting stays tradeable until it runs, and then the market leaves the reply, S4.
 
 ### How CCXT 4.5.68 maps it
@@ -138,7 +142,7 @@ The premium index socket channel pushes the same mark, index, rate and next sett
 | `index` | `index_price` | decimal string, documented as `"0"` when neither the index nor any trade exists | `Number()`, and skip a 0 |
 | `mark` | `mark_price` | decimal string, documented as `""` "while no fresh snapshot is available for the market" | `Number()`, and skip an empty string, which `Number()` turns into 0 |
 | `fundingRate` | `funding_rate` | decimal string, a fraction per interval, `"0.00006502"` is 0.006502 % | `Number()` |
-| `fundingIntervalHours` | `funding_interval_minutes` | integer minutes, 240 or 480 | divide by 60 |
+| `fundingIntervalHours` | `funding_interval_minutes` | integer minutes, 240 or 480, and 60 on `ARK_PERP` on 2026-10-08 | divide by 60 |
 | `nextFundingAt` | `next_funding_rate_timestamp` | decimal string of Unix milliseconds, `"1790121600000"` is 2026-09-23 00:00 UTC | `Number()` |
 
 No `mark_price` was empty and no `index_price` was `"0"` on the 397 rows of any read, or on any of the 60 polls, in four runs.
@@ -196,6 +200,12 @@ The mark, the index and the funding rate move in steps about 5 s apart, and the 
 | REST `/futures`, one poll a second from 21:48:02 UTC | 02.6, 07.1, 12.1, 17.2, 22.1, 27.1, 31.3, 38.2, 41.1, 46.1, 56.1 |
 | REST `/futures`, one poll a second from 22:03:38 UTC | 38.8, 41.3, 46.3, 51.7, 53.7, 54.7, 57.4, then 02.7, 08.3, 09.7, 15.7, 21.7, 26.8, 32.7, 36.7 |
 
+On 2026-10-08 the step back was a whole reply, never a single row.
+In 60 one second polls, the reply at poll 34 carried every index and mark of the generation before the latest one.
+In 45 one second polls later that day, the reply went back to the previous generation twice in a row and then forward again.
+Each genuine new generation changed 120 to 240 of the 395 rows at once.
+In the same 60 polls, 427 of 4,478 row changes inside a genuinely new generation went back to that row's values of two generations before.
+So a filter that drops a row equal to the poll before the previous one drops real changes, and the reply as a whole has to be compared instead.
 In the third REST run the reply at 22:03:54.7 carried exactly the mark and index of 22:03:51.7, and the one at 22:03:57.4 went back to those of 22:03:53.7, on `BTC_PERP` and `ETH_PERP` alike.
 The fourth run, from 22:09:14 UTC, saw 12 changes 4 to 7 s apart and no reversal.
 So consecutive polls can be served from snapshots of different ages, which the 1 s shared cache of S2 makes plausible, and the engine then sees a move and its reversal that never happened.
@@ -286,7 +296,7 @@ A recommendation for a later design, not a decision.
 |---|---|---|
 | URL | `https://whitebit.com/api/v4/public/futures` | one call carries all five `AnchorRow` fields for all 397 perpetuals |
 | interval | 1,000 ms, the default | the values step about every 5 s, so a 1 s poll mostly repeats, and it keeps the arrival stamp within 1 s of each step |
-| stale replies | drop a row whose values equal those of the poll before the previous one while the previous differed, or read `premiumIndex` instead | the REST reply stepped back to an older snapshot twice in one minute |
+| stale replies | drop a whole reply whose index and mark columns equal those of a generation already superseded, or read `premiumIndex` instead | the REST reply stepped back to an older snapshot twice in one minute, and on 2026-10-08 a per row filter would have dropped real changes, see section 4 |
 | row mapping | section 3, key `ticker_id` | |
 | skip | rows whose `mark_price` is `""` or whose `index_price` is `"0"` | documented placeholders, and an empty mark reads as 0 |
 | skip | TradFi perpetuals, which CCXT already loads as spot | their index is mostly their own last trade and their mark is that index |

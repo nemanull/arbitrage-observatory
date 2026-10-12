@@ -46,6 +46,9 @@ A futures row looks like this.
 ```
 
 The active perpetual count by settlement asset is 50 in USDT and 0 in any other asset.
+On 2026-10-09 the call returned 1,220 rows, with the same 50 working, 4 suspended and 1 expired perpetuals.
+On 2026-10-09 the four other HitBTC API v3 hosts, FMFW.io, Changelly PRO, Mandala Exchange and Gleec BTC, served this exact book.
+The `ETHUSDT_PERP` REST book at depth 3 was identical on all five hosts, with the same levels, sizes and `timestamp` to the millisecond.
 
 ### How CCXT 4.5.68 maps it
 
@@ -116,6 +119,8 @@ So the HIT index is HitBTC's own spot last trade, which is a self-venue index on
 `CELUSDT_PERP`'s row `timestamp` reached 59.3 s of age in both runs, so that row is refreshed about once a minute rather than every 3 s.
 Its index read `0.0060` in every read taken, HitBTC spot `CELUSDT` last read `0.002115`, and its perpetual book was empty.
 `GMTUSDT_PERP` and `MANAUSDT_PERP` also reached a `timestamp` age of 8.3 and 9.8 s in the second run.
+On 2026-10-09 `HITUSDT_PERP`'s index read 0.2306, equal to the spot `HITUSDT` last of 0.2306 with a 24 h volume of 0.
+On the same day `CELUSDT_PERP`'s book was still empty, and its index read 0.0059 against a spot `CELUSDT` last of 0.004901 with a 24 h volume of 0.
 
 ### Mark
 

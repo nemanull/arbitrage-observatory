@@ -11,7 +11,8 @@ CCXT 4.5.68 has no Pro class for BigONE, so there is no CCXT socket code to comp
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/bigone/ws-probe.mjs), and the capture is quoted beside the documented value.
 Where the documentation and the wire disagree, both are written, and the wire is what a feed must handle.
 The contract socket subscribes by URL, one channel and one symbol per connection, and the documentation publishes a limit of 5 WebSocket connections per user.
-No probe held more than four sockets at once, so whether the venue accepts one socket per perpetual is not known, see section 5.
+No survey probe held more than four sockets at once.
+On 2026-10-09 the adapter's live smoke held 97 depth sockets from one anonymous IP for 90 s, and no handshake was refused and no socket closed, see section 5.
 
 ## 1. Endpoints
 
@@ -52,7 +53,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | endpoint split axis | one URL per channel and symbol, S1 and S2 | one depth stream per socket, for either family |
 | subscribe frame shape | none, the URL is the subscription, S1 | a JSON subscribe frame `{"op":"subscribe","args":[{"topic":"depth","symbol":"BTCUSDT"}]}` got `{"pong":null}` and added no stream |
 | unknown symbol expectation | "HTTP 400 Bad Request: Invalid parameters in the URL.", S1 | 400 with an empty body for `NOPEUSDT`, lowercase `btcusdt` and the disabled `EOSUSDT`. 204 for `depth` without a symbol and for an unknown channel `nope@BTCUSDT` |
-| chunk unit and budget | one stream per connection, and "WebSocket Connections: 5 connections per user", S3 | four depth sockets open at once were all served. More was not tried |
+| chunk unit and budget | one stream per connection, and "WebSocket Connections: 5 connections per user", S3 | four depth sockets open at once were all served. On 2026-10-09, 97 at once were all served for 90 s |
 | keepalive mechanism | Not publicly specified | no server ping on any socket, the longest held 120 s. A protocol ping was answered in 98 to 190 ms. A JSON text frame `{"ping":1}` was answered `{"pong":1}`, and non-JSON text was ignored |
 | connection lifetime and maintenance notice | "If a connection is dropping or invalid after the handshake, the server will simply close the connection.", S1 | no close in 120 s on a silent client or a pinging one, and no notice channel exists |
 | handshake and operation rate limits | the 5 connection figure above, S3 | contract v2 sockets opened in 172 to 581 ms, and no handshake for a valid symbol was refused |
@@ -183,10 +184,11 @@ The engine reopens a closed plan with exponential backoff and no attempt limit, 
 | maintenance notice | none | none |
 | compression | Not publicly specified | text JSON frames only. A client that offered permessage-deflate got no `sec-websocket-extensions` header back |
 | handshake | HTTP 101, or 400, 401 and 500 on failure, S1 | 172 to 581 ms to open, `server: envoy` |
-| connection limit | "5 connections per user", S3 | four at once served. Whether an anonymous IP may open about 97, one per linear perpetual, is Not verified |
+| connection limit | "5 connections per user", S3 | four at once served. On 2026-10-09 one anonymous IP opened 97, one per linear perpetual, 100 ms apart, and all 97 stayed open and booked for 90 s. Whether the venue tolerates that for hours is Not verified |
 | throughput | | 1.3 to 1.8 frames and 248 to 372 bytes per second on `BTCUSDT`, and a median `JSON.parse` of 18 to 47 µs per frame across the four streams |
 
 The connection limit is the question this profile could not settle within the survey's rule of staying inside published limits.
+The adapter's live smoke of 2026-10-09 answered it for a short run: 97 sockets delivered 1,573 book updates in 90 s with no refusal and no close.
 The figure sits on the general information page next to the REST limit of 500 requests per 10 s per IP, and it says "per user", while the public sockets carry no user.
 
 ## 6. Captured frames

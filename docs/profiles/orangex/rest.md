@@ -28,6 +28,7 @@ Those calls are marked undocumented, and they were found in the website's own bu
 ### The instruments call
 
 `GET /api/v1/public/get_instruments?currency=PERPETUAL` returned 578 rows in 403,563 bytes, in 193 and 256 ms in two runs.
+On 2026-10-09 it returned 579 rows, all `is_active` and all past their `creation_timestamp`.
 
 | field | value on the wire |
 |---|---|
@@ -91,6 +92,9 @@ They need a price scale to match other venues, at [`../../../server/src/engine/c
 Four contracts have Chinese character names, such as `币安人生-USDT-PERPETUAL`, and they work on the socket like any other.
 No coin is listed twice, so `marketFilter` is not needed.
 `BB`, `QNT` and `ON` are listed, and all three are already in `DENIED_PAIRS` at the same file, lines 8 to 10.
+On 2026-10-09 OrangeX's `ON` was the ON token at 0.116, while bybit and okx listed the ON Semiconductor stock as ON.
+Its `CAT` was Simon's Cat at 0.000002, while binance and gate listed the Caterpillar stock at about 804 as CAT.
+Its `QNT` was the Quant token at about 243 and its `BB` was BounceBit at 0.009, as on binance, bybit, gate and MEXC.
 At least 41 contracts are equities, ETFs, commodities or pre-IPO names with no flag, found by a name list in the probe, see [`fees.md`](./fees.md) section 3.
 
 ## 3. Anchor
@@ -220,7 +224,7 @@ The same call also works as a JSON-RPC POST body, `{"jsonrpc":"2.0","id":1,"meth
 |---|---|
 | REST limit | Not publicly specified. S1 publishes no request limit for REST |
 | socket limit | at most 5 new sockets a minute and fewer than 10 at once, with "IP and account bans" as the stated penalty, S1 |
-| limit reached | never, at up to 3 requests a second |
+| limit reached | never, at up to 3 requests a second on 2026-09-23, and 60 order book reads at 20 a second drew no refusal on 2026-10-09 |
 | `Retry-After` | never seen. The headers are `alt-svc`, `content-encoding`, `content-type`, `date`, `transfer-encoding`, `vary` and `via` |
 | error transport | HTTP 200 with a JSON-RPC `error` object |
 

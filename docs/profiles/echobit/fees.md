@@ -88,6 +88,8 @@ None of these changes the retail VIP 0 taker the engine models.
 | who is charged | "Funding fees are exchanged directly between traders who hold positions at the funding timestamp.", S1 | |
 | settlement instants | shown on the trading page only, S1 | read at 06:33 UTC: the 66 rows on 4 h last settled at 04:00 and next at 08:00 UTC. The 8 h rows run on two phases, `BTC`, `ETH`, `XRP`, `SOL` and `PI` last at 04:00 and next at 12:00 UTC, the other 52 last at 00:00 and next at 08:00 UTC. `AAPL` last at 20:00 and next at 08:00 UTC |
 
+On 2026-10-09 the 126 visible rows read 66 on 4 h and 60 on 8 h, and `AAPL-SWAP-USDT` had moved from 12 h to 8 h.
+No row of the 200, visible or hidden, was on any interval but 4 h or 8 h that day.
 The published rate is a fraction per interval, not per 8 h.
 The instant of a settlement itself was not captured, and no public funding history endpoint exists, so which of `fundRate` and `settleRate` is charged at the next instant is inferred from the field descriptions in [`rest.md`](./rest.md) section 4.
 BTC's published `fundRate` read between `0.0000021` and `0.0000031` over the runs, far from the 0.01 % interest rate the formula gives whenever the premium stays inside ±0.05 %, while the BTC mark sat 348 to 657 ppm below the index, see [`rest.md`](./rest.md) section 4.

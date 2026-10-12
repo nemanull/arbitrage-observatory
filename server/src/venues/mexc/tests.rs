@@ -226,3 +226,145 @@ fn logs_the_first_binary_frame_drops_every_one_and_keeps_reading_text_frames() {
     assert_eq!(warnings[0].number("bytes"), 6.0);
     assert_eq!(published.len(), 1);
 }
+
+// Ourbit and BYDFi, which run this module through their profiles.
+
+fn clone_connection(profile: &Profile, raw_market_id: &str) -> Connection<State> {
+    let market = Market {
+        contract_size: 0.0001,
+        ..testing::market(profile.id, raw_market_id, raw_market_id.split('_').next().unwrap(), "USDT", true)
+    };
+    Connection::for_test(&format!("{}#swap#0", profile.id), vec![market])
+}
+
+fn clone_send(profile: &'static Profile, conn: &mut Connection<State>, frame: &[u8]) -> Published {
+    Mexc::for_venue(profile).handle(frame, conn).unwrap();
+    conn.take_published()
+}
+
+// Captured live on 2026-10-09 from wss://futures.ourbit.com/edge, cut to three levels per side.
+const OURBIT_BTC: &[u8] = br#"{"symbol":"BTC_USDT","data":{"asks":[[82474.5,121249,1],[82474.6,35095,1],[82474.7,44467,1]],"bids":[[82474.4,121249,1],[82474.3,96136,4],[82474.2,28217,1]],"version":12678017692},"channel":"push.depth.full","ts":1791574120877}"#;
+
+// Captured live on 2026-10-09 from wss://futures.bydfi.com/edge, cut to three levels per side.
+const BYDFI_SOL_USDC: &[u8] = br#"{"symbol":"SOL_USDC","data":{"asks":[[109.12,26735,1],[109.13,53359,1],[109.14,26892,1]],"bids":[[109.11,151911,1],[108.95,25442,1],[108.94,8696,1]],"version":114461355},"channel":"push.depth.full","ts":1791574130992}"#;
+
+#[test]
+fn plans_each_clone_on_its_own_socket_host_with_150_contracts_a_connection() {
+    let ourbit = Mexc::for_venue(&OURBIT).plan(&markets(160));
+    let bydfi = Mexc::for_venue(&BYDFI).plan(&markets(10));
+
+    let ids: Vec<&str> = ourbit.iter().map(|plan| plan.id.as_str()).collect();
+    assert_eq!(ids, ["ourbit#swap#0", "ourbit#swap#1"]);
+    assert_eq!(ourbit[0].markets.len(), 150);
+    assert!(ourbit.iter().all(|plan| plan.url == "wss://futures.ourbit.com/edge"));
+    assert_eq!(bydfi.len(), 1);
+    assert_eq!(bydfi[0].id, "bydfi#swap#0");
+    assert_eq!(bydfi[0].url, "wss://futures.bydfi.com/edge");
+}
+
+// Limit 20 was acknowledged and limit 30 refused on both clones on 2026-10-09, and both answered the ping with a pong.
+#[test]
+fn sends_the_clones_the_same_frames_and_ping_as_mexc() {
+    for profile in [&OURBIT, &BYDFI] {
+        let venue = Mexc::for_venue(profile);
+        let frames = venue.subscribe_frames(&[market("BTC_USDT")], &mut State::default());
+
+        assert_eq!(parsed(&frames[0]), json!({ "method": "sub.depth.full", "param": { "symbol": "BTC_USDT", "limit": 20 } }));
+        assert_eq!(parsed(&venue.ping(&mut State::default())), json!({ "method": "ping" }));
+        assert_eq!(venue.settings().ping_every, Some(Duration::from_secs(15)));
+        assert_eq!(venue.settings().max_silence, Duration::from_secs(45));
+    }
+}
+
+#[test]
+fn hands_the_engine_an_ourbit_push_as_the_whole_book() {
+    let mut conn = clone_connection(&OURBIT, "BTC_USDT");
+
+    let published = clone_send(&OURBIT, &mut conn, OURBIT_BTC);
+
+    assert_eq!(
+        published,
+        [(
+            "BTC_USDT".to_string(),
+            levels(&[(82474.4, 121249.0), (82474.3, 96136.0), (82474.2, 28217.0)]),
+            levels(&[(82474.5, 121249.0), (82474.6, 35095.0), (82474.7, 44467.0)]),
+        )]
+    );
+}
+
+#[test]
+fn drops_a_bydfi_push_whose_version_is_below_the_last_one_applied() {
+    let mut conn = clone_connection(&BYDFI, "SOL_USDC");
+    assert_eq!(clone_send(&BYDFI, &mut conn, BYDFI_SOL_USDC).len(), 1);
+
+    let older = String::from_utf8(BYDFI_SOL_USDC.to_vec()).unwrap().replace("114461355", "114461354");
+    let published = clone_send(&BYDFI, &mut conn, older.as_bytes());
+
+    assert!(published.is_empty());
+    assert!(!conn.resync_requested());
+}
+
+#[test]
+fn logs_a_clone_refusal_as_a_venue_error_with_its_connection() {
+    let (logs, _capture) = capture();
+    let mut conn = clone_connection(&OURBIT, "BTC_USDT");
+
+    // The acknowledgement, the pong and the two refusals, captured live on 2026-10-09.
+    clone_send(&OURBIT, &mut conn, br#"{"channel":"rs.sub.depth.full","data":"success","ts":1791573866142}"#);
+    clone_send(&OURBIT, &mut conn, br#"{"channel":"pong","data":1791573866153,"ts":1791573866153}"#);
+    clone_send(&OURBIT, &mut conn, br#"{"channel":"rs.error","data":"Contract [NOPE_USDT] not exists","ts":1791573866150}"#);
+    clone_send(&OURBIT, &mut conn, br#"{"channel":"rs.error","data":"Not support limit","ts":1791573866150}"#);
+
+    let errors = logs.events("venue_error");
+    assert_eq!(errors.len(), 2);
+    assert_eq!(errors[0].text("connection"), "ourbit#swap#0");
+    assert_eq!(errors[1].text("message"), "Not support limit");
+}
+
+#[test]
+fn drops_a_clone_push_for_a_contract_the_connection_did_not_subscribe_to() {
+    let (logs, _capture) = capture();
+    let mut conn = clone_connection(&BYDFI, "BTC_USDT");
+
+    assert!(clone_send(&BYDFI, &mut conn, BYDFI_SOL_USDC).is_empty());
+    assert_eq!(logs.events("unsubscribed_symbol").len(), 1);
+}
+
+// Prints the frames the profile tests use, from each clone's socket.
+// cargo test mexc::tests::capture_clone_frames -- --ignored --nocapture
+#[tokio::test]
+#[ignore]
+async fn capture_clone_frames() {
+    use futures_util::{SinkExt, StreamExt};
+
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    for (profile, quiet) in [(&OURBIT, "HEI_USDT"), (&BYDFI, "SOL_USDC")] {
+        let (mut ws, _) = tokio_tungstenite::connect_async(profile.public_url).await.unwrap();
+        for (symbol, limit) in [("BTC_USDT", 20), (quiet, 20), ("NOPE_USDT", 20), ("ETH_USDT", 30), ("BTC_USD", 20)] {
+            let frame = json!({ "method": SUBSCRIBE_METHOD, "param": { "symbol": symbol, "limit": limit } });
+            ws.send(Message::text(frame.to_string())).await.unwrap();
+        }
+        ws.send(Message::text(r#"{"method":"ping"}"#)).await.unwrap();
+
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(8);
+        let mut pushes: HashMap<String, usize> = HashMap::new();
+        while let Ok(Some(Ok(message))) = tokio::time::timeout_at(deadline, ws.next()).await {
+            let Message::Text(text) = message else {
+                println!("{} other {message:?}", profile.id);
+                continue;
+            };
+            let value: Value = serde_json::from_str(text.as_str()).unwrap();
+            if value["channel"] == PUSH_CHANNEL {
+                let symbol = value["symbol"].as_str().unwrap_or_default().to_string();
+                let count = pushes.entry(symbol).or_default();
+                *count += 1;
+                if *count > 1 {
+                    continue;
+                }
+            }
+            let text = text.as_str();
+            println!("{} {} ... {}", profile.id, &text[..text.len().min(200)], &text[text.len().saturating_sub(160)..]);
+        }
+        println!("{} pushes {pushes:?}", profile.id);
+    }
+}

@@ -40,6 +40,8 @@ The first run's warm median of 375 ms came from three of five calls at 375 to 38
 | active perpetuals by settlement asset | USDT 18 | P1 |
 
 The documentation example shows `alias` values for delivery futures such as `this_week` and `quarter`, R2, and none is listed.
+On 2026-10-09 at 19:31 UTC the call still returned these 18 rows with the same fields and the same `ctVal` on each.
+`lotSz` and `minSz` arrived as JSON numbers on all 18 rows, while CCXT's comment at `poloniex.js` line 880 shows them as strings, and every other field was a string.
 
 ### How CCXT 4.5.68 maps it
 

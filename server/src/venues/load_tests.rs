@@ -187,7 +187,7 @@ fn spawn_tap<V: BookVenue>(
     }
 
     let tap = Tap { inner, mode, plan_of };
-    spawn_feed(Arc::new(tap), venue_id, venue_index, markets, tx, cancel)
+    spawn_feed(Arc::new(tap), venue_id, venue_index, markets, &super::testing::http(), tx, cancel)
 }
 
 // The adapter behind an id, built as start_venue builds it.

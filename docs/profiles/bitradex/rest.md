@@ -54,6 +54,7 @@ No geographic refusal was seen on any public endpoint.
 `tradeSwitch` is the field that separates the 56 live contracts, which matches the 56 derivative pairs CoinMarketCap lists.
 The 16 switched off are `luce_usdt`, `1000sats_usdt`, `ton_usdt`, `ai16z_usdt`, `vine_usdt`, `raysol_usdt`, `usual_usdt`, `arc_usdt`, `avaai_usdt`, `strk_usdt`, `xag_usdt`, `xaut_sol`, `xaut_usdt`, `cl_usdt`, `spcx_usdt` and `samsung_usdt`.
 The Wayback Machine capture of the same call on 2026-09-14 held the same 72, 56 and 4, P9.
+On 2026-10-09 the call listed the same 72 contracts, with the same 16 switched off.
 
 ### How it maps to the engine
 
@@ -68,7 +69,8 @@ There is no CCXT class, so a catalog adapter has to read this call directly.
 | active | `tradeSwitch` true | |
 
 No base is listed twice among the 56 trading contracts.
-`1000shib_usdt` quotes 1,000 SHIB per price unit by its name, and its `contractSize` of 100 is in those units, which the engine's price scale would need, Not verified against a spot price.
+`1000shib_usdt` quotes 1,000 SHIB per price unit by its name, and its `contractSize` of 100 is in those units.
+On 2026-10-09 its book matched the 1000SHIB contracts of Binance, Bybit, OKX, Gate and MEXC within 2 percent, so it needs no price scale.
 Six trading contracts are tokenised non-crypto assets: `nvda_usdt`, `mu_usdt`, `skhynix_usdt`, `sndk_usdt`, `xau_usdt` and `paxg_usdt`.
 
 ## 3. Anchor
@@ -82,8 +84,10 @@ Six trading contracts are tokenised non-crypto assets: `nvda_usdt`, `mu_usdt`, `
 | `GET /v1/future-u/market/public/q/mark-price` | every symbol `{s, p, t}` | 3,416 bytes, 115 ms, P1 |
 | `GET /v1/future-u/market/public/q/funding-rate?symbol=<id>` | one symbol: `fundingRate` a number, `nextCollectionTime` ms, `collectionInternal` hours | 168 bytes, median 113 to 116 ms, P5 |
 
-Funding has no bulk call: `q/funding-rate` without `symbol` answers `invalid_symbol`, P6.
-So index and mark come in one request, and funding needs one request per contract, 56 in all.
+`q/funding-rate` without `symbol` answers `invalid_symbol`, P6.
+On 2026-10-09 `GET /v1/future-u/market/public/cg/contracts`, a CoinGecko feed that returns a bare array without the envelope, listed 57 contracts with `funding_rate` and `next_funding_rate_timestamp` equal to those of `q/funding-rate`.
+It has no interval field, so the interval of the 4 h contract still needs `q/funding-rate`.
+So index and mark come in one request, and funding with its interval needs one request per contract, 56 in all.
 
 ### Row mapping
 
@@ -97,6 +101,10 @@ So index and mark come in one request, and funding needs one request per contrac
 
 `q/agg-tickers` returns 65 rows: the 56 trading contracts and 9 switched-off ones whose `t` was 98 to 492 days old in a check at 07:00 UTC.
 So rows are keyed by the tracked ids and the rest ignored.
+
+On 2026-10-09 `t` in `q/agg-tickers` was the time of the last trade, 1.4 to 6.4 s old on `xmr_usdt`, `btc_usdt` and `trump_usdt` and up to about 40 s old on quieter contracts, so it cannot stamp `i` and `m`.
+`q/index-price` and `q/mark-price` stamp each row with its republish, about 0.9 s before arrival on every trading contract that day, and returned 68 rows each.
+So the adapter reads index and mark from those two calls instead of `q/agg-tickers`.
 
 ## 4. Anchor semantics
 
@@ -162,6 +170,7 @@ Two reads 115 ms apart on `eth_usdt` returned the same `u` with different `t`, w
 No public rate limit is published.
 The terms say "any repeated violation of the order rate limit will result in BitradeX suspending or closing the User's account", S2.
 No 429 or other refusal was seen at the probe's pace of about two requests a second.
+On 2026-10-09 the adapter's poller made three requests a second for 90 s with no refusal.
 
 Errors come back as HTTP 200 with `code` 1, P6:
 

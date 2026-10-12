@@ -37,6 +37,7 @@ The public REST and WebSocket endpoints served this host without any refusal, se
 
 The fee article sets one "Perpetuals and futures" column for every perpetual, so the two families pay the same rate.
 The catalog agrees on every perpetual: `taker_commission` 0.00035 and `maker_commission` 0.00015 on 131 of 131, P1.
+On 2026-10-08 the catalog listed 134 linear and 2 inverse perpetuals, and read the same two rates on 136 of 136.
 
 ## 3. Coverage matrix
 
@@ -44,7 +45,7 @@ Counted from `public/get_instruments` without parameters on 2026-09-23 at 03:37 
 
 | product | present | count on 2026-09-22 | note |
 |---|---|---|---|
-| USDC-settled linear perpetuals | yes | 129, all `open` and `is_active` | 97 crypto, 23 equity, 5 equity ETF, 4 commodity, 1 crypto index, 1 pre-IPO by `underlying_type` |
+| USDC-settled linear perpetuals | yes | 129, all `open` and `is_active`, and 134 on 2026-10-08 | 97 crypto, 24 equity, 6 equity ETF, 4 commodity, 1 crypto index and 2 pre-IPO by `underlying_type` on 2026-10-08 |
 | BTC inverse perpetual `BTC-PERPETUAL` | yes | 1 | contract of 10 USD, settled in BTC |
 | ETH inverse perpetual `ETH-PERPETUAL` | yes | 1 | contract of 1 USD, settled in ETH |
 | USDT-settled perpetuals | no | 0 | `get_instruments?currency=USDT&kind=future` returned an empty list |

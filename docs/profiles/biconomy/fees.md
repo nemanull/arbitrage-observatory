@@ -36,6 +36,7 @@ The help center HTML pages answered 403, so the articles were read through the h
 The help center calls these "the standard" and "the default" rates, S1.
 On the wire, the fee page's data call returned `maker_fee` `0.000200000000000000` and `taker_fee` `0.000600000000000000` on 294 of 294 futures rows, and the futures catalog returned `mfr` 0.0002 and `tfr` 0.0006 on 295 of 295 active contracts, in both runs of `rest-probe.mjs catalog`, P1.
 The one active contract missing from the fee page is `BSP_USDT`, which the catalog flags `ihd` true.
+On 2026-10-09 the futures catalog returned `mfr` 0.0002 and `tfr` 0.0006 on 316 of 316 active contracts.
 
 ## 3. Coverage matrix
 
@@ -48,6 +49,8 @@ The one active contract missing from the fee page is `BSP_USDT`, which the catal
 | options | no | the site's route table in its web bundle lists no options route, S15. CoinGecko's description mentions options, S13 |
 | spot | yes, not detailed | `GET https://api.biconomy.com/api/v3/symbols` returned 2,000 symbols, 1,013 with `status` 0 and 987 with `status` 1, and the fee page lists 991 spot rows, most at 0.1 % maker and taker |
 | other | a `/prediction-futures` route exists on the site, not researched | S15 |
+
+On 2026-10-09 `detailV2` returned 519 rows, 316 with `state` 0 and 203 with `state` 3, all settled in USDT and all with `ft` 1.
 
 CoinGecko's derivatives list shows "Biconomy (Futures)" with 6 perpetual pairs and 0 futures pairs, and its ticker list names only `BRENTOIL_USDT`, `BTC_USDT`, `CL_USDT`, `ETH_USDT` and `NATGAS_USDT`, S13.
 The venue itself serves 295 active perpetuals, so CoinGecko tracks only a handful of them.
@@ -86,6 +89,8 @@ None of these changes the VIP 0 taker the engine models.
 | cap and floor | Not publicly specified. On the wire 14 contracts sat at exactly 0.0005 and 8 at exactly -0.0005, and none beyond, so a cap of 0.05 % per interval is likely but unconfirmed | P1, third `catalog` run |
 | resting rate | 124 of 295 contracts published exactly 0.0001 and 10 published 0 | P1, third `catalog` run |
 | rate formula | Not publicly specified | S2 |
+
+On 2026-10-09 `allFundingRate` put 314 of 316 contracts on `cycle` 8, `BASED_USDT` on 4 and `ONG_USDT` on 1, and no rate was beyond 0.0005 in either direction.
 
 The settlement instant itself was not captured.
 What the history call shows about the published rate is in [`rest.md`](./rest.md) section 4.

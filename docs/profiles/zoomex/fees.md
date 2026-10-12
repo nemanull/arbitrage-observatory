@@ -53,6 +53,8 @@ The FAQ of S3 lists 79 names, of which 73 carry the tag and 6 are no longer in t
 | spot | yes | 95 USDT pairs, maker and taker 0.1 % | P1 `catalog`, S11 |
 | 1000x Futures | yes, a separate product | fee is "Input amount × Leverage × 0.04%", not on the API catalog, not probed | S12 |
 
+On 2026-10-09 the linear catalog held 711 perpetuals, with 249 tagged `Stock`, 4 `Commodity` and 73 `Innovation Zone`.
+
 CoinGecko's derivatives entry `zoomex-futures` showed 702 perpetual pairs, 8,495 BTC of open interest and 89,715 BTC of 24 h volume on 2026-09-23, S16.
 The catalog holds 701, so the difference is one pair.
 
@@ -98,6 +100,7 @@ The engine models a taker at the base retail tier, so none of these change the r
 - Formula: `F = P + clamp(I − P, 0.05%, −0.05%)`, with the interest rate `I` at 0.01 % per 8 h, and the premium index `P` sampled every minute and averaged over the interval, S6.
 - Interval: per contract, and on 2026-09-23 368 perpetuals settled every 8 h, 326 every 4 h and 3 every hour, by `fundingIntervalHour` in the tickers reply, P1 `anchor`.
   The TradFi terms also name a 2 h interval, S13, and none was seen.
+  On 2026-10-09 the counts were 384 at 8 h, 325 at 4 h and 2 at 1 h, by `fundingInterval` in the instruments reply.
 - Settlement times for 8 h contracts: 00:00, 08:00 and 16:00 UTC, S6 and S7.
   Funding history spacing was exactly 28,800,000 ms on `BTCUSDT`, 14,400,000 ms on `XAUUSDT` and 3,600,000 ms on `LSKUSDT`, P1 `funding`.
 - Cap and floor: per contract, the tickers field `fundingCap`, 19 distinct values from 0.0025 to 0.05 on 697 perpetuals in the bulk reply, P1 `anchor`.

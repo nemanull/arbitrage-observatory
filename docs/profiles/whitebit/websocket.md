@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22, from the development host near Seattle.
 
+**Rechecked:** 2026-10-08, against the live venue, and each corrected line names that date.
+
 This profile covers the public WebSocket API of WhiteBIT (CCXT id `whitebit`) for every perpetual family, with the `depth` book channel in detail.
 Every protocol claim below was captured by [`ws-probe.mjs`](../../../scripts/probes/venues/whitebit/ws-probe.mjs), and the capture is quoted beside the documented value.
 Where the documentation and the wire disagree, both are written, and the wire is what a feed must handle.
@@ -124,7 +126,8 @@ The unit is base coins, and CCXT's `contractSize` is the order step, so the engi
 ### One-sided and empty books
 
 At the end of both batch runs no book among the 397 had an empty side.
-What `depth` sends for a side with no orders is Not verified.
+What `depth` sends for a side with no orders is Not verified on a listed market.
+On 2026-10-08 a `depth_subscribe` for the delisted `STG_PERP` still answered success, then sent a snapshot with `"asks":[]` and `"bids":[]` and repeated it as the 10 s keepalive.
 The engine's `resetBook` accepts an empty side.
 
 ### Idle repeats
@@ -148,7 +151,8 @@ A quiet book therefore costs a full snapshot every 10 s, and in the batch 283 an
 | text that is not JSON | no reply | the socket closed 166 and 181 ms later with 1006, as documented |
 
 A `multi_depth` of `false` drops every other `depth` subscription on the socket, so a feed must send `true` on every request.
-A closed or delisted perpetual was not available to probe, and `STG_PERP`, announced for delisting on 2026-09-23, still delivered.
+`STG_PERP`, announced for delisting on 2026-09-23, still delivered on 2026-09-22.
+After the delisting, checked on 2026-10-08, its subscribe was still accepted and served only empty snapshots, so a feed cannot rely on a code 9 error to learn that a market is gone.
 Public `depth` "excludes Retail Price Improvement (RPI) orders", which only retail-flagged takers can hit, so the book shown is the book an API taker can trade against, S2.
 
 ## 5. Session

@@ -30,6 +30,7 @@ The documentation lists no regional host for the API.
 
 `GET https://api.btse.com/public-api/market/v1/markets` returns every market, 1,315 rows and 472 KB in 201 and 145 ms, S1.
 With `types=["FuturesPerpetual"]` it returns the 211 perpetuals only, in 107 KB.
+On 2026-10-09 the same call returned 219 perpetuals: 131 `CRYPTO`, 82 `STOCK` and 6 `COMMODITIES`, all active and all quoted in `USDT`.
 
 | `type` | `category` | active rows on 2026-09-23 |
 |---|---|---:|
@@ -44,6 +45,7 @@ No other status value appeared, and the documentation names only the `active` bo
 Every perpetual has `quoteCurrency` `USDT` and an `availableSettlement` list of 17 or 19 currencies, so the venue has one perpetual family.
 
 The legacy `GET https://api.btse.com/futures/api/v2.3/market_summary` returns 215 rows, 153 to 157 KB in 128 and 134 ms: the same 211 perpetuals plus the 4 dated futures, with `contractSize` equal to the markets reply on 211 of 211.
+On 2026-10-09 it returned 223 rows, the 219 perpetuals and the dated futures `BTC-261225`, `ETH-261225`, `BTC-270326` and `ETH-270326`, with `contractSize` equal to the markets reply on 219 of 219.
 
 ### How CCXT maps it
 
@@ -69,6 +71,7 @@ The engine keys the socket and the anchor by `rawMarketId`, and BTSE spells the 
 | an error reply's echo of the symbol | `NOPEPFC-USDT`, the pre-v3 name |
 
 `symbol` equals `tradeCurrency + '-USDT'` on 211 of 211 perpetuals, so the translation is a suffix, see [`websocket.md`](./websocket.md) section 4.
+It held on 219 of 219 on 2026-10-09.
 
 ### Size unit, pairs listed twice, and price scale
 
@@ -82,15 +85,27 @@ The engine keys the socket and the anchor by `rawMarketId`, and BTSE spells the 
 
 A `marketFilter` that keeps `info.category === 'CRYPTO'` removes every stock and commodity base at once, see [`types.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/types.ts) line 23.
 
+Checked again on 2026-10-09, for the Rust adapter.
+The sizes in use were 0.00001 on 1 perpetual, 0.0001 on 3, 0.001 on 13, 0.01 on 66, 0.1 on 56 and 1 on 80.
+On all 219 perpetuals the `ticker/24hr` `volume` in USDT, divided by `amount` times `contractSize` times the mid of `highPrice` and `lowPrice`, fell between 0.92 and 1.03, which confirms that one contract is `contractSize` coins.
+A thousand-unit base prices and sizes one unit of 1,000 tokens: `1KPEPE-PERP` read 0.0039175 against binance's `1000PEPEUSDT` at 0.0039194.
+So the Rust loader names `1KPEPE`, `1KSHIB`, `1KFLOKI` and `1KBONK` by their token with a price scale of 0.001, and they cluster with `PEPE`, `SHIB`, `FLOKI` and `BONK`.
+It renames `TRUMPSOL` to `TRUMP`, since the display name is "Official Trump".
+It keeps the stock and commodity perpetuals, as decision 4 of the [venue adapter waves design](../../plans/2026-10-08-venue-adapter-waves-design.md) keeps TradFi.
+It denies three tickers that other venues list as another token.
+`GAS-PERP` is Natural Gas at about 3.42, while binance lists NEO's GAS token at about 1.33.
+`QNT-PERP` is the Quantinuum stock at about 41.2, while binance lists the Quant token at about 244.
+`1KCAT-PERP` is Simon's Cat at 0.000002 a token, while binance lists the Caterpillar stock as `CAT` at about 806.
+
 ## 3. Anchor
 
 ### The bulk calls
 
 | call | index | mark | funding rate | interval | next settlement | reply | warm time, three runs of 60 polls |
 |---|---|---|---|---|---|---|---|
-| `GET /futures/api/v2.3/price` | `indexPrice` | `markPrice` | absent | absent | absent | 19.0 KB, 215 rows | median 118.5 to 128.7 ms, max 304 to 367 ms, none over 1 s |
+| `GET /futures/api/v2.3/price` | `indexPrice` | `markPrice` | absent | absent | absent | 19.0 KB, 215 rows, and 223 on 2026-10-09 | median 118.5 to 128.7 ms, max 304 to 367 ms, none over 1 s |
 | `GET /public-api/market/v1/ticker/indices?types=["FuturesPerpetual"]` | `indexPrice` | `markPrice` | absent | absent | absent | 17.8 KB, 211 rows | median 125.9 to 131.8 ms, max 165 to 307 ms except one poll of 2,286 ms |
-| `GET /public-api/market/v1/ticker/24hr?types=["FuturesPerpetual"]` | absent | absent | `fundingRate` | `fundingIntervalMinutes` | `nextFundingTime`, Unix ms | 95.5 KB, 211 rows | median 130.0 to 143.0 ms, max 279 to 399 ms |
+| `GET /public-api/market/v1/ticker/24hr?types=["FuturesPerpetual"]` | absent | absent | `fundingRate` | `fundingIntervalMinutes` | `nextFundingTime`, Unix ms | 95.5 KB, 211 rows, and 219 on 2026-10-09 | median 130.0 to 143.0 ms, max 279 to 399 ms |
 | `GET /futures/api/v2.3/market_summary` | absent | absent | `fundingRate` | absent | absent | 153 to 157 KB, 215 rows | 128 and 134 ms, single reads |
 
 No single call carries all five `AnchorRow` fields.
@@ -119,6 +134,7 @@ At the two refreshes of the 03:40 run the markets mark equalled the legacy mark 
 | `nextFundingAt` | `ticker/24hr` `nextFundingTime` | Unix ms, `1790150400000` is 2026-09-23 08:00 UTC | none |
 
 At 03:23 UTC the 144 perpetuals on 480 minutes read `1790150400000`, 08:00 UTC, and the 67 on 240 minutes read `1790136000000`, 04:00 UTC.
+On 2026-10-09 at 18:13 UTC, 152 perpetuals were on 480 minutes and 67 on 240.
 The `ticker/24hr` documentation says "Data refreshes every minute", S1.
 Its `fundingRate` did not change in any of three 60 s runs, while its `closeTime` moved on 58 or 59 of 59 polls and the BTC `lastPrice` on 8 and 15, so the other fields refresh faster than once a minute.
 The same rate read from `market_summary` every 10 s did not change within a run either.
@@ -253,6 +269,10 @@ A recommendation for a later design, not a decision.
 | skip | stock and commodity perpetuals, if the catalog does not already drop them | their bases collide with crypto tickers, section 2 |
 | rate limit pause | `rateLimitPauseMs` 10,000, and a guard that reads a `Retry-After` above 900 s as a Unix timestamp | the first block is 1 s and the next is 5 minutes, so a pause well past the first block is the safer side, and the `Retry-After` format is in dispute |
 | deny list input | none from the index survey, since the basket is not published | |
+
+The Rust adapter of 2026-10-09 keys each market by `tradeCurrency`, `BTC-PERP`, so the `price` rows need no suffix and the `ticker/24hr` `symbol` drops its `-USDT`.
+Its loader keeps the stock and commodity perpetuals and denies the colliding tickers instead, see section 2.
+On 2026-10-09 no `price` index equalled its perpetual's last price on half or more of 15 polls 2 s apart, so none showed its own last trade as its index.
 
 ## 9. Source ledger
 

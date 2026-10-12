@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, from the development host near Seattle, 03:08 to 03:46 UTC on 2026-09-23.
 
+**Rechecked:** 2026-10-08, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the public REST API of HTX futures (CCXT id `htx`) for the USDT-margined perpetuals in detail and the coin-margined perpetuals where they differ.
 Every number below was measured by [`rest-probe.mjs`](../../../scripts/probes/venues/htx/rest-probe.mjs) in two runs about fifteen minutes apart, and a pair such as "310 and 300 ms" gives the first run and then the second.
 The API documentation of record is the USDT-M reference at `huobiapi.github.io`, whose changelog ends at 1.1.8 on 2022-11-10, S1.
@@ -38,17 +40,18 @@ No request was refused, rate limited or geoblocked in either run.
 ### The instruments call
 
 `GET /linear-swap-api/v1/swap_contract_info` lists USDT-M contracts, and `business_type=swap` returned 357 rows in 176,892 bytes, while `business_type=all` adds the 4 dated futures for 361 rows, P1.
+Checked on 2026-10-08, `business_type=swap` returned 382 rows, 377 active and 5 suspended, and `business_type=all` returned 386.
 `GET /swap-api/v1/swap_contract_info` lists the 5 coin-M perpetuals, and `GET /api/v1/contract_contract_info` the 8 coin-M dated futures.
 
 | field | meaning | observed |
 |---|---|---|
 | `contract_code` | the id, `BTC-USDT` | also 4 contracts named in Chinese, `龙虾-USDT`, `牛来-USDT`, `哈基米-USDT`, `币安人生-USDT`, all active |
-| `contract_status` | 1 listing, 3 suspension, and the other values 0 to 9 that CCXT lists at `server/node_modules/ccxt/js/src/htx.js` lines 1986 to 1995 | 353 at 1, and `CYBER-USDT`, `H-USDT`, `BLESS-USDT`, `BSB-USDT` at 3 |
+| `contract_status` | 1 listing, 3 suspension, and the other values 0 to 9 that CCXT lists at `server/node_modules/ccxt/js/src/htx.js` lines 1986 to 1995 | 353 at 1, and `CYBER-USDT`, `H-USDT`, `BLESS-USDT`, `BSB-USDT` at 3. On 2026-10-08, 377 at 1, and `WBD-USDT` joined those four at 3 |
 | `contract_size` | coins per contract | 11 distinct values, from 0.0001 to 1,000,000 |
-| `settlement_period` | funding interval in hours, a string | `"8"` on 248, `"4"` on 93, `"1"` on 16 |
-| `settlement_date` | next funding settlement, Unix ms as a string | equal to `funding_time` of the batch funding call on 357 of 357 rows, P3 |
-| `tradfi_labels` | TradFi class | non-empty on 223 of the 353 active swaps, section 2 below |
-| `enable_rpi` | retail price improvement orders allowed | true only on `FIL-USDT` |
+| `settlement_period` | funding interval in hours, a string | `"8"` on 248, `"4"` on 93, `"1"` on 16. On 2026-10-08 the 377 active swaps read 269, 93 and 15 |
+| `settlement_date` | next funding settlement, Unix ms as a string | equal to `funding_time` of the batch funding call on 357 of 357 rows, P3, and on 377 of 377 active rows on 2026-10-08 |
+| `tradfi_labels` | TradFi class | non-empty on 223 of the 353 active swaps, section 2 below, and on 223 of 377 on 2026-10-08 |
+| `enable_rpi` | retail price improvement orders allowed | true only on `FIL-USDT`. On 2026-10-08 it was true on 13 active swaps, `BTC-USDT`, `ETH-USDT` and `SOL-USDT` among them |
 
 ### How CCXT 4.5.68 maps it
 
@@ -66,6 +69,8 @@ No request was refused, rate limited or geoblocked in either run.
 | `taker`, `maker` | constants | 1978 and 1979 | 0.0005 and 0.0002, see [`fees.md`](./fees.md) section 8 |
 
 The engine keeps active swaps, so it would load 358 markets: 353 USDT-M and 5 coin-M.
+On 2026-10-08 `fetchMarketsByTypeAndSubType('swap', 'linear')` returned 386 rows, 382 swaps with 377 active and 4 dated futures.
+The Rust loader kept the same 377 active USDT-M swaps, with no difference in id, base, quote or contract size.
 
 | check | result, P1 |
 |---|---|
@@ -96,10 +101,11 @@ No base carries a `1000` or other multiplier prefix, and HTX expresses small pri
 ### TradFi contracts
 
 The 353 active USDT-M swaps are 130 crypto and 223 TradFi: 179 labelled Stocks, 27 Stocks and Indices, 7 Metals, 7 Indices and 3 Commodities.
+On 2026-10-08 the 377 active swaps were 154 crypto and the same 223 TradFi, split the same way.
 Their bases are share tickers and commodity codes, and several are spelled like crypto tickers, among them `BNC`, `BOT`, `META`, `PENG` and `PURR`.
 The list also holds `OPENAI` and `ANTHROPIC`, labelled Stocks.
 `PAXG` and `XAUT` are labelled Metals although they are tokens on other venues.
-A `marketFilter` on `info.tradfi_labels` being empty keeps the 130 crypto swaps, and a `DENIED_PAIRS` line is the alternative per ticker.
+A `marketFilter` on `info.tradfi_labels` being empty keeps the crypto swaps, and a `DENIED_PAIRS` line is the alternative per ticker.
 
 ## 3. Anchor
 
@@ -107,9 +113,9 @@ A `marketFilter` on `info.tradfi_labels` being empty keeps the 130 crypto swaps,
 
 | call | index | mark | funding rate | interval | next settlement | reply | warm time over 60 polls |
 |---|---|---|---|---|---|---|---|
-| `GET /linear-swap-api/v1/swap_index` | `index_price`, with `index_ts` in ms | | | | | 40,896 and 40,898 bytes, 373 rows | min 274 and 285, median 310 and 300, p90 657 and 649, max 742 and 776 ms |
-| `GET /linear-swap-api/v1/swap_batch_funding_rate` | | | `funding_rate` | | `funding_time`, Unix ms string | 71,323 and 71,308 bytes, 361 rows | min 392 and 392, median 442 and 528, p90 782 and 869, max 984 and 1,037 ms |
-| `GET /linear-swap-api/v1/swap_contract_info?business_type=swap` | | | | `settlement_period`, hours | `settlement_date` | 176,892 bytes, 357 rows | 321 and 312 ms, single reads |
+| `GET /linear-swap-api/v1/swap_index` | `index_price`, with `index_ts` in ms | | | | | 40,896 and 40,898 bytes, 373 rows, and 398 rows on 2026-10-08 | min 274 and 285, median 310 and 300, p90 657 and 649, max 742 and 776 ms |
+| `GET /linear-swap-api/v1/swap_batch_funding_rate` | | | `funding_rate` | | `funding_time`, Unix ms string | 71,323 and 71,308 bytes, 361 rows, and 386 rows on 2026-10-08 | min 392 and 392, median 442 and 528, p90 782 and 869, max 984 and 1,037 ms |
+| `GET /linear-swap-api/v1/swap_contract_info?business_type=swap` | | | | `settlement_period`, hours | `settlement_date` | 176,892 bytes, 357 rows, and 382 rows on 2026-10-08 | 321 and 312 ms, single reads |
 | `GET /index/market/history/linear_swap_mark_price_kline?contract_code=<id>&period=1min&size=1` | | `data[0].close` | | | | 222 to 224 bytes, one contract | median 297 and 297, p90 395 and 358, max 1,500 and 694 ms |
 | `GET /v5/market/funding_rate?contract_code=<id>,<id>` | | | `funding_rate` | | `funding_time` and `next_funding_time` | up to 10 codes, 20 answered code 1067 | not timed |
 
@@ -117,6 +123,8 @@ No call returns a mark price for many contracts at once.
 The mark exists only per contract, as the close of a one minute mark price kline, on REST above and on the `ws_index` socket, see [`websocket.md`](./websocket.md) section 2.
 `GET /linear-swap-api/v1/swap_mark_price` and `GET /v5/market/mark_price` answered 404, and `/v5/market/index_price` and `/v5/market/premium_index` answered 404.
 One round of mark reads over the 130 crypto swaps at ten requests in flight took 4,729 and 4,519 ms with no error, `rest-probe.mjs marks`, P7.
+On 2026-10-08 the REST host answered over HTTP/2, so many reads share one connection.
+Three rounds over all 377 active swaps at 128 requests in flight took 1,629 to 2,383 ms each, with no refusal.
 
 `swap_index` holds 16 more rows than the catalog, all delisted contracts with frozen values, `CVX-USDT` among them with an `index_ts` of 1747706678010, 2025-05-20.
 It omits the dated futures.
@@ -148,6 +156,7 @@ The article sits in the coin-M guides and says "The index of the perpetual swaps
 No public call returns the basket or the weights, so a self-referential basket like the one in [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) cannot be screened from the API.
 
 On the wire 361 of the 373 rows of one reply carried the same `index_ts` in two reads, and 352 plus 9 one second older in a third, so the index is computed for nearly all contracts at once.
+On 2026-10-08 all 377 active rows of one reply carried the same `index_ts`, TradFi included, about 1.35 s before the reply's `ts`.
 The BTC `index_ts` changed on 53 and 52 of 59 poll intervals, the XAU and NVDA ones on 59, and the BTC index read 574 to 2,162 ms old on arrival, median 817 ms, in the second run.
 `NVDA-USDT` changed its index on 56 of 59 intervals at 03:39 UTC, while US exchanges were closed, so the stock index keeps a source outside market hours, and that source is Not publicly specified.
 
@@ -245,10 +254,19 @@ No `Retry-After` header appeared on any reply.
 | depth `type=step99` | 200 | `"err-code":"invalid-parameter","err-msg":"invalid type:step99"` |
 | `swap_index?contract_code=NOPE-USDT` | 200 | `{"status":"error","err_code":1014,"err_msg":"This contract doesnt exist.","ts":…}` |
 | mark kline of `NOPE-USDT` | 200 | `"err-code":"invalid-parameter","err-msg":"invalid  symbol"` |
+| a mark kline read while all 377 marks were read at 128 in flight, logged by the adapter's first live runs on 2026-10-08 | 200 | `{"ts":…,"status":"error","err-code":"bad-request","err-msg":"request limit"}` |
 | `/linear-swap-api/v1/nope` | 404 | `{"timestamp":"2026-09-23T03:38:42.568+00:00","status":404,"error":"Not Found","path":"/linear-swap-api/v1/nope"}` |
 
 Errors arrive as HTTP 200 with `status` `error`, spelled `err-code` on market calls and `err_code` with a number on API calls.
 S1 names code 1032 "The number of access exceeded the limit." for a rate limit, and lists HTTP 429 "too many requests" in its WebSocket error table, and neither was provoked here.
+The mark kline's `request limit` refusal above came back on a few reads among several full rounds on 2026-10-08, and three later full rounds at the same pace drew none.
+It is a rate limit answer spelled as `bad-request`, and S1 does not document it.
+On 2026-10-08 a probe that read all 377 marks about once a second hit a harder limit after about 1,900 reads in 8 s.
+From then on Tencent EdgeOne, which fronts `api.hbdm.vn` with `server: TencentEdgeOne`, answered HTTP 567 with an HTML page titled "Restricted Access" to every call, the bulk index and depth calls included, and to the socket handshake of `wss://api.hbdm.vn/linear-swap-ws`.
+The block lasted about five minutes, from about 06:18 to about 06:23 UTC on 2026-10-09, while one request every 30 s checked it.
+The same day, four 90 s runs of the adapter at about 126 mark reads a second, after a first read of all 377, drew no 567.
+At that pace EdgeOne sometimes answered HTTP 200 with `content-type: text/html` and a page of about 990 bytes that starts `<script>` and sets an `EO_Bot_Ssid` cookie, which is a bot challenge.
+It replaced `swap_index` for about 4 to 6 s at a time, once a minute in one 4 minute run and once in a 130 s run, while reads at one a second with no other load never drew it.
 A 1032 in a 200 body is the case [`../../../server/src/shared/errors.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/shared/errors.ts) line 17 describes for MEXC.
 
 ## 7. Server time and clock offset

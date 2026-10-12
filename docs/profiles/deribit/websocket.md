@@ -194,6 +194,9 @@ Because a bad channel is dropped silently from `result`, a feed has to compare t
 | subscription limits | up to 500 channels per call suggested, S6. `public/subscribe` at about 3.3 calls per second sustained, burst 10, S8. 32 connections per IP, S9 | 131 channels in one call, acknowledged in one reply |
 | throughput | | 131 perpetuals on `100ms`: 9,626 frames in 60 s, median 153 frames per second, peak 242, 68 KB per second, 437 bytes per frame, 8 µs `JSON.parse` per frame. The rerun: 11,436 frames, median 187, peak 392, 95 KB per second, 509 bytes, 11 µs |
 
+On 2026-10-08 a socket that set interval 10 got a `test_request` every 10.7 s, and each `public/test` answer returned `{"version":"1.2.26"}`.
+On the same day `book.NOPE_USDC-PERPETUAL.100ms` was still left out of the acknowledgement without an error, and `book.BTC_USDC-PERPETUAL.raw` still answered 13778.
+
 The server clock read through `public/get_time` led the local clock by 1 to 34 ms, see [`rest.md`](./rest.md) section 7.
 
 ## 6. Captured frames

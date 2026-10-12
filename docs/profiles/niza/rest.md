@@ -46,6 +46,13 @@ The Niza hosts themselves, for the spot line of the coverage matrix:
 | `is_pretge` true | `PERP_ALPIX_USDC_alpix`, `PERP_FASTX_USDC_fastx` |
 | settlement asset | USDC on all 139 |
 
+On 2026-10-09 the call returned 136 rows, and the live catalog differs from the counts above.
+73 rows are shared `PERP_<BASE>_USDC` markets with `broker_id` null, all `ACTIVE`, and `PERP_1000SHIB_USDC` and `PERP_BZ_USDC` are no longer listed.
+The builder rows are 61 `_mythos`, 1 `_alpix` and 1 `_fastx`.
+The only row not `ACTIVE` is `PERP_MET_USDC_mythos` at `POST_ONLY`, and `PERP_ALPIX_USDC_alpix` reads `ACTIVE`.
+On the 73 shared markets `funding_period` is 8 on 38 and 4 on 35.
+Rows of `/v1/public/info` and `/v1/public/futures` now also carry `display_symbol_name`, such as `XAU (Gold)`, and each `/v1/public/futures` row carries `broker_id` and `status`.
+
 The 80 shared markets are exactly the 80 perpetuals CoinGecko lists for Niza.fun, compared symbol by symbol on 2026-09-22.
 No market carries the suffix `_niza`, so Niza lists nothing of its own.
 Among the 80 are RWA markets `EURUSD`, `USDJPY`, `NAS100`, `SPX500`, `GOOGL`, `NVDA`, `TSLA`, `XAU`, `XAG`, `CL` and `BZ`.
@@ -129,6 +136,9 @@ The basket is public at `GET /v1/public/index_price_source`, 164 rows keyed `SPO
 | baskets that include Orderly itself | none |
 
 No basket is Orderly's own perpetual, so the self-index trap of [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) does not apply.
+
+On 2026-10-09 every one of the 73 shared markets had a basket, and none named Orderly.
+`CL` was the only shared basket made only of perpetuals, `binancefuturesindex` and `hyperliquidperp`, since `BZ` is no longer listed.
 `BZ` and `CL` follow Binance and Hyperliquid perpetuals rather than spot, and an index built on perps carries their basis.
 For the RWA markets the documentation says the index is frozen while the underlying market is closed, S4.
 `PERP_EURUSD_USDC` sent no book frame in 60 s during the probe, see [`websocket.md`](./websocket.md) section 5.
@@ -146,6 +156,8 @@ Mark = Clamp(Median Price, Index * (1 + Factor * Floor Funding), Index * (1 + Fa
 ```
 
 The clamp band is on the wire as `mark_index_price_deviation_floor` and `mark_index_price_deviation_cap`.
+
+On 2026-10-09 the band was ±5.25 % on 41 of the 73 shared markets, ±3 % on 4, ±3.5 % on 4 and ±0.75 % on `CL`, `EURUSD` and `USDJPY`, and `NAS100` and `SPX500` kept 0.9925 to 1.00075.
 
 | band on the shared markets | markets |
 |---|---|

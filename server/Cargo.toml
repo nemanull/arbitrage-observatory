@@ -8,6 +8,7 @@ anyhow = "1.0.104"
 axum = "0.8.9"
 chrono = { version = "0.4.45", features = ["serde"] }
 dotenvy = "0.15.7"
+flate2 = "1.1.9"
 futures-util = { version = "0.3.34", default-features = false, features = ["sink", "std"] }
 opentelemetry-appender-tracing = "0.33.0"
 opentelemetry-otlp = "0.33.0"

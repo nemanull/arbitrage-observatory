@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 (2026-09-23 UTC), from the development host near Seattle.
 
+**Rechecked:** 2026-10-08, against the live venue, and each corrected line names that date.
+
 This profile covers the public REST API of Phemex (CCXT id `phemex`) that a catalog, an anchor poller and a book check would use.
 Every number below comes from [`rest-probe.mjs`](../../../scripts/probes/venues/phemex/rest-probe.mjs) unless a source id says otherwise.
 Where the documentation and the wire disagree, both are written.
@@ -16,7 +18,7 @@ Where the documentation and the wire disagree, both are written.
 |---|---|
 | base URL | `https://api.phemex.com`, S1 |
 | resolution | `api.phemex.com` is a CNAME of `d1kz8c4wy16ccc.cloudfront.net`, which resolved to four addresses in `18.172.170.0/24`, and to eight in one `dig` |
-| edge | CloudFront POP `SEA73-P3` on every reply |
+| edge | CloudFront POP `SEA73-P3` on every reply, and `YVR52-P1` on every reply on 2026-10-08 |
 | VIP host | `vapi.phemex.com`, "for whitelisted client IPs only", S1, resolved to `18.238.238.0/24` and was not called |
 | cold request | `GET /public/time` 279 and 445 ms in two runs |
 | warm request | `GET /public/time` 179 to 346 ms, 180 ms typical |
@@ -47,6 +49,12 @@ Only `Listed` and `Delisted` occur.
 `perpProductSubType` splits the 126 listed USDⓈ-M contracts into 55 `Normal`, 69 `TradFi` and 2 `PreMarket` (`ANTHROPICUSDT`, `OPENAIUSDT`).
 The funding interval is in `fundingInterval` in seconds: 28,800 on 96 listed contracts and 14,400 on 30.
 
+Checked on 2026-10-08, the reply was 2,544,101 bytes and `perpProductsV2` held 125 listed USDT settled rows, 54 `Normal`, 69 `TradFi` and 2 `PreMarket`, beside the same 10 listed USDC settled rows.
+Its 756 delisted rows were 644 `Normal`, 80 `TradFi`, 30 `Pilot` and 2 `PreMarket`.
+`products` still held the 8 listed COIN-M contracts and the 151 delisted USD settled rows, and `perpProductsPilot` was `null`.
+The 135 listed linear rows carried `fundingInterval` 28,800 on 101 and 14,400 on 34.
+`LSKUSDT` was no longer in `perpProductsV2` at all, while the ticker still carried it.
+
 ### How CCXT 4.5.68 maps it
 
 CCXT reads `/public/products` and the legacy `/exchange/public/products` at `server/node_modules/ccxt/js/src/phemex.js` lines 901 and 1051, and parses every `perpetual`, `perpetualv2` and `perpetualpilot` row as a swap at lines 1103 to 1110.
@@ -56,6 +64,8 @@ It returns 1,050 swaps, of which these are active, P1.
 |---|---|---:|---:|---|
 | USDT | true | 116 | 1 | `undefined` |
 | USDC | true | 10 | 0 | `undefined` |
+
+On 2026-10-08 CCXT returned 125 active USDT rows with `contractSize` 1 and the same 10 USDC rows with 0, all with `taker` `undefined`.
 | BTC (`BTCUSD`) | false | 1 | 1 | 0.0075 |
 | ETH, SOL, XRP, ADA, SUI, LINK, AVAX (`c…USD`) | false | 7 | 1 | `undefined` |
 
@@ -72,6 +82,7 @@ CCXT sets `contractSize` to 1 for every USDT settled swap without reading any fi
 That is right: the book and the order quantity are in base coin, with `qtyStepSize` 0.001 on `BTCUSDT`, and socket and REST sizes agree, see [`websocket.md`](./websocket.md) section 4.
 A USDC settled row has no `contractSize` field, so the default `' '` reaches `parseNumber(' ')` at line 733 and gives 0, which the engine's connector turns into 1, at [`connector.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/ccxt/connector.ts) lines 188 to 194.
 A COIN-M row reads `"1 USD"`, so its size unit is US dollars.
+Checked on 2026-10-08, the `description` of all 135 listed linear rows, USDC-M included, says "Each contract is worth 1" followed by its own base, and the REST books of `BTCUSDC`, `BTCUSDT`, `XAUUSDT` and `u1000SHIBUSDT` counted base coins at the touch.
 
 No pair is listed twice with the same quote.
 Ten bases are listed on both USDT-M and USDC-M, and the eight COIN-M bases are also on both, for example `BTCUSD`, `BTCUSDC` and `BTCUSDT`.
@@ -92,6 +103,9 @@ So a cluster built by base name will not always meet the same underlying.
 | `GET /md/v2/ticker/24hr/all` | `indexPriceRp` | `markPriceRp` | `fundingRateRr` | absent | absent | 38 KB, 127 rows | 390 ms once, "v2 will be removed later", S1 |
 | `GET /md/ticker/24hr/all`, COIN-M | `indexPrice`, scaled | `markPrice`, scaled | `fundingRate`, scaled | absent | absent | 2 KB, 8 rows | 237 ms once |
 
+On 2026-10-08 the ticker held 136 rows, the 135 listed linear contracts plus `LSKUSDT`, and the funding call held 143, the 135 plus the 8 COIN-M contracts.
+The funding call answered 143 rows for `pageSize=1000` too, so 200 is not a cap that bites today.
+
 No single call carries all five `AnchorRow` columns, so the poller needs the ticker for index and mark and the funding call for rate, interval and next settlement.
 The ticker's 127 rows are the 126 listed USDⓈ-M contracts plus `LSKUSDT`, which the catalog marks `Delisted`.
 The funding call's 134 rows are the 126 listed USDⓈ-M contracts plus the 8 COIN-M contracts, and without `pageSize` it returns 20 rows.
@@ -101,6 +115,7 @@ No row had a mark or an index of 0.
 CloudFront caches the ticker reply.
 In the rerun 30 of 60 one second polls came back `x-cache: Hit from cloudfront`, with no `Age` header, while the first run saw 1 hit in 60.
 The funding call and the funding history answered `Miss` on every poll.
+On 2026-10-08 the ticker answered `Miss` on 15 of 15 polls one second apart, and a unique query string such as `?_=<ns>` answered `Miss` on 10 of 10.
 A hit repeats the previous reply, so on those polls the reading is up to about a second older than its arrival stamp, and the reader's 1,000 ppm move check sees the change arrive in one step two polls apart.
 
 ### Row mapping
@@ -131,6 +146,7 @@ The two disagree: the 2019 article describes an equal-weight trimmed mean, and t
 How the weights combine with the trimming is Not publicly specified.
 
 Survey of the baskets of the 126 listed USDⓈ-M contracts on 2026-09-23 UTC, P1.
+Rechecked on 2026-10-08 over the 135 listed linear contracts, every row of the table below held with the same contracts and counts.
 
 | finding | contracts |
 |---|---|

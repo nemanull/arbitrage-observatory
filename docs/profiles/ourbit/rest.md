@@ -44,6 +44,7 @@ That doc names the host `https://contract.ourbit.com`, which does not resolve, a
 | `conceptPlate` | the site's trade zones, 206 contracts in a TradFi zone | Not publicly specified |
 
 The active perpetual count is 735, all USDT-M, settled in USDT.
+On 2026-10-09 the catalog listed 753 contracts, all in state 0 with `apiAllowed` true, quoted and settled in USDT, and each with `takerFeeRate` 0.0004.
 `/api/v1/contract/support_currencies` returned `["USDT"]`.
 CoinGecko listed 770 perpetual pairs at the same hour, see [`fees.md`](./fees.md) section 3.
 
@@ -76,11 +77,20 @@ Without it the venue would register as `mexc`.
 Book sizes on the socket and on REST are contracts, see [`websocket.md`](./websocket.md) section 4.
 The ratio of 24 h turnover to 24 h contracts times `contractSize` times last price fell between 0.80 and 1.21 on every contract, with a median of 0.99, in every run, tag `sizeUnit`.
 So `contractSize` is the coin amount of one contract, and the engine's size multiplier is right.
+On 2026-10-09 the same ratio fell between 0.80 and 1.09 over all 753 contracts, with a median of 1.00.
+That day the socket's `1000PEPE_USDT` book and the REST book of the same `version` matched level for level, at `contractSize` 1,000 units of the prefixed base.
 
 No base and quote pair is listed twice, tag `pairsListedTwice`.
 Eight contracts quote a multiple of the token: `1000PEPE_USDT`, `1000BONK_USDT`, `1000FLOKI_USDT`, `1000LUNC_USDT`, `1000XEC_USDT`, `1000RATS_USDT`, `1000000BABYDOGE_USDT` and `1000000MOG_USDT`.
 Each needs a price scale in [`clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) wherever another venue lists the plain token.
 The pairs already on `DENIED_PAIRS` exist here too: `BB_USDT`, `ON_USDT` and `QNT_USDT`, and `ONE_USDT` is not listed.
+On 2026-10-09 three contracts named another instrument than the reference venues list under the same ticker.
+`ON_USDT` is the ON token near 0.118, while bybit and okx list the ON Semiconductor stock.
+`CAT_USDT` is the Simon's Cat token near 0.000002, while binance and gate list the Caterpillar stock near 803.
+`USO_USDT` is WTI crude oil near 91, with `baseCoinName` `WTI(USOIL)`, while okx and mexc list the United States Oil Fund ETF near 146.6.
+CCXT's mexc `commonCurrencies` would rename Ourbit's `GMT`, `GAS`, `FLUX` and `PROS` to `GMTTOKEN`, `GASDAO`, `FLUX1` and `PROSFINANCE`.
+On 2026-10-09 all four were the tokens Binance or OKX list under the plain names.
+Ourbit's fair prices were `GMT` 0.008832, `GAS` 1.315, `FLUX` 0.08096 and `PROS` 0.6533, against marks of 0.008822, 1.317 and 0.08099 on Binance and 0.6530 for `PROS` on OKX.
 
 ## 3. Anchor
 
@@ -112,6 +122,8 @@ The per contract calls are fresh.
 Over the same polls, `/index_price/BTC_USDT` and `/fair_price/BTC_USDT` carried a `timestamp` a median 153 and 135 ms old in run 2 and 79 and 66 ms in run 3.
 They changed on 34 and 37 of 59 polls in run 2, where the bulk ticker's `BTC_USDT` index and fair price changed on 16 and 14.
 So a bulk reading stamped on arrival is up to about 3.2 s older than its stamp.
+On 2026-10-09 eight polls found rows 0.5 to 4.9 s older than their arrival, and the row timestamps of one reply spread over up to 3.3 s.
+So a reading takes its row's own `timestamp` as its time, never the arrival.
 The reader refuses a reading older than 10 s and two legs read more than 5 s apart, at [`anchorReading.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/opportunity/anchorReading.ts) lines 4 and 5, so the lag stays inside both limits, but it can hide up to 3.2 s of real skew inside the 5 s skew limit.
 
 ### Row mapping
@@ -127,6 +139,8 @@ The reader refuses a reading older than 10 s and two legs read more than 5 s apa
 
 `collectCycle` read 4 h on 452 contracts, 8 h on 280, 1 h on 2 and 24 h on 1 in every run, tag `fundingSnapshot`.
 `nextSettleTime` read 02:00, 04:00, 08:00 and 16:00 UTC on 2026-09-23 for those four groups.
+On 2026-10-09 `collectCycle` read 4 h on 453 contracts, 8 h on 297, 1 h on 2 and 24 h on 1.
+That day `/funding_rate` carried exactly the keys `symbol`, `fundingRate`, `maxFundingRate`, `minFundingRate`, `collectCycle`, `nextSettleTime` and `timestamp`, with no index and no fair price.
 The ticker's `fundingRate` is the same number as `/funding_rate`, so one of the two calls can stay slower if bandwidth matters.
 
 ## 4. Anchor semantics
@@ -166,6 +180,8 @@ It may name another venue's own index or perpetual, which would be the self-refe
 `REAL-TIME US STOCK QUOTE2` also sits in the baskets of crypto tokens such as `PIPPIN_USDT` and `FOLKS_USDT`, tag `tradfi`, so it is not only a stock feed.
 
 Ourbit lists itself, `OURBIT`, in 71 baskets, tag `ownInBasket`.
+On 2026-10-09 it was 72 baskets, and 70 of those 72 bases had an Ourbit spot pair in `https://api.ourbit.com/api/v3/exchangeInfo`.
+The two without one were `PUMPFUN_USDT` and `1000000MOG_USDT`, whose spot names differ, so `OURBIT` most likely names Ourbit spot and not its own perpetual.
 
 | basket | contracts |
 |---|---|
@@ -174,6 +190,8 @@ Ourbit lists itself, `OURBIT`, in 71 baskets, tag `ownInBasket`.
 | one source | `APM_USDT` and `CVXSTOCK_USDT` on `REAL-TIME US STOCK QUOTE2`, `VOLX_USDT` on `GATEIOCIP` |
 
 Whether `OURBIT` means Ourbit spot or Ourbit's own perpetual is Not publicly specified.
+On 2026-10-09 `APM_USDT` was no longer listed, and nine contracts had a single source.
+They were `VOLX_USDT` on `GATEIOCIP`, `10Y_USDT` on `HYPERLIQUID`, and `DAL_USDT`, `TSMC_USDT`, `MEDIATEK_USDT`, `TMO_USDT`, `VICR_USDT`, `HONA_USDT` and `DELTAELEC_USDT` on `REAL-TIME US STOCK QUOTE2`.
 No basket call returns weights or constituent prices.
 
 ### Mark

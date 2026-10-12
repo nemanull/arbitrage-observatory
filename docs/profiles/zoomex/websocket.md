@@ -26,6 +26,7 @@ On 693 of the 697 USDT perpetuals the Zoomex stream is Bybit's own book stream, 
 
 The URLs are from S1.
 One socket carries one family.
+On 2026-10-09 all 711 linear perpetuals delivered a book within a 90 s run on four sockets of up to 200 topics each.
 On the inverse URL `orderbook.50.BTCUSDT` was refused with `error:handler not found,topic:orderbook.50.BTCUSDT`, and on the linear URL `orderbook.50.BTCUSD` was refused the same way.
 `stream.zoomex.com` resolved to the CloudFront name `d1yq1nuwbz5sl7.cloudfront.net` and four addresses on 2026-09-23, see [`rest.md`](./rest.md) section 1.
 
@@ -201,6 +202,9 @@ A quiet perpetual sends no frame while nothing in its 50 levels changes, and 146
 
 A delisted contract was not available to probe, since all 697 were `Trading`.
 Because one refused topic fails its whole frame, a feed that subscribes a stale symbol loses every other topic in that frame.
+On 2026-10-09 one frame of 200 topics with one unknown symbol among them delivered no snapshot at all.
+The same 200 topics sent as 200 frames of one delivered 199 snapshots, and as 20 frames of ten delivered 190.
+The same day `STGUSDT` carried an `offlineTime` of 2026-10-10 09:00 UTC while still `Trading`, see [`rest.md`](./rest.md) section 2.
 
 ## 5. Session
 
@@ -229,6 +233,8 @@ Subscribe, and its acknowledgement.
 ```json
 {"success":true,"ret_msg":"","conn_id":"da7tmrdms2cltqn1afv0-8d6qq","req_id":"book50","op":"subscribe"}
 ```
+
+The acknowledgement, the refusal and the pong had the same shapes on 2026-10-09, with no `data` field.
 
 Snapshot of an own book.
 
@@ -303,7 +309,7 @@ It assumes the venue is kept at all, which [`rest.md`](./rest.md) section 8 ques
 | markets | the four own books, `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, `GMTUSDT`, if Bybit stays a venue | the other 693 are Bybit's book, section 4 |
 | channel | `orderbook.50.<rawMarketId>` | snapshot on subscribe, strict `u` chain, 50 levels covers the engine's 20 |
 | markets per connection | 200, as for Bybit | 697 topics ran on one socket with 0 gaps twice, and 28,028 characters of args were accepted |
-| subscribe frames | 200 topics per frame, and never a symbol that is not in the current catalog | one refused topic drops its whole frame |
+| subscribe frames | one topic per frame, and never a symbol that is not in the current catalog | one refused topic drops its whole frame, and on 2026-10-09 a frame of 200 with one unknown symbol delivered no book at all |
 | keepalive | `{"op": "ping"}` every 5 s, not Bybit's 20 s | the server closes a socket that it has sent nothing on for about 10 s, and a socket of four markets or of quiet markets can go that long without a book frame |
 | `maxSilenceMs` | 15,000 | three missed pongs, and the pong is the traffic that keeps both ends alive |
 | snapshot | `type === 'snapshot'`: `resetBook` and store `u` | documented replace semantics |

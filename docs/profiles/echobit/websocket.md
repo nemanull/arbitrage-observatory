@@ -59,7 +59,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | axis | documented | probed |
 |---|---|---|
 | endpoint split axis | one market socket for spot and perpetuals, one funding socket, one private socket, S2 | as documented, section 1 |
-| subscribe frame shape | `{"id": "depth.BTCUSDT", "topic": "depth", "event": "sub", "symbol": "BTCUSDT", "params": {}}`, one symbol per frame in every example, S1 | one frame per symbol, 124 frames in 2 ms, all delivered. A comma separated `symbol` also works |
+| subscribe frame shape | `{"id": "depth.BTCUSDT", "topic": "depth", "event": "sub", "symbol": "BTCUSDT", "params": {}}`, one symbol per frame in every example, S1 | one frame per symbol, 124 frames in 2 ms, all delivered. A comma separated `symbol` also works on `depth`. On 2026-10-09 `markKline_1m` and `indexKline_1m` refused `"XAUUSDT,ETHUSDT"` with `-100010` and sent no candle, so the kline topics need one frame per `indexId` |
 | unknown symbol expectation | Not publicly specified | `{"code":"-100010","desc":"Invalid Symbols!"}`, no `id`, and the socket stays open. A delisted symbol and a missing symbol answer the same |
 | chunk unit and budget | Not publicly specified | 124 subscriptions on one socket, every one delivered |
 | keepalive mechanism | the client sends `{"ping": <ms>}`, the server answers `{"pong": <ms>}`, "If no heartbeat message is received within 60 seconds, the server will close the connection.", S2. The documentation's demo page instead answers server pings, S4 | the client ping is answered with the server's own time, not an echo. No server ping of either kind arrived on any socket in 100 s |

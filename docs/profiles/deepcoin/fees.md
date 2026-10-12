@@ -45,8 +45,8 @@ So the 600 ppm rests on the two help center fee calculation articles, and a per-
 
 | product | present | count on 2026-09-22 | evidence |
 |---|---|---:|---|
-| USDT-margined perpetuals | yes | 348, all `live` | Probed, `GET /deepcoin/market/instruments?instType=SWAP`, [`rest.md`](./rest.md) section 2 |
-| of which stock, ETF and metal perpetuals | yes | the venue announced "96 stock and ETF underlying assets" on 2026-09-16, not counted by the probe | H13 |
+| USDT-margined perpetuals | yes | 348, all `live`, and 359 on 2026-10-09 | Probed, `GET /deepcoin/market/instruments?instType=SWAP`, [`rest.md`](./rest.md) section 2 |
+| of which stock, ETF and metal perpetuals | yes | the venue announced "96 stock and ETF underlying assets" on 2026-09-16, not counted by the probe. On 2026-10-09 `assetType` read `stock` on 171, `metal` on 6 and `commodity` on 2 | H13, [`rest.md`](./rest.md) section 2 |
 | coin-margined inverse perpetuals | yes | 5: `LTC-USD-SWAP`, `ETH-USD-SWAP`, `XRP-USD-SWAP`, `BCH-USD-SWAP`, `LINK-USD-SWAP` | Probed, same call |
 | USDC-margined perpetuals | no | 0 in the catalog, though 250 dead rows of the funding call include names such as `BTCUSDC` | Probed, [`rest.md`](./rest.md) section 3 |
 | instruments outside the catalog | yes, not tradable through the catalog | 7 in the ticker and mark replies: `1BTC-USD-SWAP`, `1ETH-USD-SWAP`, `1XRP-USD-SWAP`, `2BTC-USDT-SWAP`, `2ETH-USDT-SWAP`, `dBTC-USDT-SWAP`, `dETH-USDT-SWAP` | Probed, [`rest.md`](./rest.md) section 2 |
@@ -128,7 +128,7 @@ An account endpoint `GET /deepcoin/account/trade-fee` added on 2026-05-28 return
 | interest rate | "By default, the interest rate is set to 0.00% per day", while the same article says the rate settles at "0.01% (interest rate)" inside the band | H9, the two sentences disagree |
 | premium index | computed "every minute" from depth weighted prices of 80 BTC contracts or 800 contracts on other pairs, time weighted over the interval | H9 |
 | cap | "The absolute upper limit of the funding rate is (initial margin-maintenance margin) * 75%", and the rate "shall not change more than 75% of the maintenance margin during the fund interval" | H9 |
-| interval | 8 h on 201 contracts, 4 h on 146, 1 h on 1 (`CVCUSDT`), and 4 h on all 5 inverse contracts | Probed, `GET /deepcoin/trade/funding-rate`, [`rest.md`](./rest.md) section 3 |
+| interval | 8 h on 201 contracts, 4 h on 146, 1 h on 1 (`CVCUSDT`), and 4 h on all 5 inverse contracts. On 2026-10-09 it was 8 h on 206 and 4 h on 153, with no 1 h contract | Probed, `GET /deepcoin/trade/funding-rate`, [`rest.md`](./rest.md) section 3 |
 | settlement instants | 8 h contracts settle at 00:00, 08:00 and 16:00 UTC, which H9 writes as "08:00, 16:00 and 24:00 (HKT)". 4 h contracts had `nextSettleTime` 04:00 UTC at 03:42 UTC | H9, probed history rows |
 | who pays | "When the funding rate is positive, longs pay shorts. When the funding rate is negative, shorts pay longs." Only positions held at the instant pay. | H9 |
 | amount | "Funding cost = position value * funding rate", with position value at the mark price | H9 |

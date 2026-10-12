@@ -216,6 +216,7 @@ That the source refreshes at the 0.5 s `fast` cadence is an inference, and [`res
 | throughput, `fast` and `bbo` | | 178 `fast` plus 178 `bbo` on one socket: 672.3 frames a second, 194.6 KiB a second, 6.1 µs of `JSON.parse` a frame, 12.9 ms of user and 1.2 ms of system CPU a second, P6. `fast` alone was 326.3 frames and 146.7 KiB a second at 460 bytes a frame, and `bbo` 345.9 frames and 47.9 KiB a second at 142 bytes |
 
 The main-dex universe held 234 perps on 2026-09-24, 178 listed and 56 delisted, P1 to P3.
+It held the same 234, 178 listed and 56 delisted, on 2026-10-08.
 `fast` plus `bbo` on every listed first-dex perp is 356 of the 1,000 subscriptions an IP may hold.
 The 109 listed `xyz` perps at two streams each would bring that to 574, so the per-IP cap binds before the socket does once several builder dexes are included.
 A reconnect that resubscribes 356 streams spends 356 of the 2,000 messages an IP may send in a minute.
@@ -223,6 +224,7 @@ A reconnect that resubscribes 356 streams spends 356 of the 2,000 messages an IP
 ## 6. Captured frames
 
 Trimmed, from the probe runs of 2026-09-24.
+On 2026-10-08 every `fast` `l2Book` frame also carried `"fast":true` beside `coin`, `time` and `levels`, while a default frame carried no `fast` key.
 Level arrays are cut to three per side, and the values are as received.
 Blocks marked `text` are cut mid-frame and are not valid JSON.
 
@@ -365,7 +367,7 @@ A recommendation for a later design, not a decision.
 | URL plan | one plan, `wss://api.hyperliquid.xyz/ws`, for every family | one socket carries first-dex perps, HIP-3 perps and spot |
 | book channel | `l2Book` with `"fast":true` for the book, and `bbo` for the touch | default `l2Book` is 20 levels but about 5.4 s apart, `fast` is 5 levels every 0.54 s, and `bbo` follows every block |
 | merge | on a `fast` frame, `resetBook` with its 5 levels and `publish`. On a `bbo` frame newer than the last snapshot, drop the bids above the new best bid and the asks below the new best ask, set both touch levels, and `publish` | the touch then moves per block, and the deeper levels stay at most one `fast` push old |
-| depth | accept 5 levels, or add a default `l2Book` on a second socket for a 20-level view every 5 s | `fast` and default frames carry the same channel and coin, so the two cannot share a socket |
+| depth | accept 5 levels, or add a default `l2Book` for a 20-level view every 5 s | on 2026-10-08 one socket carried both books of `BTC`, each acknowledged, and only the `fast` frames carried `"fast":true`, so the two can share a socket |
 | markets per connection | every listed first-dex perp on one socket, 178 today, as 356 streams | 672 frames a second and 195 KiB a second parsed at 6.1 µs a frame, P6 |
 | subscribe frames | one frame per stream, `{"method":"subscribe","subscription":{"type":"l2Book","coin":"<name>","fast":true}}` and `{"method":"subscribe","subscription":{"type":"bbo","coin":"<name>"}}`, paced at 20 frames per 100 ms | a coin array is refused, and 356 paced frames were all acknowledged |
 | catalog guard | subscribe only names read from the live `meta` universe of each dex, and skip `isDelisted` | one unknown name closes the socket with every stream on it |

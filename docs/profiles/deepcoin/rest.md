@@ -37,6 +37,13 @@ The venue's own servers sit behind CloudFront, so the round trip is to the Seatt
 `instType=SPOT` returns 173 spot pairs, all `live`.
 The instruments reply carries no index, mark, funding or fee field, and `ctValCcy`, `ctType`, `alias` and `uly` were empty on every row.
 
+On 2026-10-09 the same call returned 364 swaps in about 140 KB, all `live`.
+359 were USDT linear, with `ctVal` 185 at 1, 161 at 0.1, 7 at 0.01, 3 at 1000, 2 at 100 and 1 at 0.001.
+The other 5 were the same USD inverse contracts.
+Each row now carries `symbol`, the compact socket id such as `BTCUSDT`, and `assetType`, `settleCcy` and `productGroup`.
+`assetType` read `crypto` on 180 USDT rows, `stock` on 171, `metal` on 6 and `commodity` on 2, and `productGroup` read `SwapU` on the USDT rows and `Swap` on the inverse ones.
+`uly` and `ctValCcy` were filled on every row, `ctType` read `linear` or `inverse`, and only `alias` stayed empty.
+
 ### How CCXT 4.5.68 maps it
 
 | CCXT field | source | probed on 353 swaps |
@@ -48,6 +55,8 @@ The instruments reply carries no index, mark, funding or fee field, and `ctValCc
 | `taker`, `maker` | the one `trading` pair, lines 221, 222 and 510 | 0.0015 and 0.001 on 353 of 353 |
 
 `loadMarkets` fetched 525 markets in 526 and 619 ms, 353 of them swaps.
+On 2026-10-09 CCXT loaded 359 active linear swaps, the same 359 the adapter keeps, with `contractSize` equal to `ctVal` on every one.
+Its `base` copies the cut or unscaled `baseCcy`, so it reads `1000CHEE`, `JELLYJEL` and `SHIB` where the adapter reads `1000CHEEMS`, `JELLYJELLY` and `1000SHIB`.
 
 ### Identifiers across the three spellings
 
@@ -69,6 +78,11 @@ The socket book needs one more piece, the tick size, as the string `info.tickSz`
 - Four bases carry a 1000 prefix, `1000BONK`, `1000CAT`, `1000PEPE` and the one of `1000CHEEMS-USDT-SWAP`, whose venue `baseCcy` is truncated to `1000CHEE`.
   CCXT copies that into `base`, so the CHEEMS contract will not cluster with `1000CHEEMS` on other venues without an override.
   `1000PEPE-USDT-SWAP` has `ctVal` 1000, so one contract is 1,000 units of `1000PEPE`.
+- On 2026-10-09 `baseCcy` was cut at 8 characters on two rows, `1000CHEE` for `1000CHEEMS-USDT-SWAP` and `JELLYJEL` for `JELLYJELLY-USDT-SWAP`, while `uly` kept the whole name.
+  `1000SHIB-USDT-SWAP` had `baseCcy` `SHIB`, although its price is per 1,000 SHIB.
+  Its mark read 0.005382 while binance's `1000SHIBUSDT` mark read 0.00538278 in the same minute.
+  `2NEIRO-USDT-SWAP` had `baseCcy` `NEIRO`, and its mark of 0.00008184 matched binance's `NEIROUSDT` at 0.00008187.
+- On 2026-10-09 the ticker's `volCcy24h` equalled `vol24h` times `ctVal` times `last` within 20 % on all 359 USDT contracts, so `volCcy24h` is the quote turnover and `ctVal` is in the unit the price quotes.
 - The ticker and mark replies carry 7 instruments the catalog does not list: `1BTC-USD-SWAP`, `1ETH-USD-SWAP`, `1XRP-USD-SWAP`, `2BTC-USDT-SWAP`, `2ETH-USDT-SWAP`, `dBTC-USDT-SWAP` and `dETH-USDT-SWAP`.
   Their 24 h quote volumes read from 570 to 78,132,071,265 on the second pass, and at 03:16 UTC `dETH-USDT-SWAP` alone was about 89 % of the USDT quote volume in the ticker reply.
   They never reach CCXT, since `loadMarkets` reads only the instruments call.
@@ -114,6 +128,8 @@ An unknown `instId` on the rate call returns `{"code":"0","msg":"","data":{"curr
 | `nextFundingAt` | `nextSettleTime` | integer Unix seconds: `1790150400` is 2026-09-23 08:00 UTC | multiply by 1,000 |
 
 At 03:34 and 03:42 UTC, 201 contracts read an 8 h interval with next settlement 08:00 UTC, 146 read 4 h with 04:00 UTC, and `CVCUSDT` read 1 h with 04:00 UTC.
+On 2026-10-09 the funding cycle call returned 359 rows, one per USDT contract: 206 at 8 h and 153 at 4 h, with no 1 h contract.
+On the same day the mark call returned 371 rows, the 364 catalog swaps and the same 7 hidden instruments, and the current funding rate call returned 610 rows.
 Mark rows carry `ts`, in whole seconds.
 At arrival a row's `ts` was a median of 500 and 1,262 ms old, and at most 4,503 and 5,269 ms old, over 240 readings in each `poll` run.
 

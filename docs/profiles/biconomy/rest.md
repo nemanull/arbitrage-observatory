@@ -53,6 +53,11 @@ The fields are short names, and their meaning below is inferred from values and 
 All 511 rows settle and quote in USDT, so the active count by settlement asset is USDT 295, USDC 0 and coin 0.
 The 295 rows carried `mfr` 0.0002 and `tfr` 0.0006 without exception, and none has a base listed twice.
 
+On 2026-10-09 at 19:59 UTC the call returned 519 rows, 316 with `state` 0 and 203 with `state` 3, all with `ft` 1 and all settled and quoted in USDT.
+`ticker/list` and `allFundingRate` each carried exactly those 316 active contracts.
+The 316 active rows carried `mfr` 0.0002 and `tfr` 0.0006 without exception, and none had a base listed twice.
+The `ih` flag was true on 5 active contracts, `STRK_USDT`, `DOGE_USDT`, `XAG_USDT`, `CBRS_USDT` and `NBIS_USDT`, and `ihd` on `BSP_USDT` alone.
+
 ### How CCXT maps it
 
 CCXT 4.5.68 has no class for Biconomy, and neither has CCXT master, see [`fees.md`](./fees.md) section 8.
@@ -67,6 +72,9 @@ So the catalog needs a loader that reads `detailV2` in place of `loadMarkets`, m
 | `contractSize` | `cs` | turnover recovers it, `amount24 / (volume24 * curPrice)` within 15 % on 294 of 295, the exception `NIL_USDT` at 0.79 to 0.82 against 1 |
 | `active` | `state === 0` | 295 rows |
 | `takerPpm` | `tfr` times 1,000,000 | 600 on every active row |
+
+On 2026-10-09 turnover recovered `cs` within 15 % on 316 of 316 active contracts, `NIL_USDT` among them.
+The REST book of `BTC_USDT` at `limit=20` read 68,055 contracts at the top bid, which is 6.8 BTC at `cs` 0.0001, and `PEPE_USDT` read 3.911e-06 per coin against Binance's `1000PEPEUSDT` at 0.0039133 per thousand.
 
 ### Size unit, pairs listed twice, and price scale
 
@@ -97,6 +105,7 @@ The reply carries `cache-control: max-age=2, public, s-maxage=5`, while Cloudfla
 
 The rate in the two replies disagreed on 18 and 19 contracts at some poll in the two runs.
 The two calls are separate snapshots, so a round should take the rate from one of them only.
+In one read of both calls on 2026-10-09 at 19:59 UTC the two rates agreed on all 316 contracts, so the disagreement comes and goes.
 
 ### Row mapping
 
@@ -110,6 +119,7 @@ The two calls are separate snapshots, so a round should take the rate from one o
 | `nextFundingAt` | `allFundingRate` `nextSettleTs` | integer Unix ms: `1790150400000` is 2026-09-23 08:00 UTC | none |
 
 At 03:19, 03:30 and 03:42 UTC the 293 contracts on 8 h read 08:00 UTC and the two others read 04:00 UTC.
+On 2026-10-09 at 19:59 UTC, 314 contracts were on 8 h, `BASED_USDT` on 4 h and `ONG_USDT` on 1 h, and the 8 h contracts read 2026-10-10 00:00 UTC while the two others read 2026-10-09 20:00 UTC.
 
 ## 4. Anchor semantics
 
@@ -130,6 +140,8 @@ The source names are `BYBIT_FUTURE` 158 times, `BINANCECIP` 170, `OKEX_FUTURE` 1
 Many of them are other venues' perpetuals, not the spot markets the help center describes.
 No basket names Biconomy itself, so the self-index shape of [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) does not arise.
 The five single-source baskets are `ICP_USDT` on `BITGET_FUTURE`, `HANMI_USDT` on `BYBIT_FUTURE`, `KNC_USDT` on `GATEIO_FUTURE`, `THE_USDT` on `MEXC` and `XTZ_USDT` on `BITGET`.
+On 2026-10-09 the 316 active baskets held 1 source on 5 contracts, 2 on 7, 3 on 75, 4 on 83 and 5 to 13 on 146.
+The single-source baskets were the same five, and still no basket named Biconomy.
 
 The `ICP_USDT` index is frozen.
 Its hourly index candles from `GET /future/api/v1/kline/indexPrice/ICP_USDT?interval=Min60` were flat at 2.944 for the 42 hours since 2026-09-21 10:00 UTC, in all four runs of `index`.
@@ -137,6 +149,11 @@ Over the same minutes Bybit's `ICPUSDT` read 3.043 with an index of 3.046, Bitge
 So the mark sat 28,872 to 38,383 ppm above the index.
 `ANTHROPIC_USDT`, with a basket of `BYBIT_FUTURE` and `BINANCECIP`, had its mark 24,115 to 24,539 ppm below its index without a flat index.
 A poller has to skip both, or the engine has to deny the pairs.
+
+On 2026-10-09 at 20:00 UTC the `ICP_USDT` index still read 2.944 on each of its last 48 hourly candles, while its mark read 2.994 at 19:59 UTC.
+A sweep of the hourly index candles of all 316 active contracts that day found no other index that stayed flat over 24 hours.
+The adapter therefore leaves only `ICP_USDT` out of its anchor rows.
+`ANTHROPIC_USDT`'s index moved, so it keeps its rows, and its book agreed with the reference venues within 2 % in the identity check of 2026-10-09.
 
 ### Mark
 
@@ -152,6 +169,8 @@ On the wire, `fairPrice` equalled the last trade on 68 and 74 of 295 contracts, 
 | over 10,000 ppm | 2, `ICP_USDT` and `ANTHROPIC_USDT` |
 
 No clamp tighter than 38,383 ppm is in force, since `ICP_USDT` read that far from its index.
+On 2026-10-09 at 19:59 UTC four marks sat more than 1 % from their index: `OPENAI_USDT` 3.88 % above, `ANTHROPIC_USDT` 2.05 % below, `ICP_USDT` 1.7 % above its frozen index and `NATGAS_USDT` 1.5 % above.
+No `indexPrice` or `fairPrice` was 0 on any of the 316 rows.
 
 ### Funding
 

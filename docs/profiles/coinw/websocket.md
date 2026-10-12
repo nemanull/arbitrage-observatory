@@ -108,6 +108,10 @@ None documented, and none on the wire.
 
 Bids best first and descending, asks best first and ascending, in every frame of both runs on all five contracts.
 No frame was crossed.
+On 2026-10-09, 108,520 depth frames of all 376 online contracts over 150 s were all best first and none was crossed, with one exception.
+`BOT` repeated one price on two adjacent bid levels in 269 of its frames, such as 27.76 with size 1.8 followed by 27.76 with size 142.7.
+In that run the repeat sat at level 22 or deeper, and a live smoke the same day met it inside the first 20 levels.
+What a repeated price means is Not publicly specified, so the adapter keeps the last size.
 
 ### Size unit against the catalog
 
@@ -165,6 +169,11 @@ Because the socket acknowledges symbols it will never serve, a feed has to notic
 | subscriptions per connection | Not publicly specified | `index_price` on all 387 contracts delivered on all 387. The three anchor channels on all 387 contracts, 1,161 subscriptions sent in pair order, delivered for the first 171 contracts and for none after, in both runs. So the first 513 subscriptions delivered, and every later one was acknowledged with `"result": true` and stayed silent |
 | subscription rate | depth 10 per 2 s per IP, anchor channels "None" | depth at 4 a second and a burst of 12 drew no refusal. The anchor channels at 25 a second drew none |
 | throughput | | `depth` on 100 USDT contracts on one socket: 260 and 274 frames a second, 2,374 and 2,505 KB a second, 9.3 KB a frame, and 281 to 310 µs per `toString` and `JSON.parse` of a frame on this laptop. The anchor channels on 171 contracts: 1,143 and 1,156 frames a second, 145 and 148 KB a second |
+
+On 2026-10-09, 60 depth subscriptions sent 50 ms apart on one socket, 20 a second, were all acknowledged and served, so the documented 10 per 2 s per IP was not enforced.
+The same day a client sent 100 depth subscriptions 200 ms apart while it stopped reading the socket from 2 s to 30 s.
+The last 26 got neither an acknowledgement nor a frame, while the first 74 were served, and a pause from 3 s to 15 s lost none.
+So a client that falls far behind its reads loses the subscriptions it sends meanwhile, in silence.
 
 At that weight the whole catalog is heavy.
 387 contracts at the measured 2.6 to 2.7 frames a second each is about 1,000 to 1,060 frames and 9.4 to 9.9 MB a second, and about 0.3 s of parse time per second of the event loop at the measured cost.

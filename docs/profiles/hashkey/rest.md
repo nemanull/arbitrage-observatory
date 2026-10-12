@@ -70,6 +70,8 @@ The index reply is keyed differently, by the index name, see section 3.
 Book sizes on the REST book and on both sockets are integer contracts, and one contract is 0.001 of the base asset, which is CCXT's `contractSize`.
 The 24 h ticker of `BTCUSDT-PERPETUAL` reported `v` 16,266 and `qv` 1,399,213.18 USDT, which is 86.02 USDT a unit at a price near 86,400, so a unit is 0.001 BTC, P1.
 The best bid of `"12"` against 24 h volume of about 1.4 million USDT only makes sense as 12 contracts, 0.012 BTC.
+On 2026-10-09 at 18:52 UTC the same ticker reported `v` 9,343 and `qv` 771,919.61 USDT, which is 82.62 USDT a unit at a price near 82,550, so the unit is still 0.001 BTC.
+`ETHUSDT-PERPETUAL` reported `v` 256,092 and `qv` 636,514.66 USDT at the same minute, which is 2.49 USDT a unit at a price near 2,486, so its unit is 0.001 ETH.
 `LOT_SIZE` is written in base units, 0.001 BTC, while book sizes are in contracts, and CCXT already divides the lot filter by the multiplier.
 Each perpetual pair is listed once as a swap, and spot `BTCUSDT` and `ETHUSDT` are separate spot markets that the connector's swap filter drops.
 Both contracts are quoted per 1 BTC and per 1 ETH, so no price scale is needed.
@@ -91,7 +93,7 @@ No single call carries all five `AnchorRow` fields.
 The index call without a symbol returns every index, so it is a bulk call.
 The mark call has no bulk form, and without `symbol` it answers 400 `{"code":-100012,"msg":"Parameter symbol [String] missing!"}`, P1.
 The funding call without a symbol returns every contract, and without `timestamp` it answers 400 `{"code":"0001","msg":"Required field timestamp missing or invalid"}`, P1.
-The documentation's OpenAPI block for the funding call names an `X-HK-APIKEY` header, S2, yet the call answered 200 without any key, and CCXT lists it as public at `hashkey.js` line 205.
+The documentation's OpenAPI block for the funding call names an `X-HK-APIKEY` header, S2, yet the call answered 200 without any key on 2026-09-23 and again on 2026-10-09, and CCXT lists it as public at `hashkey.js` line 205.
 So a round costs one index call, one mark call per contract and one funding call, four calls for the two contracts.
 `GET /quote/v1/ticker/24hr` carries no mark, index or funding field, and its bulk form lists 41 spot rows and no perpetual, P1.
 
@@ -149,6 +151,8 @@ No clamp on the mark's premium is named, so the mark can sit as far from the ind
 | age of the reply's `time` on arrival | 132 to 612 ms | 133 to 1,397 ms | P2 |
 
 Price 1 sat within 60 ppm of the index while the mark sat up to 924 ppm under it, so the mark followed Price 2 or the last price during both polls, which is an inference.
+The discount is not standing.
+On 2026-10-09 the mark sat 231 ppm under the index on `BTCUSDT-PERPETUAL` and 877 ppm under on `ETHUSDT-PERPETUAL` at 18:30 UTC, and 65 ppm over and 527 ppm under at 18:52 UTC, from mark and index read about a second apart.
 The mark of the delisted `BTCUSD-PERPETUAL` still answers 200, with a price equal to the `BTCUSD` index read a second earlier, to every digit at 03:12 UTC and to one decimal at 03:34 UTC, P1.
 An unknown id, and the spot id `BTCUSDT`, answer 200 with an empty body, P1.
 
@@ -177,7 +181,8 @@ What the call returns across a settlement instant was not captured.
 |---|---|---|
 | call | `GET /quote/v1/depth?symbol=<id>&limit=<n>` | S1 |
 | documented limit | "Maximum value is 200" | S1 |
-| levels returned | no `limit`, 200, 201 and 1000 all returned the whole book, 48 to 54 bids and 41 or 42 asks on `BTCUSDT-PERPETUAL` and 78 or 81 bids and 77 or 79 asks on `ETHUSDT-PERPETUAL` over two runs. `limit=20` returned 20 a side | P1 |
+| levels returned | no `limit`, 200, 201 and 1000 all returned the whole book, 48 to 54 bids and 41 or 42 asks on `BTCUSDT-PERPETUAL` and 78 or 81 bids and 77 or 79 asks on `ETHUSDT-PERPETUAL` over two runs. `limit=20` returned 20 a side. On 2026-10-09 at 18:52 UTC `limit=200` returned 83 bids and 60 asks on `BTCUSDT-PERPETUAL` | P1 |
+| unknown or delisted symbol | 400 `{"code":-100011,"msg":"Not supported symbols"}` for `NOPEUSDT-PERPETUAL` and for the delisted `BTCUSD-PERPETUAL` on 2026-10-09, while the delisted contract's mark still answers 200 | `curl` on 2026-10-09 |
 | level order | bids descending, asks ascending, at every limit | P1 |
 | size unit | integer contracts, section 2 | P1 |
 | caching | two reads in a row returned the same bytes and the same `t`, each `Miss from cloudfront` | P1 |

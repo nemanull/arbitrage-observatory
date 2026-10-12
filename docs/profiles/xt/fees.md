@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 03:16 to 04:01 UTC, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the perpetual futures of XT.COM (CCXT id `xt`), both the USDT-margined family on `fapi.xt.com` and the coin-margined family on `dapi.xt.com`.
 Every number carries a source from section 10, a probe run of [`rest-probe.mjs`](../../../scripts/probes/venues/xt/rest-probe.mjs), or a CCXT file and line.
 The help center pages at `xtsupport.zendesk.com/hc/...` answer this host and WebFetch with HTTP 403 and a Cloudflare "Just a moment..." page.
@@ -51,6 +53,8 @@ Whether a `makerFee` of 0.0004 is what an account is charged was not verified, s
 | coin-M dated futures | yes | 134 listed, 7 trading | P2 |
 | options | no | CCXT reports `'option': false` on every market | S13 |
 | spot | yes | 1,185 spot markets in CCXT's catalog | P2 |
+
+On 2026-10-09 the USDT-M symbol list held 1,125 perpetuals, 754 with `tradeSwitch` true and 693 of those also `isOpenApi` true, and `skr_usdt` still read `takerFee` `"0"`.
 
 CoinGecko's derivatives API lists "XT.COM (Derivatives)" with 763 perpetual pairs and 10 futures pairs, 104,770 BTC of open interest and 133,278 BTC of 24 h volume, S14.
 Within the USDT-M family, 217 of the 691 tradable contracts sit in the `TradFi` plate of `GET /future/market/v1/public/plate/list`, 161 in `Tokenized Stocks`, 32 in `FOREX`, 8 in `Commodities` and 7 in `INDEX`, see [`rest.md`](./rest.md) section 4.

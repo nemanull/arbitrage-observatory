@@ -72,6 +72,7 @@ The web app's own bundle names `https://futures.<domain>` and `wss://futures.byd
 
 `futureType` 1, `type` 1, `apiAllowed` true and `isHidden` false held on all 266, and no contract had `preMarket` true.
 The status values other than 0 are not listed anywhere BYDFi publishes, so the recommended poller keeps only `state` 0.
+On 2026-10-09 the catalog still listed 266 contracts, 255 USDT-M, 3 USDC-M and 8 coin-M, all in state 0 with `apiAllowed` true and `takerFeeRate` 0.0006.
 
 ### How CCXT 4.5.68 maps it
 
@@ -106,6 +107,9 @@ That reading is an inference, and the quote family ranks the inverse contract af
 | XRP, ADA, DOGE, LTC, LINK | `_USDT` and `_USD` |
 
 No contract name carried a `1000` prefix or another price scale on 2026-09-22.
+On 2026-10-09 six did: `1000PEPE_USDT`, `1000SHIB_USDT`, `1000BONK_USDT`, `1000RATS_USDT`, `1000SATS_USDT` and `1000LUNC_USDT`, each with `contractSize` 1, so one contract is one unit of the prefixed base.
+That day 24 h turnover divided by 24 h contracts times `contractSize` times last price fell between 0.92 and 1.09 on the 258 linear contracts, with a median of 1.00.
+The socket's `1000PEPE_USDT` book and the REST book of the same `version` matched level for level.
 
 ## 3. Anchor
 
@@ -135,6 +139,8 @@ Single contract calls exist, `index_price/{symbol}`, `fair_price/{symbol}` and `
 | `nextFundingAt` | funding `nextSettleTime` | integer Unix ms | none |
 
 At 03:35 and 03:45 UTC on 2026-09-23 the 105 contracts on 8 h read `nextSettleTime` 2026-09-23 08:00 UTC and the 161 on 4 h read 04:00 UTC.
+On 2026-10-09 104 contracts read 8 h and 162 read 4 h.
+Ticker rows arrived 0.1 to 2.1 s after their own `timestamp` over eight polls that day.
 No ticker row had a zero `indexPrice`, `fairPrice`, `bid1` or `ask1`.
 
 ## 4. Anchor semantics
@@ -180,6 +186,7 @@ Each contract's `indexOrigin` names its sources, and `BTC_USDT` lists `MEXC`, `K
 No contract lists BYDFi itself, so the self-index shape of [`../../research/2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) does not occur.
 Other venues' perpetuals do appear, and 11 contracts use only futures sources: `CL_USDT`, `XAU_USDT`, `XAG_USDT`, `BZ_USDT`, `NVDA_USDT`, `COPPER_USDT`, `DELL_USDT`, `SKHYNIX_USDT`, `LUNA2_USDT`, `NFLX_USDT` and `XPD_USDT`.
 Thin baskets: `ONE_USDT` uses `BINANCE` alone, `LUNA2_USDT` two futures, `COPPER_USDT` three futures, and `SPELL_USDT` `MEXC`, `BINANCE` and `GATEIO`.
+On 2026-10-09 `ONE_USDT`'s book sat 3.6 to 4.6 % above gate's and okx's marks and within 0.1 % of mexc's.
 `ONE_USDT` had the largest mark premium on the venue in both runs, -14,756 and -10,302 ppm, and `ONE|USDT` is already in `DENIED_PAIRS` at [`../../../server/src/engine/cluster/clusterOverrides.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/engine/cluster/clusterOverrides.ts) line 11.
 The help center adds two guards, S2.
 A source more than 1 % from the median of all sources gets zero weight, and when more than one source deviates by more than 5 % the median replaces the weighted average.

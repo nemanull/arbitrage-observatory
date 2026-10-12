@@ -66,7 +66,7 @@ A hand-written loader would map the catalog as follows.
 | engine field | source | note |
 |---|---|---|
 | `rawMarketId` | `instrument_id` | the same string is the suffix of the book channel `contractsOrderbookVolumes.<id>`, the `instrument_id` inside every book frame, and the `instrument_id` of every ticker frame, on 13 of 13, P5 and P6 |
-| `base` | `contract_currency` | `base` says `XAU` for the gold contract while `pair` and `contract_currency` say `XAUT`, and other venues list tokenised gold as XAUT |
+| `base` | `contract_currency` | `base` said `XAU` for the gold contract on 2026-09-23 while `pair` and `contract_currency` said `XAUT`, and on 2026-10-09 `base` also said `XAUT`. Other venues list tokenised gold as XAUT |
 | `quote` | `counter`, `USDT` | |
 | `linear` | true | margin in USDT, and the book's quote size equals base size times price on every level checked, see [`websocket.md`](./websocket.md) section 4 |
 | `contractSize` | `Number(contract_size)` | book sizes are contracts, and the socket's own base-coin size equals contracts times `contract_size` exactly on 400 levels checked per contract, [`websocket.md`](./websocket.md) section 4 |
@@ -101,7 +101,7 @@ The documented per-contract channel `contractsTickers.<instrument_id>` carries t
 | `mark` | `mark_price` | decimal string, equal to `index_price` and `fair_price` on every frame | `Number()` |
 | `fundingRate` | `funding_rate` | decimal string, `"0"` or `"0.000000000000000000"` on every frame | `Number()` |
 | `fundingIntervalHours` | `funding_interval` | integer ms: 28,800,000 on 11 contracts, 3,600,000 on AVAX, 21,600,000 on LTC | divide by 3,600,000 |
-| `nextFundingAt` | none | `last_funding_time` plus `funding_interval` lies on 2026-09-08 for 12 contracts and in 2022 for SOL | no field, see section 8 |
+| `nextFundingAt` | none | `last_funding_time` plus `funding_interval` lay on 2026-09-08 for 12 contracts and in 2022 for SOL on 2026-09-23. On 2026-10-09 `last_funding_time` read 2026-09-30 on those 12 and still 2022-02-01 on SOL, with every rate still 0 | no field, see section 8 |
 
 ## 4. Anchor semantics
 
@@ -120,6 +120,7 @@ The index was compared with Gate's futures index for the same coin three times i
 
 In the first run, at 03:28 UTC, the ATOM mark sat 139,843 to 141,310 ppm above its own book mid and the ETC mark 39,401 to 40,545 ppm above, P6.
 So two of 13 indices are not the market price of their coin, and a route through either would read a 4 % or 14 % premium that is not there.
+On 2026-10-09 the two were still off, in a 75 s capture of `turboTickers.*`: the median ATOM index sat 105,333 ppm above the ticker's own mid and the ETC index 77,815 ppm above it, while the other 11 sat between −2,133 and +843 ppm.
 
 ### Mark
 
@@ -202,7 +203,7 @@ A recommendation for a later design, not a decision.
 | `mark` | `mark_price`, never 0 | equal to the index while funding is off |
 | `fundingRate` | `Number(funding_rate)`, today 0 | |
 | `nextFundingAt` | not available | funding is disabled and `last_funding_time` is two weeks old |
-| skip | `ATOM_USDT_PERPETUAL` and `ETC_USDT_PERPETUAL` | their index is 14 % and 4 % away from the coin's market price, section 4 |
+| skip | `ATOM_USDT_PERPETUAL` and `ETC_USDT_PERPETUAL` | their index was 14 % and 4 % away from the coin's market price on 2026-09-23, and about 11 % and 8 % on 2026-10-09, section 4 |
 | skip | any contract whose `is_enabled` is false, or whose emergency flag in `turboEmergencyMode.*` is true | the documented maintenance states, S1 |
 | base naming | `XAU_USDT_PERPETUAL` under `XAUT` | the contract is on the gold token, section 2 |
 | catalog | read `turboFutureInstruments.*` at boot on the same socket | no REST call and no CCXT class lists the contracts |

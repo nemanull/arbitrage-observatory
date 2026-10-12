@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, 2026-09-23 03:17 to 03:46 UTC in two passes, from the development host near Seattle.
 
+**Rechecked:** 2026-10-09, against the live venue, and each corrected line names that date.
+
 This profile covers what a taker pays on the Hotcoin perpetuals, for every perpetual family the venue lists.
 CCXT 4.5.68 has no Hotcoin class, so no CCXT constant exists to cite, see section 8.
 The fee numbers come from the public JSON call behind Hotcoin's fee page, read with an unauthenticated GET, and the rules come from the fee page text and help center articles.
@@ -107,10 +109,10 @@ None of these applies to an unqualified account, so the engine's VIP 0 taker sta
 | interest rate | I = (Quote Interest Rate Index − Base Interest Rate Index) / Funding Interval, with no index values published | S10, formula image |
 | clamp | "the buffer limit parameter (cap) used in the Clamp mechanism is generally set at 0.05%" | S10 |
 | absolute cap and floor | "may be subject to a maximum limit", set from the initial and maintenance margin rates, with no number published | S10 |
-| interval | the help center says "typically settled every 8 hours". The funding history shows 8 h on 19 of 38 sampled contracts and 4 h on the other 19, and every listed contract's next settlement was 04:00 or 08:00 UTC on 2026-09-23 | S11, P1 `history` and `catalog` |
+| interval | the help center says "typically settled every 8 hours". The funding history shows 8 h on 19 of 38 sampled contracts and 4 h on the other 19, and every listed contract's next settlement was 04:00 or 08:00 UTC on 2026-09-23. On 2026-10-09 `kaiausdt` settled every hour, so 1 h occurs too | S11, P1 `history` and `catalog` |
 | who pays | a positive rate means longs pay shorts, a negative rate means shorts pay longs, and "The platform is only responsible for settlement and does not collect funding fees." | S11 |
 | fee | Funding Fee = Position Value × Funding Rate, charged only on positions held at the settlement time | S11 |
-| settlement record | each history row is stamped 4 to 213 s after the hour, median 44 s, over 380 rows | P1 `history` |
+| settlement record | each history row is stamped 4 to 213 s after the hour, median 44 s, over 380 rows. On 2026-10-09 the 08:00 UTC settlement of `terusdt`, `jpn225usdt` and `suiusdt` was stamped 09:17 UTC | P1 `history` |
 | observed range | the last settled rate across all 585 contracts ran from −0.00228087 to 0.00229731, about ±0.23 % per interval | P1 `catalog` |
 | recurring value | among the 76 lows and highs of the 38 sampled histories, 0.00005 appeared 22 times and 0.0001 8 times, which matches a 0.01 % per 8 h interest leg scaled to a 4 h interval | P1 `history`, inference |
 

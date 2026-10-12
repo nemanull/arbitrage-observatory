@@ -40,6 +40,7 @@ The hosts sit behind Huawei Cloud CDN, and `openapi.aivora.com` resolved to `98.
 The channel names and the `sub` and `unsub` events are from S1.
 No best bid and ask channel, no dedicated mark, index or funding channel, and no all-market channel exists.
 The ticker is the only socket source of mark, index and funding, one contract per subscription.
+On 2026-10-09 the ticker of `market_e_spcxusdt` carried neither `sign_price` nor `index_price`, and its REST index read 0.
 
 The `<step>` values come from `coinResultVo.depthList` in the web futures list S3, and the first value equals the contract's price tick, `10^-symbolPricePrecision`, on 77 of 77 contracts, P1 and P2 `catalog` in [`rest.md`](./rest.md).
 So `market_e_btcusdt_depth_0.1`, `market_e_ethusdt_depth_0.01` and `market_e_fartcoinusdt_depth_0.0001` are the unaggregated books.

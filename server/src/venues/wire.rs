@@ -1,6 +1,9 @@
 use crate::engine::cluster::BookLevel;
+use anyhow::Context;
+use flate2::read::{GzDecoder, ZlibDecoder};
 use serde::de::{self, Deserialize, Deserializer, IgnoredAny, SeqAccess, Visitor};
 use std::fmt;
+use std::io::Read;
 
 // Unlike Number, an empty string is NaN rather than 0.
 pub fn number(text: &str) -> f64 {
@@ -21,6 +24,20 @@ pub fn num<'de, D: Deserializer<'de>>(deserializer: D) -> Result<f64, D::Error> 
 // A null reads as no levels.
 pub fn levels<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Vec<BookLevel>, D::Error> {
     deserializer.deserialize_any(LevelsVisitor)
+}
+
+// A gzip frame (RFC 1952), as a binary socket frame arrives.
+pub fn gunzip(frame: &[u8]) -> anyhow::Result<Vec<u8>> {
+    let mut out = Vec::with_capacity(frame.len() * 4);
+    GzDecoder::new(frame).read_to_end(&mut out).context("gunzip failed")?;
+    Ok(out)
+}
+
+// A zlib frame (RFC 1950), as a binary socket frame arrives.
+pub fn inflate(frame: &[u8]) -> anyhow::Result<Vec<u8>> {
+    let mut out = Vec::with_capacity(frame.len() * 4);
+    ZlibDecoder::new(frame).read_to_end(&mut out).context("inflate failed")?;
+    Ok(out)
 }
 
 struct NumVisitor;
@@ -120,7 +137,12 @@ impl<'de> Visitor<'de> for LevelsVisitor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use flate2::Compression;
+    use flate2::write::{GzEncoder, ZlibEncoder};
     use serde::Deserialize;
+    use std::io::Write;
+
+    const FRAME: &[u8] = br#"{"channel":"depth","data":{"b":[["79909.30","23.163"]]}}"#;
 
     #[derive(Deserialize)]
     struct Row {
@@ -216,5 +238,49 @@ mod tests {
     fn a_level_without_a_size_refuses_the_frame() {
         assert!(serde_json::from_str::<Book>(r#"{"b":[["1"]]}"#).is_err());
         assert!(serde_json::from_str::<Book>(r#"{"b":["1","2"]}"#).is_err());
+    }
+
+    fn gzip(bytes: &[u8]) -> Vec<u8> {
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(bytes).unwrap();
+        encoder.finish().unwrap()
+    }
+
+    fn zlib(bytes: &[u8]) -> Vec<u8> {
+        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(bytes).unwrap();
+        encoder.finish().unwrap()
+    }
+
+    fn corrupt(mut frame: Vec<u8>) -> Vec<u8> {
+        let middle = frame.len() / 2;
+        frame[middle] ^= 0xff;
+        frame
+    }
+
+    #[test]
+    fn gunzip_reads_back_a_gzip_frame() {
+        assert_eq!(gunzip(&gzip(FRAME)).unwrap(), FRAME);
+    }
+
+    #[test]
+    fn inflate_reads_back_a_zlib_frame() {
+        assert_eq!(inflate(&zlib(FRAME)).unwrap(), FRAME);
+    }
+
+    #[test]
+    fn a_corrupt_frame_is_an_error() {
+        assert!(gunzip(&corrupt(gzip(FRAME))).is_err());
+        assert!(inflate(&corrupt(zlib(FRAME))).is_err());
+        let truncated = gzip(FRAME);
+        assert!(gunzip(&truncated[..truncated.len() - 4]).is_err());
+    }
+
+    #[test]
+    fn a_plain_frame_and_the_other_format_are_errors() {
+        assert!(gunzip(FRAME).is_err());
+        assert!(inflate(FRAME).is_err());
+        assert!(gunzip(&zlib(FRAME)).is_err());
+        assert!(inflate(&gzip(FRAME)).is_err());
     }
 }

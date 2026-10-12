@@ -93,15 +93,17 @@ Each needs the usual `DENIED_PAIRS` check against the other venues before activa
 
 | call | index | mark | funding rate | interval | next settlement | reply | warm time |
 |---|---|---|---|---|---|---|---|
-| `GET /api/contract/v2/instruments` | `indexPrice` | `markPrice` | `fundingRate` | absent | `nextFundingTime`, Unix ms | 42.0 KB, 99 rows | 60 polls at 04:14 UTC: min 159, median 189.8, p90 258.4, max 368.7 ms. At 04:16: min 182.2, median 293.3, p90 434.7, max 559.8 ms. At 04:35: min 179.4, median 218.7, p90 313.3, max 388.2 ms |
+| `GET /api/contract/v2/instruments` | `indexPrice` | `markPrice` | `fundingRate` | `fundingIntervalMinutes` on 2026-10-09, absent on 2026-09-23 | `nextFundingTime`, Unix ms | 42.0 KB, 99 rows | 60 polls at 04:14 UTC: min 159, median 189.8, p90 258.4, max 368.7 ms. At 04:16: min 182.2, median 293.3, p90 434.7, max 559.8 ms. At 04:35: min 179.4, median 218.7, p90 313.3, max 388.2 ms |
 | `GET /api/contract/v2/instruments@{symbol}` | same fields | | | | | 445 bytes, one object | |
 | `GET /api/contract/v1/instruments`, the web app's path | same fields | | | | | 41.9 KB, 99 rows | |
 | socket `wss://api.big.one/ws/contract/v2/instruments` | same fields | | | | | first frame 99 rows, then one row per frame | see [`websocket.md`](./websocket.md) section 2 |
 
-One call carries four of the five `AnchorRow` columns for every contract, keyed by `symbol`, which is CCXT's `market.id`.
-The funding interval is in no public call, see the row mapping below.
+On 2026-09-23 one call carried four of the five `AnchorRow` columns for every contract, keyed by `symbol`, which is CCXT's `market.id`.
+On 2026-09-23 the funding interval was in no public call, see the row mapping below.
+On 2026-10-09 at 18:39 UTC every one of the 99 rows carried `fundingIntervalMinutes`, so this call now carries all five columns.
 Every field but `symbol` is a JSON number, and `markPrice` and `indexPrice` were above 0 on 99 of 99 rows.
 Each row also carries `usdtPrice`, `btcPrice` and `ethPrice`, which are the venue's USDT, BTC and ETH index prices, S2, and `nextFundingRate`, "Estimated next funding rate".
+On 2026-10-09 the rows also carried `openInterestLong` and `openInterestShort`, which no anchor column needs.
 
 ### Row mapping
 
@@ -111,13 +113,13 @@ Each row also carries `usdtPrice`, `btcPrice` and `ethPrice`, which are the venu
 | `index` | `indexPrice` | JSON number | none |
 | `mark` | `markPrice` | JSON number, rounded to the contract's price precision | none |
 | `fundingRate` | `fundingRate` | JSON number, a fraction per interval: `0.0001765` is 0.01765 % | none |
-| `fundingIntervalHours` | absent | | derive, see below |
+| `fundingIntervalHours` | `fundingIntervalMinutes`, on 2026-10-09 | JSON number, minutes: 480, 240 or 60 | divide by 60 |
 | `nextFundingAt` | `nextFundingTime` | Unix ms: `1790150400000` is 2026-09-23 08:00 UTC | none |
 
 At 04:13 UTC 98 contracts read `nextFundingTime` 08:00 UTC and `SKRUSDT` read 05:00 UTC.
 Between 04:00 and 08:00 UTC a 4 h contract and an 8 h contract both settle next at 08:00, so the next time alone does not name the interval.
 
-Three ways give `fundingIntervalHours`.
+Before the venue published the field, three ways gave `fundingIntervalHours`.
 
 1. The settlement frequency announcement of 2026-09-02 lists 24 USDT-M contracts at 4 h and `SKRUSDT` at 1 h, and everything else stays at 8 h, S5.
    The table is already incomplete, since method 3 found 4 h, in at least one of three runs, on `ZHIPUUSDT`, `CXMTUSDT`, `PONSUSDT`, `HAJIMIUSDT` and `NIULAIUSDT`, which the announcement does not list.
@@ -127,6 +129,13 @@ Three ways give `fundingIntervalHours`.
    It gave about 8 h for 42 contracts and about 4 h for 19 at 04:17 UTC, and 45 and 17 at 04:36 UTC, but it fails when the funding basis rounds away in the mark, see section 4.
 
 The recommendation in section 8 combines all three.
+
+On 2026-10-09 the venue's own field made these methods a fallback.
+At 18:39 UTC `fundingIntervalMinutes` read 480 on 69 rows, 240 on 29 and 60 on `SKRUSDT`.
+The 29 contracts at 4 h were `ORDIUSDT`, `TRUMPUSDT`, `AUSDT`, `WLFIUSDT`, `ENAUSDT`, `AVNTUSDT`, `PUMPUSDT`, `ASTERUSDT`, `HYPEUSDT`, `GIGGLEUSDT`, `PAXGUSDT`, `MERLUSDT`, `MONUSDT`, `BREVUSDT`, `ELSAUSDT`, `XAUUSDT`, `XAGUSDT`, `CLUSDT`, `ARXUSDT`, `REUSDT`, `SAMSUNGUSDT`, `ZHIPUUSDT`, `BZUSDT`, `NATGASUSDT`, `CXMTUSDT`, `UNITREEUSDT`, `PONSUSDT`, `HAJIMIUSDT` and `NIULAIUSDT`.
+The count fits the 24 announced contracts plus the five that method 3 found, and the five are among the 29.
+The field agreed with the mark formula of method 3: `BTCUSDT`, `ETHUSDT`, `SOLUSDT` and `TSLAUSDT` implied 8.01 to 8.12 h, and `HYPEUSDT` and `XAUUSDT` 4.06 and 4.00 h.
+The next settlement then read 00:00 UTC on the 8 h rows, 20:00 UTC on the 4 h rows and 19:00 UTC on `SKRUSDT`.
 
 ## 4. Anchor semantics
 
@@ -255,7 +264,7 @@ A recommendation for a later design, not a decision.
 | URL | `https://big.one/api/contract/v2/instruments` | one call, 42 KB, carries index, mark, rate and next settlement for all 99 contracts |
 | interval | 1,000 ms, the default at [`AnchorPoller.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/anchor/AnchorPoller.ts) line 7 | medians of 190 to 293 ms and a max of 560 ms over 180 polls in three runs, 10 of the 500 per 10 s budget. The index moves every 5 s, so four of five polls repeat it, and a 1 s poll still catches each step within a second |
 | row mapping | section 3, key `symbol` | |
-| `fundingIntervalHours` | a static table seeded from S5 and from method 3 of section 3, 4 h for the 24 listed contracts and the five the formula found, 1 h for `SKRUSDT`, 8 h otherwise, replaced by the observed step of `nextFundingTime` once a settlement is seen | the API publishes no interval, and the announcement alone is incomplete |
+| `fundingIntervalHours` | `fundingIntervalMinutes` divided by 60, and the static table of section 3 only for a row without it | the call carries the interval since at least 2026-10-09, and the announcement alone is incomplete |
 | skip | `BTCUSD` and `ETHUSD` | the market filter drops them anyway |
 | do not read | `nextFundingRate` as `fundingRate`, and `latestPrice` | the fixed rate for the upcoming settlement is `fundingRate` |
 | rate limit pause | `rateLimitPauseMs` 10,000 | the window is 10 s and no `Retry-After` is documented |

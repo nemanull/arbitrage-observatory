@@ -22,6 +22,7 @@ The documentation is S1, a single page in the Deribit shape whose examples date 
 
 One socket carries every perpetual, because there is only one family.
 The batch run subscribed all 578 perpetuals on one socket and every one delivered, see section 5.
+On 2026-10-09 that no longer held, because each socket then took at most 30 channels, see section 5.
 The two website endpoints were read from the Next.js bundle of `www.orangex.com` and are named only so that nobody mistakes them for the documented API.
 
 ## 2. Channel matrix for public market data
@@ -46,10 +47,10 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 
 | axis | documented | probed |
 |---|---|---|
-| endpoint split axis | one URL, S1 | one URL, 578 perpetuals on one socket |
+| endpoint split axis | one URL, S1 | one URL, 578 perpetuals on one socket on 2026-09-23, and at most 30 channels a socket on 2026-10-09 |
 | subscribe frame shape | `{"jsonrpc": "2.0", "id": 1, "method": "/public/subscribe", "params": {"channels": [...]}}`, S1 | as documented. The method needs its leading slash, and `public/subscribe` answers code 1000 `No service found` |
 | unknown symbol expectation | Not publicly specified | error code 3401 `channel regex not match` naming the channel. One bad channel fails the whole frame, section 4 |
-| chunk unit and budget | Not publicly specified | 150 channels in one frame acked in 138 ms in both batch runs, then 428 more in one frame, all delivering |
+| chunk unit and budget | Not publicly specified | 150 channels in one frame acked in 138 ms in both batch runs, then 428 more in one frame, all delivering. On 2026-10-09 a frame that would take a socket past 30 channels was refused whole with code 1005 |
 | keepalive mechanism | "send a "PING" string or call the /public/ping command", "every 5 seconds", S1 | `PING` answers the text `PONG`. `/public/ping` answers `{"id":"1001",…,"result":{}}` in 132 to 154 ms. The server sent no protocol ping |
 | connection lifetime and maintenance notice | Not publicly specified | no forced disconnect in 58 s of a pinged socket. A socket that sends nothing for 30 s is closed, section 5 |
 | handshake and operation rate limits | "no more than 5 times per minute" for new sockets, "keep the number of concurrent WebSocket connections below 10", "Otherwise, risk control rules may be triggered, resulting in IP and account bans", S1 | the probe stayed under both, so no limit was reached |
@@ -76,6 +77,10 @@ S1 documents the alignment recipe, which is the Binance one: buffer the deltas, 
 The probe followed that recipe with `depth=100`.
 In twelve alignments over three runs, the first REST snapshot was already recent enough, and the first kept delta always had `change_id` equal to `version` plus 1 where one was kept.
 The probe fetched the snapshots about 2 s after the subscribe, and 3 to 28 deltas per contract had been buffered by then.
+
+On 2026-10-09 the first snapshot was not always recent enough.
+A 90 s run of the adapter on 210 markets found `XAUT-USDT-PERPETUAL` at `version` 113965983 while its first buffered `change_id` was 113965985, and an earlier run that day found five such snapshots.
+So a feed must check the first kept delta against `version` plus 1 and fetch the snapshot again when it is further ahead.
 
 A full-depth snapshot is the wrong seed.
 Over the same twelve alignments, `depth=0`, read just after `depth=100`, returned a lower `version` ten times, by 1 to 22, the same one once, and a higher one once, by 2.
@@ -133,6 +138,8 @@ The first run keyed levels by the price string and kept a stale BTC bid at `8666
 The unit is the base coin, which is what the contract specification says: "BTCUSDT Perp, ETHUSDT Perp contracts represent only one unit of its respective base asset", S2.
 The catalog has no `contract_size` field on any perpetual, so a catalog loader should set `contractSize` 1, see [`rest.md`](./rest.md) section 2.
 Six contracts carry a multiple of the coin in their base, for example `1000SHIB-USDT-PERPETUAL`, whose sizes then count units of 1,000 SHIB, an inference from the name that was not checked against a book.
+On 2026-10-09 `cmc_contracts` confirmed it.
+`1000SHIB-USDT-PERPETUAL` had an open interest of 1,473,813,529 at a last price of 0.005394, within 0.1 percent of its `open_interest_usd` of 7,951,224, so a size counts units of the priced multiple.
 
 ### One-sided and empty books
 
@@ -161,6 +168,8 @@ Book `timestamp` was 66 to 346 ms older than the arrival, median 68 to 70 ms on 
 | `/public/subscribe` with empty `params` | `"result":[]` |
 | `public/subscribe` or `/public/nope` | code 1000 `No service found` |
 | text that is not JSON | `{"jsonrpc":"2.0",…,"error":{"code":9902,"message":"json parse error"}}` with no id, and the socket stays open |
+| 40 channels in one frame on a new socket, on 2026-10-09 | `{"id":"10",…,"error":{"code":1005,"message":"Subscription channel limit exceeded","data":{"limit":"30","requestedNew":"40","projected":"40","current":"0"}}}`, and no channel of the frame delivered |
+| a 31st channel on a socket that holds 30, on 2026-10-09 | the same 1005 with `"requestedNew":"1","projected":"31","current":"30"` |
 
 A frame is accepted or refused whole, and the refusal names only the bad channel.
 So a feed that sends a delisted id in a slice loses the whole slice unless it drops the named channel and sends the rest again.
@@ -187,7 +196,7 @@ The BTC mark took 12 and 20 distinct values over 57 frames, which fits a mark th
 | compression | Not publicly specified | text JSON frames only. A client that offered permessage-deflate got no `sec-websocket-extensions` header back |
 | handshake | new sockets "no more than 5 times per minute", fewer than 10 at once | 176 to 555 ms to open. The front is Google (`via: 1.1 google`) |
 | close | Not publicly specified | the client's close with 1000 ended as 1000 twice and as 1006 three times, over five sockets |
-| subscription limits | Not publicly specified | 578 channels on one socket, no refusal |
+| subscription limits | Not publicly specified | 578 channels on one socket with no refusal on 2026-09-23. On 2026-10-09 every socket took at most 30 channels, on `api.orangex.com` and on `www.orangex.com` alike, and a frame that would pass 30 was refused whole with code 1005 |
 | throughput | | all 578 perpetuals on one socket, two runs: median 472 and 473 frames a second over 32 one-second buckets, min 387 and 415, max 626 and 738, 314 and 322 KB a second, 793 and 796 bytes a frame, 28 and 37 µs `JSON.parse` per frame |
 | order entry | removed from the WebSocket on 2025-05-30, market data unaffected, S3 | |
 
@@ -294,6 +303,10 @@ A recommendation for a later design, not a decision.
 | reconnect pacing | at most 5 new sockets a minute | documented, with a ban as the stated penalty |
 | receive time | stamp on arrival | book `timestamp` ran a median 70 ms behind arrival, which is transit and not staleness |
 | deflate | keep `perMessageDeflate: false` | the server does not negotiate it anyway |
+
+On 2026-10-09 the 30 channel limit of section 5 ruled out the URL plan above.
+Under the documented caps of fewer than 10 sockets and 5 new ones a minute, one IP can then stream at most 270 books.
+The adapter streams the 210 most traded perpetuals on 7 sockets of 30, opened 12 s apart.
 
 This is the first feed in the engine that would need a REST seed per market, because every existing feed gets a snapshot or a whole window over its socket, and no feed file under `server/src/venues` makes a REST call.
 That seed step is the named change the WebSocket side needs.

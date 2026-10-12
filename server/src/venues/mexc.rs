@@ -3,7 +3,7 @@ mod markets;
 #[cfg(test)]
 mod tests;
 
-pub use markets::load;
+pub use markets::{load, load_profile};
 
 use super::wire;
 use crate::engine::cluster::{BookLevel, Market};
@@ -14,11 +14,69 @@ use std::time::Duration;
 use tokio_tungstenite::tungstenite::Message;
 
 pub const ID: &str = "mexc";
+pub const OURBIT_ID: &str = "ourbit";
+pub const BYDFI_ID: &str = "bydfi";
 
-const REST: &str = "https://api.mexc.com";
+// What differs between the venues that run MEXC's contract API v1, which ourbit and bydfi serve path for path.
+pub struct Profile {
+    id: &'static str,
+    name: &'static str,
+    rest: &'static str,
+    public_url: &'static str, // one socket carries every contract family
+    taker_ppm: u32,
+    codes: &'static [(&'static str, &'static str)], // currency codes over CCXT's base table
+    stable_linear_only: bool, // decision 3, which MEXC's own loader predates
+    denied: &'static [(&'static str, &'static str)],
+    anchor: AnchorSource,
+}
 
-// One socket carries the USDT, USDC and coin margined contracts alike.
-const PUBLIC_URL: &str = "wss://contract.mexc.com/edge";
+enum AnchorSource {
+    Funding,          // the funding call carries index and mark too
+    TickerAndFunding, // the funding call lacks them, so the bulk ticker adds index and mark
+}
+
+pub const MEXC: Profile = Profile {
+    id: ID,
+    name: "MEXC Global",
+    rest: "https://api.mexc.com",
+    public_url: "wss://contract.mexc.com/edge",
+    // API orders pay 0.08 percent since 2026-06-01, which overrides every per contract rate, see docs/profiles/mexc/fees.md section 9.
+    // The API rate changed twice in two months, so re-read https://www.mexc.com/announcements/api-updates before starting this venue.
+    // Each contract's takerFeeRate is the web and app rate, which no API order pays, so it is not compared.
+    taker_ppm: 800,
+    codes: markets::MEXC_CODES,
+    stable_linear_only: false,
+    denied: &[],
+    anchor: AnchorSource::Funding,
+};
+
+// The documented host contract.ourbit.com has no DNS answer, and futures.ourbit.com serves the same paths.
+// CCXT's mexc table is left out, because Ourbit's index baskets show that its GMT, GAS, FLUX and PROS are the tokens binance and okx list under those names.
+pub const OURBIT: Profile = Profile {
+    id: OURBIT_ID,
+    name: "Ourbit",
+    rest: "https://futures.ourbit.com",
+    public_url: "wss://futures.ourbit.com/edge",
+    taker_ppm: 400, // VIP 0, docs/profiles/ourbit/fees.md section 2, and takerFeeRate 0.0004 on 753 of 753 contracts on 2026-10-09
+    codes: &[],
+    stable_linear_only: true,
+    denied: markets::OURBIT_DENIED,
+    anchor: AnchorSource::TickerAndFunding,
+};
+
+// BYDFi moved to MEXC's contract API on 2026-09-22, and CCXT's bydfi class still reads the retired paths.
+// api.bydfi.com answers the catalog about twice as fast as futures.bydfi.com, while only futures.bydfi.com serves the socket.
+pub const BYDFI: Profile = Profile {
+    id: BYDFI_ID,
+    name: "BYDFi",
+    rest: "https://api.bydfi.com",
+    public_url: "wss://futures.bydfi.com/edge",
+    taker_ppm: 600, // VIP 0, docs/profiles/bydfi/fees.md section 2, and takerFeeRate 0.0006 on 266 of 266 contracts on 2026-10-09
+    codes: &[],
+    stable_linear_only: true,
+    denied: markets::BYDFI_DENIED,
+    anchor: AnchorSource::TickerAndFunding,
+};
 
 // A whole top of book on every push, about every 300 ms, so a frame needs no seed and no gap rule.
 // The merged incremental channel is about 100 ms sooner and needs a REST seed per contract.
@@ -28,19 +86,31 @@ const ERROR_CHANNEL: &str = "rs.error";
 
 const DEPTH: usize = 20; // must stay at or above DEPTH_LEVEL
 
-const MARKETS_PER_CONNECTION: usize = 150; // 150 contracts ran on one socket with no refusal on 2026-09-15, and MEXC publishes no cap
+// 150 contracts ran on one MEXC socket with no refusal on 2026-09-15.
+// Ourbit's and BYDFi's sockets held 150 full depth contracts each through a 90 s live smoke on 2026-10-09, and none of the three publishes a cap.
+const MARKETS_PER_CONNECTION: usize = 150;
 
 pub struct Mexc {
+    profile: &'static Profile,
     rest: String,
 }
 
 impl Mexc {
     pub fn new() -> Self {
-        Self::with_rest(REST)
+        Self::for_venue(&MEXC)
     }
 
+    pub fn for_venue(profile: &'static Profile) -> Self {
+        Self::at(profile, profile.rest)
+    }
+
+    #[cfg(test)]
     fn with_rest(rest: &str) -> Self {
-        Self { rest: rest.to_string() }
+        Self::at(&MEXC, rest)
+    }
+
+    fn at(profile: &'static Profile, rest: &str) -> Self {
+        Self { profile, rest: rest.to_string() }
     }
 }
 
@@ -67,8 +137,8 @@ impl BookVenue for Mexc {
         let mut plans = Vec::new();
         for (i, slice) in markets.chunks(MARKETS_PER_CONNECTION).enumerate() {
             plans.push(EndpointPlan {
-                id: format!("{ID}#swap#{i}"),
-                url: PUBLIC_URL.to_string(),
+                id: format!("{}#swap#{i}", self.profile.id),
+                url: self.profile.public_url.to_string(),
                 markets: slice.to_vec(),
             });
         }

@@ -41,6 +41,7 @@ Every call answered 200, including the errors, section 6.
 | `contractId` | integer, not in the documented response |
 
 So the only perpetual family is USDT-M linear, with 213 active contracts.
+On 2026-10-09 the call returned 252 rows, 217 of them with `status` 1, and `multiplierCoin` was `USDT` on 8 active contracts, `E-XPD-USDT` and `E-BBX-USDT` besides the six named below.
 The 213 include equity, commodity and index names such as `E-AAPL-USDT`, `E-NVDA-USDT`, `E-XAU-USDT`, `E-NATGAS-USDT`, `E-KUAISHOU-USDT` and `E-HK0700-USDT`, and the catalog has no flag that marks them.
 
 The undocumented `GET https://futuresopenapi.fameex.com/v1/inner/contract_config` returned 213 rows and 141,561 bytes in 1,245 to 1,682 ms, P3 and P6.
@@ -125,6 +126,8 @@ On 65 and 77 of 213 contracts in the two surveys the mark equalled `newPrice`, t
 `E-ZIL-USDT` was one of them, with its mark 2,177 to 4,475 ppm below its index across three runs of 60 polls, P2.
 The gap between mark and index over all 213 contracts had a median of 679 and 674 ppm, a 90th percentile of 2,514 and 2,229 ppm, and a maximum of 88,409 and 87,478 ppm on `E-KUAISHOU-USDT`, whose index was 4.294 while its last trade was 3.914, P3 and C3.
 72 and 74 contracts had a gap over 1,000 ppm, P3.
+On 2026-10-09 `E-QCOM-USDT` read a 24 h high, low and last of 187.74 against an index of 175.98, while every other stock contract traded, and its funding rows read 0 as for a shut market.
+Its book stayed quoted around 187.75, so it does not quote the stock.
 On BTC and ETH the gap stayed within −170 to 131 ppm, P2.
 
 `contract_config` carries `capitalPremiumMin` −0.0005 and `capitalPremiumMax` 0.0005 on all 213 contracts, and `priceRange` 0.05 on 211 of them, P6.
@@ -151,6 +154,10 @@ S1 describes `nextFundRate` as "Funding rate price" and `currentFundRate` as "Pr
 So a rate beyond 1.28 % per 4 h has settled, and the cap, if one exists, is Not publicly specified.
 `nextFundRate` changed exactly once in each 59 s run on BTC, ZIL and AAPL and not at all on ETH, whose rate sat at 0.0001, so it is recomputed about once a minute, P2.
 `nextFundRate` is taken as the rate for the upcoming settlement, and that reading is an inference from its name and its once a minute movement.
+On 2026-10-09 that reading was checked at a settlement.
+`E-KAIA-USDT`, which settles every hour, read `nextFundRate` -0.00144711 at 20:59:59 UTC, `/fapi/v1/fundingRate` then listed -0.00144711 settled at 21:00, and `currentFundRate` took that value by 21:00:10.
+The settled rates follow Binance's.
+KAIA settled -0.00218676 at 20:00 UTC as Binance's `KAIAUSDT` did, and at about 21:04 UTC BTC's `nextFundRate` read 0.00006606 while Binance's `lastFundingRate` read 0.00006631.
 Because `currentFundRate` matched the last settled rate on only 145 of 213 contracts, what it describes is not settled either.
 
 ### Interval and settlement
@@ -167,7 +174,10 @@ Every contract's last settlement fell on a multiple of its `capitalFrequency` fr
 The history of `E-BTC-USDT` holds 100 settlements from 2026-08-21 00:00 to 2026-09-23 00:00 UTC, every 8 h, and 17 of the 99 gaps between them were one second longer or shorter than 8 h, C4.
 The help centre article of 2023 says perpetuals settle every 8 hours at 00:00, 08:00 and 16:00 UTC+8, and that "During the settlement period, the trading will be suspended", S7.
 The 4 h, 2 h and 1 h intervals seen today are not in that article.
-The settlement instant itself was not captured.
+The settlement instant itself was not captured here, see the check of 2026-10-09 under Funding.
+On 2026-10-09 the website's `POST https://www.fameex.com/fe-co-api/common/futures/public_info` with body `{}` answered without a login.
+It lists each trading contract with `subSymbol`, `capitalFrequency`, `capitalFrequencyUnit` `h` and `nextCapitalSettTime` in Unix ms, so the next settlement is read rather than computed.
+Over the 209 contracts sized in their base it gave 4 h on 117, 8 h on 90, 2 h on `E-FLOKI-USDT` and 1 h on `E-KAIA-USDT`.
 
 ### How often each number changed
 

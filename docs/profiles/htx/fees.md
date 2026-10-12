@@ -6,6 +6,8 @@
 
 **Probed:** 2026-09-22 local time, from the development host near Seattle, 03:08 to 03:46 UTC on 2026-09-23.
 
+**Rechecked:** 2026-10-08, against the live venue while the Rust adapter was verified, and each corrected line names that date.
+
 This profile covers the trading fees of HTX (formerly Huobi, CCXT id `htx`) on its perpetual futures, the USDT-margined family in detail and the coin-margined family where it differs.
 The engine models a taker cross at the base retail tier, so the Prime 0 taker is the number that matters.
 HTX's own fee page is rendered in the browser and its futures table could not be read from this host, see section 1, so the Prime 0 numbers rest on an HTX help article and a third party table that agree.
@@ -45,7 +47,7 @@ Counts are from `rest-probe.mjs catalog` at 03:23 UTC on 2026-09-23 through CCXT
 
 | product | present | active count | note |
 |---|---|---|---|
-| USDT-M perpetuals | yes | 353 | 130 crypto and 223 TradFi: 179 labelled Stocks, 27 Stocks and Indices, 7 Metals, 7 Indices, 3 Commodities, by the `tradfi_labels` field of `swap_contract_info`. 4 more are suspended with `contract_status` 3 |
+| USDT-M perpetuals | yes | 353 | 130 crypto and 223 TradFi: 179 labelled Stocks, 27 Stocks and Indices, 7 Metals, 7 Indices, 3 Commodities, by the `tradfi_labels` field of `swap_contract_info`. 4 more are suspended with `contract_status` 3. On 2026-10-08, 377 were active, 154 crypto and 223 TradFi, and 5 were suspended |
 | coin-M perpetuals | yes | 5 | `BTC-USD`, `ETH-USD`, `XRP-USD`, `TRX-USD`, `DOGE-USD` |
 | USDC-M perpetuals | no | 0 | every linear contract has `trade_partition` `USDT` |
 | USDT-M dated futures | yes | 4 | BTC and ETH, `this_week` and `next_week` |
@@ -109,7 +111,7 @@ From the HTX article "Funding Calculation", S5, and the wire, P2.
 
 | item | value |
 |---|---|
-| interval | 8 h, 4 h or 1 h per contract, in `settlement_period` of `swap_contract_info`. On 2026-09-23 the 357 USDT-M swaps listed read 248 at 8 h, 93 at 4 h and 16 at 1 h, and the 130 active crypto swaps read 67, 56 and 7 |
+| interval | 8 h, 4 h or 1 h per contract, in `settlement_period` of `swap_contract_info`. On 2026-09-23 the 357 USDT-M swaps listed read 248 at 8 h, 93 at 4 h and 16 at 1 h, and the 130 active crypto swaps read 67, 56 and 7. On 2026-10-08 the 377 active swaps read 269, 93 and 15, and the 154 crypto swaps 88, 60 and 6 |
 | premium index | `[Max(0, Impact bid price - Index price) - Max(0, Index price - Impact ask price)] / Index price`, every 5 s, over an impact notional of 25,000 USDT for BTC and ETH down to 2,000 USDT for new listings |
 | average premium | time weighted, `(P1 * 1 + P2 * 2 + ... + Pn * n) / (1 + 2 + ... + n)`, with 5,760 readings in 8 h |
 | rate | `clamp{[Average premium index + clamp(0.01% - Average premium index, Premium deviation cap, Premium deviation floor)] / (8/N), Funding rate cap, Funding rate floor}`, where N is the interval in hours |

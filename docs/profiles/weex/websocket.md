@@ -165,6 +165,9 @@ Seven of the eight are perpetuals on US listed stocks or funds, probed while the
 | text that is not JSON | `{"result":false,"msg":"INVALID_ARGUMENT: unrecognized message : hello"}` | the socket stays open |
 
 Because a delisted symbol is acked and served an empty book, the feed has to treat a snapshot with `u` 0 as a dead stream.
+On 2026-10-09 the same empty snapshot came for 11 contracts that are still in the catalog, such as `JP225USDT` and `GASTOWNUSDT`, see [`rest.md`](./rest.md) section 2.
+A refused symbol also ends the reading of its subscribe frame.
+On 2026-10-09 a frame naming `ETHUSDT`, `NOPEUSDT` and `BTCUSDT` got `result` false for `NOPEUSDT`, then `ETHUSDT` delivered and `BTCUSDT` never did, so the streams after a refused one have to be sent again.
 
 ## 5. Session
 
@@ -176,7 +179,7 @@ Because a delisted symbol is acked and served an empty book, the feed has to tre
 | maintenance notice | Not publicly specified | none seen |
 | compression | Not publicly specified | a client that offered permessage-deflate got `permessage-deflate;client_max_window_bits=15` back, twice. With deflate refused, as the engine does, every frame was plain text JSON |
 | handshake | a `User-Agent` header is required, S1 and S4 | opens in 321 to 471 ms. Without the header the handshake still opened and delivered on 2026-09-23, section 3 |
-| subscription limits | 100 channels and 240 operations per hour per connection, 20 connections per IP, S1 | 101 streams on one connection delivered. The other limits were not approached |
+| subscription limits | 100 channels and 240 operations per hour per connection, 20 connections per IP, S1 | 101 streams on one connection delivered. The other limits were not approached. On 2026-10-09 the adapter's probe sent 254 client frames in about 2 minutes on one socket without a close, so client pings do not seem to spend the operations budget, while about 100 frames inside 5 s closed a socket |
 | throughput | | 100 perpetuals, every tenth by 24 h volume, three runs: median 185 to 197 frames per second, peak 203, 51 to 55 KB per second, 273 to 278 bytes per frame, 15 to 18 µs `JSON.parse` per frame |
 
 The engine opens its sockets with no headers at all, at [`../../../server/src/feeds/book/VenueFeed.ts`](https://github.com/nemanull/arbitrage-observatory/blob/2cbe70629c3c429da9b231ab71a7b861b3fc8096/server/src/feeds/book/VenueFeed.ts) line 81, and the `ws` library adds no `User-Agent` of its own.

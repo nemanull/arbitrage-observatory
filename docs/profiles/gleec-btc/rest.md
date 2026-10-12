@@ -41,6 +41,9 @@ A perpetual row, verbatim.
 
 The 30 working perpetuals on 2026-09-24 were AAVE, ADA, APE, APT, ARB, ATOM, AVAX, BCH, BNB, BTC, DOT, ETH, FIL, FLOW, GMT, ICP, LINK, LTC, MANA, NEAR, OP, SAND, SHIB, SOL, TRUMP, TRX, UNI, XLM, XRP and ZEC, each against USDT.
 `SHIBUSDT_PERP` is quoted per whole SHIB, with `tick_size` `"0.000000001"` and `quantity_increment` `"1000"`, so no per 1000 price scale is needed.
+On 2026-10-09 Gleec BTC and Mandala Exchange both served HitBTC's exact book, so the shared book is HitBTC's own.
+The `ETHUSDT_PERP` REST book at depth 3 was identical on `api.hitbtc.com`, `api.trade.mandala.exchange` and this host, with the same `timestamp` to the millisecond.
+On the same day `/public/currency` listed no `GMT` code, while `GMTUSDT_PERP` has underlying `GMT`, and its index of 0.00896 equalled the STEPN contract on the other HitBTC v3 hosts.
 
 ### How CCXT 4.5.68 maps it
 
@@ -87,7 +90,7 @@ One call carries index, mark, the rate and the next settlement for every perpetu
 |---|---|---|
 | `index` | `index_price` | string |
 | `mark` | `mark_price` | string |
-| `fundingRate` | `funding_rate`, fraction per period | which settlement it applies to is Not verified, see section 4 |
+| `fundingRate` | `funding_rate`, fraction per period | read as the rate charged at `next_funding_time` since 2026-10-09, see section 4 |
 | `fundingIntervalHours` | not in the reply, 8 | from the funding history, 8 h apart on every row read |
 | `nextFundingAt` | `Date.parse(next_funding_time)` | ISO string, 2026-09-24T08:00:00.000Z on all 30 working perpetuals |
 
@@ -123,6 +126,12 @@ The bulk call calls it "Percent of the contract's mark value paid in the previou
 The history row stamped 2026-09-24T00:00:00.003Z carries `funding_rate` `0.0001` and `next_funding_time` 08:00, and the live row showed the same rate before 08:00.
 Whether that rate was charged at 00:00 or will be charged at 08:00 needs a position to see, and it is Not verified.
 The settlement instant itself was not captured.
+
+Checked on 2026-10-09, the adapter reads `funding_rate` as the rate charged at `next_funding_time`, as the HitBTC profile does, because this host serves HitBTC's own rows.
+On that day the mark equalled `index_price × (1 + funding_rate × time left / 8 h)` within half a tick on 30 of 30 working rows, and `indicative_funding_rate` failed on 3 of the 4 rows where the two rates differed.
+The newest funding history row on `api.hitbtc.com`, stamped 16:00 UTC, carried the live `funding_rate` and named 00:00 as its `next_funding_time`.
+The rate stays fixed for the whole interval, and HitBTC's funding article says the rate standing when the countdown reaches 0 is the one paid.
+So `indicative_funding_rate` is the running estimate for the settlement after the next one.
 
 ### How often each number changed
 

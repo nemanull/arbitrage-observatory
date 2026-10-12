@@ -51,7 +51,7 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 | handshake and operation rate limits | Not publicly specified | no refusal at 82 subscribe frames in one burst |
 | public market data authentication | none, S1 | none |
 | message parse and routing | `{"type": "<topic>", "ts": <ms>, "data": {...}}`, S1 | route on `type`, which is the full topic string. Acks are `type` `sub` and `unsub`, and the first frame is `type` `hello` |
-| subscribe acknowledgement shape | not documented | `{"type":"sub","ts":…,"data":{"topic":"btc_usdt.20deep","status":"ok"}}`, 185 and 197 ms after the frame was sent |
+| subscribe acknowledgement shape | not documented | `{"type":"sub","ts":…,"data":{"topic":"btc_usdt.20deep","status":"ok"}}`, 185 and 197 ms after the frame was sent. On 2026-10-09 the same ack also carried `"asks":null` and `"bids":null`, and five comma-joined topics drew one ack that named all five |
 | symbol identifier format | lowercase `btc_usdt`, S1 | lowercase, identical to the REST `ticker_id` and `symbol`, and six commodity ids carry no underscore: `gold`, `crude`, `silver`, `lco`, `platinumu`, `chiwheat` |
 | number representation | strings, S1 | strings in flat `[price, size, price, size, …]` arrays, and small numbers in exponent form: `shib_usdt` sent `"6.178e-06"` and `"1.3929399588e+10"`, and exponent form appeared in every `shib_usdt` frame of both runs, 93 and 92 |
 | timestamp representation | `ts` in ms | envelope `ts` in ms, 88 to 207 ms before arrival, with the server clock -2 to 87 ms from this host, see [`rest.md`](./rest.md) section 7. The index frame adds `data.time` in ms |
@@ -182,6 +182,12 @@ Subscribe and acknowledgement.
 
 ```json
 {"type":"sub","ts":1790133935705,"data":{"topic":"btc_usdt.20deep","status":"ok"}}
+```
+
+The same ack as it arrived on 2026-10-09, for five topics sent in one frame, with two null book fields the 2026-09-22 capture lacked.
+
+```json
+{"data":{"asks":null,"bids":null,"status":"ok","topic":"btc_usdt.20deep,shib_usdt.20deep,xau_usdt.20deep,nope_usdt.20deep,sse_usdt.20deep"},"ts":1791572370786,"type":"sub"}
 ```
 
 Book, `btc_usdt.5deep` in full.

@@ -40,6 +40,7 @@ That matters for a later execution stage, not for the observatory.
 | USDT-M perpetuals, Taiwanese users | 0.02 % = 200 ppm | 0.05 % = 500 ppm | Region-specific | S5, effective 2025-04-23 |
 
 The engine models a taker cross at the base retail tier, so 400 ppm is the number that matters.
+On 2026-10-09 all 753 contracts of `/api/v1/contract/detail` still carried `takerFeeRate` 0.0004.
 Two older pages disagree.
 The Common Q&As of 2024-03-22 still say "the trading fees for regular users are 0.01% for Maker and 0.05% for Taker", S6.
 The spot zero fee notice of 2024-09-03 says "The trading fee rates for Futures remain unchanged, with a 0.02% fee for Makers and a 0.04% fee for Takers", S3.

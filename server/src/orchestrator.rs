@@ -29,10 +29,10 @@ pub struct Run {
     engine_done: oneshot::Receiver<usize>, // the routes the engine's shutdown closed, or an error if the thread died
 }
 
-struct TrackedVenue {
-    id: String,
-    venue_index: usize,
-    markets: Vec<TrackedMarket>,
+pub(crate) struct TrackedVenue {
+    pub(crate) id: String,
+    pub(crate) venue_index: usize,
+    pub(crate) markets: Vec<TrackedMarket>,
 }
 
 pub async fn start(closed_tx: Sender<Opportunity>, http: reqwest::Client) -> anyhow::Result<Run> {
@@ -168,7 +168,7 @@ async fn load_venues(http: &reqwest::Client) -> Vec<Venue> {
 }
 
 // A venue streams only the markets that sit in a cluster, since no route can use the others.
-fn tracked_venues(index: &ClusterIndex, venues: &[Venue]) -> Vec<TrackedVenue> {
+pub(crate) fn tracked_venues(index: &ClusterIndex, venues: &[Venue]) -> Vec<TrackedVenue> {
     let mut tracked = Vec::with_capacity(venues.len());
 
     for venue in venues {

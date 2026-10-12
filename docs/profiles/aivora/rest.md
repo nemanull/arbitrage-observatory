@@ -43,6 +43,8 @@ Single calls took up to 2.4 s in the `anchor` runs, and one book call took 7.5 s
 
 Each row carries `symbol`, `pricePrecision`, `side`, `multiplier`, `multiplierCoin`, `minOrderVolume`, `minOrderMoney`, `maxMarketVolume`, `maxMarketMoney`, `maxLimitVolume`, `maxLimitMoney`, `maxValidOrder`, `type`, `contractId` and `status`.
 `multiplierCoin` equalled the base in `symbol` on all 241 rows.
+On 2026-10-09 the call returned 251 rows, 87 of them with `status` 1, 82 USDT and 5 USDC, and 164 with `status` 0.
+The web list of the same day held the same 87.
 
 The 72 tradable USDT-M contracts include 24 TradFi contracts: `E-XAU-USDT`, `E-XAG-USDT`, `E-XPT-USDT`, `E-XPD-USDT`, `E-CL-USDT`, `E-BZ-USDT`, `E-NATGAS-USDT`, `E-SPY-USDT`, `E-QQQ-USDT`, `E-AAPL-USDT`, `E-AMZN-USDT`, `E-COIN-USDT`, `E-CRCL-USDT`, `E-GOOGL-USDT`, `E-HOOD-USDT`, `E-INTC-USDT`, `E-MSFT-USDT`, `E-MSTR-USDT`, `E-MU-USDT`, `E-NVDA-USDT`, `E-PLTR-USDT`, `E-SNDK-USDT`, `E-TSLA-USDT` and `E-TSM-USDT`.
 
@@ -143,6 +145,10 @@ The sweeps ran at about 04:25 and 04:44 UTC on a Wednesday, when US equity marke
 A mark pinned to its index reads a zero premium whatever the book does.
 That is the blind spot of a capped mark, one of the two shapes that have already produced false rows, see section "What the engine needs from a venue" of [`2026-09-15-five-venue-research-design.md`](../../implemented/2026-09-15-five-venue-research-design.md).
 
+On 2026-10-09 at about 20:55 UTC, a Friday after the US close, `tagPrice` equalled `indexPrice` on 31 of 87 contracts, almost all of them equities, ETFs, metals and energy.
+The TradFi indexes still tracked Binance's and Bybit's within about 0.1 percent, except Brent at about 0.8 percent, so they are not Aivora's own price.
+`E-SPCX-USDT` answered `indexPrice` 0 and `tagPrice` 0, so it has no anchor at all.
+
 ### Funding
 
 S6 gives the formula as "Funding rate = clamp (average premium index + clamp (composite rate – average premium index, ...), funding rate upper limit, funding rate lower limit)", with a composite rate of 0.01 % per 8 h and a premium index sampled every 5 s, and it publishes no cap numbers.
@@ -161,7 +167,11 @@ Which third party is Not publicly specified.
 BTC read -0.00001 here while Binance, OKX, Bybit, Gate and HTX published 0.0000173 to 0.0000758 for their own BTC perpetuals in the same minutes, so it matches none of them.
 `nextFundRate` read 0.0001, the documented composite rate, on 55 and 53 of 77 contracts, and a moving value elsewhere, such as FARTCOIN at 0.00062 to 0.00070.
 The documentation calls the rate field "本期资金费率" (this period's funding rate), S1, which makes `currentFundRate` the best candidate for the rate charged at the next settlement.
-That is Not verified, since the settlement instant was not captured and no public funding history call exists.
+That is Not verified, since the settlement instant was not captured.
+On 2026-10-09 the web call `POST https://api.aivora.com/futures/api/common/funding_rate_list` with body `{"contractId":1,"page":1,"limit":10}` answered without a login.
+Its `historyList` rows carry `amount`, the settled rate, and `ctime`, the settlement in Unix ms.
+BTC's last ten 8 h settlements ran from -0.0000394 to 0.0000518, with 0.00001206 at 16:00 UTC, while `currentFundRate` read -0.000036 and `nextFundRate` 0.00008 at about 21:00 UTC.
+So the settled rates move like `currentFundRate` and not like the almost constant `nextFundRate`, which supports `currentFundRate` without proving it.
 
 ### How often each number changed
 

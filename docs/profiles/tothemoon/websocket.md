@@ -81,6 +81,9 @@ In the paced run it arrived 162 to 182 ms after the subscribe frame was sent.
 Its `timestamp` was 541 to 1,217 ms older than its own `server_timestamp` in the frames inspected, so the snapshot is up to 1.2 s stale when it is sent.
 
 In 17 of 19 subscriptions inspected, the second frame was another whole window with no zero size and a fresher `timestamp`, 240 to 329 ms behind `server_timestamp` in the two `record` runs, and in most of them the third frame was an older delta.
+On 2026-10-09 the second window came at `nonce` 2 on 13 of 13 subscriptions in one 75 s capture, and on 12 of 13 in another, where ATOM's `nonce` 2 was an older delta.
+In both captures that window was the only book frame without `extended_volumes`, it held 11 to 15 levels a side, and it left out the resting orders at the edge of the snapshot, such as BTC's bid at 0.3.
+No frame after `nonce` 4 in either capture had more than 5 levels a side without also deleting a level.
 In the other two, DOT and SOL in the 03:40 run, the snapshot was the fresher frame and `nonce` 2 was an older delta.
 The documentation does not describe a snapshot at all.
 

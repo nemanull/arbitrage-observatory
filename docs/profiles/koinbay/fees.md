@@ -34,6 +34,7 @@ The fee is set per contract in the catalog, with separate open and close fees th
 | BTC-margined inverse `E-BTC-USD` | 1 | 0.025 %, 250 ppm | 0.075 %, 750 ppm | same |
 
 The probe grouped the 130 active contracts into exactly two fee groups: `open 0.00075/0.00025 close 0.00075/0.00025` on 37 and `open 0.0005/0.0002 close 0.0005/0.0002` on 93.
+On 2026-10-09 the 93 live contracts of [`rest.md`](./rest.md) section 2 held 32 at 750 ppm and 61 at 500 ppm.
 `E-BTC-USDT` and `E-ETH-USDT` are in the 750 ppm group.
 The docs example for `E-BTC-USDT` shows the same `openTakerFee` 0.00075 and `openMakerFee` 0.00025 (S3).
 

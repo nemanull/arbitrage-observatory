@@ -74,6 +74,7 @@ A `qty` of 0 with `count` 0 deletes the level, and any other `qty` replaces the 
 In `rebuild` the probe subscribed three contracts, seeded each from the REST depth 1.5 s later, dropped the 3, 3 and 10 frames that came before the seed, and 3, 2 and 7 in the rerun at 06:58 UTC, and applied every later frame by price.
 Every 6 s for 60 s it compared the rebuilt top 20 with a fresh REST depth, and all 40 levels, price and size, matched on 30 of 30 checks across BTC, ETH and MASK in each of the two runs.
 The rebuilt book never held more than 20 levels per side, so the server sends a delete for each level that leaves the 20 level window.
+On 2026-10-09 the Rust adapter rebuilt all 39 kept contracts for 120 s, 6,637 book updates, and no side ever passed 20 levels, so a 21st level marks a lost delete.
 
 ### Sequence and gap rule
 

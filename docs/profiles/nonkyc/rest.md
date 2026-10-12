@@ -39,6 +39,13 @@ No refusal of any kind was seen from this host.
 | `_fastx` suffix | 1 | | another builder |
 | `_nonkyc` suffix | 0 | | NonKYC lists no market of its own |
 
+On 2026-10-09 the call returned 136 rows, and the live catalog differs from the counts above.
+73 rows are shared `PERP_<BASE>_USDC` markets with `broker_id` null, all `ACTIVE`, and `PERP_1000SHIB_USDC` and `PERP_BZ_USDC` are no longer listed.
+The builder rows are 61 `_mythos`, 1 `_alpix` and 1 `_fastx`.
+The only row not `ACTIVE` is `PERP_MET_USDC_mythos` at `POST_ONLY`, and `PERP_ALPIX_USDC_alpix` reads `ACTIVE`.
+On the 73 shared markets `funding_period` is 8 on 38 and 4 on 35.
+Rows of `/v1/public/info` and `/v1/public/futures` now also carry `display_symbol_name`, such as `XAU (Gold)`, and each `/v1/public/futures` row carries `broker_id` and `status`.
+
 Each row carries `funding_period` in hours, `cap_funding`, `floor_funding`, `interest_rate`, `mark_index_price_deviation_cap` and `_floor`, `std_liquidation_fee`, `liquidator_fee`, `base_tick`, `quote_tick` and `status`.
 On the 80 shared markets `funding_period` is 8 on 40 and 4 on 40.
 Three shared markets are quoted per 1,000 units: `PERP_1000BONK_USDC`, `PERP_1000PEPE_USDC` and `PERP_1000SHIB_USDC`.
@@ -109,6 +116,9 @@ Across the 80 baskets, `gateio` and `kucoin` appear 60 times each, `binance` 55,
 Nine include `hyperliquidperp`, which by its name is Hyperliquid's perpetual price, and `CL` and `BZ` use only `binancefuturesindex` and `hyperliquidperp`.
 The `...futuresindex` names suggest those venues' own futures index prices rather than their perpetuals, which is an inference.
 No basket names Orderly, so the self-index shape of [`2026-09-15-one-self-index-fresh-gate.md`](../../research/2026-09-15-one-self-index-fresh-gate.md) does not occur, although a basket priced from another venue's perpetual can trail a move the same way.
+
+On 2026-10-09 every one of the 73 shared markets had a basket, and none named Orderly.
+`CL` was the only shared basket made only of perpetuals, `binancefuturesindex` and `hyperliquidperp`, since `BZ` is no longer listed.
 
 ### Mark
 

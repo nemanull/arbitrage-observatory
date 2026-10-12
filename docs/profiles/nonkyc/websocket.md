@@ -75,6 +75,8 @@ The axes are those of [`2026-07-30-venue-ws-protocol-differences.md`](../../rese
 `@orderbook` sends the whole book 112 to 168 ms after its subscribe frame, and again when the book has changed.
 On BTC and ETH the gap between snapshots was 201 to 5,600 ms with medians of 1,000 to 1,600 ms, and on WOO it was 999 to 58,199 ms.
 The documentation says depth 100, and the wire sent up to 428 levels per side, for example 420 bids and 274 asks on BTC, and 333 bids and 369 asks in the rerun.
+On 2026-10-09 the `PERP_ETH_USDC` push carried 241 to 275 bids and 562 to 582 asks in two captures, so the push has no cap near 500 levels per side.
+Each push came 10 to 170 ms after the delta of the same change and carried that delta's `ts`.
 A quiet book's first snapshot carries an old `ts`: the WOO snapshot at subscribe carried a `ts` about 9 s older than its arrival, and the next delta chained from that `ts`.
 
 ### Delta semantics
@@ -125,6 +127,8 @@ The BTC snapshot showed asks of `0.00369` and `1.00621` at about 87,112, which a
 The REST book read the same `0.00369` at the best ask a few minutes earlier, and CCXT `woofipro` reports `contractSize` 1 and an amount precision of 0.00001, equal to Orderly's `base_tick`, see [`rest.md`](./rest.md) section 2.
 So the engine's `sizeMul` of 1 converts Orderly sizes correctly.
 
+On 2026-10-09 a Public Info book with `max_level` 10 matched, on all 20 levels in price and size, the socket book rebuilt from an `@orderbook` push and the deltas up to the same `ts`, on `PERP_ETH_USDC` and on `PERP_1000PEPE_USDC`.
+
 ### One-sided and empty books
 
 No one-sided or empty book was seen on the three markets.
@@ -163,6 +167,8 @@ Because an unknown topic is acknowledged, a feed should log a stream with no fra
 | handshake | | 155 to 255 ms to open from this host |
 | subscription limits | Not publicly specified | 100 topics per connection, section 3 |
 | throughput | | one socket with 80 delta topics and 20 snapshot topics for 45 s, two runs: 89 frames per second on average both times, median 78 and 80, peak 182 and 150, 35 and 36 KB per second, 398 and 402 bytes per frame, 21 µs `JSON.parse` per frame, 3,435 and 3,504 deltas, 0 gaps |
+
+On 2026-10-09 the cap was the same: one socket acknowledged 100 book topics and refused the 101st and 102nd with the same message.
 
 ## 6. Captured frames
 

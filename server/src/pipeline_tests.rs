@@ -278,11 +278,13 @@ impl Pipeline {
             id: "beta",
             url: beta.url.clone(),
         };
+        let http = reqwest::Client::new(); // these venues fetch no REST snapshot
         let mut feeds = spawn_feed(
             Arc::new(alpha_venue),
             "alpha",
             alpha_index,
             &alpha_markets,
+            &http,
             &engine_tx,
             &cancel,
         );
@@ -291,6 +293,7 @@ impl Pipeline {
             "beta",
             beta_index,
             &beta_markets,
+            &http,
             &engine_tx,
             &cancel,
         ));

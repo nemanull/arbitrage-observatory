@@ -44,10 +44,18 @@ The documented `status` values are "1 online, 25 forbidden to open positions, 5 
 
 One contract moved from `status` 25 to 1 and back between reads 26 minutes apart, so the split is not fixed from one read to the next.
 
+A read on 2026-10-08 in the local evening, at about 04:50 UTC on 2026-10-09, returned 1,246 rows.
+952 had `status` 1 and the API open: 562 crypto USDT, 341 `NC` USDT and 49 USDC.
+150 had `status` 25 with the API open, 79 had `status` 1 with the API closed, and 65 had `status` 25 with the API closed.
+Every `status` 25 row on 2026-10-08 was an `NC` contract.
+
 API state means `apiStateOpen` and `apiStateClose` both `"true"`.
 The 626 rows whose symbol starts with `NC` are TradFi contracts: `NCSK` stocks, `NCFX` forex, `NCCO` commodities and `NCSI` indices, and 329 or 330 of them had `status` 1 and the API open, P1.
 Fifteen `NCSK` stock rows carried an `offTime` of 2026-09-24 03:00 or 03:30 UTC, which the documentation defines as the "Delisting timestamp in milliseconds", S3 and P1.
 No crypto contract carried one.
+On 2026-10-08 no row carried an `offTime`.
+Three tradable rows carried a nonzero `maintainTime` instead, a field the documentation does not describe: `ROBINCAT-USDT` at 2026-10-09 07:00 UTC, and `ALLINU-USDT` and `COOL-USDT` at 2026-10-10 10:00 UTC.
+What it announces is Not verified, and on 2026-10-08 `COOL-USDT` traded and marked about 15 % over its own index.
 
 `GET /openApi/cswap/v1/market/contracts` lists the coin-M contracts, 20 rows, all `status` 1.
 Without a `timestamp` query parameter it answers HTTP 400 `{"code":104414,"msg":"Invalid parameter","retryable":0}`, and with one it answers 200, in both runs, P1.
@@ -94,6 +102,7 @@ Without a `timestamp` query parameter it answers HTTP 400 `{"code":104414,"msg":
 
 One call carries every `AnchorRow` column for USDT-M and USDC-M, keyed by `symbol`, which is CCXT's `market.id`.
 Its rows are every `status` 1 contract, including the 78 whose API is closed, and no `status` 25 contract, P1.
+On 2026-10-08 it returned 1,031 rows, which were the 952 tradable contracts and the 79 `status` 1 contracts whose API was closed, and still no `status` 25 contract.
 Every row carried a non-zero mark and index in the first poll of each of three runs, P2.
 CCXT's `fetchFundingRates` reads the same call at `bingx.js` line 1721 and maps `lastFundingRate` to `fundingRate` at line 1747.
 
@@ -213,6 +222,7 @@ The engine's 1,000 ppm move guard reads the index and the mark, and a bounce bet
 | error shape | JSON `{code, msg, data}` | HTTP 200 with a non-zero `code`: 109425 "NOPE-USDT not exist, please verify it in api: /openApi/swap/v2/quote/contracts", 109400 "Invalid parameters, err:symbol: This field must end with -USDT or -USDC.", 100400 "this api is not exist", 109415 for a paused contract. The coin-M contracts call without `timestamp` is the only HTTP 400 seen |
 
 A poller must check `code` in the body, since a failing call still answers HTTP 200.
+On 2026-10-08 such a reply carried `"data":{}`, an object where a good reply carries the rows, for example 109425 for `?symbol=NOPE-USDT` and 109400 for `?symbol=BTC`.
 
 ## 7. Server time and clock offset
 
@@ -242,6 +252,7 @@ A recommendation for a later design, not a decision.
 | skip | nothing in the reply: `status` 25 contracts are absent already | |
 | catalog filter | `marketFilter: (m) => m.linear === true && (m.info as { status?: number }).status === 1` | drops the 160 or 161 `status` 25 contracts CCXT keeps active, which have no anchor row and no book |
 | optional filter | also drop ids starting with `NC` | 330 TradFi contracts whose names match no other venue, whose fee depends on the account's region, see [`fees.md`](./fees.md) section 5, and which would take two of the book sockets |
+| ticker collision | `ON-USDT` | on 2026-10-08 BingX's `ON-USDT` read 0.1107, as binance, gate and mexc did, while bybit's `ONUSDT` is a stock contract and okx's `ON-USDT-SWAP` an `instCategory` 3 contract, both near 80 USDT. The binance adapter already denies its `ONUSDT` for this reason, and so does the BingX loader |
 | deny list input | section 4 | `ONE-USDT` reads a mark 42 % under its index, already denied. `UPHOOD-USDT` read 10 % over. The display names in section 2 show where BingX's base spelling differs from its token's usual ticker |
 
 The bulk reply is about 21 GB a day at one hertz, which the design treats as free.

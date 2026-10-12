@@ -47,6 +47,9 @@ The `BTC_USDT_PERP` row, whole:
 
 The documented `contractType` field is absent from every row, although S2 lists it.
 
+On 2026-10-09 the call returned 602 rows, all `TRADING`.
+They were 554 USDT-M rows, `USD_USDT_PERP` among them, 23 coin-quoted rows (11 BTC, 9 ETH and 3 SOL), 24 `USDT_<COIN>_PERP` rows, and `SPCX_TSLAX_PERP`, which is quoted in the tokenized Tesla stock `TSLAX`.
+
 ### How CCXT 4.5.68 maps it
 
 CCXT has no Pionex class, see [`fees.md`](./fees.md) section 8.
@@ -72,6 +75,14 @@ The catalog also mixes crypto with tokenized stocks and ETFs whose symbols end i
 No base and quote pair is listed twice among the 606 rows, P1.
 No symbol carries a `1000` prefix, and `PEPE_USDT_PERP`, `SHIB_USDT_PERP`, `BONK_USDT_PERP` and `FLOKI_USDT_PERP` are quoted per one coin, so no price scale is needed on the Pionex side.
 `USD_USDT_PERP` is in the catalog but absent from `indexes`, `tickers` and `bookTickers`, P1, so it has no anchor and should be skipped.
+On 2026-10-09 it was still listed as `TRADING`, its REST depth was empty with `updateTime` 0, its funding history held no rate, and `indexes` still had no row for it.
+
+On 2026-10-09 the same 17 rows had a `baseCurrency` that differs from the prefix.
+Under the prefix, 15 of them matched the reference venues binance, bybit, okx, gate and MEXC at the same price, such as `1INCH`, `NEIRO`, `LIT`, `0G` and the five Chinese names.
+`WTI_USDT_PERP` matched the references only as `CL`, its `baseCurrency`, and `XYZX_USDT_PERP` matched no reference under either spelling.
+Three prefixes that equal their `baseCurrency` also differ from binance, bybit, gate and okx at the same price on 2026-10-09: `BRENTOIL` is `BZ`, `SMSN` is `SAMSUNG`, and `ZKSYNC` is `ZK`.
+`ON_USDT_PERP` is the ON token at about 0.116, while bybit and okx list ON as the ON Semiconductor stock near 77, as checked on 2026-10-09.
+The tokenized stocks and ETFs keep their `X` suffix, such as `AAPLX` at the price the references list as `AAPL`, so they pair only with venues that spell them the same way.
 
 ## 3. Anchor
 
@@ -101,6 +112,9 @@ At 03:17 UTC, 214 contracts read `nextFundingTime` 08:00 UTC and 391 read 04:00 
 The 04:00 group holds both the 4 h and the 1 h contracts, which share that instant.
 The funding history showed 8 h gaps on `BTC_USDT_PERP`, `ETH_USDT_PERP`, `USDT_BTC_PERP` and `BTC_ETH_PERP`, 4 h gaps on `ACE_USDT_PERP`, `ACT_USDT_PERP`, `AERO_USDT_PERP`, `KERNEL_USDT_PERP`, `COTI_USDT_PERP` and `IOST_USDT_PERP`, and 1 h gaps on `AAX_USDT_PERP`, over the last ten settlements of each, P3.
 A sample of every eighth contract, 76 of 605, read an 8 h gap on 29, a 4 h gap on 44 and a 1 h gap on 3, P7.
+The history of all 554 USDT-M contracts on 2026-10-09 read a 4 h gap on 338, 8 h on 174, 1 h on 33 and 2 h on 8, and no rate at all on `USD_USDT_PERP`.
+So 2 h is a fourth interval, and all eight of those contracts are tokenized stocks and ETFs, such as `FUTUX_USDT_PERP`, whose `nextFundingTime` sat 2 h after its last settlement.
+On 2026-10-09 `indexes` returned 601 rows.
 
 The one symbol form `GET /api/v1/market/indexes?symbol=NOPE_USDT_PERP` answers `MARKET_PARAMETER_ERROR` `symbol error`, P5.
 
@@ -146,6 +160,7 @@ Over 59 intervals of one second polls in each of two runs, at 03:17 and 03:37 UT
 | `updateTime` | | 59, 59 | 59, 59 | 59, 59 | 59, 59 |
 
 `updateTime` sits on a 100 ms grid and was 295 to 1,708 ms old on arrival, median 904 and 990 ms, P2.
+On 2026-10-09 it was 334 to 1,034 ms older than the reply's own `timestamp` across all 601 rows.
 So the reply is republished about once a second, and the rate estimate moves in batches, not on every poll.
 
 ## 5. REST book snapshot
@@ -161,6 +176,11 @@ So the reply is republished about once a second, and the rate estimate moves in 
 | best bid and ask for all perpetuals | `GET /api/v1/market/bookTickers?type=PERP`, 604 rows, 79 KB, P1. The futures docs spell it `/api/v1/market/bookTicker`, which answers 404 `{"error_msg":"404 Route Not Found"}` |
 
 `bookTickers` left out `CARX_USDT_PERP` and `USD_USDT_PERP` in both runs, P1.
+
+On 2026-10-09, 407 USDT-M contracts were also listed on Binance USD-M.
+In three pairs of `bookTickers` and Binance `bookTicker` replies fetched at the same moment, 240 to 249 of them had the same best bid and the same best ask as Binance.
+Most of the others differed by Pionex's coarser tick, such as `1INCH_USDT_PERP` at 0.0963 and 0.0964 against 0.09637 and 0.09639.
+So the Pionex book may follow Binance's prices, and a cross between the two may be one price source seen twice.
 The 1,000 level reply of the second run opened its asks with `["86703.8","0"]`, a level of size zero at the top of the book, so a REST reader drops zero sizes, P4.
 
 ## 6. Rate limits and errors
@@ -175,6 +195,9 @@ The 1,000 level reply of the second run opened its asks with `["86703.8","0"]`, 
 | unknown route | | HTTP 404 `{"error_msg":"404 Route Not Found"}` |
 
 The token header suggests a bucket of about 30 in which a market call costs 1 and a catalog call costs 5, which is an inference from two readings, not a documented rule.
+On 2026-10-09 the header confirmed that reading: a market call took 1 token, the catalog call took 5, and the value refilled continuously with a fraction.
+Market calls at 20 a second for 2 s left the header at 28.5 or more, and 20 parallel calls drained it to 12, which was back to the full 30 one second later.
+So on the wire the budget is far looser than the documented 10 per second with every call weighing 5.
 
 | request | reply, all HTTP 200 unless noted |
 |---|---|
@@ -212,6 +235,8 @@ A recommendation for a later design, not a decision.
 | judge before admitting | the mark is the index plus a 5 minute average of Pionex's own basis | section 4 |
 
 The reply is 14.1 KB gzip, about 1.2 GB a day at one hertz.
+
+The adapter built on 2026-10-09 reads eight funding histories a second beside the `indexes` call, 9 calls a second, which gives each of its 552 markets an interval in about 70 s.
 
 ## 9. Source ledger
 

@@ -8,7 +8,7 @@ use crate::test_log::capture;
 use axum::Router;
 use axum::http::{HeaderValue, StatusCode, header};
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{get, post};
 use std::collections::VecDeque;
 use std::sync::Mutex;
 use tokio::net::TcpListener;
@@ -647,6 +647,75 @@ async fn reads_403_and_418_as_rate_limits() {
     }
 }
 
+// Echoes the content type and the parsed body of every POST, so a case sees what post_json sent.
+async fn serve_echo() -> String {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}/orders", listener.local_addr().unwrap());
+    let echo = |headers: axum::http::HeaderMap, body: String| async move {
+        let content_type = headers.get(header::CONTENT_TYPE).and_then(|value| value.to_str().ok()).unwrap_or("");
+        let body: serde_json::Value = serde_json::from_str(&body).unwrap_or(serde_json::Value::Null);
+        axum::Json(serde_json::json!({ "content_type": content_type, "body": body }))
+    };
+    let app = Router::new().route("/orders", post(echo));
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    url
+}
+
+#[tokio::test]
+async fn post_json_sends_the_body_as_json_and_decodes_the_reply() {
+    let url = serve_echo().await;
+    let body = serde_json::json!({ "symbols": ["BTC-PERP", "ETH-PERP"], "depth": 20 });
+
+    let echoed: serde_json::Value = post_json(&http(), &url, &body).await.unwrap();
+
+    assert_eq!(echoed["content_type"], "application/json");
+    assert_eq!(echoed["body"], body);
+}
+
+#[tokio::test]
+async fn post_json_reads_a_429_as_a_rate_limit() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}/orders", listener.local_addr().unwrap());
+    let app = Router::new().route("/orders", post(|| async { (StatusCode::TOO_MANY_REQUESTS, [(header::RETRY_AFTER, "4")]) }));
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+
+    let error = post_json::<serde_json::Value>(&http(), &url, &serde_json::json!({})).await.unwrap_err();
+
+    let limited = error.downcast_ref::<RateLimited>().expect("a 429 is a rate limit");
+    assert_eq!(limited.retry_after, Some(Duration::from_secs(4)));
+}
+
+#[tokio::test]
+async fn get_bytes_returns_the_body_as_it_came() {
+    let url = serve(StatusCode::OK, None, "not json at all").await;
+
+    let body = get_bytes(&http(), &url).await.unwrap();
+
+    assert_eq!(&body[..], b"not json at all");
+}
+
+#[tokio::test]
+async fn get_bytes_reads_a_429_as_a_rate_limit_with_its_retry_after() {
+    let url = serve(StatusCode::TOO_MANY_REQUESTS, Some("3"), "slow down").await;
+
+    let error = get_bytes(&http(), &url).await.unwrap_err();
+
+    let limited = error.downcast_ref::<RateLimited>().expect("a 429 is a rate limit");
+    assert_eq!(limited.url, url);
+    assert_eq!(limited.reason, "429 Too Many Requests");
+    assert_eq!(limited.retry_after, Some(Duration::from_secs(3)));
+}
+
+#[tokio::test]
+async fn get_json_names_the_url_when_the_body_is_not_json() {
+    let url = serve(StatusCode::OK, None, "not json").await;
+
+    let error = get_json::<serde_json::Value>(&http(), &url).await.unwrap_err();
+
+    assert!(error.downcast_ref::<RateLimited>().is_none());
+    assert_eq!(error.to_string(), format!("error decoding response body from {url}"));
+}
+
 #[test]
 fn reads_retry_after_in_whole_seconds() {
     assert_eq!(retry_after("7"), Some(Duration::from_secs(7)));
@@ -673,6 +742,32 @@ fn reads_a_retry_after_date_in_the_past_as_zero() {
         retry_after("Sun, 06 Nov 1994 08:49:37 GMT"),
         Some(Duration::ZERO)
     );
+}
+
+#[test]
+fn reads_a_retry_after_up_to_10_to_the_9_as_seconds() {
+    assert_eq!(retry_after("1000000000"), Some(Duration::from_secs(1_000_000_000)));
+}
+
+#[test]
+fn reads_a_retry_after_above_10_to_the_9_as_a_unix_time_in_seconds() {
+    let at = now_ms() / 1_000 + 30;
+
+    let wait = retry_after(&at.to_string()).unwrap();
+
+    // The header drops the milliseconds, so the wait falls up to a second short of 30 s.
+    assert!(wait > Duration::from_secs(28) && wait <= Duration::from_secs(30), "{wait:?}");
+    assert_eq!(retry_after("1500000000"), Some(Duration::ZERO));
+}
+
+#[test]
+fn reads_a_retry_after_above_10_to_the_12_as_a_unix_time_in_ms() {
+    let at = now_ms() + 30_000;
+
+    let wait = retry_after(&at.to_string()).unwrap();
+
+    assert!(wait > Duration::from_secs(29) && wait <= Duration::from_secs(30), "{wait:?}");
+    assert_eq!(retry_after("1500000000000"), Some(Duration::ZERO));
 }
 
 #[test]

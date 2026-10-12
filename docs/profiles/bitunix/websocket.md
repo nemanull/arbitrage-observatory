@@ -131,6 +131,8 @@ That reading is an inference, and no document states the coin-M unit.
 
 On the 13 contracts whose symbol carries a multiplier, such as `1000PEPEUSDT`, the catalog's `base` names the unscaled token.
 `1000PEPEUSDT`, the one compared, reports its REST size in units of 1,000 PEPE, see [`rest.md`](./rest.md) section 2, and the other 12 were not compared.
+On 2026-10-08 `1MBABYDOGEUSDT` was compared too.
+Its REST book quoted 0.0003843 against 0.0003842 on Binance's `1MBABYDOGEUSDT` in the same second, with sizes of 4.0 to 15.1 million against 0.2 to 7.9 million, so its unit is 1,000,000 BABYDOGE.
 
 ### One-sided and empty books
 
@@ -194,6 +196,12 @@ Connect, sent by the server on open.
 {"op":"connect","data":{"result":true}}
 ```
 
+On 2026-10-08, which was 2026-10-09 in UTC, the connect frame also carried null `a` and `b` fields and a `ts` in ms.
+
+```json
+{"data":{"a":null,"b":null,"result":true},"op":"connect","ts":1791526955653}
+```
+
 Subscribe, in the shape the probe sent, cut to three streams, which gets no reply.
 
 ```json
@@ -240,6 +248,12 @@ Keepalive.
 
 ```json
 {"op":"ping","pong":1790126498,"ping":1790126491}
+```
+
+On 2026-10-08 the answer to the ping also carried null `a` and `b` fields and a `ts` in ms.
+
+```json
+{"data":{"a":null,"b":null},"op":"ping","ping":1791526955,"pong":1791526955,"ts":1791526955814}
 ```
 
 Unsubscribe.

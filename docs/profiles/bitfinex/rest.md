@@ -41,6 +41,8 @@ Both labels fit in one call, and the pair returned 9,192 bytes in 330 ms.
 
 The catalog has no status field, so a listed pair is a live pair.
 The status call returned 91 rows, and the two conf pairs it lacks are the paper contracts `TESTAPTF0:TESTUSDTF0` and `TESTXTZF0:TESTUSDTF0`.
+On 2026-10-09 the conf list held 94 pairs, 76 USDt-settled, 4 BTC-settled and 14 paper contracts, and `pub:info:pair:futures` listed the same 94.
+That day the status call returned 92 rows, and the two pairs it lacked were still `TESTAPTF0:TESTUSDTF0` and `TESTXTZF0:TESTUSDTF0`.
 The USDt family holds 8 equity index contracts (`AUSTRALIA200IX`, `EUROPE50IX`, `FRANCE40IX`, `GERMANY40IX`, `HONGKONG50IX`, `JAPAN225IX`, `SPAIN35IX`, `UK100IX`), 2 implied volatility index contracts (`BVIV`, `EVIV`), `EUR`, `GBP`, and `XAUT`, `XAG`, `XPT`, `XPD` and `UKOIL`.
 
 ### How CCXT 4.5.68 maps it
@@ -155,6 +157,7 @@ The running average `NEXT_FUNDING_ACCRUED` is exactly that basis, averaged over 
 The formula, the 0.05 % dead band and the caps are in [`fees.md`](./fees.md) section 6.
 `CLAMP_MIN` was 0.0005 on 91 of 91 rows.
 `CLAMP_MAX` was 0.0025 on 86 rows, 0.025 on `tSOLF0:USTF0`, 0.005 on `tCRVF0:USTF0`, and null on `tEUROPE50IXF0:USTF0`, `tFRANCE40IXF0:USTF0` and `tSPAIN35IXF0:USTF0`.
+On 2026-10-09 `CLAMP_MAX` was 0.0025 on 90 of 92 rows, 0.025 on SOL and 0.005 on CRV, so the three index contracts now carry the 0.25 % cap.
 The Funding Payment Summary lists 2.50 % for SOL and 0.50 % for CRV as well, S5.
 
 ### Rate across a settlement
