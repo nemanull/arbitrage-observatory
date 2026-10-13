@@ -25,7 +25,8 @@ services:
       # Postgres 18 keeps PGDATA at /var/lib/postgresql/18/docker, so the volume mounts one level up.
       - postgres-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-observatory} -d ${POSTGRES_DB:-observatory}"]
+      # Over TCP, because the image's first start serves only the socket while it creates the database.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ${POSTGRES_USER:-observatory} -d ${POSTGRES_DB:-observatory}"]
       interval: 5s
       timeout: 5s
       retries: 10

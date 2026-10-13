@@ -46,6 +46,19 @@ docker compose up -d --wait postgres
 The schema is the SQL under [`server/migrations/`](./server/migrations/), applied in file name order.
 The server does not migrate on boot.
 
+To start a run on a clean database:
+
+```bash
+pnpm db:reset         # or scripts/db-reset.sh where pnpm is not installed
+```
+
+It saves the old database to `logs/db/`, drops it, creates it empty and applies every migration.
+It touches only Postgres, so unlike `pnpm infra:reset` it keeps the SigNoz logs of earlier runs.
+It fails while the server or any other session is connected to the database, so stop the run first.
+A saved database comes back with `docker compose exec -T postgres pg_restore -U observatory -d observatory --clean --if-exists < logs/db/<file>.dump`.
+
+To apply the migrations to an existing database and keep its rows:
+
 ```bash
 for f in server/migrations/*.sql; do
   psql postgresql://observatory:observatory@localhost:5532/observatory -v ON_ERROR_STOP=1 -f "$f"

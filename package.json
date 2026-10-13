@@ -21,7 +21,8 @@
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down",
     "infra:logs": "docker compose logs -f",
-    "infra:reset": "docker compose down -v"
+    "infra:reset": "docker compose down -v",
+    "db:reset": "scripts/db-reset.sh"
   },
   "devDependencies": {
     "ccxt": "4.5.68",
