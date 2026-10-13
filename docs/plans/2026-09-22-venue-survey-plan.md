@@ -379,6 +379,13 @@ All 78 were researched and written down between 2026-10-09 and 2026-10-10, in ab
 Their verdicts are 12 fits with a named change, 16 blocked, 11 no public API, 36 spot only and 3 defunct.
 The four venues with a CCXT class, Coinmate, Cryptomus, BIT.TEAM and Ndax, passed the taker check of design section "Verification": CCXT gave 6,000, 20,000, an undefined taker and 2,500 ppm, which their profiles record.
 
+## CCXT additions
+
+On 2026-10-12 a check of all 104 CCXT 4.5.68 exchanges found ten decentralised perpetual venues that neither ranking listed: Aster, Extended, Lighter, GRVT, ApeX, Pacifica, dYdX, Paradex, Derive and Hibachi.
+They were researched and built the same day under [`2026-10-12-dex-venues-design.md`](../implemented/2026-10-12-dex-venues-design.md), which also records the five CCXT venues left out and why, and their tracker is in [`2026-10-12-dex-venues-plan.md`](../implemented/2026-10-12-dex-venues-plan.md).
+Their survey rows carry wave `D`.
+All ten fit, Hibachi as is and the other nine with a named change.
+
 ## Closing tasks
 
 Task C waited until the CoinMarketCap additions were researched, which they were on 2026-10-10.

@@ -89,6 +89,8 @@ The newest audit is the one that describes current behaviour.
 - [`implemented/2026-10-01-rust-venue-adapters-plan.md`](./implemented/2026-10-01-rust-venue-adapters-plan.md) records the reconciled plan that shipped the five running venues, their catalog parity, live smokes and the first Rust test run, then the five later venues unstarted.
 - [`implemented/2026-10-01-rust-docs-and-load-replay-design.md`](./implemented/2026-10-01-rust-docs-and-load-replay-design.md) records the reconciled design that measures the Rust server with a saturation replay of recorded frames as 63 venues, rewrites the current state docs for Rust, cleans up the Node era config, and turns the dead TypeScript links into permalinks.
 - [`implemented/2026-10-01-rust-docs-and-load-replay-plan.md`](./implemented/2026-10-01-rust-docs-and-load-replay-plan.md) records the reconciled plan that shipped it, the six replay runs, and the permalink caveat on cited line numbers.
+- [`implemented/2026-10-12-dex-venues-design.md`](./implemented/2026-10-12-dex-venues-design.md) records the reconciled design that found ten decentralised perpetual venues in CCXT that no survey had researched, researched and built each with a researcher and then a builder, and what the live checks found.
+- [`implemented/2026-10-12-dex-venues-plan.md`](./implemented/2026-10-12-dex-venues-plan.md) records the reconciled plan with the ten lanes, the merge steps, and each venue's live check numbers, denials, exceptions and the items open before activation.
 
 ## Reference
 
@@ -870,3 +872,33 @@ The newest audit is the one that describes current behaviour.
 - [`profiles/b2z/fees.md`](./profiles/b2z/fees.md) records the BTSE white-label futures fee table read from B2Z's public VIP call (VIP 0 maker 150 ppm, taker 500 ppm, six levels), the country restriction flags, the BVI operator line and the absence of any CCXT class.
 - [`profiles/b2z/websocket.md`](./profiles/b2z/websocket.md) records BTSE's update topic served on wss://ws.b2z.exchange/ws/oss/futures with 50 level snapshots and a gap-free seqNum chain across all 218 perpetuals, and a side-by-side capture showing the same sequence numbers as BTSE's own socket.
 - [`profiles/b2z/rest.md`](./profiles/b2z/rest.md) records the BTSE public API on api.b2z.exchange, whose catalog, REST books, index, mark, funding and open interest equal BTSE's, and recommends the BTSE adapter with swapped hosts only as a substitute for the BTSE leg.
+- [`profiles/aster/fees.md`](./profiles/aster/fees.md) records Aster perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/aster/websocket.md`](./profiles/aster/websocket.md) records Aster public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/aster/rest.md`](./profiles/aster/rest.md) records Aster catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/extended/fees.md`](./profiles/extended/fees.md) records Extended perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/extended/websocket.md`](./profiles/extended/websocket.md) records Extended public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/extended/rest.md`](./profiles/extended/rest.md) records Extended catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/lighter/fees.md`](./profiles/lighter/fees.md) records Lighter perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/lighter/websocket.md`](./profiles/lighter/websocket.md) records Lighter public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/lighter/rest.md`](./profiles/lighter/rest.md) records Lighter catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/grvt/fees.md`](./profiles/grvt/fees.md) records GRVT perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/grvt/websocket.md`](./profiles/grvt/websocket.md) records GRVT public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/grvt/rest.md`](./profiles/grvt/rest.md) records GRVT catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/apex/fees.md`](./profiles/apex/fees.md) records ApeX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/apex/websocket.md`](./profiles/apex/websocket.md) records ApeX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/apex/rest.md`](./profiles/apex/rest.md) records ApeX catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/pacifica/fees.md`](./profiles/pacifica/fees.md) records Pacifica perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/pacifica/websocket.md`](./profiles/pacifica/websocket.md) records Pacifica public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/pacifica/rest.md`](./profiles/pacifica/rest.md) records Pacifica catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/dydx/fees.md`](./profiles/dydx/fees.md) records dYdX perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/dydx/websocket.md`](./profiles/dydx/websocket.md) records dYdX public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/dydx/rest.md`](./profiles/dydx/rest.md) records dYdX catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/paradex/fees.md`](./profiles/paradex/fees.md) records Paradex perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/paradex/websocket.md`](./profiles/paradex/websocket.md) records Paradex public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/paradex/rest.md`](./profiles/paradex/rest.md) records Paradex catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/derive/fees.md`](./profiles/derive/fees.md) records Derive perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/derive/websocket.md`](./profiles/derive/websocket.md) records Derive public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/derive/rest.md`](./profiles/derive/rest.md) records Derive catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.
+- [`profiles/hibachi/fees.md`](./profiles/hibachi/fees.md) records Hibachi perpetual fees, tiers, funding, the CCXT fee and the recommended registry values.
+- [`profiles/hibachi/websocket.md`](./profiles/hibachi/websocket.md) records Hibachi public book channels, captured frames, session rules and the recommended feed shape.
+- [`profiles/hibachi/rest.md`](./profiles/hibachi/rest.md) records Hibachi catalog, anchor calls and semantics, REST book, rate limits, the decentralised layer and the recommended poller shape.

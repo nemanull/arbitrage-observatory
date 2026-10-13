@@ -1,5 +1,7 @@
 // An adapter is one module here, one arm in load_venue and one arm in start_venue.
 
+mod apex;
+mod aster;
 mod backpack;
 mod biconomy;
 mod bigone;
@@ -20,12 +22,17 @@ mod cryptocom;
 mod deepcoin;
 mod delta;
 mod deribit;
+mod derive;
 mod digifinex;
+mod dydx;
 mod echobit;
+mod extended;
 mod gate;
 mod gemini;
 mod globe;
+mod grvt;
 mod hashkey;
+mod hibachi;
 mod hibt;
 mod hitbtc;
 mod hotcoin;
@@ -33,6 +40,7 @@ mod htx;
 mod hyperliquid;
 mod krakenfutures;
 mod kucoinfutures;
+mod lighter;
 #[cfg(test)]
 mod live_tests;
 #[cfg(test)]
@@ -41,6 +49,8 @@ mod mexc;
 mod okx;
 mod orangex;
 mod orderly;
+mod pacifica;
+mod paradex;
 mod phemex;
 mod pionex;
 mod poloniex;
@@ -64,6 +74,8 @@ use crate::engine::engine::EngineEvent;
 use crate::feeds::TrackedMarket;
 use crate::feeds::anchor_poller::{AnchorVenue, spawn_poller};
 use crate::feeds::venue_feed::{BookVenue, spawn_feed};
+use apex::Apex;
+use aster::Aster;
 use backpack::Backpack;
 use biconomy::Biconomy;
 use bigone::BigOne;
@@ -83,12 +95,17 @@ use cryptocom::Cryptocom;
 use deepcoin::Deepcoin;
 use delta::Delta;
 use deribit::Deribit;
+use derive::Derive;
 use digifinex::Digifinex;
+use dydx::Dydx;
 use echobit::Echobit;
+use extended::Extended;
 use gate::Gate;
 use gemini::Gemini;
 use globe::Globe;
+use grvt::Grvt;
 use hashkey::Hashkey;
+use hibachi::Hibachi;
 use hibt::Hibt;
 use hitbtc::HitBtc;
 use hotcoin::Hotcoin;
@@ -96,10 +113,13 @@ use htx::Htx;
 use hyperliquid::Hyperliquid;
 use krakenfutures::KrakenFutures;
 use kucoinfutures::KucoinFutures;
+use lighter::Lighter;
 use mexc::Mexc;
 use okx::Okx;
 use orangex::Orangex;
 use orderly::Orderly;
+use pacifica::Pacifica;
+use paradex::Paradex;
 use phemex::Phemex;
 use pionex::Pionex;
 use poloniex::Poloniex;
@@ -190,6 +210,16 @@ pub async fn load_venue(id: &str, http: &reqwest::Client) -> anyhow::Result<Venu
         chainup::FAMEEX_ID => chainup::load(&chainup::FAMEEX, http).await,
         chainup::XME_ID => chainup::load(&chainup::XME, http).await,
         chainup::KOINBAY_ID => chainup::load(&chainup::KOINBAY, http).await,
+        aster::ID => aster::load(http).await,
+        extended::ID => extended::load(http).await,
+        lighter::ID => lighter::load(http).await,
+        grvt::ID => grvt::load(http).await,
+        apex::ID => apex::load(http).await,
+        pacifica::ID => pacifica::load(http).await,
+        dydx::ID => dydx::load(http).await,
+        paradex::ID => paradex::load(http).await,
+        derive::ID => derive::load(http).await,
+        hibachi::ID => hibachi::load(http).await,
         _ => anyhow::bail!("{id} has no adapter"),
     }
 }
@@ -255,6 +285,16 @@ pub fn start_venue(run: VenueRun) -> anyhow::Result<Vec<JoinHandle<()>>> {
         chainup::FAMEEX_ID => start(Chainup::new(&chainup::FAMEEX, &run.markets), run),
         chainup::XME_ID => start(Chainup::new(&chainup::XME, &run.markets), run),
         chainup::KOINBAY_ID => start(Chainup::new(&chainup::KOINBAY, &run.markets), run),
+        aster::ID => start(Aster::new(), run),
+        extended::ID => start(Extended::new(&run.markets), run),
+        lighter::ID => start(Lighter::new(&run.markets), run),
+        grvt::ID => start(Grvt::new(&run.markets), run),
+        apex::ID => start(Apex::new(&run.markets), run),
+        pacifica::ID => start(Pacifica::new(), run),
+        dydx::ID => start(Dydx::new(), run),
+        paradex::ID => start(Paradex::new(&run.markets), run),
+        derive::ID => start(Derive::new(&run.markets), run),
+        hibachi::ID => start(Hibachi::new(), run),
         _ => anyhow::bail!("{} has no adapter", run.venue_id),
     };
     Ok(tasks)

@@ -80,6 +80,16 @@ const ALL_VENUES: &[&str] = &[
     "fameex",
     "xme",
     "koinbay",
+    "aster",
+    "extended",
+    "lighter",
+    "grvt",
+    "apex",
+    "pacifica",
+    "dydx",
+    "paradex",
+    "derive",
+    "hibachi",
 ];
 
 const SAMPLE: usize = 5;
